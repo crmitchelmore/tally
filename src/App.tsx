@@ -83,9 +83,9 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto p-4 pb-24">
+      <div className="max-w-7xl mx-auto p-4 pb-8">
         <header className="mb-8 mt-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <h1 className="text-4xl font-bold tracking-tight mb-2">
                 <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
@@ -114,14 +114,27 @@ function App() {
                 </div>
               )}
             </div>
-            <Button
-              onClick={() => setCreateChallengeOpen(true)}
-              size="lg"
-              className="hidden md:flex"
-            >
-              <Target className="w-5 h-5 mr-2" />
-              New Challenge
-            </Button>
+            <div className="flex gap-2">
+              {activeChallenges.length > 0 && (
+                <Button
+                  onClick={() => setAddEntryOpen(true)}
+                  size="lg"
+                  className="shadow-lg"
+                >
+                  <Plus className="w-5 h-5 md:mr-2" />
+                  <span className="hidden md:inline">Add Entry</span>
+                </Button>
+              )}
+              <Button
+                onClick={() => setCreateChallengeOpen(true)}
+                size="lg"
+                variant="secondary"
+                className="shadow-lg"
+              >
+                <Target className="w-5 h-5 md:mr-2" />
+                <span className="hidden md:inline">New Challenge</span>
+              </Button>
+            </div>
           </div>
         </header>
 
@@ -166,33 +179,6 @@ function App() {
           </div>
         )}
       </div>
-
-      <motion.div
-        className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 items-end"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.5, type: 'spring', stiffness: 300 }}
-      >
-        <Button
-          onClick={() => setAddEntryOpen(true)}
-          size="lg"
-          className="w-16 h-16 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all"
-          disabled={activeChallenges.length === 0}
-        >
-          <Plus className="w-8 h-8" />
-        </Button>
-        {activeChallenges.length > 0 && (
-          <Button
-            onClick={() => setCreateChallengeOpen(true)}
-            size="lg"
-            variant="secondary"
-            className="md:hidden rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all px-5"
-          >
-            <Target className="w-5 h-5 mr-2" />
-            New Challenge
-          </Button>
-        )}
-      </motion.div>
 
       <AddEntrySheet
         open={addEntryOpen}

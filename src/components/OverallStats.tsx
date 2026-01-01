@@ -12,14 +12,16 @@ interface OverallStatsProps {
 export function OverallStats({ challenges, entries }: OverallStatsProps) {
   if (challenges.length === 0) return null
 
-  const totalEntries = entries.length
-  const totalRepsAllTime = entries.reduce((sum, e) => sum + e.count, 0)
+  const challengeIds = new Set(challenges.map(c => c.id))
+  const relevantEntries = entries.filter(e => challengeIds.has(e.challengeId))
+  
+  const totalRepsAllTime = relevantEntries.reduce((sum, e) => sum + e.count, 0)
   
   const today = new Date().toISOString().split('T')[0]
-  const entriesToday = entries.filter(e => e.date === today)
+  const entriesToday = relevantEntries.filter(e => e.date === today)
   const repsToday = entriesToday.reduce((sum, e) => sum + e.count, 0)
   
-  const uniqueDaysActive = new Set(entries.map(e => e.date)).size
+  const uniqueDaysActive = new Set(relevantEntries.map(e => e.date)).size
   
   let totalCurrentStreak = 0
   let challengesAheadOfPace = 0

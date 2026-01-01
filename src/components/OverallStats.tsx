@@ -35,30 +35,30 @@ export function OverallStats({ challenges, entries }: OverallStatsProps) {
   const stats = [
     {
       icon: TrendingUp,
-      label: 'Total Reps',
+      label: 'Total Marks',
       value: totalRepsAllTime.toLocaleString(),
-      color: 'oklch(0.75 0.15 195)',
+      color: 'oklch(0.25 0.02 30)',
       subtext: 'all time'
     },
     {
       icon: Calendar,
       label: 'Today',
       value: repsToday.toLocaleString(),
-      color: 'oklch(0.7 0.2 145)',
+      color: 'oklch(0.3 0.025 35)',
       subtext: `${entriesToday.length} ${entriesToday.length === 1 ? 'entry' : 'entries'}`
     },
     {
       icon: Flame,
       label: 'Best Streak',
       value: totalCurrentStreak.toString(),
-      color: 'oklch(0.7 0.2 50)',
+      color: 'oklch(0.55 0.22 25)',
       subtext: 'days'
     },
     {
       icon: Target,
       label: 'Ahead of Pace',
       value: challengesAheadOfPace.toString(),
-      color: 'oklch(0.7 0.2 145)',
+      color: 'oklch(0.45 0.18 145)',
       subtext: `of ${challenges.length} ${challenges.length === 1 ? 'challenge' : 'challenges'}`
     },
   ]
@@ -74,10 +74,10 @@ export function OverallStats({ challenges, entries }: OverallStatsProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
           >
-            <Card className="p-4 bg-card/60 backdrop-blur-sm border-border/50">
+            <Card className="p-4 bg-card border-2 border-border">
               <div className="flex items-center gap-2 mb-2">
                 <Icon className="w-4 h-4" style={{ color: stat.color }} />
-                <span className="text-xs text-muted-foreground font-medium">{stat.label}</span>
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</span>
               </div>
               <div className="text-3xl font-bold geist-mono mb-1" style={{ color: stat.color }}>
                 {stat.value}

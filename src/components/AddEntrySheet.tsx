@@ -49,10 +49,12 @@ export function AddEntrySheet({
     onAddEntry(selectedChallengeId, count, note, date)
 
     confetti({
-      particleCount: 100,
-      spread: 70,
+      particleCount: 80,
+      spread: 60,
       origin: { y: 0.6 },
-      colors: ['#60efff', '#5eead4', '#34d399', '#fbbf24'],
+      colors: ['#3a3a3a', '#4a4a4a', '#5a5a5a', '#6a6a6a'],
+      shapes: ['square'],
+      scalar: 0.8,
     })
 
     if (navigator.vibrate) {

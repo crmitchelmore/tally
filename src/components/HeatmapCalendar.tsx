@@ -91,9 +91,9 @@ export function HeatmapCalendar({ data, year, size = 'small', onDayClick }: Heat
                               width: squareSize,
                               height: squareSize,
                               backgroundColor: getHeatmapColor(day.level),
-                              border: '1px solid oklch(0.3 0 0)',
+                              border: '1px solid oklch(0.85 0.01 50)',
                             }}
-                            className="rounded-sm hover:ring-2 hover:ring-primary/50 transition-all"
+                            className="rounded-sm hover:ring-2 hover:ring-accent/50 transition-all"
                           />
                         </TooltipTrigger>
                         <TooltipContent>

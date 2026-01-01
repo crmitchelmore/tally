@@ -82,18 +82,23 @@ function App() {
   ).length
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background tally-marks-bg">
       <div className="max-w-7xl mx-auto p-4 pb-8">
         <header className="mb-8 mt-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-4xl font-bold tracking-tight mb-2">
-                <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                  10000 Club
-                </span>
+              <h1 className="text-5xl font-bold tracking-tight mb-2 flex items-center gap-3">
+                <span className="text-foreground">Tally</span>
+                <svg width="40" height="50" viewBox="0 0 40 50" className="inline-block">
+                  <line x1="10" y1="5" x2="10" y2="45" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                  <line x1="17" y1="5" x2="17" y2="45" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                  <line x1="24" y1="5" x2="24" y2="45" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                  <line x1="31" y1="5" x2="31" y2="45" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                  <line x1="5" y1="20" x2="35" y2="30" stroke="oklch(0.55 0.22 25)" strokeWidth="3" strokeLinecap="round" />
+                </svg>
               </h1>
-              <p className="text-muted-foreground">
-                Track your yearly challenges and crush your goals
+              <p className="text-muted-foreground text-lg">
+                Count what matters. Mark your progress.
               </p>
               {totalChallenges > 0 && (
                 <div className="flex items-center gap-4 mt-3 text-sm">

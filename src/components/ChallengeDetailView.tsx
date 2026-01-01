@@ -72,8 +72,8 @@ export function ChallengeDetailView({ challenge, entries, onBack }: ChallengeDet
   const recentEntries = [...challengeEntries].reverse().slice(0, 10)
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 p-4">
+    <div className="min-h-screen bg-background pb-20 tally-marks-bg">
+      <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b-2 border-border z-10 p-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={onBack}>
             <ArrowLeft className="w-5 h-5" />
@@ -89,10 +89,10 @@ export function ChallengeDetailView({ challenge, entries, onBack }: ChallengeDet
 
       <div className="max-w-4xl mx-auto p-4 space-y-6 mt-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="p-4">
+          <Card className="p-4 border-2 border-border">
             <div className="flex items-center gap-2 mb-2">
-              <Trophy className="w-4 h-4 text-accent" />
-              <span className="text-xs text-muted-foreground">Best Day</span>
+              <Trophy className="w-4 h-4" style={{ color: challenge.color }} />
+              <span className="text-xs text-muted-foreground uppercase tracking-wider">Best Day</span>
             </div>
             <div className="text-2xl font-bold geist-mono">
               {stats.bestDay?.count.toLocaleString() || 0}
@@ -104,28 +104,28 @@ export function ChallengeDetailView({ challenge, entries, onBack }: ChallengeDet
             )}
           </Card>
 
-          <Card className="p-4">
+          <Card className="p-4 border-2 border-border">
             <div className="flex items-center gap-2 mb-2">
-              <Flame className="w-4 h-4 text-orange-500" />
-              <span className="text-xs text-muted-foreground">Current Streak</span>
+              <Flame className="w-4 h-4" style={{ color: 'oklch(0.55 0.22 25)' }} />
+              <span className="text-xs text-muted-foreground uppercase tracking-wider">Current Streak</span>
             </div>
             <div className="text-2xl font-bold geist-mono">{stats.currentStreak}</div>
             <div className="text-xs text-muted-foreground mt-1">days</div>
           </Card>
 
-          <Card className="p-4">
+          <Card className="p-4 border-2 border-border">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-primary" />
-              <span className="text-xs text-muted-foreground">Longest Streak</span>
+              <TrendingUp className="w-4 h-4" style={{ color: 'oklch(0.25 0.02 30)' }} />
+              <span className="text-xs text-muted-foreground uppercase tracking-wider">Longest Streak</span>
             </div>
             <div className="text-2xl font-bold geist-mono">{stats.longestStreak}</div>
             <div className="text-xs text-muted-foreground mt-1">days</div>
           </Card>
 
-          <Card className="p-4">
+          <Card className="p-4 border-2 border-border">
             <div className="flex items-center gap-2 mb-2">
-              <Calendar className="w-4 h-4 text-primary" />
-              <span className="text-xs text-muted-foreground">Days Active</span>
+              <Calendar className="w-4 h-4" style={{ color: 'oklch(0.25 0.02 30)' }} />
+              <span className="text-xs text-muted-foreground uppercase tracking-wider">Days Active</span>
             </div>
             <div className="text-2xl font-bold geist-mono">{stats.daysActive}</div>
             <div className="text-xs text-muted-foreground mt-1">
@@ -134,29 +134,29 @@ export function ChallengeDetailView({ challenge, entries, onBack }: ChallengeDet
           </Card>
         </div>
 
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Yearly Activity</h2>
+        <Card className="p-6 border-2 border-border">
+          <h2 className="text-lg font-semibold mb-4 uppercase tracking-wider text-sm text-muted-foreground">Yearly Activity</h2>
           <HeatmapCalendar data={heatmapData} year={challenge.year} size="large" />
         </Card>
 
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Cumulative Progress</h2>
+        <Card className="p-6 border-2 border-border">
+          <h2 className="text-lg font-semibold mb-4 uppercase tracking-wider text-sm text-muted-foreground">Cumulative Progress</h2>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={cumulativeData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0 0)" />
-              <XAxis dataKey="date" stroke="oklch(0.55 0 0)" fontSize={12} />
-              <YAxis stroke="oklch(0.55 0 0)" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.85 0.01 50)" />
+              <XAxis dataKey="date" stroke="oklch(0.5 0.01 30)" fontSize={12} />
+              <YAxis stroke="oklch(0.5 0.01 30)" fontSize={12} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'oklch(0.2 0 0)',
-                  border: '1px solid oklch(0.3 0 0)',
+                  backgroundColor: 'oklch(0.99 0.002 50)',
+                  border: '2px solid oklch(0.85 0.01 50)',
                   borderRadius: '8px',
                 }}
               />
               <Line
                 type="monotone"
                 dataKey="target"
-                stroke="oklch(0.5 0 0)"
+                stroke="oklch(0.7 0.01 30)"
                 strokeDasharray="5 5"
                 strokeWidth={2}
                 dot={false}
@@ -174,17 +174,17 @@ export function ChallengeDetailView({ challenge, entries, onBack }: ChallengeDet
           </ResponsiveContainer>
         </Card>
 
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Weekly Average</h2>
+        <Card className="p-6 border-2 border-border">
+          <h2 className="text-lg font-semibold mb-4 uppercase tracking-wider text-sm text-muted-foreground">Weekly Average</h2>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={weeklyData.slice(-12)}>
-              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0 0)" />
-              <XAxis dataKey="week" stroke="oklch(0.55 0 0)" fontSize={12} />
-              <YAxis stroke="oklch(0.55 0 0)" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.85 0.01 50)" />
+              <XAxis dataKey="week" stroke="oklch(0.5 0.01 30)" fontSize={12} />
+              <YAxis stroke="oklch(0.5 0.01 30)" fontSize={12} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'oklch(0.2 0 0)',
-                  border: '1px solid oklch(0.3 0 0)',
+                  backgroundColor: 'oklch(0.99 0.002 50)',
+                  border: '2px solid oklch(0.85 0.01 50)',
                   borderRadius: '8px',
                 }}
               />
@@ -194,13 +194,13 @@ export function ChallengeDetailView({ challenge, entries, onBack }: ChallengeDet
         </Card>
 
         {recentEntries.length > 0 && (
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Recent Entries</h2>
+          <Card className="p-6 border-2 border-border">
+            <h2 className="text-lg font-semibold mb-4 uppercase tracking-wider text-sm text-muted-foreground">Recent Entries</h2>
             <div className="space-y-3">
               {recentEntries.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border border-border/50"
                 >
                   <div>
                     <div className="font-medium">

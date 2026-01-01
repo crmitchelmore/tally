@@ -21,10 +21,10 @@ export function ChallengeCard({ challenge, entries, onClick }: ChallengeCardProp
 
   const paceColor =
     stats.paceStatus === 'ahead'
-      ? 'oklch(0.7 0.2 145)'
+      ? 'oklch(0.45 0.18 145)'
       : stats.paceStatus === 'behind'
-        ? 'oklch(0.65 0.25 25)'
-        : 'oklch(0.8 0.15 90)'
+        ? 'oklch(0.55 0.22 25)'
+        : 'oklch(0.55 0.15 90)'
 
   return (
     <motion.div
@@ -34,11 +34,19 @@ export function ChallengeCard({ challenge, entries, onClick }: ChallengeCardProp
     >
       <Card
         onClick={onClick}
-        className="p-6 cursor-pointer bg-card/80 backdrop-blur-xl border-border/50 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 relative overflow-hidden"
+        className="p-6 cursor-pointer bg-card border-2 border-border hover:border-primary/40 transition-all hover:shadow-xl relative overflow-hidden"
       >
         <div 
-          className="absolute top-0 left-0 right-0 h-1" 
-          style={{ backgroundColor: challenge.color }}
+          className="absolute top-0 left-0 right-0 h-2" 
+          style={{ 
+            background: `repeating-linear-gradient(
+              90deg,
+              ${challenge.color},
+              ${challenge.color} 8px,
+              transparent 8px,
+              transparent 12px
+            )`
+          }}
         />
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -52,8 +60,8 @@ export function ChallengeCard({ challenge, entries, onClick }: ChallengeCardProp
                   variant="outline"
                   className="text-xs flex items-center gap-1"
                   style={{
-                    borderColor: 'oklch(0.7 0.2 50)',
-                    color: 'oklch(0.7 0.2 50)',
+                    borderColor: 'oklch(0.6 0.2 50)',
+                    color: 'oklch(0.5 0.18 50)',
                   }}
                 >
                   <Flame className="w-3 h-3" />
@@ -82,20 +90,20 @@ export function ChallengeCard({ challenge, entries, onClick }: ChallengeCardProp
           </div>
         </div>
 
-        <div className="mb-4 p-4 rounded-lg bg-secondary/30 border border-border/30">
+        <div className="mb-4 p-4 rounded-lg bg-secondary/50 border-2 border-border/50">
           <div className="grid grid-cols-3 gap-4 mb-3">
             <div>
-              <div className="text-xs text-muted-foreground mb-1">Remaining</div>
+              <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Remaining</div>
               <div className="text-lg font-bold geist-mono">
                 {stats.remaining.toLocaleString()}
               </div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground mb-1">Days left</div>
+              <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Days left</div>
               <div className="text-lg font-bold geist-mono">{stats.daysLeft}</div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground mb-1">Per day</div>
+              <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Per day</div>
               <div
                 className="text-lg font-bold geist-mono"
                 style={{ color: paceColor }}
@@ -104,7 +112,7 @@ export function ChallengeCard({ challenge, entries, onClick }: ChallengeCardProp
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm" style={{ color: paceColor }}>
+          <div className="flex items-center gap-2 text-sm font-medium" style={{ color: paceColor }}>
             {stats.paceStatus === 'ahead' ? (
               <TrendingUp className="w-4 h-4" />
             ) : stats.paceStatus === 'behind' ? (
@@ -112,12 +120,12 @@ export function ChallengeCard({ challenge, entries, onClick }: ChallengeCardProp
             ) : (
               <Target className="w-4 h-4" />
             )}
-            <span className="font-medium">{paceMessage}</span>
+            <span>{paceMessage}</span>
           </div>
         </div>
 
         <div>
-          <div className="text-xs text-muted-foreground mb-2">Activity</div>
+          <div className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">Activity</div>
           <HeatmapCalendar data={heatmapData} year={challenge.year} size="small" />
         </div>
       </Card>

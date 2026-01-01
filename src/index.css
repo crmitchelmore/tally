@@ -8,34 +8,38 @@
   
   body {
     font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: oklch(0.97 0.005 50);
   }
 }
 
 :root {
-  --background: oklch(0.12 0 0);
-  --foreground: oklch(0.95 0 0);
+  --background: oklch(0.97 0.005 50);
+  --foreground: oklch(0.2 0.015 30);
 
-  --card: oklch(0.2 0 0);
-  --card-foreground: oklch(0.95 0 0);
-  --popover: oklch(0.18 0 0);
-  --popover-foreground: oklch(0.95 0 0);
+  --card: oklch(0.99 0.002 50);
+  --card-foreground: oklch(0.2 0.015 30);
+  --popover: oklch(0.99 0.002 50);
+  --popover-foreground: oklch(0.2 0.015 30);
 
-  --primary: oklch(0.75 0.15 195);
-  --primary-foreground: oklch(0.1 0 0);
-  --secondary: oklch(0.25 0 0);
-  --secondary-foreground: oklch(0.95 0 0);
-  --muted: oklch(0.25 0 0);
-  --muted-foreground: oklch(0.55 0 0);
-  --accent: oklch(0.7 0.2 145);
-  --accent-foreground: oklch(0.1 0 0);
-  --destructive: oklch(0.65 0.25 25);
-  --destructive-foreground: oklch(0.1 0 0);
+  --primary: oklch(0.25 0.02 30);
+  --primary-foreground: oklch(0.97 0.005 50);
+  --secondary: oklch(0.92 0.008 50);
+  --secondary-foreground: oklch(0.2 0.015 30);
+  --muted: oklch(0.94 0.006 50);
+  --muted-foreground: oklch(0.5 0.01 30);
+  --accent: oklch(0.3 0.025 35);
+  --accent-foreground: oklch(0.97 0.005 50);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.97 0.005 50);
 
-  --border: oklch(0.3 0 0);
-  --input: oklch(0.3 0 0);
-  --ring: oklch(0.75 0.15 195);
+  --border: oklch(0.85 0.01 50);
+  --input: oklch(0.85 0.01 50);
+  --ring: oklch(0.25 0.02 30);
 
-  --radius: 0.75rem;
+  --tally-line: oklch(0.25 0.02 30);
+  --tally-cross: oklch(0.55 0.22 25);
+  
+  --radius: 0.5rem;
 }
 
 @theme {
@@ -70,4 +74,45 @@
 .geist-mono {
   font-family: 'Geist Mono', monospace;
   font-feature-settings: 'tnum' 1;
+}
+
+.tally-marks-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.tally-marks-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    oklch(0.25 0.02 30) 10px,
+    oklch(0.25 0.02 30) 12px,
+    transparent 12px,
+    transparent 22px
+  );
+  pointer-events: none;
+}
+
+@keyframes tally-slash {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+.tally-slash-enter {
+  animation: tally-slash 0.3s ease-out forwards;
+  transform-origin: left center;
 }

@@ -1,11 +1,11 @@
 # Planning Guide
 
-A dead-simple but visually addictive yearly challenge tracker where users can create and track ambitious annual goals (10,000 push-ups, 5,000 pull-ups, 365 books) with real-time progress visualization, GitHub-style heatmaps, and celebratory micro-interactions that make logging entries irresistibly satisfying.
+Tally - A tactile, satisfying progress tracker inspired by traditional tally marks. Count what matters with the timeless method of marking progress - four vertical lines crossed by a fifth. Track ambitious annual goals with a hand-crafted aesthetic that makes every mark feel meaningful.
 
 **Experience Qualities**:
-1. **Addictive** - Every interaction should feel so satisfying that users want to log entries multiple times per day, with instant feedback, confetti celebrations, and progress that visibly fills before their eyes
-2. **Motivating** - Bold visual feedback showing pace analysis (ahead/behind schedule), streaks, and remaining daily targets creates positive pressure to stay consistent
-3. **Polished** - Glassmorphic cards, smooth animations, vibrant gradients, and micro-interactions create a premium feel that makes achievement tracking feel like a game
+1. **Tactile** - Every interaction should feel like making a physical mark on paper - deliberate, satisfying, and permanent with visual feedback inspired by pen strokes and counting marks
+2. **Focused** - Clean, minimal interface that puts the numbers front and center, avoiding distractions while celebrating the simple act of counting progress
+3. **Honest** - Raw, authentic progress visualization that shows exactly where you are without gamification gimmicks - just you versus your goal
 
 **Complexity Level**: Light Application (multiple features with basic state)
   - Core features include challenge creation, daily entry logging, progress visualization with heatmaps and charts, and pace calculation - all manageable with client-side state management using Spark's KV storage
@@ -66,21 +66,23 @@ A dead-simple but visually addictive yearly challenge tracker where users can cr
 
 ## Design Direction
 
-The design should feel like a premium fitness tracking app meets a gamified achievement system – energizing, modern, and slightly futuristic with vibrant neon accents against deep dark backgrounds. Every interaction should spark joy through smooth animations, bold typography, and celebration of progress. Think Stripe's polish meets Duolingo's gamification meets GitHub's data visualization.
+The design should evoke the tactile satisfaction of traditional tally counting - think pen on paper, hash marks on a prison wall, or chalk marks on a scoreboard. Clean, minimal, and paper-like with subtle textures. The aesthetic is analog-inspired digital minimalism with a focus on typography, clean lines, and the ritualistic act of marking progress. Think Muji's simplicity meets a well-worn notebook.
 
 ## Color Selection
 
-Dark mode aesthetic with vibrant, high-contrast accent colors that pop against near-black backgrounds.
+Light, paper-like aesthetic with near-black ink for marks and subtle warm tones suggesting aged paper or natural materials.
 
-- **Primary Color**: Electric cyan `oklch(0.75 0.15 195)` - Represents progress, energy, and forward momentum; used for primary buttons and key CTAs
-- **Secondary Colors**: Deep charcoal backgrounds `oklch(0.15 0 0)` for cards, slightly lighter `oklch(0.2 0 0)` for elevated elements, creating subtle depth hierarchy
-- **Accent Color**: Vibrant emerald green `oklch(0.7 0.2 145)` - Celebration color for "ahead of pace" status, milestone achievements, and success states
+- **Primary Color**: Near-black charcoal `oklch(0.25 0.02 30)` - The color of ink on paper, used for tally marks, primary text, and key UI elements
+- **Secondary Colors**: Warm off-white backgrounds `oklch(0.97 0.005 50)` for the main surface, slightly brighter white `oklch(0.99 0.002 50)` for cards, creating subtle paper-like depth
+- **Accent Color**: Deep charcoal slate `oklch(0.3 0.025 35)` - For interactive elements and emphasis, suggesting pencil lead or pressed ink
+- **Alert/Behind Color**: Muted red-orange `oklch(0.55 0.22 25)` - The crossing mark in a tally group, used sparingly for behind-pace warnings
+- **Success/Ahead Color**: Forest green `oklch(0.45 0.18 145)` - Natural, earned progress color for ahead-of-pace status
 - **Foreground/Background Pairings**:
-  - Primary Cyan `oklch(0.75 0.15 195)`: Near-black text `oklch(0.1 0 0)` - Ratio 8.2:1 ✓
-  - Background Dark `oklch(0.12 0 0)`: Off-white text `oklch(0.95 0 0)` - Ratio 15.3:1 ✓
-  - Accent Green `oklch(0.7 0.2 145)`: Near-black text `oklch(0.1 0 0)` - Ratio 7.1:1 ✓
-  - Warning Red (behind pace) `oklch(0.65 0.25 25)`: Near-black text `oklch(0.1 0 0)` - Ratio 5.2:1 ✓
-  - Card Charcoal `oklch(0.2 0 0)`: Off-white text `oklch(0.95 0 0)` - Ratio 12.1:1 ✓
+  - Primary Charcoal `oklch(0.25 0.02 30)`: Off-white background `oklch(0.97 0.005 50)` - Ratio 11.2:1 ✓
+  - Card White `oklch(0.99 0.002 50)`: Primary text `oklch(0.2 0.015 30)` - Ratio 14.8:1 ✓
+  - Accent Slate `oklch(0.3 0.025 35)`: Off-white background `oklch(0.97 0.005 50)` - Ratio 9.5:1 ✓
+  - Alert Red `oklch(0.55 0.22 25)`: Off-white background `oklch(0.97 0.005 50)` - Ratio 5.1:1 ✓
+  - Success Green `oklch(0.45 0.18 145)`: Off-white background `oklch(0.97 0.005 50)` - Ratio 6.8:1 ✓
 
 ## Font Selection
 
@@ -97,14 +99,14 @@ Typography should feel modern, slightly technical (evoking data and precision) w
 
 ## Animations
 
-Animations should be purposeful and fast, creating satisfaction without delays – prioritize micro-interactions that give tactile feedback.
+Animations should feel deliberate and pen-like, mimicking the act of drawing tally marks with subtle ink-bleed effects and organic timing.
 
-- **Entry Logging**: Number counter animates up with spring physics (0.4s), confetti bursts from center for 1.2s, haptic pulse (if mobile)
-- **Progress Rings**: Circular progress animates with ease-out curve over 0.8s when value changes, subtle pulse on milestone (every 10%)
-- **Heatmap Fills**: New entry square fades in color with 0.3s ease-out, scales from 0.8 to 1.0 for emphasis
-- **Card Interactions**: Hover lifts card 4px with 0.2s ease, tap scales to 0.98 for 0.1s (tactile press)
-- **Sheet Transitions**: Bottom sheet slides up with spring (stiffness 300, damping 30), backdrop fades in simultaneously
-- **Pace Status Changes**: When crossing from behind to ahead, green glow pulse for 0.5s with scale 1.05
+- **Entry Logging**: Tally marks draw in with a slash animation (left to right, 0.3s each), fifth mark crosses with slight rotation, confetti uses paper-like rectangles
+- **Progress Rings**: Circular progress with tally marks around the perimeter that fill in as milestones are reached, subtle scale pulse on the active segment
+- **Heatmap Fills**: New entry square fades in with a gentle ink-bleed effect (0.4s ease-out), suggesting ink soaking into paper
+- **Card Interactions**: Hover lifts card like picking up paper (4px, 0.2s ease), tap has subtle resistance like pressing into a surface
+- **Number Updates**: Counts animate up with a flip-book effect for the changing digit, monospace font ensures alignment
+- **Mark Drawing**: When adding entries, visual tally marks draw onto the screen one at a time before resolving to the final number
 
 ## Component Selection
 

@@ -29,6 +29,20 @@ export function AddEntrySheet({
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0])
   const [showNote, setShowNote] = useState(false)
 
+  const handleOpen = (isOpen: boolean) => {
+    if (!isOpen) {
+      setCount(0)
+      setNote('')
+      setDate(new Date().toISOString().split('T')[0])
+      setShowNote(false)
+    } else {
+      if (challenges.length === 1) {
+        setSelectedChallengeId(challenges[0].id)
+      }
+    }
+    onOpenChange(isOpen)
+  }
+
   const handleSubmit = () => {
     if (!selectedChallengeId || count <= 0) return
 
@@ -55,39 +69,62 @@ export function AddEntrySheet({
   const selectedChallenge = challenges.find((c) => c.id === selectedChallengeId)
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpen}>
       <SheetContent side="bottom" className="h-[85vh] sm:h-auto sm:max-w-md sm:mx-auto">
         <SheetHeader>
           <SheetTitle className="text-2xl">Add Entry</SheetTitle>
+          {challenges.length > 1 && (
+            <p className="text-sm text-muted-foreground">Select a challenge to log progress</p>
+          )}
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
-          <div>
-            <Label className="text-sm mb-2 block">Challenge</Label>
-            <div className="grid grid-cols-1 gap-2">
-              {challenges
-                .filter((c) => !c.archived)
-                .map((challenge) => (
-                  <motion.button
-                    key={challenge.id}
-                    onClick={() => setSelectedChallengeId(challenge.id)}
-                    className={`p-4 rounded-lg border-2 transition-all text-left ${
-                      selectedChallengeId === challenge.id
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border bg-card hover:border-primary/50'
-                    }`}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">{challenge.name}</span>
-                      {selectedChallengeId === challenge.id && (
-                        <Check className="w-5 h-5 text-primary" />
-                      )}
-                    </div>
-                  </motion.button>
-                ))}
+          {challenges.length > 1 && (
+            <div>
+              <Label className="text-sm mb-2 block">Challenge</Label>
+              <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                {challenges
+                  .filter((c) => !c.archived)
+                  .map((challenge) => (
+                    <motion.button
+                      key={challenge.id}
+                      onClick={() => setSelectedChallengeId(challenge.id)}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        selectedChallengeId === challenge.id
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border bg-card hover:border-primary/50'
+                      }`}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: challenge.color }}
+                          />
+                          <span className="font-semibold">{challenge.name}</span>
+                        </div>
+                        {selectedChallengeId === challenge.id && (
+                          <Check className="w-5 h-5 text-primary" />
+                        )}
+                      </div>
+                    </motion.button>
+                  ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {challenges.length === 1 && (
+            <div className="p-4 rounded-lg border-2 border-primary/50 bg-primary/5">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: challenges[0].color }}
+                />
+                <span className="font-semibold">{challenges[0].name}</span>
+              </div>
+            </div>
+          )}
 
           <AnimatePresence>
             {selectedChallengeId && (

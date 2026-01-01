@@ -20,18 +20,18 @@ A dead-simple but visually addictive yearly challenge tracker where users can cr
 - Success criteria: Challenge persists across sessions, displays with chosen aesthetics, calculates daily pace needed
 
 **Daily Entry Logging (Most Critical UX)**
-- Functionality: Quick-add entries with large touch targets, presets, and optional notes
+- Functionality: Quick-add entries with challenge selection for multiple challenges, large touch targets, presets, and optional notes
 - Purpose: Must be faster and more satisfying than any competing app to build daily habit
 - Trigger: Tap floating + button (always visible bottom-right)
-- Progression: Tap + → Bottom sheet slides up with smooth spring animation → Huge number input (72px font) → Tap quick presets (+1, +5, +10, +50) or type custom → Optional: expand note field → Tap "Done" → Confetti explosion + haptic feedback → Sheet dismisses → Progress ring animates to new value → Heatmap square fills → Pace recalculates with color change if status improved
-- Success criteria: Can log entry in under 3 seconds, animations feel buttery smooth at 60fps, confetti triggers every time, total updates without page refresh
+- Progression: Tap + → Bottom sheet slides up with smooth spring animation → If multiple challenges: scrollable list with color indicators and checkmarks for selection → If single challenge: shows challenge name with color indicator → Huge number input (72px font) → Tap quick presets (+1, +5, +10, +50) or type custom → Optional: expand note field → Tap "Done" → Confetti explosion + haptic feedback → Sheet dismisses → Progress ring animates to new value → Heatmap square fills → Pace recalculates with color change if status improved → Overall stats update
+- Success criteria: Can log entry in under 3 seconds, animations feel buttery smooth at 60fps, confetti triggers every time, total updates without page refresh, challenge selection is clear and easy with multiple challenges, auto-selects challenge when only one exists
 
 **Progress Dashboard**
-- Functionality: Visual overview of all active challenges with current totals, pace analysis, and heatmaps
-- Purpose: Instant motivation boost showing progress and what's needed to stay on track
+- Functionality: Visual overview of all active challenges with overall summary stats, current totals, pace analysis, and heatmaps
+- Purpose: Instant motivation boost showing progress across all challenges and what's needed to stay on track
 - Trigger: App loads to dashboard by default
-- Progression: User opens app → Grid of challenge cards loads → Each card shows: Bold total/target → Thick circular progress ring (animated) → Mini heatmap showing year activity → "Remaining" section with days left, required daily pace (color-coded: green=ahead, gold=on pace, red=behind), and encouraging message
-- Success criteria: All data loads instantly from KV storage, colors accurately reflect pace status, heatmap renders 365 days without lag
+- Progression: User opens app → Overall stats cards appear showing total reps, today's progress, best streak, and challenges ahead of pace → Grid of challenge cards loads → Each card shows: Colored top border for quick identification → Bold total/target → Thick circular progress ring (animated) → Mini heatmap showing year activity → "Remaining" section with days left, required daily pace (color-coded: green=ahead, gold=on pace, red=behind), and encouraging message → Can scroll through multiple challenges easily
+- Success criteria: All data loads instantly from KV storage, colors accurately reflect pace status, heatmap renders 365 days without lag, overall stats aggregate across all challenges correctly, grid layout responsive (1 column mobile, 2 tablet, 3 desktop)
 
 **Challenge Detail View**
 - Functionality: Full-screen deep dive into a single challenge with charts, stats, and history

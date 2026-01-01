@@ -34,8 +34,12 @@ export function ChallengeCard({ challenge, entries, onClick }: ChallengeCardProp
     >
       <Card
         onClick={onClick}
-        className="p-6 cursor-pointer bg-card/80 backdrop-blur-xl border-border/50 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10"
+        className="p-6 cursor-pointer bg-card/80 backdrop-blur-xl border-border/50 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 relative overflow-hidden"
       >
+        <div 
+          className="absolute top-0 left-0 right-0 h-1" 
+          style={{ backgroundColor: challenge.color }}
+        />
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <h3 className="text-2xl font-semibold mb-1">{challenge.name}</h3>

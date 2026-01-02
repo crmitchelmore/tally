@@ -44,6 +44,8 @@ export function SetsRepsAnalysis({ entries, color }: SetsRepsAnalysisProps) {
   const maxReps = Math.max(...setStats)
   const minReps = Math.min(...setStats)
 
+  const totalSets = entriesWithSets.reduce((sum, e) => sum + (e.sets?.length || 0), 0)
+
   return (
     <div className="space-y-6">
       <Card className="p-6 border-2 border-border">
@@ -51,18 +53,22 @@ export function SetsRepsAnalysis({ entries, color }: SetsRepsAnalysisProps) {
           Sets & Reps Analysis
         </h2>
         
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="text-center p-3 bg-secondary/50 rounded-lg">
-            <div className="text-xs text-muted-foreground mb-1">Avg Reps/Set</div>
-            <div className="text-2xl font-bold geist-mono">{Math.round(avgRepsPerSet)}</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="text-center p-4 bg-secondary/50 rounded-lg border-2 border-border">
+            <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Avg Reps/Set</div>
+            <div className="text-3xl font-bold geist-mono" style={{ color }}>{Math.round(avgRepsPerSet)}</div>
           </div>
-          <div className="text-center p-3 bg-secondary/50 rounded-lg">
-            <div className="text-xs text-muted-foreground mb-1">Max Reps</div>
-            <div className="text-2xl font-bold geist-mono">{maxReps}</div>
+          <div className="text-center p-4 bg-accent/10 rounded-lg border-2 border-accent/30">
+            <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Max Reps</div>
+            <div className="text-3xl font-bold geist-mono" style={{ color }}>{maxReps}</div>
           </div>
-          <div className="text-center p-3 bg-secondary/50 rounded-lg">
-            <div className="text-xs text-muted-foreground mb-1">Min Reps</div>
-            <div className="text-2xl font-bold geist-mono">{minReps}</div>
+          <div className="text-center p-4 bg-secondary/50 rounded-lg border-2 border-border">
+            <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Total Sets</div>
+            <div className="text-3xl font-bold geist-mono">{totalSets}</div>
+          </div>
+          <div className="text-center p-4 bg-secondary/50 rounded-lg border-2 border-border">
+            <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Total Sessions</div>
+            <div className="text-3xl font-bold geist-mono">{entriesWithSets.length}</div>
           </div>
         </div>
 

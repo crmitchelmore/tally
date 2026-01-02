@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Challenge, Entry, Set } from '@/types'
+import { Badge } from '@/components/ui/badge'
+import { Challenge, Set } from '@/types'
 import { QUICK_ADD_PRESETS } from '@/lib/constants'
-import { Plus, Minus, Check } from 'lucide-react'
+import { Plus, Minus, Check, X, Dumbbell } from 'lucide-react'
 import canvasConfetti from 'canvas-confetti'
 
 interface AddEntrySheetProps {
@@ -28,6 +29,8 @@ export function AddEntrySheet({
   const [note, setNote] = useState<string>('')
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0])
   const [showNote, setShowNote] = useState(false)
+  const [trackSets, setTrackSets] = useState(false)
+  const [sets, setSets] = useState<Set[]>([])
 
   const handleOpen = (isOpen: boolean) => {
     if (!isOpen) {
@@ -35,6 +38,8 @@ export function AddEntrySheet({
       setNote('')
       setDate(new Date().toISOString().split('T')[0])
       setShowNote(false)
+      setTrackSets(false)
+      setSets([])
     } else {
       if (challenges.length === 1) {
         setSelectedChallengeId(challenges[0].id)
@@ -44,9 +49,15 @@ export function AddEntrySheet({
   }
 
   const handleSubmit = () => {
-    if (!selectedChallengeId || count <= 0) return
+    if (!selectedChallengeId) return
+    if (trackSets && sets.length === 0) return
+    if (!trackSets && count <= 0) return
 
-    onAddEntry(selectedChallengeId, count, note, date)
+    const finalCount = trackSets 
+      ? sets.reduce((sum, set) => sum + set.reps, 0)
+      : count
+
+    onAddEntry(selectedChallengeId, finalCount, note, date, trackSets ? sets : undefined)
 
     canvasConfetti({
       particleCount: 80,
@@ -65,15 +76,33 @@ export function AddEntrySheet({
     setNote('')
     setDate(new Date().toISOString().split('T')[0])
     setShowNote(false)
+    setTrackSets(false)
+    setSets([])
     onOpenChange(false)
   }
+
+  const addSet = () => {
+    setSets([...sets, { reps: 0 }])
+  }
+
+  const removeSet = (index: number) => {
+    setSets(sets.filter((_, i) => i !== index))
+  }
+
+  const updateSetReps = (index: number, reps: number) => {
+    const newSets = [...sets]
+    newSets[index] = { reps: Math.max(0, reps) }
+    setSets(newSets)
+  }
+
+  const totalReps = sets.reduce((sum, set) => sum + set.reps, 0)
 
   const selectedChallenge = challenges.find((c) => c.id === selectedChallengeId)
 
   return (
     <Sheet open={open} onOpenChange={handleOpen}>
       <SheetContent side="bottom" className="h-[90vh] sm:h-auto sm:max-w-md sm:mx-auto p-0 flex flex-col">
-        <SheetHeader className="px-6 pt-6 pb-4 shrink-0">
+        <SheetHeader className="px-6 pt-6 pb-4 shrink-0 border-b">
           <SheetTitle className="text-2xl">Add Entry</SheetTitle>
           {challenges.length > 1 && (
             <p className="text-sm text-muted-foreground">Select a challenge to log progress</p>
@@ -81,7 +110,7 @@ export function AddEntrySheet({
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-6 pb-6">
-          <div className="space-y-6">
+          <div className="space-y-6 pt-6">
             {challenges.length > 1 && (
               <div>
                 <Label className="text-sm mb-2 block">Challenge</Label>
@@ -148,49 +177,144 @@ export function AddEntrySheet({
                     />
                   </div>
 
-                  <div>
-                    <Label className="text-sm mb-2 block">Count</Label>
-                    <div className="flex items-center gap-3 mb-3">
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setCount(Math.max(0, count - 1))}
-                        className="w-12 h-12 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center transition-colors"
-                      >
-                        <Minus className="w-6 h-6" />
-                      </motion.button>
-
-                      <Input
-                        type="number"
-                        value={count || ''}
-                        onChange={(e) => setCount(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="text-center text-5xl font-bold geist-mono h-20 flex-1"
-                        style={{ color: selectedChallenge?.color }}
-                        placeholder="0"
-                        min="0"
-                      />
-
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setCount(count + 1)}
-                        className="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center transition-colors"
-                      >
-                        <Plus className="w-6 h-6 text-primary-foreground" />
-                      </motion.button>
-                    </div>
-
-                    <div className="grid grid-cols-6 gap-2">
-                      {QUICK_ADD_PRESETS.map((preset) => (
-                        <motion.button
-                          key={preset}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setCount(count + preset)}
-                          className="px-3 py-2 rounded-md bg-secondary hover:bg-primary/20 text-sm font-medium transition-colors border border-border hover:border-primary/50"
-                        >
-                          +{preset}
-                        </motion.button>
-                      ))}
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant={!trackSets ? 'default' : 'outline'}
+                      onClick={() => {
+                        setTrackSets(false)
+                        setSets([])
+                      }}
+                      className="flex-1"
+                    >
+                      Simple Count
+                    </Button>
+                    <Button
+                      variant={trackSets ? 'default' : 'outline'}
+                      onClick={() => {
+                        setTrackSets(true)
+                        if (sets.length === 0) setSets([{ reps: 0 }])
+                      }}
+                      className="flex-1"
+                    >
+                      <Dumbbell className="w-4 h-4 mr-2" />
+                      Sets & Reps
+                    </Button>
                   </div>
+
+                  {!trackSets ? (
+                    <div>
+                      <Label className="text-sm mb-2 block">Count</Label>
+                      <div className="flex items-center gap-3 mb-3">
+                        <motion.button
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => setCount(Math.max(0, count - 1))}
+                          className="w-12 h-12 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center transition-colors"
+                        >
+                          <Minus className="w-6 h-6" />
+                        </motion.button>
+
+                        <Input
+                          type="number"
+                          value={count || ''}
+                          onChange={(e) => setCount(Math.max(0, parseInt(e.target.value) || 0))}
+                          className="text-center text-5xl font-bold geist-mono h-20 flex-1"
+                          style={{ color: selectedChallenge?.color }}
+                          placeholder="0"
+                          min="0"
+                        />
+
+                        <motion.button
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => setCount(count + 1)}
+                          className="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center transition-colors"
+                        >
+                          <Plus className="w-6 h-6 text-primary-foreground" />
+                        </motion.button>
+                      </div>
+
+                      <div className="grid grid-cols-6 gap-2">
+                        {QUICK_ADD_PRESETS.map((preset) => (
+                          <motion.button
+                            key={preset}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setCount(count + preset)}
+                            className="px-3 py-2 rounded-md bg-secondary hover:bg-primary/20 text-sm font-medium transition-colors border border-border hover:border-primary/50"
+                          >
+                            +{preset}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm">Sets & Reps</Label>
+                        {sets.length > 0 && (
+                          <Badge variant="secondary" className="geist-mono">
+                            Total: {totalReps} reps
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {sets.map((set, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="flex items-center gap-2 p-3 rounded-lg bg-secondary/50 border border-border"
+                          >
+                            <span className="text-sm font-semibold text-muted-foreground w-12">
+                              Set {index + 1}
+                            </span>
+                            <div className="flex items-center gap-2 flex-1">
+                              <motion.button
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => updateSetReps(index, set.reps - 1)}
+                                className="w-8 h-8 rounded-full bg-background hover:bg-muted flex items-center justify-center transition-colors"
+                              >
+                                <Minus className="w-4 h-4" />
+                              </motion.button>
+
+                              <Input
+                                type="number"
+                                value={set.reps || ''}
+                                onChange={(e) => updateSetReps(index, parseInt(e.target.value) || 0)}
+                                className="text-center text-lg font-bold geist-mono h-10 flex-1"
+                                placeholder="0"
+                                min="0"
+                              />
+
+                              <motion.button
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => updateSetReps(index, set.reps + 1)}
+                                className="w-8 h-8 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center transition-colors"
+                              >
+                                <Plus className="w-4 h-4 text-primary-foreground" />
+                              </motion.button>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeSet(index)}
+                              className="h-8 w-8"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </motion.div>
+                        ))}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        onClick={addSet}
+                        className="w-full"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Set
+                      </Button>
+                    </div>
+                  )}
 
                   <div>
                     {!showNote ? (
@@ -217,7 +341,7 @@ export function AddEntrySheet({
 
                   <Button
                     onClick={handleSubmit}
-                    disabled={count <= 0}
+                    disabled={trackSets ? sets.length === 0 || totalReps === 0 : count <= 0}
                     className="w-full h-14 text-lg font-semibold"
                     size="lg"
                   >

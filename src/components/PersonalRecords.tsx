@@ -1,7 +1,7 @@
 import { Challenge, Entry } from '@/types'
 import { Card } from './ui/card'
 import { motion } from 'framer-motion'
-import { Trophy, TrendingUp, Flame, Calendar, Award, Zap } from 'lucide-react'
+import { Trophy, TrendingUp, Flame, Calendar, Award, Zap, Target } from 'lucide-react'
 import { calculateStats } from '@/lib/stats'
 import { format } from 'date-fns'
 
@@ -31,6 +31,7 @@ export function PersonalRecords({ challenges, entries }: PersonalRecordsProps) {
   let mostConsistentDays = { days: 0, challengeName: '' }
   let biggestSingleEntry = { count: 0, date: '', challengeName: '' }
   let fastestToMilestone = { days: 0, challengeName: '', milestone: 0 }
+  let maxRepsPerSet = { reps: 0, date: '', challengeName: '' }
 
   const dayMap = new Map<string, number>()
   relevantEntries.forEach((entry) => {
@@ -46,6 +47,19 @@ export function PersonalRecords({ challenges, entries }: PersonalRecordsProps) {
         date: entry.date,
         challengeName: challenge?.name || ''
       }
+    }
+
+    if (entry.sets && entry.sets.length > 0) {
+      entry.sets.forEach(set => {
+        if (set.reps > maxRepsPerSet.reps) {
+          const challenge = challenges.find(c => c.id === entry.challengeId)
+          maxRepsPerSet = {
+            reps: set.reps,
+            date: entry.date,
+            challengeName: challenge?.name || ''
+          }
+        }
+      })
     }
   })
 
@@ -152,7 +166,7 @@ export function PersonalRecords({ challenges, entries }: PersonalRecordsProps) {
 
   if (biggestSingleEntry.count > 0) {
     records.push({
-      icon: Zap,
+      icon: Target,
       label: 'Biggest Single Entry',
       value: biggestSingleEntry.count.toLocaleString(),
       subtext: `${biggestSingleEntry.challengeName} • ${format(new Date(biggestSingleEntry.date), 'MMM d')}`,
@@ -167,6 +181,16 @@ export function PersonalRecords({ challenges, entries }: PersonalRecordsProps) {
       value: `${fastestToMilestone.days} ${fastestToMilestone.days === 1 ? 'day' : 'days'}`,
       subtext: `${fastestToMilestone.milestone.toLocaleString()} ${fastestToMilestone.challengeName}`,
       color: 'oklch(0.6 0.22 40)'
+    })
+  }
+
+  if (maxRepsPerSet.reps > 0) {
+    records.push({
+      icon: Zap,
+      label: 'Max Reps in Single Set',
+      value: maxRepsPerSet.reps.toLocaleString(),
+      subtext: `${maxRepsPerSet.challengeName} • ${format(new Date(maxRepsPerSet.date), 'MMM d, yyyy')}`,
+      color: 'oklch(0.58 0.26 30)'
     })
   }
 

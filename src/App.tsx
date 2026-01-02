@@ -61,6 +61,31 @@ function App() {
     })
   }
 
+  const handleUpdateEntry = (
+    entryId: string,
+    count: number,
+    note: string,
+    date: string
+  ) => {
+    setEntries((current) =>
+      (current || []).map((entry) =>
+        entry.id === entryId
+          ? { ...entry, count, note: note || undefined, date }
+          : entry
+      )
+    )
+    toast.success('Entry updated! ✏️', {
+      description: 'Your changes have been saved',
+    })
+  }
+
+  const handleDeleteEntry = (entryId: string) => {
+    setEntries((current) => (current || []).filter((entry) => entry.id !== entryId))
+    toast.success('Entry deleted', {
+      description: 'The entry has been removed',
+    })
+  }
+
   const selectedChallenge = (challenges || []).find((c) => c.id === selectedChallengeId)
 
   if (selectedChallenge) {
@@ -70,6 +95,8 @@ function App() {
           challenge={selectedChallenge}
           entries={entries || []}
           onBack={() => setSelectedChallengeId(null)}
+          onUpdateEntry={handleUpdateEntry}
+          onDeleteEntry={handleDeleteEntry}
         />
         <Toaster />
       </>

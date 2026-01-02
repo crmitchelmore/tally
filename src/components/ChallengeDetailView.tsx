@@ -1,19 +1,29 @@
-import { Challenge, Entry } from '@/types'
+import { useState } from 'react'
+import { Challenge, Entry, HeatmapDay } from '@/types'
 import { calculateStats, generateHeatmapData, getDaysInYear } from '@/lib/stats'
 import { HeatmapCalendar } from './HeatmapCalendar'
+import { EditEntryDialog } from './EditEntryDialog'
+import { DayEntriesDialog } from './DayEntriesDialog'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 import { Badge } from './ui/badge'
-import { ArrowLeft, Trophy, Flame, TrendingUp, Calendar } from 'lucide-react'
+import { ArrowLeft, Trophy, Flame, TrendingUp, Calendar, Pencil } from 'lucide-react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface ChallengeDetailViewProps {
   challenge: Challenge
   entries: Entry[]
   onBack: () => void
+  onUpdateEntry: (entryId: string, count: number, note: string, date: string) => void
+  onDeleteEntry: (entryId: string) => void
 }
 
-export function ChallengeDetailView({ challenge, entries, onBack }: ChallengeDetailViewProps) {
+export function ChallengeDetailView({ challenge, entries, onBack, onUpdateEntry, onDeleteEntry }: ChallengeDetailViewProps) {
+  const [editingEntry, setEditingEntry] = useState<Entry | null>(null)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [dayEntriesDialogOpen, setDayEntriesDialogOpen] = useState(false)
+  
   const stats = calculateStats(challenge, entries)
   const heatmapData = generateHeatmapData(challenge, entries)
 
@@ -70,6 +80,22 @@ export function ChallengeDetailView({ challenge, entries, onBack }: ChallengeDet
   }
 
   const recentEntries = [...challengeEntries].reverse().slice(0, 10)
+
+  const handleEditClick = (entry: Entry) => {
+    setEditingEntry(entry)
+    setEditDialogOpen(true)
+  }
+
+  const handleDayClick = (day: HeatmapDay) => {
+    if (day.count > 0) {
+      setSelectedDate(day.date)
+      setDayEntriesDialogOpen(true)
+    }
+  }
+
+  const dayEntries = selectedDate
+    ? entries.filter((e) => e.challengeId === challenge.id && e.date === selectedDate)
+    : []
 
   return (
     <div className="min-h-screen bg-background pb-20 tally-marks-bg">
@@ -136,7 +162,12 @@ export function ChallengeDetailView({ challenge, entries, onBack }: ChallengeDet
 
         <Card className="p-6 border-2 border-border">
           <h2 className="text-lg font-semibold mb-4 uppercase tracking-wider text-sm text-muted-foreground">Yearly Activity</h2>
-          <HeatmapCalendar data={heatmapData} year={challenge.year} size="large" />
+          <HeatmapCalendar
+            data={heatmapData}
+            year={challenge.year}
+            size="large"
+            onDayClick={handleDayClick}
+          />
         </Card>
 
         <Card className="p-6 border-2 border-border">
@@ -200,9 +231,9 @@ export function ChallengeDetailView({ challenge, entries, onBack }: ChallengeDet
               {recentEntries.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border border-border/50"
+                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border border-border/50 group hover:bg-secondary/70 transition-colors"
                 >
-                  <div>
+                  <div className="flex-1">
                     <div className="font-medium">
                       {new Date(entry.date).toLocaleDateString('en-US', {
                         weekday: 'short',
@@ -214,15 +245,41 @@ export function ChallengeDetailView({ challenge, entries, onBack }: ChallengeDet
                       <div className="text-sm text-muted-foreground">{entry.note}</div>
                     )}
                   </div>
-                  <Badge variant="secondary" className="text-base font-bold geist-mono">
-                    {entry.count}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-base font-bold geist-mono">
+                      {entry.count}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => handleEditClick(entry)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           </Card>
         )}
       </div>
+
+      <EditEntryDialog
+        entry={editingEntry}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onUpdateEntry={onUpdateEntry}
+        onDeleteEntry={onDeleteEntry}
+      />
+
+      <DayEntriesDialog
+        date={selectedDate || ''}
+        entries={dayEntries}
+        open={dayEntriesDialogOpen}
+        onOpenChange={setDayEntriesDialogOpen}
+        onEditEntry={handleEditClick}
+      />
     </div>
   )
 }

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Challenge, Set } from '@/types'
 import { QUICK_ADD_PRESETS } from '@/lib/constants'
 import { Plus, Minus, X, Dumbbell } from 'lucide-react'
-import confetti from 'canvas-confetti'
+import canvasConfetti from 'canvas-confetti'
 import { Badge } from './ui/badge'
 
 interface AddEntryDetailSheetProps {
@@ -53,7 +53,7 @@ export function AddEntryDetailSheet({
 
     onAddEntry(challenge.id, finalCount, note, date, trackSets ? sets : undefined)
 
-    confetti({
+    canvasConfetti({
       particleCount: 80,
       spread: 60,
       origin: { y: 0.6 },

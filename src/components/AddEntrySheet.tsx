@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Challenge, Entry } from '@/types'
+import { Challenge, Entry, Set } from '@/types'
 import { QUICK_ADD_PRESETS } from '@/lib/constants'
 import { Plus, Minus, Check } from 'lucide-react'
 import confetti from 'canvas-confetti'
@@ -14,7 +14,7 @@ interface AddEntrySheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   challenges: Challenge[]
-  onAddEntry: (challengeId: string, count: number, note: string, date: string) => void
+  onAddEntry: (challengeId: string, count: number, note: string, date: string, sets?: Set[]) => void
 }
 
 export function AddEntrySheet({

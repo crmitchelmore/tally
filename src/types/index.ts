@@ -9,12 +9,17 @@ export interface Challenge {
   archived: boolean
 }
 
+export interface Set {
+  reps: number
+}
+
 export interface Entry {
   id: string
   challengeId: string
   date: string
   count: number
   note?: string
+  sets?: Set[]
 }
 
 export interface ChallengeStats {

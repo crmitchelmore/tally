@@ -1,28 +1,32 @@
 import { useState } from 'react'
-import { Challenge, Entry, HeatmapDay } from '@/types'
+import { Challenge, Entry, HeatmapDay, Set } from '@/types'
 import { calculateStats, generateHeatmapData, getDaysInYear } from '@/lib/stats'
 import { HeatmapCalendar } from './HeatmapCalendar'
 import { EditEntryDialog } from './EditEntryDialog'
 import { DayEntriesDialog } from './DayEntriesDialog'
+import { AddEntryDetailSheet } from './AddEntryDetailSheet'
+import { SetsRepsAnalysis } from './SetsRepsAnalysis'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 import { Badge } from './ui/badge'
-import { ArrowLeft, Trophy, Flame, TrendingUp, Calendar, Pencil } from 'lucide-react'
+import { ArrowLeft, Trophy, Flame, TrendingUp, Calendar, Pencil, Plus } from 'lucide-react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface ChallengeDetailViewProps {
   challenge: Challenge
   entries: Entry[]
   onBack: () => void
+  onAddEntry: (challengeId: string, count: number, note: string, date: string, sets?: Set[]) => void
   onUpdateEntry: (entryId: string, count: number, note: string, date: string) => void
   onDeleteEntry: (entryId: string) => void
 }
 
-export function ChallengeDetailView({ challenge, entries, onBack, onUpdateEntry, onDeleteEntry }: ChallengeDetailViewProps) {
+export function ChallengeDetailView({ challenge, entries, onBack, onAddEntry, onUpdateEntry, onDeleteEntry }: ChallengeDetailViewProps) {
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [dayEntriesDialogOpen, setDayEntriesDialogOpen] = useState(false)
+  const [addEntryOpen, setAddEntryOpen] = useState(false)
   
   const stats = calculateStats(challenge, entries)
   const heatmapData = generateHeatmapData(challenge, entries)
@@ -104,12 +108,16 @@ export function ChallengeDetailView({ challenge, entries, onBack, onUpdateEntry,
           <Button variant="ghost" size="icon" onClick={onBack}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold">{challenge.name}</h1>
             <p className="text-sm text-muted-foreground">
               {stats.total.toLocaleString()} / {challenge.targetNumber.toLocaleString()}
             </p>
           </div>
+          <Button onClick={() => setAddEntryOpen(true)} size="lg" className="shadow-lg">
+            <Plus className="w-5 h-5 md:mr-2" />
+            <span className="hidden md:inline">Add Entry</span>
+          </Button>
         </div>
       </div>
 
@@ -224,6 +232,8 @@ export function ChallengeDetailView({ challenge, entries, onBack, onUpdateEntry,
           </ResponsiveContainer>
         </Card>
 
+        <SetsRepsAnalysis entries={challengeEntries} color={challenge.color} />
+
         {recentEntries.length > 0 && (
           <Card className="p-6 border-2 border-border">
             <h2 className="text-lg font-semibold mb-4 uppercase tracking-wider text-sm text-muted-foreground">Recent Entries</h2>
@@ -241,8 +251,13 @@ export function ChallengeDetailView({ challenge, entries, onBack, onUpdateEntry,
                         day: 'numeric',
                       })}
                     </div>
+                    {entry.sets && entry.sets.length > 0 && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {entry.sets.length} sets: {entry.sets.map(s => s.reps).join(', ')} reps
+                      </div>
+                    )}
                     {entry.note && (
-                      <div className="text-sm text-muted-foreground">{entry.note}</div>
+                      <div className="text-sm text-muted-foreground mt-1">{entry.note}</div>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -264,6 +279,13 @@ export function ChallengeDetailView({ challenge, entries, onBack, onUpdateEntry,
           </Card>
         )}
       </div>
+
+      <AddEntryDetailSheet
+        open={addEntryOpen}
+        onOpenChange={setAddEntryOpen}
+        challenge={challenge}
+        onAddEntry={onAddEntry}
+      />
 
       <EditEntryDialog
         entry={editingEntry}

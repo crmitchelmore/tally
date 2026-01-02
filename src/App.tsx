@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Challenge, Entry } from '@/types'
+import { Challenge, Entry, Set } from '@/types'
 import { ChallengeCard } from '@/components/ChallengeCard'
 import { AddEntrySheet } from '@/components/AddEntrySheet'
 import { CreateChallengeDialog } from '@/components/CreateChallengeDialog'
@@ -43,7 +43,8 @@ function App() {
     challengeId: string,
     count: number,
     note: string,
-    date: string
+    date: string,
+    sets?: Set[]
   ) => {
     const newEntry: Entry = {
       id: `entry-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -51,14 +52,21 @@ function App() {
       date,
       count,
       note: note || undefined,
+      sets: sets || undefined,
     }
 
     setEntries((current) => [...(current || []), newEntry])
     
     const challenge = (challenges || []).find((c) => c.id === challengeId)
-    toast.success('Entry logged! 🔥', {
-      description: `Added ${count} to ${challenge?.name}`,
-    })
+    if (sets && sets.length > 0) {
+      toast.success('Entry logged! 🔥', {
+        description: `Added ${sets.length} sets (${count} total reps) to ${challenge?.name}`,
+      })
+    } else {
+      toast.success('Entry logged! 🔥', {
+        description: `Added ${count} to ${challenge?.name}`,
+      })
+    }
   }
 
   const handleUpdateEntry = (
@@ -95,6 +103,7 @@ function App() {
           challenge={selectedChallenge}
           entries={entries || []}
           onBack={() => setSelectedChallengeId(null)}
+          onAddEntry={handleAddEntry}
           onUpdateEntry={handleUpdateEntry}
           onDeleteEntry={handleDeleteEntry}
         />

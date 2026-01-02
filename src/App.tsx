@@ -6,6 +6,7 @@ import { AddEntrySheet } from '@/components/AddEntrySheet'
 import { CreateChallengeDialog } from '@/components/CreateChallengeDialog'
 import { ChallengeDetailView } from '@/components/ChallengeDetailView'
 import { OverallStats } from '@/components/OverallStats'
+import { PersonalRecords } from '@/components/PersonalRecords'
 import { Button } from '@/components/ui/button'
 import { Plus, Target } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -181,6 +182,10 @@ function App() {
 
         {activeChallenges.length > 0 && (
           <OverallStats challenges={activeChallenges} entries={entries || []} />
+        )}
+
+        {activeChallenges.length > 0 && (
+          <PersonalRecords challenges={activeChallenges} entries={entries || []} />
         )}
 
         {activeChallenges.length === 0 ? (

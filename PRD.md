@@ -54,6 +54,20 @@ Tally - A tactile, satisfying progress tracker inspired by traditional tally mar
 - Progression: Renders 365 day grid → Each square colored by intensity (5 levels from light to dark vibrant green) → Hover/tap shows tooltip: "Wed 18 Jun – 87 reps" + note if exists → Click day opens quick view modal with day's entries
 - Success criteria: All 365 days render in under 100ms, color scale matches GitHub aesthetic, tooltips don't lag on mobile
 
+**Export/Import Data**
+- Functionality: Backup and restore all challenges and entries in JSON or CSV format
+- Purpose: Allow users to maintain data backups and migrate data between devices or recover from data loss
+- Trigger: Click "Backup" button in header
+- Progression: Click Backup → Dialog opens → Choose Export (JSON/CSV) or Import → For export: file downloads instantly with timestamp → For import: Warning displays → Select file → All data replaced → Success toast shows count of challenges and entries imported
+- Success criteria: JSON export creates valid parseable file, CSV export readable in Excel/Sheets, Import replaces all data correctly, proper error handling for invalid files
+
+**Weekly Summary**
+- Functionality: Comprehensive weekly progress report with stats, comparisons, and breakdowns
+- Purpose: Help users reflect on their week, see patterns, and stay motivated with progress insights
+- Trigger: Click "Weekly Summary" button in header
+- Progression: Click button → Dialog opens showing current week → Displays: total reps, daily average, entries logged, active challenges, best day, challenge breakdown, daily chart, comparison to previous week → Navigate between weeks with prev/next arrows → View historical weeks
+- Success criteria: Calculations accurate for any week, comparison to previous week shows percentage change, daily breakdown shows visual bars, challenge breakdown sorted by count, navigating weeks updates all stats
+
 ## Edge Case Handling
 
 **Empty States** - First-time users see hero section with "Create your first challenge" CTA instead of empty grid

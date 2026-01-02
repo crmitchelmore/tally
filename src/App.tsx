@@ -7,8 +7,11 @@ import { CreateChallengeDialog } from '@/components/CreateChallengeDialog'
 import { ChallengeDetailView } from '@/components/ChallengeDetailView'
 import { OverallStats } from '@/components/OverallStats'
 import { PersonalRecords } from '@/components/PersonalRecords'
+import { ExportImportDialog } from '@/components/ExportImportDialog'
+import { WeeklySummaryDialog } from '@/components/WeeklySummaryDialog'
+import { UserProfile } from '@/components/UserProfile'
 import { Button } from '@/components/ui/button'
-import { Plus, Target } from 'lucide-react'
+import { Plus, Target, Calendar, Database } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -18,6 +21,8 @@ function App() {
   const [entries, setEntries] = useKV<Entry[]>('entries', [])
   const [addEntryOpen, setAddEntryOpen] = useState(false)
   const [createChallengeOpen, setCreateChallengeOpen] = useState(false)
+  const [exportImportOpen, setExportImportOpen] = useState(false)
+  const [weeklySummaryOpen, setWeeklySummaryOpen] = useState(false)
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null)
 
   const currentYear = new Date().getFullYear()
@@ -95,6 +100,11 @@ function App() {
     })
   }
 
+  const handleImportData = (importedChallenges: Challenge[], importedEntries: Entry[]) => {
+    setChallenges(importedChallenges)
+    setEntries(importedEntries)
+  }
+
   const selectedChallenge = (challenges || []).find((c) => c.id === selectedChallengeId)
 
   if (selectedChallenge) {
@@ -122,7 +132,7 @@ function App() {
     <div className="min-h-screen bg-background tally-marks-bg">
       <div className="max-w-7xl mx-auto p-4 pb-8">
         <header className="mb-8 mt-4">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex-1">
               <h1 className="text-5xl font-bold tracking-tight mb-2 flex items-center gap-3">
                 <span className="text-foreground">Tally</span>
@@ -156,26 +166,49 @@ function App() {
                 </div>
               )}
             </div>
-            <div className="flex gap-2">
-              {activeChallenges.length > 0 && (
+            <div className="flex items-start gap-3">
+              <UserProfile />
+              <div className="flex gap-2 flex-wrap justify-end">
+                {activeChallenges.length > 0 && (
+                  <>
+                    <Button
+                      onClick={() => setWeeklySummaryOpen(true)}
+                      size="lg"
+                      variant="outline"
+                      className="shadow-lg"
+                    >
+                      <Calendar className="w-5 h-5 md:mr-2" />
+                      <span className="hidden md:inline">Weekly Summary</span>
+                    </Button>
+                    <Button
+                      onClick={() => setExportImportOpen(true)}
+                      size="lg"
+                      variant="outline"
+                      className="shadow-lg"
+                    >
+                      <Database className="w-5 h-5 md:mr-2" />
+                      <span className="hidden md:inline">Backup</span>
+                    </Button>
+                    <Button
+                      onClick={() => setAddEntryOpen(true)}
+                      size="lg"
+                      className="shadow-lg"
+                    >
+                      <Plus className="w-5 h-5 md:mr-2" />
+                      <span className="hidden md:inline">Add Entry</span>
+                    </Button>
+                  </>
+                )}
                 <Button
-                  onClick={() => setAddEntryOpen(true)}
+                  onClick={() => setCreateChallengeOpen(true)}
                   size="lg"
+                  variant="secondary"
                   className="shadow-lg"
                 >
-                  <Plus className="w-5 h-5 md:mr-2" />
-                  <span className="hidden md:inline">Add Entry</span>
+                  <Target className="w-5 h-5 md:mr-2" />
+                  <span className="hidden md:inline">New Challenge</span>
                 </Button>
-              )}
-              <Button
-                onClick={() => setCreateChallengeOpen(true)}
-                size="lg"
-                variant="secondary"
-                className="shadow-lg"
-              >
-                <Target className="w-5 h-5 md:mr-2" />
-                <span className="hidden md:inline">New Challenge</span>
-              </Button>
+              </div>
             </div>
           </div>
         </header>
@@ -237,6 +270,21 @@ function App() {
         open={createChallengeOpen}
         onOpenChange={setCreateChallengeOpen}
         onCreateChallenge={handleCreateChallenge}
+      />
+
+      <ExportImportDialog
+        open={exportImportOpen}
+        onOpenChange={setExportImportOpen}
+        challenges={challenges || []}
+        entries={entries || []}
+        onImport={handleImportData}
+      />
+
+      <WeeklySummaryDialog
+        open={weeklySummaryOpen}
+        onOpenChange={setWeeklySummaryOpen}
+        challenges={challenges || []}
+        entries={entries || []}
       />
 
       <Toaster />

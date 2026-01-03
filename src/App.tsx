@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Challenge, Entry, Set } from '@/types'
+import { Challenge, Entry, Set, FeelingType } from '@/types'
 import { ChallengeCard } from '@/components/ChallengeCard'
 import { AddEntrySheet } from '@/components/AddEntrySheet'
 import { CreateChallengeDialog } from '@/components/CreateChallengeDialog'
@@ -50,7 +50,8 @@ function App() {
     count: number,
     note: string,
     date: string,
-    sets?: Set[]
+    sets?: Set[],
+    feeling?: FeelingType
   ) => {
     const newEntry: Entry = {
       id: `entry-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -59,6 +60,7 @@ function App() {
       count,
       note: note || undefined,
       sets: sets || undefined,
+      feeling: feeling || undefined,
     }
 
     setEntries((current) => [...(current || []), newEntry])
@@ -79,12 +81,13 @@ function App() {
     entryId: string,
     count: number,
     note: string,
-    date: string
+    date: string,
+    feeling?: FeelingType
   ) => {
     setEntries((current) =>
       (current || []).map((entry) =>
         entry.id === entryId
-          ? { ...entry, count, note: note || undefined, date }
+          ? { ...entry, count, note: note || undefined, date, feeling: feeling || undefined }
           : entry
       )
     )

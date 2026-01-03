@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Entry } from '@/types'
+import { Entry, FeelingType } from '@/types'
+import { FEELING_OPTIONS } from '@/lib/constants'
 import {
   Dialog,
   DialogContent,
@@ -23,12 +24,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Trash2 } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface EditEntryDialogProps {
   entry: Entry | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  onUpdateEntry: (entryId: string, count: number, note: string, date: string) => void
+  onUpdateEntry: (entryId: string, count: number, note: string, date: string, feeling?: FeelingType) => void
   onDeleteEntry: (entryId: string) => void
 }
 
@@ -42,6 +44,7 @@ export function EditEntryDialog({
   const [count, setCount] = useState(entry?.count.toString() || '1')
   const [note, setNote] = useState(entry?.note || '')
   const [date, setDate] = useState(entry?.date || '')
+  const [feeling, setFeeling] = useState<FeelingType | undefined>(entry?.feeling)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -51,7 +54,7 @@ export function EditEntryDialog({
     const countNum = parseInt(count)
     if (isNaN(countNum) || countNum < 1) return
 
-    onUpdateEntry(entry.id, countNum, note, date)
+    onUpdateEntry(entry.id, countNum, note, date, feeling)
     onOpenChange(false)
   }
 
@@ -67,6 +70,7 @@ export function EditEntryDialog({
       setCount(entry.count.toString())
       setNote(entry.note || '')
       setDate(entry.date)
+      setFeeling(entry.feeling)
     }
     onOpenChange(newOpen)
   }
@@ -107,6 +111,28 @@ export function EditEntryDialog({
                   className="text-2xl font-bold geist-mono"
                   required
                 />
+              </div>
+              <div className="grid gap-2">
+                <Label>How did it feel? (optional)</Label>
+                <div className="grid grid-cols-5 gap-2">
+                  {FEELING_OPTIONS.map((option) => (
+                    <motion.button
+                      key={option.type}
+                      type="button"
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setFeeling(feeling === option.type ? undefined : option.type)}
+                      className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                        feeling === option.type
+                          ? 'border-primary bg-primary/10 shadow-sm'
+                          : 'border-border bg-card hover:border-primary/30'
+                      }`}
+                      title={option.description}
+                    >
+                      <span className="text-xl">{option.emoji}</span>
+                      <span className="text-[10px] font-medium text-center leading-tight">{option.label.split(' ')[0]}</span>
+                    </motion.button>
+                  ))}
+                </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-note">Note (optional)</Label>

@@ -13,6 +13,8 @@ export interface Set {
   reps: number
 }
 
+export type FeelingType = 'very-easy' | 'easy' | 'moderate' | 'hard' | 'very-hard'
+
 export interface Entry {
   id: string
   challengeId: string
@@ -20,6 +22,7 @@ export interface Entry {
   count: number
   note?: string
   sets?: Set[]
+  feeling?: FeelingType
 }
 
 export interface ChallengeStats {

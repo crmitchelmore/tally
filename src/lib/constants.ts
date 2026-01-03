@@ -37,3 +37,11 @@ export const CHALLENGE_COLORS = [
 ]
 
 export const QUICK_ADD_PRESETS = [1, 5, 10, 25, 50, 100]
+
+export const FEELING_OPTIONS = [
+  { type: 'very-easy' as const, emoji: '😊', label: 'Very Easy', description: 'Felt effortless' },
+  { type: 'easy' as const, emoji: '🙂', label: 'Easy', description: 'Comfortable pace' },
+  { type: 'moderate' as const, emoji: '😐', label: 'Moderate', description: 'Solid effort' },
+  { type: 'hard' as const, emoji: '😤', label: 'Hard', description: 'Challenging' },
+  { type: 'very-hard' as const, emoji: '🥵', label: 'Very Hard', description: 'Maximal effort' },
+] as const

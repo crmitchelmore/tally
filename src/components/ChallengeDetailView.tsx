@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { Challenge, Entry, HeatmapDay, Set } from '@/types'
+import { Challenge, Entry, HeatmapDay, Set, FeelingType } from '@/types'
 import { calculateStats, generateHeatmapData, getDaysInYear } from '@/lib/stats'
+import { FEELING_OPTIONS } from '@/lib/constants'
 import { HeatmapCalendar } from './HeatmapCalendar'
 import { EditEntryDialog } from './EditEntryDialog'
 import { DayEntriesDialog } from './DayEntriesDialog'
 import { AddEntryDetailSheet } from './AddEntryDetailSheet'
 import { SetsRepsAnalysis } from './SetsRepsAnalysis'
+import { SentimentAnalysis } from './SentimentAnalysis'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 import { Badge } from './ui/badge'
@@ -16,8 +18,8 @@ interface ChallengeDetailViewProps {
   challenge: Challenge
   entries: Entry[]
   onBack: () => void
-  onAddEntry: (challengeId: string, count: number, note: string, date: string, sets?: Set[]) => void
-  onUpdateEntry: (entryId: string, count: number, note: string, date: string) => void
+  onAddEntry: (challengeId: string, count: number, note: string, date: string, sets?: Set[], feeling?: FeelingType) => void
+  onUpdateEntry: (entryId: string, count: number, note: string, date: string, feeling?: FeelingType) => void
   onDeleteEntry: (entryId: string) => void
 }
 
@@ -234,47 +236,60 @@ export function ChallengeDetailView({ challenge, entries, onBack, onAddEntry, on
 
         <SetsRepsAnalysis entries={challengeEntries} color={challenge.color} />
 
+        <SentimentAnalysis challenge={challenge} entries={entries} />
+
         {recentEntries.length > 0 && (
           <Card className="p-6 border-2 border-border">
             <h2 className="text-lg font-semibold mb-4 uppercase tracking-wider text-sm text-muted-foreground">Recent Entries</h2>
             <div className="space-y-3">
-              {recentEntries.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border border-border/50 group hover:bg-secondary/70 transition-colors"
-                >
-                  <div className="flex-1">
-                    <div className="font-medium">
-                      {new Date(entry.date).toLocaleDateString('en-US', {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </div>
-                    {entry.sets && entry.sets.length > 0 && (
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {entry.sets.length} sets: {entry.sets.map(s => s.reps).join(', ')} reps
+              {recentEntries.map((entry) => {
+                const feelingOption = entry.feeling ? FEELING_OPTIONS.find((o) => o.type === entry.feeling) : null
+                
+                return (
+                  <div
+                    key={entry.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border border-border/50 group hover:bg-secondary/70 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium">
+                          {new Date(entry.date).toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </div>
+                        {feelingOption && (
+                          <span className="text-lg" title={feelingOption.description}>
+                            {feelingOption.emoji}
+                          </span>
+                        )}
                       </div>
-                    )}
-                    {entry.note && (
-                      <div className="text-sm text-muted-foreground mt-1">{entry.note}</div>
-                    )}
+                      {entry.sets && entry.sets.length > 0 && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {entry.sets.length} sets: {entry.sets.map(s => s.reps).join(', ')} reps
+                        </div>
+                      )}
+                      {entry.note && (
+                        <div className="text-sm text-muted-foreground mt-1">{entry.note}</div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-base font-bold geist-mono">
+                        {entry.count}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleEditClick(entry)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-base font-bold geist-mono">
-                      {entry.count}
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => handleEditClick(entry)}
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </Card>
         )}

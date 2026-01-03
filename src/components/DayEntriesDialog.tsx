@@ -1,4 +1,5 @@
 import { Entry } from '@/types'
+import { FEELING_OPTIONS } from '@/lib/constants'
 import {
   Dialog,
   DialogContent,
@@ -50,32 +51,43 @@ export function DayEntriesDialog({
               No entries for this day
             </div>
           ) : (
-            entries.map((entry) => (
-              <div
-                key={entry.id}
-                className="flex items-start justify-between p-4 rounded-lg bg-secondary/50 border border-border/50 hover:bg-secondary/70 transition-colors group"
-              >
-                <div className="flex-1">
-                  <div className="font-semibold text-lg geist-mono mb-1">
-                    {entry.count} reps
-                  </div>
-                  {entry.note && (
-                    <div className="text-sm text-muted-foreground">{entry.note}</div>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="opacity-60 group-hover:opacity-100 transition-opacity"
-                  onClick={() => {
-                    onEditEntry(entry)
-                    onOpenChange(false)
-                  }}
+            entries.map((entry) => {
+              const feelingOption = entry.feeling ? FEELING_OPTIONS.find((o) => o.type === entry.feeling) : null
+              
+              return (
+                <div
+                  key={entry.id}
+                  className="flex items-start justify-between p-4 rounded-lg bg-secondary/50 border border-border/50 hover:bg-secondary/70 transition-colors group"
                 >
-                  <Pencil className="w-4 h-4" />
-                </Button>
-              </div>
-            ))
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="font-semibold text-lg geist-mono">
+                        {entry.count} reps
+                      </div>
+                      {feelingOption && (
+                        <span className="text-lg" title={feelingOption.description}>
+                          {feelingOption.emoji}
+                        </span>
+                      )}
+                    </div>
+                    {entry.note && (
+                      <div className="text-sm text-muted-foreground">{entry.note}</div>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="opacity-60 group-hover:opacity-100 transition-opacity"
+                    onClick={() => {
+                      onEditEntry(entry)
+                      onOpenChange(false)
+                    }}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                </div>
+              )
+            })
           )}
         </div>
       </DialogContent>

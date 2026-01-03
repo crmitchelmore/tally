@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Challenge, Set } from '@/types'
-import { QUICK_ADD_PRESETS } from '@/lib/constants'
+import { Challenge, Set, FeelingType } from '@/types'
+import { QUICK_ADD_PRESETS, FEELING_OPTIONS } from '@/lib/constants'
 import { Plus, Minus, Check, X, Dumbbell } from 'lucide-react'
 import canvasConfetti from 'canvas-confetti'
 
@@ -15,7 +15,7 @@ interface AddEntrySheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   challenges: Challenge[]
-  onAddEntry: (challengeId: string, count: number, note: string, date: string, sets?: Set[]) => void
+  onAddEntry: (challengeId: string, count: number, note: string, date: string, sets?: Set[], feeling?: FeelingType) => void
 }
 
 export function AddEntrySheet({
@@ -31,6 +31,7 @@ export function AddEntrySheet({
   const [showNote, setShowNote] = useState(false)
   const [trackSets, setTrackSets] = useState(false)
   const [sets, setSets] = useState<Set[]>([])
+  const [feeling, setFeeling] = useState<FeelingType | undefined>(undefined)
 
   const handleOpen = (isOpen: boolean) => {
     if (!isOpen) {
@@ -40,6 +41,7 @@ export function AddEntrySheet({
       setShowNote(false)
       setTrackSets(false)
       setSets([])
+      setFeeling(undefined)
     } else {
       if (challenges.length === 1) {
         setSelectedChallengeId(challenges[0].id)
@@ -57,7 +59,7 @@ export function AddEntrySheet({
       ? sets.reduce((sum, set) => sum + set.reps, 0)
       : count
 
-    onAddEntry(selectedChallengeId, finalCount, note, date, trackSets ? sets : undefined)
+    onAddEntry(selectedChallengeId, finalCount, note, date, trackSets ? sets : undefined, feeling)
 
     canvasConfetti({
       particleCount: 80,
@@ -78,6 +80,7 @@ export function AddEntrySheet({
     setShowNote(false)
     setTrackSets(false)
     setSets([])
+    setFeeling(undefined)
     onOpenChange(false)
   }
 
@@ -316,6 +319,29 @@ export function AddEntrySheet({
                       </Button>
                     </div>
                   )}
+
+                  <div>
+                    <Label className="text-sm mb-2 block">How did it feel? (optional)</Label>
+                    <div className="grid grid-cols-5 gap-2">
+                      {FEELING_OPTIONS.map((option) => (
+                        <motion.button
+                          key={option.type}
+                          type="button"
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setFeeling(feeling === option.type ? undefined : option.type)}
+                          className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                            feeling === option.type
+                              ? 'border-primary bg-primary/10 shadow-sm'
+                              : 'border-border bg-card hover:border-primary/30'
+                          }`}
+                          title={option.description}
+                        >
+                          <span className="text-2xl">{option.emoji}</span>
+                          <span className="text-xs font-medium text-center leading-tight">{option.label.split(' ')[0]}</span>
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
 
                   <div>
                     {!showNote ? (

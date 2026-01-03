@@ -18,8 +18,9 @@ import { toast } from 'sonner'
 
 function App() {
   const [userId, setUserId] = useState<string | null>(null)
-  const [challenges, setChallenges] = useKV<Challenge[]>('user-challenges', [])
-  const [entries, setEntries] = useKV<Entry[]>('user-entries', [])
+  const [isLoadingUser, setIsLoadingUser] = useState(true)
+  const [allChallenges, setAllChallenges] = useKV<Challenge[]>('user-challenges', [])
+  const [allEntries, setAllEntries] = useKV<Entry[]>('user-entries', [])
   const [addEntryOpen, setAddEntryOpen] = useState(false)
   const [createChallengeOpen, setCreateChallengeOpen] = useState(false)
   const [exportImportOpen, setExportImportOpen] = useState(false)
@@ -35,26 +36,39 @@ function App() {
         }
       } catch (error) {
         console.error('Failed to fetch user:', error)
+      } finally {
+        setIsLoadingUser(false)
       }
     }
     fetchUser()
   }, [])
 
+  const challenges = (allChallenges || []).filter(c => c.userId === userId)
+  const entries = (allEntries || []).filter(e => e.userId === userId)
+
   const currentYear = new Date().getFullYear()
-  const activeChallenges = (challenges || []).filter(
+  const activeChallenges = challenges.filter(
     (c) => !c.archived && c.year >= currentYear
   ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   const handleCreateChallenge = (
-    challengeData: Omit<Challenge, 'id' | 'createdAt'>
+    challengeData: Omit<Challenge, 'id' | 'createdAt' | 'userId'>
   ) => {
+    if (!userId) {
+      toast.error('Not authenticated', {
+        description: 'Please refresh the page to authenticate',
+      })
+      return
+    }
+
     const newChallenge: Challenge = {
       ...challengeData,
       id: `challenge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      userId,
       createdAt: new Date().toISOString(),
     }
 
-    setChallenges((current) => [...(current || []), newChallenge])
+    setAllChallenges((current) => [...(current || []), newChallenge])
     toast.success('Challenge created! 🎯', {
       description: `Ready to crush ${newChallenge.targetNumber.toLocaleString()} ${newChallenge.name}!`,
     })
@@ -68,8 +82,16 @@ function App() {
     sets?: Set[],
     feeling?: FeelingType
   ) => {
+    if (!userId) {
+      toast.error('Not authenticated', {
+        description: 'Please refresh the page to authenticate',
+      })
+      return
+    }
+
     const newEntry: Entry = {
       id: `entry-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      userId,
       challengeId,
       date,
       count,
@@ -78,9 +100,9 @@ function App() {
       feeling: feeling || undefined,
     }
 
-    setEntries((current) => [...(current || []), newEntry])
+    setAllEntries((current) => [...(current || []), newEntry])
     
-    const challenge = (challenges || []).find((c) => c.id === challengeId)
+    const challenge = challenges.find((c) => c.id === challengeId)
     if (sets && sets.length > 0) {
       toast.success('Entry logged! 🔥', {
         description: `Added ${sets.length} sets (${count} total reps) to ${challenge?.name}`,
@@ -99,9 +121,9 @@ function App() {
     date: string,
     feeling?: FeelingType
   ) => {
-    setEntries((current) =>
+    setAllEntries((current) =>
       (current || []).map((entry) =>
-        entry.id === entryId
+        entry.id === entryId && entry.userId === userId
           ? { ...entry, count, note: note || undefined, date, feeling: feeling || undefined }
           : entry
       )
@@ -112,33 +134,79 @@ function App() {
   }
 
   const handleDeleteEntry = (entryId: string) => {
-    setEntries((current) => (current || []).filter((entry) => entry.id !== entryId))
+    setAllEntries((current) => (current || []).filter((entry) => entry.id !== entryId || entry.userId !== userId))
     toast.success('Entry deleted', {
       description: 'The entry has been removed',
     })
   }
 
   const handleImportData = (importedChallenges: Challenge[], importedEntries: Entry[]) => {
-    setChallenges(importedChallenges)
-    setEntries(importedEntries)
+    if (!userId) {
+      toast.error('Not authenticated', {
+        description: 'Please refresh the page to authenticate',
+      })
+      return
+    }
+
+    const challengesWithUserId = importedChallenges.map(c => ({ ...c, userId }))
+    const entriesWithUserId = importedEntries.map(e => ({ ...e, userId }))
+
+    setAllChallenges((current) => {
+      const otherUsersChallenges = (current || []).filter(c => c.userId !== userId)
+      return [...otherUsersChallenges, ...challengesWithUserId]
+    })
+    
+    setAllEntries((current) => {
+      const otherUsersEntries = (current || []).filter(e => e.userId !== userId)
+      return [...otherUsersEntries, ...entriesWithUserId]
+    })
   }
 
   const handleClearAllData = () => {
-    setChallenges([])
-    setEntries([])
+    if (!userId) return
+
+    setAllChallenges((current) => (current || []).filter(c => c.userId !== userId))
+    setAllEntries((current) => (current || []).filter(e => e.userId !== userId))
     toast.success('All data cleared', {
       description: 'Your challenges and entries have been deleted',
     })
   }
 
-  const selectedChallenge = (challenges || []).find((c) => c.id === selectedChallengeId)
+  const selectedChallenge = challenges.find((c) => c.id === selectedChallengeId)
+
+  if (isLoadingUser) {
+    return (
+      <div className="min-h-screen bg-background tally-marks-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 mx-auto animate-pulse">
+            <Target className="w-8 h-8 text-primary" />
+          </div>
+          <p className="text-muted-foreground">Loading your data...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!userId) {
+    return (
+      <div className="min-h-screen bg-background tally-marks-bg flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4 mx-auto">
+            <Target className="w-8 h-8 text-destructive" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Authentication Required</h2>
+          <p className="text-muted-foreground">Please refresh the page to authenticate with GitHub.</p>
+        </div>
+      </div>
+    )
+  }
 
   if (selectedChallenge) {
     return (
       <>
         <ChallengeDetailView
           challenge={selectedChallenge}
-          entries={entries || []}
+          entries={entries}
           onBack={() => setSelectedChallengeId(null)}
           onAddEntry={handleAddEntry}
           onUpdateEntry={handleUpdateEntry}
@@ -150,7 +218,7 @@ function App() {
   }
 
   const totalChallenges = activeChallenges.length
-  const totalEntriesToday = (entries || []).filter(
+  const totalEntriesToday = entries.filter(
     (e) => e.date === new Date().toISOString().split('T')[0]
   ).length
 
@@ -301,8 +369,8 @@ function App() {
       <ExportImportDialog
         open={exportImportOpen}
         onOpenChange={setExportImportOpen}
-        challenges={challenges || []}
-        entries={entries || []}
+        challenges={challenges}
+        entries={entries}
         onImport={handleImportData}
         onClearAll={handleClearAllData}
         userId={userId}
@@ -311,8 +379,8 @@ function App() {
       <WeeklySummaryDialog
         open={weeklySummaryOpen}
         onOpenChange={setWeeklySummaryOpen}
-        challenges={challenges || []}
-        entries={entries || []}
+        challenges={challenges}
+        entries={entries}
       />
 
       <Toaster />

@@ -32,7 +32,7 @@ import {
 interface CreateChallengeDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onCreateChallenge: (challenge: Omit<Challenge, 'id' | 'createdAt'>) => void
+  onCreateChallenge: (challenge: Omit<Challenge, 'id' | 'createdAt' | 'userId'>) => void
 }
 
 const iconMap = {

@@ -12,6 +12,13 @@ Tally - A tactile, satisfying progress tracker inspired by traditional tally mar
 
 ## Essential Features
 
+**User Authentication & Data Isolation**
+- Functionality: Authenticate users via GitHub and ensure complete data isolation between users
+- Purpose: Protect user privacy by ensuring each user can only see, create, edit, import, export, and delete their own data
+- Trigger: Application loads
+- Progression: App loads → Fetches GitHub user authentication → Retrieves user ID → All data queries filter by user ID → User sees only their challenges and entries → All data operations automatically tag data with user ID
+- Success criteria: Users cannot see other users' data, all challenges and entries are tagged with userId, all operations (create, read, update, delete, import, export) are scoped to authenticated user only, loading state displayed during authentication, error state shown if authentication fails
+
 **Challenge Creation**
 - Functionality: Create a new yearly challenge with name, target number, year, custom color, and icon
 - Purpose: Allows users to define their ambitious annual goals with personalization
@@ -55,11 +62,11 @@ Tally - A tactile, satisfying progress tracker inspired by traditional tally mar
 - Success criteria: All 365 days render in under 100ms, color scale matches GitHub aesthetic, tooltips don't lag on mobile
 
 **Export/Import Data**
-- Functionality: Backup and restore all challenges and entries in JSON or CSV format, with user-scoped data and ability to clear all data
-- Purpose: Allow users to maintain data backups, migrate data between devices, recover from data loss, and clean up test/old data
+- Functionality: Backup and restore all challenges and entries in JSON or CSV format, with user-scoped data and ability to clear all data. All data operations are scoped to the authenticated GitHub user's ID to ensure complete data isolation between users.
+- Purpose: Allow users to maintain data backups, migrate data between devices, recover from data loss, and clean up test/old data. Each user can only access, export, import, and manage their own data.
 - Trigger: Click "Backup" button in header
-- Progression: Click Backup → Dialog opens → Shows current user's data count (challenges and entries) → Choose Export (JSON/CSV) or Import → For export: file downloads instantly with timestamp and user ID → For import: Warning displays → Select file → All data replaced → Success toast shows count of challenges and entries imported → Danger Zone section allows permanent deletion of all data with confirmation
-- Success criteria: JSON export creates valid parseable file with user ID, CSV export readable in Excel/Sheets with user ID header, Import replaces all data correctly, proper error handling for invalid files, Clear All Data requires confirmation and permanently deletes all challenges and entries, all data operations are scoped to current user only
+- Progression: Click Backup → Dialog opens → Shows current user's data count (challenges and entries) → Choose Export (JSON/CSV) or Import → For export: file downloads instantly with timestamp and user ID → For import: Warning displays → Select file → All imported data is tagged with current user's ID → Success toast shows count of challenges and entries imported → Danger Zone section allows permanent deletion of user's data with confirmation
+- Success criteria: JSON export creates valid parseable file with user ID, CSV export readable in Excel/Sheets with user ID header, Import tags all data with current user ID automatically, proper error handling for invalid files, Clear All Data requires confirmation and permanently deletes only current user's challenges and entries, all data operations are scoped to current user only, users cannot see or access other users' data under any circumstances
 
 **Weekly Summary**
 - Functionality: Comprehensive weekly progress report with stats, comparisons, and breakdowns

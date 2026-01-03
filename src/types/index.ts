@@ -1,5 +1,6 @@
 export interface Challenge {
   id: string
+  userId: string
   name: string
   targetNumber: number
   year: number
@@ -17,6 +18,7 @@ export type FeelingType = 'very-easy' | 'easy' | 'moderate' | 'hard' | 'very-har
 
 export interface Entry {
   id: string
+  userId: string
   challengeId: string
   date: string
   count: number

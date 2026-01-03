@@ -207,15 +207,6 @@ function App() {
                       <span className="hidden md:inline">Weekly Summary</span>
                     </Button>
                     <Button
-                      onClick={() => setExportImportOpen(true)}
-                      size="lg"
-                      variant="outline"
-                      className="shadow-lg"
-                    >
-                      <Database className="w-5 h-5 md:mr-2" />
-                      <span className="hidden md:inline">Backup</span>
-                    </Button>
-                    <Button
                       onClick={() => setAddEntryOpen(true)}
                       size="lg"
                       className="shadow-lg"
@@ -225,6 +216,15 @@ function App() {
                     </Button>
                   </>
                 )}
+                <Button
+                  onClick={() => setExportImportOpen(true)}
+                  size="lg"
+                  variant="outline"
+                  className="shadow-lg"
+                >
+                  <Database className="w-5 h-5 md:mr-2" />
+                  <span className="hidden md:inline">Backup</span>
+                </Button>
                 <Button
                   onClick={() => setCreateChallengeOpen(true)}
                   size="lg"

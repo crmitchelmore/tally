@@ -36,7 +36,7 @@ export function ExportImportDialog({
     const filename = `tally-backup-${new Date().toISOString().split('T')[0]}.json`
     downloadFile(json, filename, 'application/json')
     toast.success('Data exported!', {
-      description: `Downloaded ${filename}`,
+      description: `${challenges.length} challenges and ${entries.length} entries exported to ${filename}`,
     })
   }
 
@@ -45,7 +45,7 @@ export function ExportImportDialog({
     const filename = `tally-backup-${new Date().toISOString().split('T')[0]}.csv`
     downloadFile(csv, filename, 'text/csv')
     toast.success('Data exported!', {
-      description: `Downloaded ${filename}`,
+      description: `${challenges.length} challenges and ${entries.length} entries exported to ${filename}`,
     })
   }
 
@@ -98,11 +98,24 @@ export function ExportImportDialog({
             <p className="text-sm text-muted-foreground mb-3">
               Download all your challenges and entries
             </p>
+            <div className="mb-4 p-3 rounded-lg bg-muted/50">
+              <div className="text-sm space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Challenges:</span>
+                  <span className="font-semibold geist-mono">{challenges.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Entries:</span>
+                  <span className="font-semibold geist-mono">{entries.length}</span>
+                </div>
+              </div>
+            </div>
             <div className="flex gap-3">
               <Button
                 onClick={handleExportJSON}
                 variant="outline"
                 className="flex-1"
+                disabled={challenges.length === 0 && entries.length === 0}
               >
                 <FileJson className="w-4 h-4 mr-2" />
                 JSON
@@ -111,11 +124,17 @@ export function ExportImportDialog({
                 onClick={handleExportCSV}
                 variant="outline"
                 className="flex-1"
+                disabled={challenges.length === 0 && entries.length === 0}
               >
                 <FileText className="w-4 h-4 mr-2" />
                 CSV
               </Button>
             </div>
+            {challenges.length === 0 && entries.length === 0 && (
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                No data to export yet
+              </p>
+            )}
           </div>
 
           <div className="border-t pt-6">

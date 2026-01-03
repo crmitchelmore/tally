@@ -1,4 +1,4 @@
-import { Challenge, Entry } from '@/types'
+import { Challenge, Entry, FeelingType } from '@/types'
 
 export interface ExportData {
   version: string
@@ -38,9 +38,9 @@ const convertChallengesToCSV = (challenges: Challenge[]): string => {
 const convertEntriesToCSV = (entries: Entry[]): string => {
   if (entries.length === 0) return 'No entries'
   
-  const headers = 'ID,Challenge ID,Date,Count,Note,Sets'
+  const headers = 'ID,Challenge ID,Date,Count,Note,Sets,Feeling'
   const rows = entries.map(e => 
-    `"${e.id}","${e.challengeId}","${e.date}",${e.count},"${e.note || ''}","${e.sets ? JSON.stringify(e.sets) : ''}"`
+    `"${e.id}","${e.challengeId}","${e.date}",${e.count},"${e.note || ''}","${e.sets ? JSON.stringify(e.sets) : ''}","${e.feeling || ''}"`
   )
   
   return [headers, ...rows].join('\n')
@@ -135,7 +135,7 @@ const parseEntriesCSV = (csv: string): Entry[] => {
   
   for (let i = 1; i < lines.length; i++) {
     const values = parseCSVLine(lines[i])
-    if (values.length >= 6) {
+    if (values.length >= 4) {
       const entry: Entry = {
         id: values[0],
         challengeId: values[1],
@@ -153,6 +153,10 @@ const parseEntriesCSV = (csv: string): Entry[] => {
         } catch {
           // ignore invalid sets
         }
+      }
+      
+      if (values[6] && values[6].trim()) {
+        entry.feeling = values[6] as FeelingType
       }
       
       entries.push(entry)

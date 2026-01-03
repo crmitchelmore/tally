@@ -51,9 +51,12 @@ const convertEntriesToCSV = (entries: Entry[]): string => {
   if (entries.length === 0) return 'No entries'
   
   const headers = 'ID,Challenge ID,Date,Count,Note,Sets,Feeling'
-  const rows = entries.map(e => 
-    `"${e.id}","${e.challengeId}","${e.date}",${e.count},"${e.note || ''}","${e.sets ? JSON.stringify(e.sets) : ''}","${e.feeling || ''}"`
-  )
+  const rows = entries.map(e => {
+    const setsValue = e.sets ? JSON.stringify(e.sets).replace(/"/g, '""') : ''
+    const noteValue = (e.note || '').replace(/"/g, '""')
+    
+    return `"${e.id}","${e.challengeId}","${e.date}",${e.count},"${noteValue}","${setsValue}","${e.feeling || ''}"`
+  })
   
   return [headers, ...rows].join('\n')
 }
@@ -162,13 +165,14 @@ const parseEntriesCSV = (csv: string): Entry[] => {
         count: parseInt(values[3]),
       }
       
-      if (values[4]) {
+      if (values[4] && values[4].trim()) {
         entry.note = values[4]
       }
       
-      if (values[5]) {
+      if (values[5] && values[5].trim()) {
         try {
-          entry.sets = JSON.parse(values[5])
+          const unescapedSets = values[5].replace(/""/g, '"')
+          entry.sets = JSON.parse(unescapedSets)
         } catch {
           // ignore invalid sets
         }
@@ -192,8 +196,12 @@ const parseCSVLine = (line: string): string[] => {
   
   for (let i = 0; i < line.length; i++) {
     const char = line[i]
+    const nextChar = i < line.length - 1 ? line[i + 1] : null
     
-    if (char === '"') {
+    if (char === '"' && nextChar === '"' && inQuotes) {
+      current += '"'
+      i++
+    } else if (char === '"') {
       inQuotes = !inQuotes
     } else if (char === ',' && !inQuotes) {
       values.push(current)

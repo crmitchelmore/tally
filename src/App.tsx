@@ -78,6 +78,15 @@ function App() {
     }
   }
 
+  const handleLogout = () => {
+    setUserId(null)
+    setSelectedChallengeId(null)
+    setViewMode('dashboard')
+    toast.success('Logged out successfully', {
+      description: 'See you next time!',
+    })
+  }
+
   const challenges = (allChallenges || []).filter(c => c.userId === userId)
   const entries = (allEntries || []).filter(e => e.userId === userId)
 
@@ -344,7 +353,7 @@ function App() {
               )}
             </div>
             <div className="flex items-start gap-3">
-              <UserProfile />
+              <UserProfile onLogout={handleLogout} />
               <div className="flex gap-2 flex-wrap justify-end">
                 <Button
                   onClick={() => setViewMode('leaderboard')}

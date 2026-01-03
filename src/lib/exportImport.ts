@@ -52,10 +52,11 @@ const convertEntriesToCSV = (entries: Entry[]): string => {
   
   const headers = 'ID,Challenge ID,Date,Count,Note,Sets,Feeling'
   const rows = entries.map(e => {
-    const setsValue = e.sets ? JSON.stringify(e.sets).replace(/"/g, '""') : ''
     const noteValue = (e.note || '').replace(/"/g, '""')
+    const setsValue = e.sets ? JSON.stringify(e.sets).replace(/"/g, '""') : ''
+    const feelingValue = e.feeling || ''
     
-    return `"${e.id}","${e.challengeId}","${e.date}",${e.count},"${noteValue}","${setsValue}","${e.feeling || ''}"`
+    return `"${e.id}","${e.challengeId}","${e.date}",${e.count},"${noteValue}","${setsValue}","${feelingValue}"`
   })
   
   return [headers, ...rows].join('\n')

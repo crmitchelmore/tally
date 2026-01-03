@@ -82,7 +82,8 @@ export function AddEntrySheet({
   }
 
   const addSet = () => {
-    setSets([...sets, { reps: 0 }])
+    const lastReps = sets.length > 0 ? sets[sets.length - 1].reps : 0
+    setSets([...sets, { reps: lastReps }])
   }
 
   const removeSet = (index: number) => {

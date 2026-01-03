@@ -17,13 +17,28 @@ import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 
 function App() {
-  const [challenges, setChallenges] = useKV<Challenge[]>('challenges', [])
-  const [entries, setEntries] = useKV<Entry[]>('entries', [])
+  const [userId, setUserId] = useState<string | null>(null)
+  const [challenges, setChallenges] = useKV<Challenge[]>('user-challenges', [])
+  const [entries, setEntries] = useKV<Entry[]>('user-entries', [])
   const [addEntryOpen, setAddEntryOpen] = useState(false)
   const [createChallengeOpen, setCreateChallengeOpen] = useState(false)
   const [exportImportOpen, setExportImportOpen] = useState(false)
   const [weeklySummaryOpen, setWeeklySummaryOpen] = useState(false)
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await window.spark.user()
+        if (user) {
+          setUserId(user.id.toString())
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error)
+      }
+    }
+    fetchUser()
+  }, [])
 
   const currentYear = new Date().getFullYear()
   const activeChallenges = (challenges || []).filter(
@@ -106,6 +121,14 @@ function App() {
   const handleImportData = (importedChallenges: Challenge[], importedEntries: Entry[]) => {
     setChallenges(importedChallenges)
     setEntries(importedEntries)
+  }
+
+  const handleClearAllData = () => {
+    setChallenges([])
+    setEntries([])
+    toast.success('All data cleared', {
+      description: 'Your challenges and entries have been deleted',
+    })
   }
 
   const selectedChallenge = (challenges || []).find((c) => c.id === selectedChallengeId)
@@ -281,6 +304,8 @@ function App() {
         challenges={challenges || []}
         entries={entries || []}
         onImport={handleImportData}
+        onClearAll={handleClearAllData}
+        userId={userId}
       />
 
       <WeeklySummaryDialog

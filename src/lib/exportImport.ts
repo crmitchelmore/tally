@@ -3,25 +3,37 @@ import { Challenge, Entry, FeelingType } from '@/types'
 export interface ExportData {
   version: string
   exportDate: string
+  userId?: string
   challenges: Challenge[]
   entries: Entry[]
 }
 
-export const exportToJSON = (challenges: Challenge[], entries: Entry[]): string => {
+export const exportToJSON = (challenges: Challenge[], entries: Entry[], userId?: string | null): string => {
   const data: ExportData = {
     version: '1.0',
     exportDate: new Date().toISOString(),
     challenges,
     entries,
   }
+  
+  if (userId) {
+    data.userId = userId
+  }
+  
   return JSON.stringify(data, null, 2)
 }
 
-export const exportToCSV = (challenges: Challenge[], entries: Entry[]): string => {
+export const exportToCSV = (challenges: Challenge[], entries: Entry[], userId?: string | null): string => {
+  let output = ''
+  
+  if (userId) {
+    output += `USER ID: ${userId}\n\n`
+  }
+  
   const challengesCSV = convertChallengesToCSV(challenges)
   const entriesCSV = convertEntriesToCSV(entries)
   
-  return `CHALLENGES\n${challengesCSV}\n\nENTRIES\n${entriesCSV}`
+  return output + `CHALLENGES\n${challengesCSV}\n\nENTRIES\n${entriesCSV}`
 }
 
 const convertChallengesToCSV = (challenges: Challenge[]): string => {
@@ -77,7 +89,14 @@ export const parseImportedJSON = (content: string): { challenges: Challenge[], e
 
 export const parseImportedCSV = (content: string): { challenges: Challenge[], entries: Entry[] } => {
   try {
-    const sections = content.split('\n\n')
+    let workingContent = content
+    
+    if (content.includes('USER ID:')) {
+      const lines = content.split('\n')
+      workingContent = lines.slice(2).join('\n')
+    }
+    
+    const sections = workingContent.split('\n\n')
     let challengesSection = ''
     let entriesSection = ''
     

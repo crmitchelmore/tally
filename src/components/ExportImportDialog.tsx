@@ -20,6 +20,8 @@ interface ExportImportDialogProps {
   challenges: Challenge[]
   entries: Entry[]
   onImport: (challenges: Challenge[], entries: Entry[]) => void
+  onClearAll: () => void
+  userId: string | null
 }
 
 export function ExportImportDialog({
@@ -28,11 +30,14 @@ export function ExportImportDialog({
   challenges,
   entries,
   onImport,
+  onClearAll,
+  userId,
 }: ExportImportDialogProps) {
   const [importing, setImporting] = useState(false)
+  const [clearingData, setClearingData] = useState(false)
 
   const handleExportJSON = () => {
-    const json = exportToJSON(challenges, entries)
+    const json = exportToJSON(challenges, entries, userId)
     const filename = `tally-backup-${new Date().toISOString().split('T')[0]}.json`
     downloadFile(json, filename, 'application/json')
     toast.success('Data exported!', {
@@ -41,7 +46,7 @@ export function ExportImportDialog({
   }
 
   const handleExportCSV = () => {
-    const csv = exportToCSV(challenges, entries)
+    const csv = exportToCSV(challenges, entries, userId)
     const filename = `tally-backup-${new Date().toISOString().split('T')[0]}.csv`
     downloadFile(csv, filename, 'text/csv')
     toast.success('Data exported!', {
@@ -80,6 +85,12 @@ export function ExportImportDialog({
       }
     }
     reader.readAsText(file)
+  }
+
+  const handleClearData = () => {
+    onClearAll()
+    onOpenChange(false)
+    setClearingData(false)
   }
 
   return (
@@ -181,6 +192,51 @@ export function ExportImportDialog({
                 >
                   Cancel
                 </Button>
+              </div>
+            )}
+          </div>
+
+          <div className="border-t pt-6">
+            <Label className="text-base font-semibold mb-3 block text-destructive">Danger Zone</Label>
+            
+            {!clearingData ? (
+              <>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Permanently delete all your challenges and entries
+                </p>
+                <Button
+                  onClick={() => setClearingData(true)}
+                  variant="outline"
+                  className="w-full border-destructive/50 text-destructive hover:bg-destructive/10"
+                >
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Clear All Data
+                </Button>
+              </>
+            ) : (
+              <div className="space-y-3">
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription className="text-sm font-semibold">
+                    This action cannot be undone! All {challenges.length} challenges and {entries.length} entries will be permanently deleted.
+                  </AlertDescription>
+                </Alert>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleClearData}
+                    variant="destructive"
+                    className="flex-1"
+                  >
+                    Yes, Delete Everything
+                  </Button>
+                  <Button
+                    onClick={() => setClearingData(false)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
             )}
           </div>

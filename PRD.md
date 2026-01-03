@@ -55,11 +55,11 @@ Tally - A tactile, satisfying progress tracker inspired by traditional tally mar
 - Success criteria: All 365 days render in under 100ms, color scale matches GitHub aesthetic, tooltips don't lag on mobile
 
 **Export/Import Data**
-- Functionality: Backup and restore all challenges and entries in JSON or CSV format
-- Purpose: Allow users to maintain data backups and migrate data between devices or recover from data loss
+- Functionality: Backup and restore all challenges and entries in JSON or CSV format, with user-scoped data and ability to clear all data
+- Purpose: Allow users to maintain data backups, migrate data between devices, recover from data loss, and clean up test/old data
 - Trigger: Click "Backup" button in header
-- Progression: Click Backup → Dialog opens → Choose Export (JSON/CSV) or Import → For export: file downloads instantly with timestamp → For import: Warning displays → Select file → All data replaced → Success toast shows count of challenges and entries imported
-- Success criteria: JSON export creates valid parseable file, CSV export readable in Excel/Sheets, Import replaces all data correctly, proper error handling for invalid files
+- Progression: Click Backup → Dialog opens → Shows current user's data count (challenges and entries) → Choose Export (JSON/CSV) or Import → For export: file downloads instantly with timestamp and user ID → For import: Warning displays → Select file → All data replaced → Success toast shows count of challenges and entries imported → Danger Zone section allows permanent deletion of all data with confirmation
+- Success criteria: JSON export creates valid parseable file with user ID, CSV export readable in Excel/Sheets with user ID header, Import replaces all data correctly, proper error handling for invalid files, Clear All Data requires confirmation and permanently deletes all challenges and entries, all data operations are scoped to current user only
 
 **Weekly Summary**
 - Functionality: Comprehensive weekly progress report with stats, comparisons, and breakdowns

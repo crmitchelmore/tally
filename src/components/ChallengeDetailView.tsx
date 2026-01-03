@@ -8,10 +8,11 @@ import { DayEntriesDialog } from './DayEntriesDialog'
 import { AddEntryDetailSheet } from './AddEntryDetailSheet'
 import { SetsRepsAnalysis } from './SetsRepsAnalysis'
 import { SentimentAnalysis } from './SentimentAnalysis'
+import { ChallengeSettingsDialog } from './ChallengeSettingsDialog'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 import { Badge } from './ui/badge'
-import { ArrowLeft, Trophy, Flame, TrendingUp, Calendar, Pencil, Plus } from 'lucide-react'
+import { ArrowLeft, Trophy, Flame, TrendingUp, Calendar, Pencil, Plus, Settings } from 'lucide-react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface ChallengeDetailViewProps {
@@ -21,14 +22,17 @@ interface ChallengeDetailViewProps {
   onAddEntry: (challengeId: string, count: number, note: string, date: string, sets?: Set[], feeling?: FeelingType) => void
   onUpdateEntry: (entryId: string, count: number, note: string, date: string, feeling?: FeelingType) => void
   onDeleteEntry: (entryId: string) => void
+  onUpdateChallenge?: (challengeId: string, updates: Partial<Challenge>) => void
+  onArchiveChallenge?: (challengeId: string) => void
 }
 
-export function ChallengeDetailView({ challenge, entries, onBack, onAddEntry, onUpdateEntry, onDeleteEntry }: ChallengeDetailViewProps) {
+export function ChallengeDetailView({ challenge, entries, onBack, onAddEntry, onUpdateEntry, onDeleteEntry, onUpdateChallenge, onArchiveChallenge }: ChallengeDetailViewProps) {
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [dayEntriesDialogOpen, setDayEntriesDialogOpen] = useState(false)
   const [addEntryOpen, setAddEntryOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   
   const stats = calculateStats(challenge, entries)
   const heatmapData = generateHeatmapData(challenge, entries)
@@ -116,6 +120,12 @@ export function ChallengeDetailView({ challenge, entries, onBack, onAddEntry, on
               {stats.total.toLocaleString()} / {challenge.targetNumber.toLocaleString()}
             </p>
           </div>
+          {onUpdateChallenge && onArchiveChallenge && (
+            <Button onClick={() => setSettingsOpen(true)} size="lg" variant="outline" className="shadow-lg">
+              <Settings className="w-5 h-5 md:mr-2" />
+              <span className="hidden md:inline">Settings</span>
+            </Button>
+          )}
           <Button onClick={() => setAddEntryOpen(true)} size="lg" className="shadow-lg">
             <Plus className="w-5 h-5 md:mr-2" />
             <span className="hidden md:inline">Add Entry</span>
@@ -317,6 +327,16 @@ export function ChallengeDetailView({ challenge, entries, onBack, onAddEntry, on
         onOpenChange={setDayEntriesDialogOpen}
         onEditEntry={handleEditClick}
       />
+
+      {onUpdateChallenge && onArchiveChallenge && (
+        <ChallengeSettingsDialog
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          challenge={challenge}
+          onUpdateChallenge={onUpdateChallenge}
+          onArchiveChallenge={onArchiveChallenge}
+        />
+      )}
     </div>
   )
 }

@@ -75,6 +75,27 @@ Tally - A tactile, satisfying progress tracker inspired by traditional tally mar
 - Progression: Click button → Dialog opens showing current week → Displays: total reps, daily average, entries logged, active challenges, best day, challenge breakdown, daily chart, comparison to previous week → Navigate between weeks with prev/next arrows → View historical weeks
 - Success criteria: Calculations accurate for any week, comparison to previous week shows percentage change, daily breakdown shows visual bars, challenge breakdown sorted by count, navigating weeks updates all stats
 
+**Public/Private Challenge Settings**
+- Functionality: Toggle whether a challenge is visible to other users on leaderboards and community challenges, with ability to archive challenges
+- Purpose: Give users control over their privacy while enabling community features and competition for those who want it
+- Trigger: Click "Settings" button in challenge detail view or toggle public/private during challenge creation
+- Progression: In create dialog: Toggle "Public Challenge" switch → Challenge is marked as public/private → In detail view: Click Settings → Toggle public/private → Confirmation toast → Can also archive challenge with confirmation dialog
+- Success criteria: Public challenges appear on leaderboards and community page, private challenges only visible to owner, toggle updates immediately, archive moves challenge out of active view, all data preserved
+
+**Leaderboard**
+- Functionality: View global and personal rankings based on total reps across all public challenges, with time range filters (week, month, year, all-time)
+- Purpose: Enable friendly competition and motivation by seeing how users rank against the community
+- Trigger: Click "Leaderboard" button in dashboard header
+- Progression: Click Leaderboard → View loads with weekly rankings by default → See ranked list with avatars, usernames, challenge names, total reps, progress %, and days active → Switch between time ranges (week/month/year/all-time) → Switch between Global leaderboard and "My Ranks" tab → Top 3 positions show crown/medal icons → Current user's entries highlighted with border → Click Back to return to dashboard
+- Success criteria: Rankings accurately calculated based on total reps in timeframe, filters work correctly, user can see their own rankings separately, real-time updates when new entries added, smooth loading states, empty states for no public challenges
+
+**Public Challenges Browser**
+- Functionality: Browse all public challenges from the community with search and filtering capabilities
+- Purpose: Discover what others are tracking, get inspiration for new challenges, see community activity
+- Trigger: Click "Community" button in dashboard header
+- Progression: Click Community → Page loads with grid of all public challenges → See challenge cards with creator avatar, username, challenge details, progress ring, total reps, target, completion %, and daily pace → Search by challenge name or username → Own challenges highlighted with "Your challenge" badge → Click Back to return to dashboard
+- Success criteria: All public challenges displayed with accurate stats, search filters results immediately, challenge cards show creator info and progress, user's own public challenges clearly marked, responsive grid layout, loading and empty states handled gracefully
+
 ## Edge Case Handling
 
 **Empty States** - First-time users see hero section with "Create your first challenge" CTA instead of empty grid

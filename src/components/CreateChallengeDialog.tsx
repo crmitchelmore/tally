@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { CHALLENGE_COLORS, CHALLENGE_ICONS } from '@/lib/constants'
 import { Challenge } from '@/types'
 import { motion } from 'framer-motion'
@@ -27,6 +28,8 @@ import {
   Sun,
   Moon,
   Cloud,
+  Globe,
+  Lock,
 } from 'lucide-react'
 
 interface CreateChallengeDialogProps {
@@ -69,6 +72,7 @@ export function CreateChallengeDialog({
   const [year, setYear] = useState(currentYear)
   const [selectedColor, setSelectedColor] = useState(CHALLENGE_COLORS[0].value)
   const [selectedIcon, setSelectedIcon] = useState<string>(CHALLENGE_ICONS[0])
+  const [isPublic, setIsPublic] = useState(false)
 
   const handleSubmit = () => {
     if (!name.trim() || targetNumber <= 0) return
@@ -80,6 +84,7 @@ export function CreateChallengeDialog({
       color: selectedColor,
       icon: selectedIcon,
       archived: false,
+      isPublic,
     })
 
     setName('')
@@ -87,6 +92,7 @@ export function CreateChallengeDialog({
     setYear(currentYear)
     setSelectedColor(CHALLENGE_COLORS[0].value)
     setSelectedIcon(CHALLENGE_ICONS[0])
+    setIsPublic(false)
     onOpenChange(false)
   }
 
@@ -172,6 +178,37 @@ export function CreateChallengeDialog({
                   </motion.button>
                 )
               })}
+            </div>
+          </div>
+
+          <div className="border rounded-lg p-4 bg-muted/30">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1">
+                {isPublic ? (
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Globe className="w-5 h-5 text-primary" />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                    <Lock className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <Label className="text-sm font-semibold cursor-pointer" htmlFor="public-toggle">
+                    {isPublic ? 'Public Challenge' : 'Private Challenge'}
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {isPublic 
+                      ? 'Visible on leaderboards and community challenges' 
+                      : 'Only you can see this challenge'}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="public-toggle"
+                checked={isPublic}
+                onCheckedChange={setIsPublic}
+              />
             </div>
           </div>
 

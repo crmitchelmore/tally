@@ -8,6 +8,7 @@ export interface Challenge {
   icon: string
   createdAt: string
   archived: boolean
+  isPublic?: boolean
 }
 
 export interface Set {
@@ -45,4 +46,32 @@ export interface HeatmapDay {
   date: string
   count: number
   level: number
+}
+
+export interface LeaderboardEntry {
+  userId: string
+  username: string
+  avatarUrl: string
+  challengeName: string
+  challengeId: string
+  totalReps: number
+  targetNumber: number
+  progress: number
+  daysActive: number
+  lastUpdated: string
+}
+
+export interface PublicChallenge {
+  id: string
+  userId: string
+  username: string
+  avatarUrl: string
+  name: string
+  targetNumber: number
+  year: number
+  color: string
+  icon: string
+  totalReps: number
+  progress: number
+  createdAt: string
 }

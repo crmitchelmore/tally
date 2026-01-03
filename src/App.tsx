@@ -11,11 +11,15 @@ import { ExportImportDialog } from '@/components/ExportImportDialog'
 import { WeeklySummaryDialog } from '@/components/WeeklySummaryDialog'
 import { UserProfile } from '@/components/UserProfile'
 import { LoginPage } from '@/components/LoginPage'
+import { LeaderboardView } from '@/components/LeaderboardView'
+import { PublicChallengesView } from '@/components/PublicChallengesView'
 import { Button } from '@/components/ui/button'
-import { Plus, Target, Calendar, Database } from 'lucide-react'
+import { Plus, Target, Calendar, Database, Trophy, Users } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
+
+type ViewMode = 'dashboard' | 'leaderboard' | 'public-challenges'
 
 function App() {
   const [userId, setUserId] = useState<string | null>(null)
@@ -27,6 +31,7 @@ function App() {
   const [exportImportOpen, setExportImportOpen] = useState(false)
   const [weeklySummaryOpen, setWeeklySummaryOpen] = useState(false)
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -202,6 +207,37 @@ function App() {
     })
   }
 
+  const handleUpdateChallenge = (challengeId: string, updates: Partial<Challenge>) => {
+    setAllChallenges((current) =>
+      (current || []).map((challenge) =>
+        challenge.id === challengeId && challenge.userId === userId
+          ? { ...challenge, ...updates }
+          : challenge
+      )
+    )
+    
+    if (updates.isPublic !== undefined) {
+      toast.success(updates.isPublic ? 'Challenge is now public! 🌍' : 'Challenge is now private 🔒', {
+        description: updates.isPublic 
+          ? 'Others can now see your progress on leaderboards' 
+          : 'Only you can see this challenge',
+      })
+    }
+  }
+
+  const handleArchiveChallenge = (challengeId: string) => {
+    setAllChallenges((current) =>
+      (current || []).map((challenge) =>
+        challenge.id === challengeId && challenge.userId === userId
+          ? { ...challenge, archived: true }
+          : challenge
+      )
+    )
+    toast.success('Challenge archived', {
+      description: 'The challenge has been moved to your archives',
+    })
+  }
+
   const selectedChallenge = challenges.find((c) => c.id === selectedChallengeId)
 
   if (isLoadingUser) {
@@ -232,6 +268,32 @@ function App() {
           onAddEntry={handleAddEntry}
           onUpdateEntry={handleUpdateEntry}
           onDeleteEntry={handleDeleteEntry}
+          onUpdateChallenge={handleUpdateChallenge}
+          onArchiveChallenge={handleArchiveChallenge}
+        />
+        <Toaster />
+      </>
+    )
+  }
+
+  if (viewMode === 'leaderboard') {
+    return (
+      <>
+        <LeaderboardView
+          userId={userId}
+          onBack={() => setViewMode('dashboard')}
+        />
+        <Toaster />
+      </>
+    )
+  }
+
+  if (viewMode === 'public-challenges') {
+    return (
+      <>
+        <PublicChallengesView
+          userId={userId}
+          onBack={() => setViewMode('dashboard')}
         />
         <Toaster />
       </>
@@ -284,6 +346,24 @@ function App() {
             <div className="flex items-start gap-3">
               <UserProfile />
               <div className="flex gap-2 flex-wrap justify-end">
+                <Button
+                  onClick={() => setViewMode('leaderboard')}
+                  size="lg"
+                  variant="outline"
+                  className="shadow-lg"
+                >
+                  <Trophy className="w-5 h-5 md:mr-2" />
+                  <span className="hidden md:inline">Leaderboard</span>
+                </Button>
+                <Button
+                  onClick={() => setViewMode('public-challenges')}
+                  size="lg"
+                  variant="outline"
+                  className="shadow-lg"
+                >
+                  <Users className="w-5 h-5 md:mr-2" />
+                  <span className="hidden md:inline">Community</span>
+                </Button>
                 {activeChallenges.length > 0 && (
                   <>
                     <Button

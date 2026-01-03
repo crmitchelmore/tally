@@ -10,6 +10,7 @@ import { PersonalRecords } from '@/components/PersonalRecords'
 import { ExportImportDialog } from '@/components/ExportImportDialog'
 import { WeeklySummaryDialog } from '@/components/WeeklySummaryDialog'
 import { UserProfile } from '@/components/UserProfile'
+import { LoginPage } from '@/components/LoginPage'
 import { Button } from '@/components/ui/button'
 import { Plus, Target, Calendar, Database } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -31,17 +32,46 @@ function App() {
     const fetchUser = async () => {
       try {
         const user = await window.spark.user()
-        if (user) {
+        if (user && user.id) {
           setUserId(user.id.toString())
+        } else {
+          setUserId(null)
         }
       } catch (error) {
         console.error('Failed to fetch user:', error)
+        setUserId(null)
       } finally {
         setIsLoadingUser(false)
       }
     }
     fetchUser()
   }, [])
+
+  const handleRetryAuth = async () => {
+    setIsLoadingUser(true)
+    try {
+      const user = await window.spark.user()
+      if (user && user.id) {
+        setUserId(user.id.toString())
+        toast.success('Signed in successfully!', {
+          description: `Welcome, ${user.login || 'User'}!`,
+        })
+      } else {
+        setUserId(null)
+        toast.error('Authentication failed', {
+          description: 'Unable to verify your GitHub account',
+        })
+      }
+    } catch (error) {
+      console.error('Failed to fetch user:', error)
+      setUserId(null)
+      toast.error('Authentication failed', {
+        description: 'Please try again or refresh the page',
+      })
+    } finally {
+      setIsLoadingUser(false)
+    }
+  }
 
   const challenges = (allChallenges || []).filter(c => c.userId === userId)
   const entries = (allEntries || []).filter(e => e.userId === userId)
@@ -176,28 +206,19 @@ function App() {
 
   if (isLoadingUser) {
     return (
-      <div className="min-h-screen bg-background tally-marks-bg flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 mx-auto animate-pulse">
-            <Target className="w-8 h-8 text-primary" />
-          </div>
-          <p className="text-muted-foreground">Loading your data...</p>
-        </div>
-      </div>
+      <>
+        <LoginPage onRetry={handleRetryAuth} isLoading={true} />
+        <Toaster />
+      </>
     )
   }
 
   if (!userId) {
     return (
-      <div className="min-h-screen bg-background tally-marks-bg flex items-center justify-center">
-        <div className="text-center max-w-md px-4">
-          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4 mx-auto">
-            <Target className="w-8 h-8 text-destructive" />
-          </div>
-          <h2 className="text-2xl font-bold mb-2">Authentication Required</h2>
-          <p className="text-muted-foreground">Please refresh the page to authenticate with GitHub.</p>
-        </div>
-      </div>
+      <>
+        <LoginPage onRetry={handleRetryAuth} isLoading={false} />
+        <Toaster />
+      </>
     )
   }
 

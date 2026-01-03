@@ -13,11 +13,11 @@ Tally - A tactile, satisfying progress tracker inspired by traditional tally mar
 ## Essential Features
 
 **User Authentication & Data Isolation**
-- Functionality: Authenticate users via GitHub and ensure complete data isolation between users
-- Purpose: Protect user privacy by ensuring each user can only see, create, edit, import, export, and delete their own data
+- Functionality: Authenticate users via GitHub and ensure complete data isolation between users with a dedicated login page
+- Purpose: Protect user privacy by ensuring each user can only see, create, edit, import, export, and delete their own data - no access without authentication
 - Trigger: Application loads
-- Progression: App loads → Fetches GitHub user authentication → Retrieves user ID → All data queries filter by user ID → User sees only their challenges and entries → All data operations automatically tag data with user ID
-- Success criteria: Users cannot see other users' data, all challenges and entries are tagged with userId, all operations (create, read, update, delete, import, export) are scoped to authenticated user only, loading state displayed during authentication, error state shown if authentication fails
+- Progression: App loads → Shows login page with GitHub sign-in prompt → User clicks "Sign in with GitHub" → Fetches GitHub user authentication → Retrieves user ID → Transitions to dashboard → All data queries filter by user ID → User sees only their challenges and entries → All data operations automatically tag data with user ID → If authentication fails, user remains on login page with retry option
+- Success criteria: Login page gates all access to the app, users cannot see other users' data under any circumstances, all challenges and entries are tagged with userId, all operations (create, read, update, delete, import, export) are scoped to authenticated user only, proper loading states during authentication, clear error messaging if authentication fails, retry mechanism available on login page
 
 **Challenge Creation**
 - Functionality: Create a new yearly challenge with name, target number, year, custom color, and icon

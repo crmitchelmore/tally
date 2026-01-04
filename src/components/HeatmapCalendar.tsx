@@ -14,26 +14,32 @@ export function HeatmapCalendar({ data, year, size = 'small', onDayClick }: Heat
   const gap = size === 'small' ? 2 : 3
 
   const weeks: HeatmapDay[][] = []
-  let currentWeek: HeatmapDay[] = []
-
-  const firstDay = new Date(year, 0, 1).getDay()
-  for (let i = 0; i < firstDay; i++) {
-    currentWeek.push({ date: '', count: 0, level: 0 })
+  
+  const firstDayOfYear = new Date(year, 0, 1)
+  let startDay = firstDayOfYear.getDay()
+  if (startDay === 0) startDay = 7
+  
+  const grid: (HeatmapDay | null)[] = []
+  
+  for (let i = 1; i < startDay; i++) {
+    grid.push(null)
   }
-
-  data.forEach((day, index) => {
-    currentWeek.push(day)
-    if (currentWeek.length === 7) {
-      weeks.push(currentWeek)
-      currentWeek = []
-    }
+  
+  data.forEach(day => {
+    grid.push(day)
   })
-
-  if (currentWeek.length > 0) {
-    while (currentWeek.length < 7) {
-      currentWeek.push({ date: '', count: 0, level: 0 })
+  
+  for (let col = 0; col < Math.ceil(grid.length / 7); col++) {
+    const week: HeatmapDay[] = []
+    for (let row = 0; row < 7; row++) {
+      const index = col * 7 + row
+      if (index < grid.length && grid[index]) {
+        week.push(grid[index]!)
+      } else {
+        week.push({ date: '', count: 0, level: 0 })
+      }
     }
-    weeks.push(currentWeek)
+    weeks.push(week)
   }
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']

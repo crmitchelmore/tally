@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
@@ -24,7 +24,9 @@ export function AddEntrySheet({
   challenges,
   onAddEntry,
 }: AddEntrySheetProps) {
-  const [selectedChallengeId, setSelectedChallengeId] = useState<string>('')
+  const [selectedChallengeId, setSelectedChallengeId] = useState<string>(
+    challenges.length === 1 ? challenges[0].id : ''
+  )
   const [count, setCount] = useState<number>(0)
   const [note, setNote] = useState<string>('')
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0])
@@ -33,7 +35,14 @@ export function AddEntrySheet({
   const [sets, setSets] = useState<Set[]>([])
   const [feeling, setFeeling] = useState<FeelingType | undefined>(undefined)
 
+  useEffect(() => {
+    if (open && challenges.length === 1) {
+      setSelectedChallengeId(challenges[0].id)
+    }
+  }, [open, challenges])
+
   const handleOpen = (isOpen: boolean) => {
+    onOpenChange(isOpen)
     if (!isOpen) {
       setCount(0)
       setNote('')
@@ -43,12 +52,7 @@ export function AddEntrySheet({
       setSets([])
       setFeeling(undefined)
       setSelectedChallengeId('')
-    } else {
-      if (challenges.length === 1) {
-        setSelectedChallengeId(challenges[0].id)
-      }
     }
-    onOpenChange(isOpen)
   }
 
   const handleSubmit = () => {

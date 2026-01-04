@@ -40,21 +40,33 @@ export function ExportImportDialog({
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
 
   const handleExportJSON = () => {
-    const json = exportToJSON(challenges, entries, userId)
-    const filename = `tally-backup-${new Date().toISOString().split('T')[0]}.json`
-    downloadFile(json, filename, 'application/json')
-    toast.success('Data exported!', {
-      description: `${challenges.length} challenges and ${entries.length} entries exported to ${filename}`,
-    })
+    try {
+      const json = exportToJSON(challenges, entries, userId)
+      const filename = `tally-backup-${new Date().toISOString().split('T')[0]}.json`
+      downloadFile(json, filename, 'application/json')
+      toast.success('Data exported!', {
+        description: `${challenges.length} challenges and ${entries.length} entries exported to ${filename}`,
+      })
+    } catch (error) {
+      toast.error('Export failed', {
+        description: error instanceof Error ? error.message : 'Could not download file',
+      })
+    }
   }
 
   const handleExportCSV = () => {
-    const csv = exportToCSV(challenges, entries, userId)
-    const filename = `tally-backup-${new Date().toISOString().split('T')[0]}.csv`
-    downloadFile(csv, filename, 'text/csv')
-    toast.success('Data exported!', {
-      description: `${challenges.length} challenges and ${entries.length} entries exported to ${filename}`,
-    })
+    try {
+      const csv = exportToCSV(challenges, entries, userId)
+      const filename = `tally-backup-${new Date().toISOString().split('T')[0]}.csv`
+      downloadFile(csv, filename, 'text/csv')
+      toast.success('Data exported!', {
+        description: `${challenges.length} challenges and ${entries.length} entries exported to ${filename}`,
+      })
+    } catch (error) {
+      toast.error('Export failed', {
+        description: error instanceof Error ? error.message : 'Could not download file',
+      })
+    }
   }
 
   const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {

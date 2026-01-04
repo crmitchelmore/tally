@@ -85,15 +85,24 @@ const convertEntriesToCSV = (entries: Entry[]): string => {
 }
 
 export const downloadFile = (content: string, filename: string, type: string) => {
-  const blob = new Blob([content], { type })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
+  try {
+    const blob = new Blob([content], { type })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.style.display = 'none'
+    document.body.appendChild(link)
+    link.click()
+    
+    setTimeout(() => {
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    }, 100)
+  } catch (error) {
+    console.error('Download failed:', error)
+    throw new Error('Failed to download file')
+  }
 }
 
 export const parseImportedJSON = (content: string): { challenges: Challenge[], entries: Entry[] } => {

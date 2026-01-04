@@ -131,16 +131,32 @@ export const parseImportedCSV = (content: string): { challenges: Challenge[], en
       workingContent = lines.slice(2).join('\n')
     }
     
-    const sections = workingContent.split('\n\n')
+    const challengesMarker = 'CHALLENGES\n'
+    const entriesMarker = '\n\nENTRIES\n'
+    
     let challengesSection = ''
     let entriesSection = ''
     
-    for (const section of sections) {
-      if (section.startsWith('CHALLENGES')) {
-        challengesSection = section.replace('CHALLENGES\n', '')
-      } else if (section.startsWith('ENTRIES')) {
-        entriesSection = section.replace('ENTRIES\n', '')
-      }
+    const challengesIndex = workingContent.indexOf(challengesMarker)
+    const entriesIndex = workingContent.indexOf(entriesMarker)
+    
+    if (challengesIndex !== -1 && entriesIndex !== -1) {
+      challengesSection = workingContent.substring(
+        challengesIndex + challengesMarker.length,
+        entriesIndex
+      ).trim()
+      
+      entriesSection = workingContent.substring(
+        entriesIndex + entriesMarker.length
+      ).trim()
+    } else if (challengesIndex !== -1) {
+      challengesSection = workingContent.substring(
+        challengesIndex + challengesMarker.length
+      ).trim()
+    } else if (entriesIndex !== -1) {
+      entriesSection = workingContent.substring(
+        entriesIndex + entriesMarker.length
+      ).trim()
     }
     
     const challenges = parseChallengesCSV(challengesSection)

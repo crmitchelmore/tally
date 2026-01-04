@@ -42,6 +42,7 @@ export function AddEntrySheet({
       setTrackSets(false)
       setSets([])
       setFeeling(undefined)
+      setSelectedChallengeId('')
     } else {
       if (challenges.length === 1) {
         setSelectedChallengeId(challenges[0].id)

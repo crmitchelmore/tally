@@ -105,7 +105,7 @@ export function AddEntrySheet({
 
   return (
     <Sheet open={open} onOpenChange={handleOpen}>
-      <SheetContent side="bottom" className="h-[90vh] sm:h-auto sm:max-w-md sm:mx-auto p-0 flex flex-col">
+      <SheetContent side="bottom" className="top-1/2 -translate-y-1/2 bottom-auto h-auto max-h-[85vh] sm:max-w-md sm:mx-auto p-0 flex flex-col">
         <SheetHeader className="px-6 pt-6 pb-4 shrink-0 border-b">
           <SheetTitle className="text-2xl">Add Entry</SheetTitle>
           {challenges.length > 1 && (

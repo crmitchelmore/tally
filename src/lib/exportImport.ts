@@ -39,9 +39,9 @@ export const exportToCSV = (challenges: Challenge[], entries: Entry[], userId?: 
 const convertChallengesToCSV = (challenges: Challenge[]): string => {
   if (challenges.length === 0) return 'No challenges'
   
-  const headers = 'ID,User ID,Name,Target Number,Year,Color,Icon,Created At,Archived'
+  const headers = 'ID,Name,Target Number,Year,Color,Icon,Created At,Archived'
   const rows = challenges.map(c => 
-    `"${c.id}","${c.userId}","${c.name}",${c.targetNumber},${c.year},"${c.color}","${c.icon}","${c.createdAt}",${c.archived}`
+    `"${c.id}","${c.name}",${c.targetNumber},${c.year},"${c.color}","${c.icon}","${c.createdAt}",${c.archived.toString().toUpperCase()}`
   )
   
   return [headers, ...rows].join('\n')
@@ -50,13 +50,13 @@ const convertChallengesToCSV = (challenges: Challenge[]): string => {
 const convertEntriesToCSV = (entries: Entry[]): string => {
   if (entries.length === 0) return 'No entries'
   
-  const headers = 'ID,User ID,Challenge ID,Date,Count,Note,Sets,Feeling'
+  const headers = 'ID,Challenge ID,Date,Count,Note,Sets,Feeling'
   const rows = entries.map(e => {
     const noteValue = (e.note || '').replace(/"/g, '""')
     const setsValue = e.sets ? JSON.stringify(e.sets).replace(/"/g, '""') : ''
     const feelingValue = e.feeling || ''
     
-    return `"${e.id}","${e.userId}","${e.challengeId}","${e.date}",${e.count},"${noteValue}","${setsValue}","${feelingValue}"`
+    return `"${e.id}","${e.challengeId}","${e.date}",${e.count},"${noteValue}","${setsValue}","${feelingValue}"`
   })
   
   return [headers, ...rows].join('\n')
@@ -127,22 +127,62 @@ const parseChallengesCSV = (csv: string): Challenge[] => {
   const lines = csv.split('\n').filter(line => line.trim())
   if (lines.length <= 1) return []
   
+  const headerLine = lines[0].toLowerCase()
+  const hasUserIdColumn = headerLine.includes('user id')
+  
   const challenges: Challenge[] = []
   
   for (let i = 1; i < lines.length; i++) {
     const values = parseCSVLine(lines[i])
-    if (values.length >= 8) {
-      challenges.push({
-        id: values[0],
-        userId: values.length >= 9 ? values[1] : '',
-        name: values.length >= 9 ? values[2] : values[1],
-        targetNumber: parseInt(values.length >= 9 ? values[3] : values[2]),
-        year: parseInt(values.length >= 9 ? values[4] : values[3]),
-        color: values.length >= 9 ? values[5] : values[4],
-        icon: values.length >= 9 ? values[6] : values[5],
-        createdAt: values.length >= 9 ? values[7] : values[6],
-        archived: (values.length >= 9 ? values[8] : values[7]) === 'true',
-      })
+    
+    try {
+      let challenge: Challenge | null = null
+      
+      if (hasUserIdColumn && values.length >= 9) {
+        const targetNumber = parseInt(values[3])
+        const year = parseInt(values[4])
+        
+        if (isNaN(targetNumber) || isNaN(year) || !values[0] || !values[2]) {
+          continue
+        }
+        
+        challenge = {
+          id: values[0].trim(),
+          userId: values[1].trim(),
+          name: values[2].trim(),
+          targetNumber,
+          year,
+          color: values[5].trim(),
+          icon: values[6].trim(),
+          createdAt: values[7].trim(),
+          archived: values[8].toUpperCase() === 'TRUE',
+        }
+      } else if (!hasUserIdColumn && values.length >= 8) {
+        const targetNumber = parseInt(values[2])
+        const year = parseInt(values[3])
+        
+        if (isNaN(targetNumber) || isNaN(year) || !values[0] || !values[1]) {
+          continue
+        }
+        
+        challenge = {
+          id: values[0].trim(),
+          userId: '',
+          name: values[1].trim(),
+          targetNumber,
+          year,
+          color: values[4].trim(),
+          icon: values[5].trim(),
+          createdAt: values[6].trim(),
+          archived: values[7].toUpperCase() === 'TRUE',
+        }
+      }
+      
+      if (challenge && challenge.name && challenge.id) {
+        challenges.push(challenge)
+      }
+    } catch (error) {
+      console.warn(`Skipping invalid challenge row ${i}:`, error)
     }
   }
   
@@ -155,45 +195,110 @@ const parseEntriesCSV = (csv: string): Entry[] => {
   const lines = csv.split('\n').filter(line => line.trim())
   if (lines.length <= 1) return []
   
+  const headerLine = lines[0].toLowerCase()
+  const hasUserIdColumn = headerLine.includes('user id')
+  
   const entries: Entry[] = []
   
   for (let i = 1; i < lines.length; i++) {
     const values = parseCSVLine(lines[i])
-    if (values.length >= 4) {
-      const entry: Entry = {
-        id: values[0],
-        userId: values.length >= 8 ? values[1] : '',
-        challengeId: values.length >= 8 ? values[2] : values[1],
-        date: values.length >= 8 ? values[3] : values[2],
-        count: parseInt(values.length >= 8 ? values[4] : values[3]),
-      }
+    
+    try {
+      let entry: Entry | null = null
       
-      const noteIdx = values.length >= 8 ? 5 : 4
-      const setsIdx = values.length >= 8 ? 6 : 5
-      const feelingIdx = values.length >= 8 ? 7 : 6
-      
-      if (values[noteIdx] && values[noteIdx].trim()) {
-        entry.note = values[noteIdx]
-      }
-      
-      if (values[setsIdx] && values[setsIdx].trim()) {
-        try {
-          const unescapedSets = values[setsIdx].replace(/""/g, '"')
-          entry.sets = JSON.parse(unescapedSets)
-        } catch {
-          // ignore invalid sets
+      if (hasUserIdColumn && values.length >= 5) {
+        const count = parseInt(values[4])
+        
+        if (isNaN(count) || !values[0] || !values[2] || !values[3]) {
+          continue
+        }
+        
+        const normalizedDate = normalizeDateString(values[3].trim())
+        
+        entry = {
+          id: values[0].trim(),
+          userId: values[1].trim(),
+          challengeId: values[2].trim(),
+          date: normalizedDate,
+          count,
+        }
+        
+        if (values[5] && values[5].trim()) {
+          entry.note = values[5].trim()
+        }
+        
+        if (values[6] && values[6].trim()) {
+          try {
+            const unescapedSets = values[6].replace(/""/g, '"')
+            entry.sets = JSON.parse(unescapedSets)
+          } catch {
+          }
+        }
+        
+        if (values[7] && values[7].trim()) {
+          entry.feeling = values[7].trim() as FeelingType
+        }
+      } else if (!hasUserIdColumn && values.length >= 4) {
+        const count = parseInt(values[3])
+        
+        if (isNaN(count) || !values[0] || !values[1] || !values[2]) {
+          continue
+        }
+        
+        const normalizedDate = normalizeDateString(values[2].trim())
+        
+        entry = {
+          id: values[0].trim(),
+          userId: '',
+          challengeId: values[1].trim(),
+          date: normalizedDate,
+          count,
+        }
+        
+        if (values[4] && values[4].trim()) {
+          entry.note = values[4].trim()
+        }
+        
+        if (values[5] && values[5].trim()) {
+          try {
+            const unescapedSets = values[5].replace(/""/g, '"')
+            entry.sets = JSON.parse(unescapedSets)
+          } catch {
+          }
+        }
+        
+        if (values[6] && values[6].trim()) {
+          entry.feeling = values[6].trim() as FeelingType
         }
       }
       
-      if (values[feelingIdx] && values[feelingIdx].trim()) {
-        entry.feeling = values[feelingIdx] as FeelingType
+      if (entry && entry.id && entry.challengeId) {
+        entries.push(entry)
       }
-      
-      entries.push(entry)
+    } catch (error) {
+      console.warn(`Skipping invalid entry row ${i}:`, error)
     }
   }
   
   return entries
+}
+
+const normalizeDateString = (dateStr: string): string => {
+  if (dateStr.includes('-')) {
+    return dateStr
+  }
+  
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/')
+    if (parts.length === 3) {
+      const day = parts[0].padStart(2, '0')
+      const month = parts[1].padStart(2, '0')
+      const year = parts[2]
+      return `${year}-${month}-${day}`
+    }
+  }
+  
+  return dateStr
 }
 
 const parseCSVLine = (line: string): string[] => {

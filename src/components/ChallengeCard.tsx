@@ -53,8 +53,17 @@ export function ChallengeCard({ challenge, entries, onClick }: ChallengeCardProp
             <h3 className="text-2xl font-semibold mb-1">{challenge.name}</h3>
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" className="text-xs">
-                {challenge.year}
+                {challenge.timeframeUnit 
+                  ? `Per ${challenge.timeframeUnit.charAt(0).toUpperCase() + challenge.timeframeUnit.slice(1)}`
+                  : challenge.year}
               </Badge>
+              {challenge.startDate && challenge.endDate && (
+                <Badge variant="outline" className="text-xs">
+                  {new Date(challenge.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  {' → '}
+                  {new Date(challenge.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </Badge>
+              )}
               {stats.currentStreak > 0 && (
                 <Badge
                   variant="outline"

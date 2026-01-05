@@ -12,6 +12,45 @@ export function getDaysLeftInYear(year: number): number {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 }
 
+export function getChallengeTimeframe(challenge: Challenge): { startDate: string; endDate: string; totalDays: number } {
+  if (challenge.startDate && challenge.endDate) {
+    const start = new Date(challenge.startDate)
+    const end = new Date(challenge.endDate)
+    const diffTime = end.getTime() - start.getTime()
+    const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+    return { startDate: challenge.startDate, endDate: challenge.endDate, totalDays }
+  }
+
+  const unit = challenge.timeframeUnit || 'year'
+  const year = challenge.year
+  const today = new Date()
+  
+  switch (unit) {
+    case 'day':
+      const dayStr = today.toISOString().split('T')[0]
+      return { startDate: dayStr, endDate: dayStr, totalDays: 1 }
+    case 'month':
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]
+      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0]
+      const monthDays = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
+      return { startDate: monthStart, endDate: monthEnd, totalDays: monthDays }
+    case 'year':
+    default:
+      const yearStart = new Date(year, 0, 1).toISOString().split('T')[0]
+      const yearEnd = new Date(year, 11, 31).toISOString().split('T')[0]
+      return { startDate: yearStart, endDate: yearEnd, totalDays: getDaysInYear(year) }
+  }
+}
+
+export function getDaysLeftInTimeframe(challenge: Challenge): number {
+  const { endDate } = getChallengeTimeframe(challenge)
+  const now = new Date()
+  const end = new Date(endDate + 'T23:59:59')
+  if (now > end) return 0
+  const diffTime = end.getTime() - now.getTime()
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+}
+
 export function calculateStats(
   challenge: Challenge,
   entries: Entry[]
@@ -19,7 +58,8 @@ export function calculateStats(
   const challengeEntries = entries.filter((e) => e.challengeId === challenge.id)
   const total = challengeEntries.reduce((sum, e) => sum + e.count, 0)
   const remaining = Math.max(0, challenge.targetNumber - total)
-  const daysLeft = getDaysLeftInYear(challenge.year)
+  const { totalDays } = getChallengeTimeframe(challenge)
+  const daysLeft = getDaysLeftInTimeframe(challenge)
   const requiredPerDay = daysLeft > 0 ? Math.ceil(remaining / daysLeft) : 0
 
   const dayMap = new Map<string, number>()
@@ -62,11 +102,8 @@ export function calculateStats(
   const daysActive = dayMap.size
   const averagePerDay = daysActive > 0 ? total / daysActive : 0
 
-  const daysElapsed = Math.max(
-    1,
-    getDaysInYear(challenge.year) - getDaysLeftInYear(challenge.year)
-  )
-  const expectedByNow = (challenge.targetNumber / getDaysInYear(challenge.year)) * daysElapsed
+  const daysElapsed = Math.max(1, totalDays - daysLeft)
+  const expectedByNow = (challenge.targetNumber / totalDays) * daysElapsed
   const paceOffset = total - expectedByNow
 
   let paceStatus: 'ahead' | 'onPace' | 'behind' = 'onPace'
@@ -121,9 +158,9 @@ export function generateHeatmapData(
   challenge: Challenge,
   entries: Entry[]
 ): HeatmapDay[] {
-  const year = challenge.year
-  const startDate = new Date(year, 0, 1)
-  const endDate = new Date(year, 11, 31)
+  const { startDate, endDate } = getChallengeTimeframe(challenge)
+  const start = new Date(startDate)
+  const end = new Date(endDate)
   const heatmapDays: HeatmapDay[] = []
 
   const dayMap = new Map<string, number>()
@@ -136,8 +173,8 @@ export function generateHeatmapData(
 
   const maxCount = Math.max(...Array.from(dayMap.values()), 1)
 
-  const currentDate = new Date(startDate)
-  while (currentDate <= endDate) {
+  const currentDate = new Date(start)
+  while (currentDate <= end) {
     const dateStr = currentDate.toISOString().split('T')[0]
     const count = dayMap.get(dateStr) || 0
     const level = count === 0 ? 0 : Math.min(4, Math.ceil((count / maxCount) * 4))

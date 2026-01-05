@@ -1,3 +1,5 @@
+export type TimeframeUnit = 'day' | 'month' | 'year'
+
 export interface Challenge {
   id: string
   userId: string
@@ -9,6 +11,9 @@ export interface Challenge {
   createdAt: string
   archived: boolean
   isPublic?: boolean
+  timeframeUnit?: TimeframeUnit
+  startDate?: string
+  endDate?: string
 }
 
 export interface Set {

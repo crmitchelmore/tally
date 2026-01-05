@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Challenge, Entry, HeatmapDay, Set, FeelingType } from '@/types'
-import { calculateStats, generateHeatmapData, getDaysInYear } from '@/lib/stats'
+import { calculateStats, generateHeatmapData, getChallengeTimeframe } from '@/lib/stats'
 import { FEELING_OPTIONS } from '@/lib/constants'
 import { HeatmapCalendar } from './HeatmapCalendar'
 import { EditEntryDialog } from './EditEntryDialog'
@@ -36,6 +36,7 @@ export function ChallengeDetailView({ challenge, entries, onBack, onAddEntry, on
   
   const stats = calculateStats(challenge, entries)
   const heatmapData = generateHeatmapData(challenge, entries)
+  const { startDate, endDate, totalDays } = getChallengeTimeframe(challenge)
 
   const challengeEntries = entries
     .filter((e) => e.challengeId === challenge.id)
@@ -43,11 +44,12 @@ export function ChallengeDetailView({ challenge, entries, onBack, onAddEntry, on
 
   const cumulativeData: { date: string; actual: number; target: number }[] = []
   let cumulative = 0
-  const dailyTarget = challenge.targetNumber / getDaysInYear(challenge.year)
+  const dailyTarget = challenge.targetNumber / totalDays
 
-  const startDate = new Date(challenge.year, 0, 1)
+  const start = new Date(startDate)
   const today = new Date()
-  const endDate = today.getFullYear() === challenge.year ? today : new Date(challenge.year, 11, 31)
+  const end = new Date(endDate)
+  const finalDate = today < end ? today : end
 
   const entryMap = new Map<string, number>()
   challengeEntries.forEach((e) => {
@@ -55,15 +57,15 @@ export function ChallengeDetailView({ challenge, entries, onBack, onAddEntry, on
     entryMap.set(e.date, existing + e.count)
   })
 
-  const currentDate = new Date(startDate)
+  const currentDate = new Date(start)
   let dayIndex = 0
 
-  while (currentDate <= endDate) {
+  while (currentDate <= finalDate) {
     const dateStr = currentDate.toISOString().split('T')[0]
     const dayCount = entryMap.get(dateStr) || 0
     cumulative += dayCount
 
-    if (dayIndex % 7 === 0 || currentDate.getTime() === endDate.getTime()) {
+    if (dayIndex % 7 === 0 || currentDate.getTime() === finalDate.getTime()) {
       cumulativeData.push({
         date: `${currentDate.getMonth() + 1}/${currentDate.getDate()}`,
         actual: cumulative,
@@ -175,13 +177,15 @@ export function ChallengeDetailView({ challenge, entries, onBack, onAddEntry, on
             </div>
             <div className="text-2xl font-bold geist-mono">{stats.daysActive}</div>
             <div className="text-xs text-muted-foreground mt-1">
-              {Math.round((stats.daysActive / getDaysInYear(challenge.year)) * 100)}%
+              {Math.round((stats.daysActive / totalDays) * 100)}%
             </div>
           </Card>
         </div>
 
         <Card className="p-6 border-2 border-border">
-          <h2 className="text-lg font-semibold mb-4 uppercase tracking-wider text-sm text-muted-foreground">Yearly Activity</h2>
+          <h2 className="text-lg font-semibold mb-4 uppercase tracking-wider text-sm text-muted-foreground">
+            {challenge.timeframeUnit === 'day' ? 'Daily' : challenge.timeframeUnit === 'month' ? 'Monthly' : 'Yearly'} Activity
+          </h2>
           <HeatmapCalendar
             data={heatmapData}
             year={challenge.year}

@@ -91,9 +91,17 @@ function App() {
   const entries = (allEntries || []).filter(e => e.userId === userId)
 
   const currentYear = new Date().getFullYear()
-  const activeChallenges = challenges.filter(
-    (c) => !c.archived && c.year >= currentYear
-  ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  const today = new Date().toISOString().split('T')[0]
+  
+  const activeChallenges = challenges.filter((c) => {
+    if (c.archived) return false
+    
+    if (c.endDate) {
+      return c.endDate >= today
+    }
+    
+    return c.year >= currentYear
+  }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   const handleCreateChallenge = (
     challengeData: Omit<Challenge, 'id' | 'createdAt' | 'userId'>

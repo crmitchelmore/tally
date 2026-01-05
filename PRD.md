@@ -20,11 +20,11 @@ Tally - A tactile, satisfying progress tracker inspired by traditional tally mar
 - Success criteria: Login page gates all access to the app, users cannot see other users' data under any circumstances, all challenges and entries are tagged with userId, all operations (create, read, update, delete, import, export) are scoped to authenticated user only, proper loading states during authentication, clear error messaging if authentication fails, retry mechanism available on login page
 
 **Challenge Creation**
-- Functionality: Create a new yearly challenge with name, target number, year, custom color, and icon
-- Purpose: Allows users to define their ambitious annual goals with personalization
+- Functionality: Create a new challenge with name, target number, timeframe (day/month/year), custom date range (optional), custom color, and icon
+- Purpose: Allows users to define their ambitious goals with personalization and flexible timeframes (e.g., "30 planks this month" or "100 pushups from March 1st to April 1st")
 - Trigger: Click "New Challenge" button or floating + when no challenges exist
-- Progression: Click new → Modal opens → Enter name (e.g. "Push-ups") → Set target (10,000) → Choose year (default current) → Pick vibrant color → Select icon from 50+ options → Save → Card appears with 0/10,000 progress
-- Success criteria: Challenge persists across sessions, displays with chosen aesthetics, calculates daily pace needed
+- Progression: Click new → Modal opens → Enter name (e.g. "Push-ups") → Set target (10,000) → Choose timeframe (day/month/year default) → Optionally toggle "Custom Date Range" → If custom: select start date and end date (auto-calculates based on timeframe if end date not provided) → Choose year (if not using custom dates) → Pick vibrant color → Select icon from 50+ options → Save → Card appears with 0/10,000 progress
+- Success criteria: Challenge persists across sessions, displays with chosen aesthetics and timeframe, calculates daily pace needed based on actual timeframe (custom dates or default year), custom date ranges properly calculate end dates from start + timeframe unit, challenge shows appropriate badge (e.g., "Per Month", "Jan 1 → Jan 31")
 
 **Daily Entry Logging (Most Critical UX)**
 - Functionality: Quick-add entries with challenge selection for multiple challenges, large touch targets, presets, and optional notes
@@ -37,8 +37,8 @@ Tally - A tactile, satisfying progress tracker inspired by traditional tally mar
 - Functionality: Visual overview of all active challenges with overall summary stats, personal records highlighting best performances, current totals, pace analysis, and heatmaps
 - Purpose: Instant motivation boost showing progress across all challenges, celebrating achievements with personal records, and what's needed to stay on track
 - Trigger: App loads to dashboard by default
-- Progression: User opens app → Overall stats cards appear showing total reps, today's progress, best streak, and challenges ahead of pace → Personal records section displays best performances: best single day, longest streak, highest daily average, most active days, biggest single entry, and fastest to milestone → Grid of challenge cards loads → Each card shows: Colored top border for quick identification → Bold total/target → Thick circular progress ring (animated) → Mini heatmap showing year activity → "Remaining" section with days left, required daily pace (color-coded: green=ahead, gold=on pace, red=behind), and encouraging message → Can scroll through multiple challenges easily
-- Success criteria: All data loads instantly from KV storage, personal records accurately track best achievements across all challenges, colors accurately reflect pace status, heatmap renders 365 days without lag, overall stats aggregate across all challenges correctly, grid layout responsive (1 column mobile, 2 tablet, 3 desktop)
+- Progression: User opens app → Overall stats cards appear showing total reps, today's progress, best streak, and challenges ahead of pace → Personal records section displays best performances: best single day, longest streak, highest daily average, most active days, biggest single entry, and fastest to milestone → Grid of challenge cards loads → Each card shows: Colored top border for quick identification → Bold total/target → Timeframe badge (e.g., "Per Day", "Per Month", "Per Year") and optional date range badge (e.g., "Jan 1 → Jan 31") → Thick circular progress ring (animated) → Mini heatmap showing timeframe activity → "Remaining" section with days left, required daily pace (color-coded: green=ahead, gold=on pace, red=behind), and encouraging message → Can scroll through multiple challenges easily
+- Success criteria: All data loads instantly from KV storage, personal records accurately track best achievements across all challenges, colors accurately reflect pace status, heatmap renders all days in timeframe without lag, overall stats aggregate across all challenges correctly, grid layout responsive (1 column mobile, 2 tablet, 3 desktop), active challenges filter includes custom date ranges and shows challenges that haven't ended yet
 
 **Challenge Detail View**
 - Functionality: Full-screen deep dive into a single challenge with charts, stats, and history
@@ -48,18 +48,18 @@ Tally - A tactile, satisfying progress tracker inspired by traditional tally mar
 - Success criteria: Charts render smoothly using Recharts, streak calculations accurate, can navigate back to dashboard
 
 **Pace Intelligence**
-- Functionality: Real-time calculation of daily requirement, ahead/behind status, and motivational messaging
+- Functionality: Real-time calculation of daily requirement, ahead/behind status, and motivational messaging based on challenge timeframe
 - Purpose: Creates positive pressure to maintain consistency and celebrates being ahead
 - Trigger: Automatically recalculates after every entry and on dashboard load
-- Progression: System calculates: Total remaining → Days left in year → Required daily pace → Compares actual pace to required → Generates message: "You're 142 reps ahead 🔥" or "Need 8 extra per day this week to catch up"
-- Success criteria: Math is always accurate (accounts for year, leap years), messages feel encouraging not discouraging, color coding is instantly recognizable
+- Progression: System calculates: Total remaining → Days left in timeframe (custom date range or default year/month/day) → Required daily pace → Compares actual pace to required → Generates message: "You're 142 reps ahead 🔥" or "Need 8 extra per day this week to catch up"
+- Success criteria: Math is always accurate (accounts for custom date ranges, months, leap years), messages feel encouraging not discouraging, color coding is instantly recognizable, works correctly for all timeframe units (day/month/year)
 
 **Heatmap Calendar**
-- Functionality: GitHub-style contribution graph showing intensity by day
+- Functionality: GitHub-style contribution graph showing intensity by day for the challenge's timeframe
 - Purpose: Visual streak reinforcement and pattern recognition (user sees gaps immediately)
 - Trigger: Displays on every challenge card and detail view
-- Progression: Renders 365 day grid → Each square colored by intensity (5 levels from light to dark vibrant green) → Hover/tap shows tooltip: "Wed 18 Jun – 87 reps" + note if exists → Click day opens quick view modal with day's entries
-- Success criteria: All 365 days render in under 100ms, color scale matches GitHub aesthetic, tooltips don't lag on mobile
+- Progression: Renders grid for challenge timeframe (1 day, ~30 days for month, 365 days for year, or custom range) → Each square colored by intensity (5 levels from light to dark vibrant green) → Hover/tap shows tooltip: "Wed 18 Jun – 87 reps" + note if exists → Click day opens quick view modal with day's entries
+- Success criteria: All days in timeframe render quickly, color scale matches aesthetic, tooltips don't lag on mobile, adapts to different timeframe lengths (day/month/year/custom)
 
 **Export/Import Data**
 - Functionality: Backup and restore all challenges and entries in JSON or CSV format, with user-scoped data and ability to clear all data. All data operations are scoped to the authenticated GitHub user's ID to ensure complete data isolation between users.

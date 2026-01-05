@@ -1,4 +1,4 @@
-export type TimeframeUnit = 'day' | 'month' | 'year'
+export type TimeframeUnit = 'year' | 'month' | 'custom'
 
 export interface Challenge {
   id: string

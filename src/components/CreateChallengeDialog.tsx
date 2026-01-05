@@ -68,48 +68,88 @@ export function CreateChallengeDialog({
   onCreateChallenge,
 }: CreateChallengeDialogProps) {
   const currentYear = new Date().getFullYear()
+  const currentMonth = new Date().getMonth()
   const today = new Date().toISOString().split('T')[0]
   
   const [name, setName] = useState('')
   const [targetNumber, setTargetNumber] = useState<number>(10000)
-  const [year, setYear] = useState(currentYear)
   const [selectedColor, setSelectedColor] = useState(CHALLENGE_COLORS[0].value)
   const [selectedIcon, setSelectedIcon] = useState<string>(CHALLENGE_ICONS[0])
   const [isPublic, setIsPublic] = useState(false)
   const [timeframeUnit, setTimeframeUnit] = useState<TimeframeUnit>('year')
-  const [useCustomDates, setUseCustomDates] = useState(false)
+  const [selectedYear, setSelectedYear] = useState(currentYear)
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth + 1)
   const [startDate, setStartDate] = useState(today)
-  const [endDate, setEndDate] = useState('')
+  const [customDays, setCustomDays] = useState<number>(30)
 
-  const calculateEndDate = (start: string, unit: TimeframeUnit): string => {
-    const date = new Date(start)
-    switch (unit) {
-      case 'day':
-        return start
-      case 'month':
-        date.setMonth(date.getMonth() + 1)
-        date.setDate(date.getDate() - 1)
-        break
-      case 'year':
-        date.setFullYear(date.getFullYear() + 1)
-        date.setDate(date.getDate() - 1)
-        break
+  const getMonthOptions = () => {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ]
+    
+    const now = new Date()
+    const currentYearNum = now.getFullYear()
+    const currentMonthNum = now.getMonth()
+    
+    const options: { value: number; label: string; year: number }[] = []
+    
+    for (let i = 0; i < 12; i++) {
+      const monthIndex = (currentMonthNum + 1 + i) % 12
+      const yearOffset = Math.floor((currentMonthNum + 1 + i) / 12)
+      const year = currentYearNum + yearOffset
+      
+      options.push({
+        value: monthIndex,
+        label: `${months[monthIndex]} ${year}`,
+        year: year
+      })
     }
-    return date.toISOString().split('T')[0]
+    
+    return options
+  }
+
+  const calculateDateRange = (): { startDate?: string; endDate?: string; year: number } => {
+    const now = new Date()
+    
+    switch (timeframeUnit) {
+      case 'year': {
+        const yearStart = new Date(selectedYear, 0, 1).toISOString().split('T')[0]
+        const yearEnd = new Date(selectedYear, 11, 31).toISOString().split('T')[0]
+        return { startDate: yearStart, endDate: yearEnd, year: selectedYear }
+      }
+      case 'month': {
+        const monthOptions = getMonthOptions()
+        const selected = monthOptions.find(m => m.value === selectedMonth)
+        const year = selected?.year || currentYear
+        const monthStart = new Date(year, selectedMonth, 1).toISOString().split('T')[0]
+        const monthEnd = new Date(year, selectedMonth + 1, 0).toISOString().split('T')[0]
+        return { startDate: monthStart, endDate: monthEnd, year }
+      }
+      case 'custom': {
+        const start = new Date(startDate)
+        const end = new Date(start)
+        end.setDate(end.getDate() + customDays - 1)
+        return { 
+          startDate: startDate, 
+          endDate: end.toISOString().split('T')[0], 
+          year: start.getFullYear() 
+        }
+      }
+      default:
+        return { year: currentYear }
+    }
   }
 
   const handleSubmit = () => {
     if (!name.trim() || targetNumber <= 0) return
 
-    const finalStartDate = useCustomDates ? startDate : undefined
-    const finalEndDate = useCustomDates 
-      ? (endDate || calculateEndDate(startDate, timeframeUnit))
-      : undefined
+    const { startDate: finalStartDate, endDate: finalEndDate, year: finalYear } = calculateDateRange()
 
     onCreateChallenge({
       name: name.trim(),
       targetNumber,
-      year,
+      year: finalYear,
       color: selectedColor,
       icon: selectedIcon,
       archived: false,
@@ -121,14 +161,14 @@ export function CreateChallengeDialog({
 
     setName('')
     setTargetNumber(10000)
-    setYear(currentYear)
     setSelectedColor(CHALLENGE_COLORS[0].value)
     setSelectedIcon(CHALLENGE_ICONS[0])
     setIsPublic(false)
     setTimeframeUnit('year')
-    setUseCustomDates(false)
+    setSelectedYear(currentYear)
+    setSelectedMonth(currentMonth + 1)
     setStartDate(today)
-    setEndDate('')
+    setCustomDays(30)
     onOpenChange(false)
   }
 
@@ -169,35 +209,55 @@ export function CreateChallengeDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="day">Per Day</SelectItem>
-                  <SelectItem value="month">Per Month</SelectItem>
-                  <SelectItem value="year">Per Year</SelectItem>
+                  <SelectItem value="year">Year</SelectItem>
+                  <SelectItem value="month">Month</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex-1">
-                <Label className="text-sm font-semibold cursor-pointer" htmlFor="custom-dates-toggle">
-                  Custom Date Range
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Set specific start and end dates for this challenge
-                </p>
+            {timeframeUnit === 'year' && (
+              <div>
+                <Label className="text-sm mb-2 block">Select Year</Label>
+                <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 5 }, (_, i) => currentYear + i).map(year => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <Switch
-                id="custom-dates-toggle"
-                checked={useCustomDates}
-                onCheckedChange={setUseCustomDates}
-              />
-            </div>
+            )}
 
-            {useCustomDates && (
-              <div className="grid grid-cols-2 gap-4 pt-2">
+            {timeframeUnit === 'month' && (
+              <div>
+                <Label className="text-sm mb-2 block">Select Month</Label>
+                <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getMonthOptions().map(option => (
+                      <SelectItem key={`${option.year}-${option.value}`} value={option.value.toString()}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {timeframeUnit === 'custom' && (
+              <div className="space-y-4">
                 <div>
-                  <Label className="text-xs mb-2 block">Start Date</Label>
+                  <Label className="text-sm mb-2 block">Start Date</Label>
                   <Input
                     type="date"
                     value={startDate}
@@ -206,32 +266,19 @@ export function CreateChallengeDialog({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs mb-2 block">End Date</Label>
+                  <Label className="text-sm mb-2 block">Number of Days</Label>
                   <Input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    min={startDate}
-                    placeholder={calculateEndDate(startDate, timeframeUnit)}
-                    className="text-sm"
+                    type="number"
+                    value={customDays}
+                    onChange={(e) => setCustomDays(parseInt(e.target.value) || 1)}
+                    min="1"
+                    className="text-base"
+                    placeholder="e.g., 30, 50, 1000"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    {!endDate && `Auto: ${calculateEndDate(startDate, timeframeUnit)}`}
+                    End date: {new Date(new Date(startDate).getTime() + (customDays - 1) * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                   </p>
                 </div>
-              </div>
-            )}
-
-            {!useCustomDates && (
-              <div>
-                <Label className="text-sm mb-2 block">Year</Label>
-                <Input
-                  type="number"
-                  value={year}
-                  onChange={(e) => setYear(parseInt(e.target.value) || currentYear)}
-                  min={currentYear}
-                  className="text-base"
-                />
               </div>
             )}
           </div>

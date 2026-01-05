@@ -21,25 +21,10 @@ export function getChallengeTimeframe(challenge: Challenge): { startDate: string
     return { startDate: challenge.startDate, endDate: challenge.endDate, totalDays }
   }
 
-  const unit = challenge.timeframeUnit || 'year'
   const year = challenge.year
-  const today = new Date()
-  
-  switch (unit) {
-    case 'day':
-      const dayStr = today.toISOString().split('T')[0]
-      return { startDate: dayStr, endDate: dayStr, totalDays: 1 }
-    case 'month':
-      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]
-      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0]
-      const monthDays = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
-      return { startDate: monthStart, endDate: monthEnd, totalDays: monthDays }
-    case 'year':
-    default:
-      const yearStart = new Date(year, 0, 1).toISOString().split('T')[0]
-      const yearEnd = new Date(year, 11, 31).toISOString().split('T')[0]
-      return { startDate: yearStart, endDate: yearEnd, totalDays: getDaysInYear(year) }
-  }
+  const yearStart = new Date(year, 0, 1).toISOString().split('T')[0]
+  const yearEnd = new Date(year, 11, 31).toISOString().split('T')[0]
+  return { startDate: yearStart, endDate: yearEnd, totalDays: getDaysInYear(year) }
 }
 
 export function getDaysLeftInTimeframe(challenge: Challenge): number {

@@ -184,7 +184,7 @@ export function ChallengeDetailView({ challenge, entries, onBack, onAddEntry, on
 
         <Card className="p-6 border-2 border-border">
           <h2 className="text-lg font-semibold mb-4 uppercase tracking-wider text-sm text-muted-foreground">
-            {challenge.timeframeUnit === 'day' ? 'Daily' : challenge.timeframeUnit === 'month' ? 'Monthly' : 'Yearly'} Activity
+            {challenge.timeframeUnit === 'month' ? 'Monthly' : challenge.timeframeUnit === 'custom' ? 'Custom Period' : 'Yearly'} Activity
           </h2>
           <HeatmapCalendar
             data={heatmapData}

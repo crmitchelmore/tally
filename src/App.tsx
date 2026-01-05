@@ -52,7 +52,74 @@ function App() {
     fetchUser()
   }, [])
 
-  const handleRetryAuth = async () => {
+  const handleEmailLogin = async (email: string, password: string) => {
+    setIsLoadingUser(true)
+    try {
+      const storedUsers = await window.spark.kv.get<Record<string, { password: string }>>('email-users') || {}
+      
+      if (!storedUsers[email]) {
+        toast.error('Account not found', {
+          description: 'No account exists with this email',
+        })
+        setIsLoadingUser(false)
+        return
+      }
+
+      if (storedUsers[email].password !== password) {
+        toast.error('Invalid password', {
+          description: 'The password you entered is incorrect',
+        })
+        setIsLoadingUser(false)
+        return
+      }
+
+      const emailUserId = `email-${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}`
+      setUserId(emailUserId)
+      toast.success('Signed in successfully!', {
+        description: `Welcome back!`,
+      })
+    } catch (error) {
+      console.error('Failed to login:', error)
+      toast.error('Authentication failed', {
+        description: 'Please try again',
+      })
+    } finally {
+      setIsLoadingUser(false)
+    }
+  }
+
+  const handleEmailRegister = async (email: string, password: string) => {
+    setIsLoadingUser(true)
+    try {
+      const storedUsers = await window.spark.kv.get<Record<string, { password: string }>>('email-users') || {}
+      
+      if (storedUsers[email]) {
+        toast.error('Account already exists', {
+          description: 'An account with this email already exists. Please sign in.',
+        })
+        setIsLoadingUser(false)
+        return
+      }
+
+      storedUsers[email] = { password }
+      await window.spark.kv.set('email-users', storedUsers)
+
+      const emailUserId = `email-${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}`
+      setUserId(emailUserId)
+      toast.success('Account created!', {
+        description: 'Welcome to Tally! Start crushing your goals.',
+      })
+    } catch (error) {
+      console.error('Failed to register:', error)
+      toast.error('Registration failed', {
+        description: 'Please try again',
+      })
+    } finally {
+      setIsLoadingUser(false)
+    }
+  }
+
+  const handleGitHubLogin = async () => {
     setIsLoadingUser(true)
     try {
       const user = await window.spark.user()
@@ -260,7 +327,12 @@ function App() {
   if (isLoadingUser) {
     return (
       <>
-        <LoginPage onRetry={handleRetryAuth} isLoading={true} />
+        <LoginPage 
+          onEmailLogin={handleEmailLogin}
+          onEmailRegister={handleEmailRegister}
+          onGitHubLogin={handleGitHubLogin}
+          isLoading={true} 
+        />
         <Toaster />
       </>
     )
@@ -269,7 +341,12 @@ function App() {
   if (!userId) {
     return (
       <>
-        <LoginPage onRetry={handleRetryAuth} isLoading={false} />
+        <LoginPage 
+          onEmailLogin={handleEmailLogin}
+          onEmailRegister={handleEmailRegister}
+          onGitHubLogin={handleGitHubLogin}
+          isLoading={false} 
+        />
         <Toaster />
       </>
     )
@@ -361,7 +438,7 @@ function App() {
               )}
             </div>
             <div className="flex items-start gap-3">
-              <UserProfile onLogout={handleLogout} />
+              <UserProfile onLogout={handleLogout} userId={userId} />
               <div className="flex gap-2 flex-wrap justify-end">
                 <Button
                   onClick={() => setViewMode('leaderboard')}

@@ -80,3 +80,8 @@ export interface PublicChallenge {
   progress: number
   createdAt: string
 }
+
+export interface FollowedChallenge {
+  challengeId: string
+  followedAt: string
+}

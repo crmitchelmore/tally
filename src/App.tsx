@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Challenge, Entry, Set, FeelingType } from '@/types'
+import { Challenge, Entry, Set, FeelingType, FollowedChallenge } from '@/types'
 import { ChallengeCard } from '@/components/ChallengeCard'
+import { FollowedChallengeCard } from '@/components/FollowedChallengeCard'
 import { AddEntrySheet } from '@/components/AddEntrySheet'
 import { CreateChallengeDialog } from '@/components/CreateChallengeDialog'
 import { ChallengeDetailView } from '@/components/ChallengeDetailView'
@@ -14,6 +15,7 @@ import { LoginPage } from '@/components/LoginPage'
 import { LeaderboardView } from '@/components/LeaderboardView'
 import { PublicChallengesView } from '@/components/PublicChallengesView'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Plus, Target, Calendar, Database, Trophy, Users } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
@@ -32,6 +34,9 @@ function App() {
   const [weeklySummaryOpen, setWeeklySummaryOpen] = useState(false)
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
+
+  const followedChallengesKey = userId ? `followed-challenges-${userId}` : 'followed-challenges-temp'
+  const [followedChallenges, setFollowedChallenges] = useKV<FollowedChallenge[]>(followedChallengesKey, [])
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -149,6 +154,7 @@ function App() {
     setUserId(null)
     setSelectedChallengeId(null)
     setViewMode('dashboard')
+    setFollowedChallenges([])
     toast.success('Logged out successfully', {
       description: 'See you next time!',
     })
@@ -323,6 +329,29 @@ function App() {
   }
 
   const selectedChallenge = challenges.find((c) => c.id === selectedChallengeId)
+
+  const getFollowedChallengesData = () => {
+    if (!followedChallenges || followedChallenges.length === 0) return []
+    
+    return followedChallenges
+      .map(fc => {
+        const challenge = (allChallenges || []).find(c => c.id === fc.challengeId)
+        if (!challenge || challenge.archived || challenge.userId === userId) return null
+        return challenge
+      })
+      .filter((c): c is Challenge => c !== null)
+  }
+
+  const followedChallengesData = getFollowedChallengesData()
+
+  const handleUnfollowChallenge = (challengeId: string, challengeName: string) => {
+    setFollowedChallenges((current) => 
+      (current || []).filter(f => f.challengeId !== challengeId)
+    )
+    toast.success('Unfollowed challenge', {
+      description: `Removed ${challengeName} from your dashboard`,
+    })
+  }
 
   if (isLoadingUser) {
     return (
@@ -508,6 +537,26 @@ function App() {
 
         {activeChallenges.length > 0 && (
           <PersonalRecords challenges={activeChallenges} entries={entries || []} />
+        )}
+
+        {followedChallengesData.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <Users className="w-6 h-6 text-primary" />
+              <h2 className="text-2xl font-bold">Following</h2>
+              <Badge variant="secondary">{followedChallengesData.length}</Badge>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {followedChallengesData.map((challenge) => (
+                <FollowedChallengeCard
+                  key={challenge.id}
+                  challenge={challenge}
+                  entries={allEntries || []}
+                  onUnfollow={() => handleUnfollowChallenge(challenge.id, challenge.name)}
+                />
+              ))}
+            </div>
+          </div>
         )}
 
         {activeChallenges.length === 0 ? (

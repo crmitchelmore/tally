@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Challenge, Entry, PublicChallenge } from '@/types'
+import { Challenge, Entry, PublicChallenge, FollowedChallenge } from '@/types'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { CircularProgress } from '@/components/CircularProgress'
-import { Search, Users, TrendingUp, Calendar } from 'lucide-react'
+import { Search, Users, TrendingUp, Calendar, UserPlus, UserCheck } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { toast } from 'sonner'
 
 interface PublicChallengesViewProps {
   userId: string
@@ -25,6 +26,8 @@ interface UserCache {
 export function PublicChallengesView({ userId, onBack }: PublicChallengesViewProps) {
   const [allChallenges] = useKV<Challenge[]>('user-challenges', [])
   const [allEntries] = useKV<Entry[]>('user-entries', [])
+  const followedChallengesKey = userId ? `followed-challenges-${userId}` : 'followed-challenges-temp'
+  const [followedChallenges, setFollowedChallenges] = useKV<FollowedChallenge[]>(followedChallengesKey, [])
   const [userCache, setUserCache] = useState<UserCache>({})
   const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -108,6 +111,30 @@ export function PublicChallengesView({ userId, onBack }: PublicChallengesViewPro
     const endOfYear = new Date(year, 11, 31)
     const diff = endOfYear.getTime() - now.getTime()
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+  }
+
+  const isFollowing = (challengeId: string) => {
+    return (followedChallenges || []).some(f => f.challengeId === challengeId)
+  }
+
+  const handleToggleFollow = (challengeId: string, challengeName: string) => {
+    if (isFollowing(challengeId)) {
+      setFollowedChallenges((current) => 
+        (current || []).filter(f => f.challengeId !== challengeId)
+      )
+      toast.success('Unfollowed challenge', {
+        description: `Removed ${challengeName} from your dashboard`,
+      })
+    } else {
+      const newFollow: FollowedChallenge = {
+        challengeId,
+        followedAt: new Date().toISOString()
+      }
+      setFollowedChallenges((current) => [...(current || []), newFollow])
+      toast.success('Following challenge! 🎯', {
+        description: `${challengeName} will now appear on your dashboard`,
+      })
+    }
   }
 
   return (
@@ -236,7 +263,7 @@ export function PublicChallengesView({ userId, onBack }: PublicChallengesViewPro
                           </p>
                         </div>
 
-                        <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center justify-between text-sm mb-4">
                           <div className="flex items-center gap-1 text-muted-foreground">
                             <Calendar className="w-4 h-4" />
                             <span>{daysRemaining} days left</span>
@@ -246,6 +273,27 @@ export function PublicChallengesView({ userId, onBack }: PublicChallengesViewPro
                             <span className="font-semibold">{(challenge.totalReps / Math.max(1, 365 - daysRemaining)).toFixed(1)}/day</span>
                           </div>
                         </div>
+
+                        {!isOwnChallenge && (
+                          <Button
+                            onClick={() => handleToggleFollow(challenge.id, challenge.name)}
+                            variant={isFollowing(challenge.id) ? "secondary" : "default"}
+                            className="w-full"
+                            size="sm"
+                          >
+                            {isFollowing(challenge.id) ? (
+                              <>
+                                <UserCheck className="w-4 h-4 mr-2" />
+                                Following
+                              </>
+                            ) : (
+                              <>
+                                <UserPlus className="w-4 h-4 mr-2" />
+                                Follow
+                              </>
+                            )}
+                          </Button>
+                        )}
                       </div>
                     </Card>
                   </motion.div>

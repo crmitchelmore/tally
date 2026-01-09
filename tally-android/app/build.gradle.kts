@@ -6,7 +6,12 @@ plugins {
 
 configurations.configureEach {
   resolutionStrategy {
-    force("androidx.browser:browser:1.8.0")
+    force(
+      "androidx.browser:browser:1.8.0",
+      "com.squareup.okhttp3:okhttp:4.12.0",
+      "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.6.3",
+      "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.6.3",
+    )
   }
 }
 

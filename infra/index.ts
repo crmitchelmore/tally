@@ -52,7 +52,8 @@ new vercel.ProjectEnvironmentVariable("clerk-secret-key", {
   teamId: vercelTeamId,
   key: "CLERK_SECRET_KEY",
   value: clerkSecretKey,
-  targets: ["production"],
+  // Match existing Vercel env var scope to avoid replacement conflicts.
+  targets: ["production", "preview", "development"],
 });
 
 // =============================================================================

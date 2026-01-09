@@ -126,18 +126,18 @@ Legend: **Yes** = wired in the primary UI (web `/app` / mobile main flow), **Par
 | Create challenge (timeframe/color/icon/public) | Yes | Yes | Partial | Partial |
 | Challenge detail (heatmap/charts/stats) | Yes | Partial | Partial | Partial |
 | Add entry (date/note/sets/feeling + presets/confetti) | Yes | Yes | Partial | Partial |
-| Edit entry | Yes | Yes | No | No |
+| Edit entry | Yes | Yes | Partial | Partial |
 | Delete entry | Yes | Yes | Partial | Partial |
-| Public/private toggle + archive challenge | Yes | Yes | No | No |
-| Leaderboard | Partial | Yes | No | No |
-| Community browse public challenges + follow/unfollow | Partial | Yes | No | No |
-| Weekly summary | Partial | No | No | No |
-| Export/import + clear data | Partial | No | No | No |
+| Public/private toggle + archive challenge | Yes | Yes | Partial | Partial |
+| Leaderboard | Yes | Yes | Partial | Partial |
+| Community browse public challenges + follow/unfollow | Yes | Yes | Partial | Partial |
+| Weekly summary | Yes | No | No | No |
+| Export/import + clear data | Yes | No | No | No |
 
 Notes:
-- **Web** `/app` is now wired to existing PRD components for list → detail → CRUD; `bun run build` passes, but the flow still needs a manual smoke test in-browser.
-- Web has UI for leaderboard/public challenges/weekly summary/export-import under `tally-web/src/components/tally`, but these are not yet reachable from primary `/app` navigation.
-- **Mobile (iOS/Android)** implements a minimal authenticated CRUD flow (list → detail → create challenge → add entry → delete entry) but is not yet verified on emulator/device in this repo environment.
+- **Web** `/app` now has full feature parity with the original Spark app. All features are wired to the primary UI navigation. `bun run build` passes.
+- **iOS** has views for edit entry, challenge settings (public/private/archive), leaderboard, and community browse. Tab navigation updated. Not locally verified (no Xcode SDK).
+- **Android** has ViewModel and API methods for edit entry, update challenge, leaderboard, community browse, and follow/unfollow. UI components need to be wired to Compose screens. Not locally verified (no Android SDK).
 
 
 ### Phase 1: Foundation

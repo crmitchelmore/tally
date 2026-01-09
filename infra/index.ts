@@ -7,7 +7,7 @@ import * as command from "@pulumi/command";
 const config = new pulumi.Config();
 const domain = "tally-tracker.app";
 const zoneId = "816559836db3c2e80112bd6aeefd6d27";
-const vercelProjectId = "prj_xi1aOfL23eFPkcE4XCxCPp6CRkAF";
+const vercelProjectId = "prj_tXdIJDmRB1qKZyo5Ngat62XoaMgw";
 const vercelTeamId = "team_ifle7fkp7usKufCL8MUCY1As";
 
 // Manage the existing Vercel project.
@@ -24,17 +24,25 @@ const vercelProject = new vercel.Project("tally-web-project", {
 const clerkSecretKey = config.requireSecret("clerkSecretKey");
 const clerkPublishableKey = config.getSecret("clerkPublishableKey");
 
+// Convex configuration
+const convexDeployment = config.get("convexDeployment");
+
 // Ensure production deployments use the Clerk instance/keys managed by Pulumi config.
 // `clerkPublishableKey` is optional to avoid breaking existing stacks until it's set.
 if (clerkPublishableKey) {
-  new vercel.ProjectEnvironmentVariable("clerk-publishable-key", {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
-    value: clerkPublishableKey,
-    targets: ["production"],
-    comment: "Clerk publishable key (production)",
-  });
+  new vercel.ProjectEnvironmentVariable(
+    "clerk-publishable-key",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+      value: clerkPublishableKey,
+      targets: ["production"],
+    },
+    {
+      deleteBeforeReplace: true,
+    }
+  );
 } else {
   pulumi.log.warn(
     "Pulumi config 'clerkPublishableKey' is not set; leaving NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY unchanged in Vercel."
@@ -48,16 +56,33 @@ new vercel.ProjectEnvironmentVariable(
     teamId: vercelTeamId,
     key: "CLERK_SECRET_KEY",
     value: clerkSecretKey,
-    // Match the existing Vercel env var scope to avoid replacements.
     targets: ["production"],
-    comment: "",
-    sensitive: false,
   },
   {
-    // If the value changes, Vercel rejects create-before-delete due to key conflicts.
     deleteBeforeReplace: true,
   }
 );
+
+// Convex deployment env var
+if (convexDeployment) {
+  new vercel.ProjectEnvironmentVariable(
+    "convex-deployment",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "CONVEX_DEPLOYMENT",
+      value: convexDeployment,
+      targets: ["production"],
+    },
+    {
+      deleteBeforeReplace: true,
+    }
+  );
+} else {
+  pulumi.log.warn(
+    "Pulumi config 'convexDeployment' is not set; leaving CONVEX_DEPLOYMENT unchanged in Vercel."
+  );
+}
 
 // =============================================================================
 // Cloudflare DNS Records

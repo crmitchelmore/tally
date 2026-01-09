@@ -1,0 +1,54 @@
+package app.tally.auth
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.clerk.api.Clerk
+import com.clerk.api.network.serialization.errorMessage
+import com.clerk.api.network.serialization.onFailure
+import com.clerk.api.network.serialization.onSuccess
+import com.clerk.api.signup.SignUp
+import com.clerk.api.signup.attemptVerification
+import com.clerk.api.signup.prepareVerification
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+class SignUpViewModel : ViewModel() {
+  private val _uiState = MutableStateFlow<SignUpUiState>(SignUpUiState.SignedOut)
+  val uiState = _uiState.asStateFlow()
+
+  fun signUp(email: String, password: String) {
+    viewModelScope.launch {
+      SignUp.create(SignUp.CreateParams.Standard(emailAddress = email, password = password))
+        .onSuccess {
+          if (it.status == SignUp.Status.COMPLETE) {
+            _uiState.value = SignUpUiState.Success
+          } else {
+            _uiState.value = SignUpUiState.NeedsVerification
+            it.prepareVerification(SignUp.PrepareVerificationParams.Strategy.EmailCode())
+          }
+        }
+        .onFailure { _uiState.value = SignUpUiState.Error(it.errorMessage) }
+    }
+  }
+
+  fun verify(code: String) {
+    val inProgressSignUp = Clerk.signUp ?: run {
+      _uiState.value = SignUpUiState.Error("No sign-up in progress")
+      return
+    }
+
+    viewModelScope.launch {
+      inProgressSignUp.attemptVerification(SignUp.AttemptVerificationParams.EmailCode(code))
+        .onSuccess { _uiState.value = SignUpUiState.Success }
+        .onFailure { _uiState.value = SignUpUiState.Error(it.errorMessage) }
+    }
+  }
+
+  sealed interface SignUpUiState {
+    data object SignedOut : SignUpUiState
+    data object NeedsVerification : SignUpUiState
+    data object Success : SignUpUiState
+    data class Error(val message: String) : SignUpUiState
+  }
+}

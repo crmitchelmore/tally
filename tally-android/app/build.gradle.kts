@@ -14,10 +14,17 @@ android {
     targetSdk = 34
     versionCode = 1
     versionName = "0.1.0"
+
+    buildConfigField(
+      "String",
+      "CLERK_PUBLISHABLE_KEY",
+      "\"${System.getenv("CLERK_PUBLISHABLE_KEY") ?: ""}\""
+    )
   }
 
   buildFeatures {
     compose = true
+    buildConfig = true
   }
 
   composeOptions {
@@ -43,6 +50,12 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
   implementation("com.squareup.okhttp3:okhttp:4.12.0")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+  implementation("com.clerk:clerk-android-api:0.1.30")
+  implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.2")
+  implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.2")
+  implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2")
+  implementation("androidx.security:security-crypto:1.0.0")
 
   debugImplementation("androidx.compose.ui:ui-tooling")
 }

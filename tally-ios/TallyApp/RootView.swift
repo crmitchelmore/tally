@@ -85,7 +85,5 @@ struct RootView: View {
       }
     }
   }
-    }
-  }
 
 }

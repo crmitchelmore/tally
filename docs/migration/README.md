@@ -115,6 +115,31 @@ This migration transforms Tally from a Vite + React + GitHub Spark application i
 
 ## Master TODO List
 
+## Feature parity vs PRD (current)
+
+Legend: **Yes** = wired in the primary UI (web `/app` / mobile main flow), **Partial** = implemented but not fully wired and/or not yet verified end-to-end, **No** = missing.
+
+| Feature (PRD) | Web (`/app`) | API (HTTP) | iOS | Android |
+|---|---|---|---|---|
+| Auth gate | Yes | n/a | Partial | Partial |
+| Challenges list (my challenges) | Yes | Yes | Partial | Partial |
+| Create challenge (timeframe/color/icon/public) | Yes | Yes | Partial | Partial |
+| Challenge detail (heatmap/charts/stats) | Yes | Partial | Partial | Partial |
+| Add entry (date/note/sets/feeling + presets/confetti) | Yes | Yes | Partial | Partial |
+| Edit entry | Yes | Yes | No | No |
+| Delete entry | Yes | Yes | Partial | Partial |
+| Public/private toggle + archive challenge | Yes | Yes | No | No |
+| Leaderboard | Partial | Yes | No | No |
+| Community browse public challenges + follow/unfollow | Partial | Yes | No | No |
+| Weekly summary | Partial | No | No | No |
+| Export/import + clear data | Partial | No | No | No |
+
+Notes:
+- **Web** `/app` is now wired to existing PRD components for list → detail → CRUD; `bun run build` passes, but the flow still needs a manual smoke test in-browser.
+- Web has UI for leaderboard/public challenges/weekly summary/export-import under `tally-web/src/components/tally`, but these are not yet reachable from primary `/app` navigation.
+- **Mobile (iOS/Android)** implements a minimal authenticated CRUD flow (list → detail → create challenge → add entry → delete entry) but is not yet verified on emulator/device in this repo environment.
+
+
 ### Phase 1: Foundation
 - [x] **PROJECT 1: Next.js Web Migration** (see [PROJECT-1-NEXTJS.md](./PROJECT-1-NEXTJS.md))
   - [x] Task 1.1: Project Initialization

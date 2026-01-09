@@ -9,6 +9,11 @@
 
 ---
 
+## Implementation notes (current)
+- Minimal authenticated flow implemented: challenges list → challenge detail (entries) → create challenge → add entry → delete entry.
+- Settings includes sign out.
+- Not yet verified on simulator/device.
+
 ## TODO List
 
 > ⚠️ **IMPORTANT**: Do not check off any item until it has been **tested and verified working**. Run the verification steps for each task before marking complete.

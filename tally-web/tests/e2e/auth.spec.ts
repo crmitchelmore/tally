@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
+import { getApiBaseUrl } from "./apiAuth";
 
-test("@auth sign-in shows signed-in UI", async ({ page }) => {
+test("@auth sign-in shows signed-in UI", async ({ page, request }) => {
   const email = process.env.E2E_CLERK_EMAIL;
   const password = process.env.E2E_CLERK_PASSWORD;
 
@@ -20,4 +21,32 @@ test("@auth sign-in shows signed-in UI", async ({ page }) => {
   await expect(page.getByRole("button", { name: /new challenge/i })).toBeVisible({
     timeout: 30_000,
   });
+
+  const token = await page.evaluate(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const clerk = (window as any).Clerk;
+    if (!clerk?.session) return null;
+
+    try {
+      return await clerk.session.getToken({ template: "convex" });
+    } catch {
+      return await clerk.session.getToken();
+    }
+  });
+
+  expect(token).toBeTruthy();
+
+  const apiBase = getApiBaseUrl();
+
+  const unauthorized = await request.get(`${apiBase}/api/challenges`);
+  expect(unauthorized.status()).toBe(401);
+
+  const res = await request.get(`${apiBase}/api/challenges`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  expect(res.ok()).toBeTruthy();
+  await expect(res.json()).resolves.toBeInstanceOf(Array);
 });

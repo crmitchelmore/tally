@@ -7,12 +7,19 @@ on:
 
 jobs:
   ios:
-    runs-on: macos-latest
+    runs-on: macos-14
     defaults:
       run:
         working-directory: tally-ios
     steps:
       - uses: actions/checkout@v4
+
+      - name: Toolchain info
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks
+          xcrun simctl list runtimes
+          xcrun simctl list devices available | head -n 80
 
       - name: Install xcodegen
         run: brew install xcodegen
@@ -20,12 +27,29 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
+      - name: Select simulator
+        id: sim
+        run: |
+          UDID=$(python3 - <<'PY'
+          import json, subprocess
+          data = subprocess.check_output(["xcrun", "simctl", "list", "devices", "available", "-j"]) 
+          obj = json.loads(data)
+          for runtime, devices in obj.get("devices", {}).items():
+            for d in devices:
+              if d.get("isAvailable") and d.get("name", "").startswith("iPhone"):
+                print(d["udid"])
+                raise SystemExit(0)
+          raise SystemExit("No available iPhone simulator found")
+          PY
+          )
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+
       - name: Build (no signing)
         run: |
           xcodebuild \
             -project Tally.xcodeproj \
             -scheme Tally \
-            -destination 'generic/platform=iOS Simulator' \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
             CODE_SIGNING_ALLOWED=NO \
             build
 
@@ -34,6 +58,6 @@ jobs:
           xcodebuild \
             -project Tally.xcodeproj \
             -scheme TallyTests \
-            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
             CODE_SIGNING_ALLOWED=NO \
             test

@@ -18,6 +18,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.tally.ios
         DEVELOPMENT_TEAM: ""
+        GENERATE_INFOPLIST_FILE: YES
   TallyTests:
     type: bundle.unit-test
     platform: iOS

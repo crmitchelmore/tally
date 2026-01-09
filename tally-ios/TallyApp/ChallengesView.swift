@@ -14,11 +14,18 @@ struct ChallengesView: View {
         if isLoading {
           ProgressView()
         } else if let errorText {
-          ContentUnavailableView(
-            "Could not load",
-            systemImage: "exclamationmark.triangle",
-            description: Text(errorText)
-          )
+          VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+              .font(.system(size: 44))
+              .foregroundStyle(.secondary)
+            Text("Could not load")
+              .font(.headline)
+            Text(errorText)
+              .font(.footnote)
+              .foregroundStyle(.secondary)
+              .multilineTextAlignment(.center)
+          }
+          .padding()
         } else {
           List(challenges) { c in
             VStack(alignment: .leading, spacing: 4) {

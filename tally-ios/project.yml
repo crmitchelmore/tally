@@ -32,3 +32,11 @@ targets:
       - path: TallyAppTests
     dependencies:
       - target: Tally
+  TallyUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: TallyAppUITests
+        optional: true
+    dependencies:
+      - target: Tally

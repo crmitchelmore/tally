@@ -10,21 +10,15 @@ const zoneId = "816559836db3c2e80112bd6aeefd6d27";
 const vercelProjectId = "prj_xi1aOfL23eFPkcE4XCxCPp6CRkAF";
 const vercelTeamId = "team_ifle7fkp7usKufCL8MUCY1As";
 
-// Import + manage the existing Vercel project so domains attach consistently.
-// This does NOT create a new project; it adopts the existing one by ID.
-const vercelProject = new vercel.Project(
-  "tally-web-project",
-  {
-    teamId: vercelTeamId,
-    name: "tally-web",
-    framework: "nextjs",
-    rootDirectory: "tally-web",
-    autoAssignCustomDomains: true,
-  },
-  {
-    import: `${vercelTeamId}/${vercelProjectId}`,
-  }
-);
+// Manage the existing Vercel project.
+// NOTE: the `import` option is one-time only; keeping it can cause Pulumi to re-import/delete.
+const vercelProject = new vercel.Project("tally-web-project", {
+  teamId: vercelTeamId,
+  name: "tally-web",
+  framework: "nextjs",
+  rootDirectory: "tally-web",
+  autoAssignCustomDomains: true,
+});
 
 // Clerk configuration
 const clerkSecretKey = config.requireSecret("clerkSecretKey");
@@ -34,7 +28,7 @@ const clerkPublishableKey = config.getSecret("clerkPublishableKey");
 // `clerkPublishableKey` is optional to avoid breaking existing stacks until it's set.
 if (clerkPublishableKey) {
   new vercel.ProjectEnvironmentVariable("clerk-publishable-key", {
-    projectId: vercelProjectId,
+    projectId: vercelProject.id,
     teamId: vercelTeamId,
     key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
     value: clerkPublishableKey,
@@ -47,14 +41,23 @@ if (clerkPublishableKey) {
   );
 }
 
-new vercel.ProjectEnvironmentVariable("clerk-secret-key", {
-  projectId: vercelProjectId,
-  teamId: vercelTeamId,
-  key: "CLERK_SECRET_KEY",
-  value: clerkSecretKey,
-  // Match existing Vercel env var scope to avoid replacement conflicts.
-  targets: ["production", "preview", "development"],
-});
+new vercel.ProjectEnvironmentVariable(
+  "clerk-secret-key",
+  {
+    projectId: vercelProject.id,
+    teamId: vercelTeamId,
+    key: "CLERK_SECRET_KEY",
+    value: clerkSecretKey,
+    // Match the existing Vercel env var scope to avoid replacements.
+    targets: ["production"],
+    comment: "",
+    sensitive: false,
+  },
+  {
+    // If the value changes, Vercel rejects create-before-delete due to key conflicts.
+    deleteBeforeReplace: true,
+  }
+);
 
 // =============================================================================
 // Cloudflare DNS Records

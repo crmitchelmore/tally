@@ -1,22 +1,14 @@
 plugins {
   id("com.android.application")
   id("org.jetbrains.kotlin.android")
+  id("org.jetbrains.kotlin.plugin.compose")
   id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 configurations.configureEach {
   resolutionStrategy {
-    force(
-      "androidx.browser:browser:1.8.0",
-      "com.squareup.okhttp3:okhttp:4.12.0",
-      "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.6.3",
-      "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.6.3",
-    )
+    force("androidx.browser:browser:1.8.0")
   }
-}
-
-kotlin {
-  jvmToolchain(17)
 }
 
 android {
@@ -48,9 +40,6 @@ android {
     buildConfig = true
   }
 
-  composeOptions {
-    kotlinCompilerExtensionVersion = "1.5.13"
-  }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17

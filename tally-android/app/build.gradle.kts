@@ -4,6 +4,12 @@ plugins {
   id("org.jetbrains.kotlin.plugin.serialization")
 }
 
+configurations.configureEach {
+  resolutionStrategy {
+    force("androidx.browser:browser:1.8.0")
+  }
+}
+
 android {
   namespace = "app.tally"
   compileSdk = 35

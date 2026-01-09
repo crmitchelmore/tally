@@ -103,12 +103,13 @@ This migration transforms Tally from a Vite + React + GitHub Spark application i
 | Document | Description | Duration |
 |----------|-------------|----------|
 | [PROJECT-1-NEXTJS.md](./PROJECT-1-NEXTJS.md) | Next.js + Vercel + Convex + Clerk | 2-3 weeks |
+| *(new)* **PROJECT 6: Marketing Landing Page + App Relocation** | Creative marketing site on `/` + move app to `/app` or `app.` subdomain (IaC-managed) | 1-2 weeks |
 | [PROJECT-2-API.md](./PROJECT-2-API.md) | Shared HTTP API Layer | 3-4 days |
 | [PROJECT-3-IOS.md](./PROJECT-3-IOS.md) | Native iOS App | 3-4 weeks |
 | [PROJECT-4-ANDROID.md](./PROJECT-4-ANDROID.md) | Native Android App | 3-4 weeks |
 | [PROJECT-5-LAUNCH.md](./PROJECT-5-LAUNCH.md) | Cross-Platform Polish & Launch | 1-2 weeks |
 
-**Total Duration: 10-14 weeks**
+**Total Duration: 11-16 weeks**
 
 ---
 
@@ -124,6 +125,19 @@ This migration transforms Tally from a Vite + React + GitHub Spark application i
   - [x] Task 1.6: Real-time Features
   - [x] Task 1.7: Deployment to Vercel
   - [x] Project 1 Completion Checklist verified
+
+- [ ] **PROJECT 6: Marketing Landing Page + App Relocation**
+  - [ ] Task 6.1: Decide hosting strategy (recommended default: landing page on `/`, app on `/app`; alternative: app on `app.tally-tracker.app`)
+  - [ ] Task 6.2: Choose landing stack + build high-craft page (default: Next.js App Router + Tailwind; optionally Astro for pure-static marketing; add Framer Motion/Rive/Lottie + embedded product video)
+  - [ ] Task 6.3: Move the existing app behind `/app` (or subdomain) without breaking auth/session handling
+  - [ ] Task 6.4: Infrastructure as Code updates (Pulumi)
+    - [ ] If **subdomain**: add Cloudflare DNS + Vercel domain mapping + update Clerk redirect URLs for the new origin
+    - [ ] If **path**: ensure redirects/canonical URLs as needed (no DNS change expected)
+  - [ ] Task 6.5: Verification
+    - [ ] `https://tally-tracker.app` loads the marketing landing page
+    - [ ] App loads at chosen location (`/app` or `app.`) and sign-in works end-to-end
+    - [ ] Mobile store links (iOS/Android) present and correct
+  - [ ] Project 6 Completion Checklist verified
 
 ### Phase 2: API Layer
 - [ ] **PROJECT 2: Shared API Layer** (see [PROJECT-2-API.md](./PROJECT-2-API.md))
@@ -249,7 +263,7 @@ Before marking the migration complete, run each specialist agent to review and a
 
 Only check these off after ALL projects and agent reviews are complete:
 
-- [ ] Web app live at production URL
+- [ ] Marketing landing page live on root domain, and web app live at chosen location (`/app` or `app.` subdomain)
 - [ ] iOS app approved and live on App Store
 - [ ] Android app approved and live on Play Store
 - [ ] All platforms share same database (Convex)
@@ -282,18 +296,21 @@ Only check these off after ALL projects and agent reviews are complete:
 ```
 Project 1 (Next.js)
     ↓
-Project 2 (API)
-    ↓
-┌───┴───┐
-↓       ↓
-Project 3   Project 4
-(iOS)       (Android)
-└───┬───┘
-    ↓
-Project 5 (Launch)
+┌───┴───────────┐
+↓               ↓
+Project 6        Project 2 (API)
+(Landing +       ↓
+ app location)  ┌───┴───┐
+                ↓       ↓
+             Project 3   Project 4
+             (iOS)       (Android)
+                └───┬───┘
+                    ↓
+             Project 5 (Launch)
 ```
 
 Projects 3 and 4 can run in parallel after Project 2 is complete.
+Project 6 can run in parallel with Project 2, but should be completed before Project 5.
 
 ---
 

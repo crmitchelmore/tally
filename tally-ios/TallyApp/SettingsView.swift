@@ -1,7 +1,9 @@
 import SwiftUI
+import Clerk
 
 struct SettingsView: View {
   @EnvironmentObject private var state: AppState
+  @Environment(\.clerk) private var clerk
 
   var body: some View {
     NavigationStack {
@@ -13,14 +15,15 @@ struct SettingsView: View {
         }
 
         Section("Auth") {
-          Text("Signed in")
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-
-          Button(role: .destructive) {
-            state.signOut()
-          } label: {
-            Text("Sign out")
+          if clerk.user != nil {
+            Button(role: .destructive) {
+              Task {
+                try? await clerk.signOut()
+                state.signOut()
+              }
+            } label: {
+              Text("Sign out")
+            }
           }
         }
       }

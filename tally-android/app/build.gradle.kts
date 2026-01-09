@@ -20,6 +20,12 @@ android {
       "CLERK_PUBLISHABLE_KEY",
       "\"${System.getenv("CLERK_PUBLISHABLE_KEY") ?: ""}\""
     )
+
+    buildConfigField(
+      "String",
+      "TALLY_API_BASE_URL",
+      "\"${System.getenv("TALLY_API_BASE_URL") ?: "https://bright-jackal-396.convex.site"}\""
+    )
   }
 
   buildFeatures {

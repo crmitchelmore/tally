@@ -1,5 +1,6 @@
 package app.tally.net
 
+import app.tally.BuildConfig
 import app.tally.model.Challenge
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
@@ -13,7 +14,7 @@ object TallyApi {
   private val json = Json { ignoreUnknownKeys = true }
   private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
 
-  var baseUrl: String = "https://bright-jackal-396.convex.site"
+  var baseUrl: String = BuildConfig.TALLY_API_BASE_URL
 
   fun getPublicChallenges(): List<Challenge> {
     val req = Request.Builder()

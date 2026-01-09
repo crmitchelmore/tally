@@ -8,6 +8,7 @@ interface TallyMarksProps {
   size?: "sm" | "md" | "lg";
   animate?: boolean;
   color?: string;
+  crossColor?: string;
 }
 
 export function TallyMarks({
@@ -15,6 +16,7 @@ export function TallyMarks({
   size = "md",
   animate = false,
   color = "oklch(0.25 0.02 30)",
+  crossColor,
 }: TallyMarksProps) {
   const sizeMap = {
     sm: { width: 20, height: 30, gap: 4, strokeWidth: 2 },
@@ -80,7 +82,7 @@ export function TallyMarks({
           y1={height / 2 - 5}
           x2={width - 5}
           y2={height / 2 + 5}
-          stroke={color}
+          stroke={crossColor ?? color}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           initial={animate ? { pathLength: 0, opacity: 0 } : undefined}

@@ -43,9 +43,43 @@ Tally should feel **friendly, fun, and fast**—a product people enjoy opening e
 - Instrument performance and keep the app snappy as features grow.
 
 ## Landing page philosophy (marketing)
-- The root domain should communicate:
-  - what Tally is
-  - why it’s different
-  - how it feels (video/animation)
-  - clear links to iOS/Android
-- Marketing should be bold and creative; infrastructure should remain boring and reliable.
+The landing page should feel like the product: **calm momentum**—minimal, confident, and a little playful.
+
+### Themes (visual + narrative)
+- **Tally marks as a brand motif**: crisp “ink” strokes, the 5th slash as the signature accent.
+- **Momentum > motivation**: small wins compounding over time (show this, don’t just say it).
+- **Live, fast UI**: subtle, high-craft motion and an interactive micro-demo instead of big claims.
+
+### Top ideas (ranked)
+1) **Hero: interactive micro-demo** — a tiny embedded “challenge card” where clicking “+1” draws a tally mark and updates a mini chart (fast, delightful, instantly communicates the product).
+2) **Tally-ink background system** — ultra-subtle repeating tally texture + occasional diagonal “slash” accent, using OKLCH tokens (works in light/dark, stays calm).
+3) **Bento feature grid** — fewer words, more visual: 3–5 tiles with screenshots/mini-animations (logging, streaks, stats, sync).
+4) **Typography-led clarity** — big, bold headline with tight copy, generous whitespace, and one strong CTA path.
+
+### Style direction to adopt (default)
+**“Ink + Momentum”**
+- Base: neutral UI (current shadcn New York feel), lots of whitespace.
+- Accent: a single warm “slash” color (the 5th tally stroke) used sparingly for CTAs and highlights.
+- Texture: faint tally pattern (opacity 2–4%), never competing with content.
+- Components: rounded-2xl cards, soft borders, gentle shadows; avoid loud gradients.
+
+### Motion (high-craft, low-noise)
+- Prefer **microinteractions** (hover/press, count-up, draw-in strokes) over large ambient animation.
+- Durations: ~120–220ms for UI, ~280–420ms for hero moments.
+- Always respect reduced-motion.
+
+### Experiments (cheap validation)
+- **Micro-demo vs. static hero**
+  - Hypothesis: a clickable “+1” demo improves understanding and increases sign-up intent.
+  - Success metric: +15% CTR to **Create an account** (or **Open app**) from hero.
+- **Bento grid vs. text cards**
+  - Hypothesis: visual tiles reduce scanning effort and improve scroll completion.
+  - Success metric: +10% scroll depth to the final CTA section.
+- **Accent discipline (one accent color)**
+  - Hypothesis: fewer competing colors improves clarity and CTA conversion.
+  - Success metric: +5% CTA conversion; no increase in bounce.
+
+### Risks / assumptions
+- Motion must remain subtle; too much animation breaks the “calm + fast” promise.
+- The micro-demo must be lightweight (avoid heavy charts/assets) to protect LCP/INP.
+- Accessibility is non-negotiable: contrast, focus states, and reduced-motion need to work from day one.

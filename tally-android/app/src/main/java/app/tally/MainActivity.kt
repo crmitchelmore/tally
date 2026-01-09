@@ -27,7 +27,6 @@ import app.tally.net.CreateChallengeRequest
 import app.tally.net.CreateEntryRequest
 import app.tally.net.TallyApi
 import com.clerk.api.Clerk
-import com.clerk.api.network.serialization.errorMessage
 import com.clerk.api.network.serialization.onFailure
 import com.clerk.api.network.serialization.onSuccess
 import com.clerk.api.session.SessionGetTokenOptions
@@ -54,6 +53,23 @@ class MainActivity : ComponentActivity() {
 
       val tokenStore = remember { AuthTokenStore(this) }
 
+      suspend fun getJwtOrFetch(): String? {
+        val session = Clerk.session
+        if (session != null) {
+          var jwt: String? = null
+          session.fetchToken(SessionGetTokenOptions(template = "convex"))
+            .onSuccess { jwt = it.jwt }
+            .onFailure { /* ignore */ }
+
+          if (!jwt.isNullOrBlank()) {
+            withContext(Dispatchers.IO) { tokenStore.setConvexJwt(jwt) }
+            return jwt
+          }
+        }
+
+        return withContext(Dispatchers.IO) { tokenStore.getConvexJwt()?.takeIf { it.isNotBlank() } }
+      }
+
       LaunchedEffect(state) {
         error = null
 
@@ -65,24 +81,9 @@ class MainActivity : ComponentActivity() {
         }
 
         try {
-          val jwt = withContext(Dispatchers.IO) {
-            tokenStore.getConvexJwt()?.takeIf { it.isNotBlank() }
-          } ?: run {
-            val session = Clerk.session
-            if (session == null) {
-              error = "No Clerk session"
-              return@LaunchedEffect
-            }
-
-            var jwt: String? = null
-            session.fetchToken(SessionGetTokenOptions(template = "convex"))
-              .onSuccess { jwt = it.jwt }
-              .onFailure { error = it.errorMessage }
-
-            if (jwt.isNullOrBlank()) return@LaunchedEffect
-
-            withContext(Dispatchers.IO) { tokenStore.setConvexJwt(jwt) }
-            jwt
+          val jwt = getJwtOrFetch() ?: run {
+            error = "No auth token"
+            return@LaunchedEffect
           }
 
           val loadedChallenges = withContext(Dispatchers.IO) {
@@ -131,10 +132,8 @@ class MainActivity : ComponentActivity() {
                     status = null
                     error = null
 
-                    val jwt = withContext(Dispatchers.IO) {
-                      tokenStore.getConvexJwt()?.takeIf { it.isNotBlank() }
-                    } ?: run {
-                      error = "No cached token (sign out/in)"
+                    val jwt = getJwtOrFetch() ?: run {
+                      error = "No auth token"
                       return@launch
                     }
 
@@ -175,10 +174,8 @@ class MainActivity : ComponentActivity() {
                       return@launch
                     }
 
-                    val jwt = withContext(Dispatchers.IO) {
-                      tokenStore.getConvexJwt()?.takeIf { it.isNotBlank() }
-                    } ?: run {
-                      error = "No cached token (sign out/in)"
+                    val jwt = getJwtOrFetch() ?: run {
+                      error = "No auth token"
                       return@launch
                     }
 

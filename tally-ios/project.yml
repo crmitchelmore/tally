@@ -2,7 +2,7 @@ name: Tally
 options:
   bundleIdPrefix: app.tally
   deploymentTarget:
-    iOS: 16.0
+    iOS: 17.0
 packages:
   TallyCore:
     path: TallyCore

@@ -1,6 +1,0 @@
-encryptionsalt: v1:/SxZcONtV5Q=:v1:Ws4QQCrKunu1i0Q7:YFX9c35ZqQ7Mv9HCZjm9QZPzzNg1Dg==
-config:
-  cloudflare:apiToken:
-    secure: v1:rQL4Hq8PcrZY4/GB:+3LwdSc10pYsq0Fg3u4tEjbZbQuLFgET4M3AH9Qi0F134R1oQwFJIWsoelRooA7fn8dSzvypBEc=
-  vercel:apiToken:
-    secure: v1:5q0/tPzbc6NHHZZW:zKgT6fHy+KI1cvVnUUGC24gqFqIUIYHfZOQGdgbiOv3bg4DjpiSJ0A==

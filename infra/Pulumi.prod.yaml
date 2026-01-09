@@ -1,0 +1,5 @@
+config:
+  cloudflare:apiToken:
+    secure: AAABAE+hQlRa20PFF1TQLe+3Ap0NLvMSkGpfBPc36IrRyMAiE7en5X5gKEXWRNjOHhs6QWt663c/WefOZJZ1Tvj9da1d98VU
+  vercel:apiToken:
+    secure: AAABALeY95TiHWHOve62FxdqgxVktNOP/oQ6lugdSF9EqkgGPIdpLoHGtcl8YeOh0P5hXnfACSs=

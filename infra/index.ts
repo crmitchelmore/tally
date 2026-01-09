@@ -53,8 +53,6 @@ new vercel.ProjectEnvironmentVariable("clerk-secret-key", {
   key: "CLERK_SECRET_KEY",
   value: clerkSecretKey,
   targets: ["production"],
-  sensitive: true,
-  comment: "Clerk secret key (production)",
 });
 
 // =============================================================================

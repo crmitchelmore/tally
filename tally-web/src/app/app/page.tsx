@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { useStoreUser, useCurrentUser } from "@/hooks/use-store-user";
 import { ChallengeCard, ChallengeDetailView, CreateChallengeDialog } from "@/components/tally";
 import { Button } from "@/components/ui/button";
@@ -109,7 +110,7 @@ export default function Home() {
                 if (!convexUser) return;
                 void createEntry({
                   userId: convexUser._id,
-                  challengeId: challengeId as any,
+                  challengeId: challengeId as Id<"challenges">,
                   date,
                   count,
                   note: note || undefined,
@@ -119,7 +120,7 @@ export default function Home() {
               }}
               onUpdateEntry={(entryId, count, note, date, feeling) => {
                 void updateEntry({
-                  id: entryId as any,
+                  id: entryId as Id<"entries">,
                   count,
                   note: note || undefined,
                   date,
@@ -127,11 +128,11 @@ export default function Home() {
                 });
               }}
               onDeleteEntry={(entryId) => {
-                void deleteEntry({ id: entryId as any });
+                void deleteEntry({ id: entryId as Id<"entries"> });
               }}
               onUpdateChallenge={(challengeId, updates) => {
                 void updateChallenge({
-                  id: challengeId as any,
+                  id: challengeId as Id<"challenges">,
                   name: updates.name,
                   targetNumber: updates.targetNumber,
                   color: updates.color,
@@ -141,7 +142,7 @@ export default function Home() {
                 });
               }}
               onArchiveChallenge={(challengeId) => {
-                void archiveChallenge({ id: challengeId as any });
+                void archiveChallenge({ id: challengeId as Id<"challenges"> });
                 setSelectedChallengeId(null);
               }}
             />
@@ -218,12 +219,12 @@ export default function Home() {
               year: challenge.year,
               color: challenge.color,
               icon: challenge.icon,
-              timeframeUnit: (challenge.timeframeUnit ?? "year") as any,
+              timeframeUnit: (challenge.timeframeUnit ?? "year") as "year" | "month" | "custom",
               startDate: challenge.startDate,
               endDate: challenge.endDate,
               isPublic: challenge.isPublic ?? false,
             });
-            setSelectedChallengeId(id as unknown as string);
+            setSelectedChallengeId(id);
           })();
         }}
       />

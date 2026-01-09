@@ -47,15 +47,23 @@ if (clerkPublishableKey) {
   );
 }
 
-new vercel.ProjectEnvironmentVariable("clerk-secret-key", {
-  projectId: vercelProject.id,
-  teamId: vercelTeamId,
-  key: "CLERK_SECRET_KEY",
-  value: clerkSecretKey,
-  targets: ["production"],
-  sensitive: true,
-  comment: "Clerk secret key (production)",
-});
+new vercel.ProjectEnvironmentVariable(
+  "clerk-secret-key",
+  {
+    projectId: vercelProject.id,
+    teamId: vercelTeamId,
+    key: "CLERK_SECRET_KEY",
+    value: clerkSecretKey,
+    targets: ["production"],
+    sensitive: true,
+    comment: "Clerk secret key (production)",
+  },
+  {
+    // This env var already exists in Vercel; import it so Pulumi can manage updates.
+    // ID format: <teamId>/<projectId>/<envVarId>
+    import: `${vercelTeamId}/${vercelProjectId}/KAAnsXTxJUMpjaLi`,
+  }
+);
 
 // =============================================================================
 // Cloudflare DNS Records

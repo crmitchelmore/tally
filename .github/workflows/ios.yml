@@ -1,0 +1,39 @@
+name: iOS (build)
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  ios:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: tally-ios
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build (no signing)
+        run: |
+          xcodebuild \
+            -project Tally.xcodeproj \
+            -scheme Tally \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Test (no signing)
+        run: |
+          xcodebuild \
+            -project Tally.xcodeproj \
+            -scheme TallyTests \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            CODE_SIGNING_ALLOWED=NO \
+            test

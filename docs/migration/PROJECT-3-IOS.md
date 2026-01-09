@@ -14,25 +14,17 @@
 > ⚠️ **IMPORTANT**: Do not check off any item until it has been **tested and verified working**. Run the verification steps for each task before marking complete.
 
 ### Task 3.1: Xcode Project Setup
-- [ ] Create Xcode project
-  - [ ] Open Xcode → New Project → iOS → App
-  - [ ] Product Name: Tally
-  - [ ] Interface: SwiftUI
-  - [ ] Language: Swift
-  - [ ] Verify: Project opens without errors
-- [ ] Configure project structure
-  - [ ] Create App/ folder with TallyApp.swift, ContentView.swift
-  - [ ] Create Models/ folder
-  - [ ] Create Views/ folder with subfolders (Dashboard, Challenge, Entry, Social, Auth)
-  - [ ] Create ViewModels/ folder
-  - [ ] Create Services/ folder
-  - [ ] Create Components/ folder
-  - [ ] Create Utilities/ folder
-  - [ ] Create Resources/ folder
-  - [ ] Verify: All folders created
+- [x] Create iOS project scaffold
+  - [x] Added `tally-ios/project.yml` (XcodeGen)
+  - [x] Generated `Tally.xcodeproj` locally via `xcodegen generate`
+  - [x] App sources created under `tally-ios/TallyApp/`
+- [x] Configure project structure
+  - [x] Created app sources (`TallyApp.swift`, `RootView`, basic views)
+  - [x] Created a shared Swift Package (`tally-ios/TallyCore/`) for models + API
 - [ ] Add Swift Package dependencies
-  - [ ] Add Alamofire: https://github.com/Alamofire/Alamofire
-  - [ ] Add ConfettiSwiftUI: https://github.com/simibac/ConfettiSwiftUI
+  - [x] Added local package dependency: `TallyCore`
+  - [ ] Add Alamofire (optional)
+  - [ ] Add ConfettiSwiftUI (optional)
   - [ ] Add Clerk iOS SDK (when available) or custom auth
   - [ ] Verify: Packages resolve and compile
 - [ ] Configure signing and provisioning
@@ -45,50 +37,39 @@
   - [ ] All dependencies resolved
 
 ### Task 3.2: Data Models & API Service
-- [ ] Create Challenge model
-  - [ ] Create Models/Challenge.swift
-  - [ ] Define TimeframeUnit enum
-  - [ ] Define Challenge struct with Codable
-  - [ ] Verify: Model compiles, test decoding JSON
-- [ ] Create Entry model
-  - [ ] Create Models/Entry.swift
-  - [ ] Define FeelingType enum
-  - [ ] Define EntrySet struct
-  - [ ] Define Entry struct with Codable
-  - [ ] Verify: Model compiles, test decoding JSON
-- [ ] Create User model
-  - [ ] Create Models/User.swift
-  - [ ] Define User struct with Codable
-  - [ ] Verify: Model compiles, test decoding JSON
-- [ ] Create API service
-  - [ ] Create Services/APIService.swift
-  - [ ] Configure base URL (dev/prod)
-  - [ ] Add auth token handling
-  - [ ] Verify: Service initializes
+- [x] Create Challenge model
+  - [x] Implemented in `tally-ios/TallyCore/Sources/TallyCore/Models/Challenge.swift`
+  - [x] `TimeframeUnit` implemented
+  - [x] Verified via `swift test`
+- [x] Create Entry model
+  - [x] Implemented in `tally-ios/TallyCore/Sources/TallyCore/Models/Entry.swift`
+  - [x] `FeelingType` + `EntrySet` implemented
+  - [x] Verified via `swift test`
+- [x] Create User model
+  - [x] Implemented in `tally-ios/TallyCore/Sources/TallyCore/Models/User.swift`
+  - [x] Verified via `swift test`
+- [x] Create API service
+  - [x] Implemented as `TallyAPI` in `tally-ios/TallyCore/Sources/TallyCore/API/TallyAPI.swift`
+  - [x] Base URL configurable (stored in app settings)
+  - [x] Auth token supported via `Authorization: Bearer <jwt>`
 - [ ] Implement user API methods
-  - [ ] Add createOrGetUser method
-  - [ ] Verify: User creation works against real API
+  - [ ] (Pending) decide whether mobile needs `/api/auth/user` or derives user identity solely from JWT
 - [ ] Implement challenges API methods
-  - [ ] Add getChallenges method
-  - [ ] Add createChallenge method
-  - [ ] Add updateChallenge method
-  - [ ] Verify: All challenge methods work
+  - [x] get challenges (authenticated)
+  - [x] get public challenges
+  - [x] get leaderboard
+  - [ ] create/update challenge
 - [ ] Implement entries API methods
-  - [ ] Add getEntries method
-  - [ ] Add createEntry method
-  - [ ] Add updateEntry method
-  - [ ] Add deleteEntry method
-  - [ ] Verify: All entry methods work
-- [ ] Add error handling
-  - [ ] Create APIError enum
-  - [ ] Handle network errors
-  - [ ] Handle decoding errors
-  - [ ] Verify: Errors propagate correctly
+  - [x] get entries by challenge
+  - [x] create entry
+  - [ ] update entry
+  - [x] delete entry
+- [x] Add error handling
+  - [x] `APIError` with HTTP status + raw body
 - [ ] **VERIFICATION**: Data layer complete
-  - [ ] All models compile
-  - [ ] API service connects to Convex
-  - [ ] CRUD operations work (test each one)
-  - [ ] Errors handled gracefully
+  - [x] Models compile (`swift test`)
+  - [ ] API service connects to Convex (via xcodebuild CI)
+  - [ ] CRUD operations work end-to-end
 
 ### Task 3.3: Authentication
 - [ ] Create auth service

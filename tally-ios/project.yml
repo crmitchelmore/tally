@@ -1,0 +1,27 @@
+name: Tally
+options:
+  bundleIdPrefix: app.tally
+  deploymentTarget:
+    iOS: 16.0
+packages:
+  TallyCore:
+    path: TallyCore
+targets:
+  Tally:
+    type: application
+    platform: iOS
+    sources:
+      - path: TallyApp
+    dependencies:
+      - package: TallyCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.tally.ios
+        DEVELOPMENT_TEAM: ""
+  TallyTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: TallyAppTests
+    dependencies:
+      - target: Tally

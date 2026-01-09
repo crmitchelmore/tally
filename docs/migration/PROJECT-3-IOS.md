@@ -88,9 +88,9 @@
 - [x] Implement Keychain storage
   - [x] `tally-ios/TallyApp/KeychainService.swift`
   - [x] Token persists across launches
-- [ ] Sync user to Convex
-  - [ ] Call API to create/get user after auth
-  - [ ] Store Convex userId
+- [x] Sync user to Convex (minimal)
+  - [x] Call `POST /api/auth/user` after auth (ensures user exists)
+  - [ ] Store Convex userId (optional)
   - [ ] Verify: User appears in Convex dashboard
 - [ ] Create LoginView
   - [ ] Create Views/Auth/LoginView.swift

@@ -18,7 +18,9 @@ jobs:
       - name: Install Bun
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
-          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+          export BUN_INSTALL="$HOME/.bun"
+          export PATH="$BUN_INSTALL/bin:$PATH"
+          echo "$BUN_INSTALL/bin" >> $GITHUB_PATH
           bun --version
 
       - name: Install deps

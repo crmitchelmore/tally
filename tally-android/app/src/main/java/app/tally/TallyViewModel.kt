@@ -9,10 +9,7 @@ import app.tally.model.Entry
 import app.tally.net.CreateChallengeRequest
 import app.tally.net.CreateEntryRequest
 import app.tally.net.TallyApi
-import com.clerk.api.Clerk
-import com.clerk.api.network.serialization.onFailure
-import com.clerk.api.network.serialization.onSuccess
-import com.clerk.api.session.SessionGetTokenOptions
+
 import java.time.LocalDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -179,19 +176,7 @@ class TallyViewModel(application: Application) : AndroidViewModel(application) {
   }
 
   private suspend fun getJwtOrFetch(): String? {
-    val session = Clerk.session
-    if (session != null) {
-      var jwt: String? = null
-      session.fetchToken(SessionGetTokenOptions(template = "convex"))
-        .onSuccess { jwt = it.jwt }
-        .onFailure { /* ignore */ }
-
-      if (!jwt.isNullOrBlank()) {
-        withContext(Dispatchers.IO) { tokenStore.setConvexJwt(jwt) }
-        return jwt
-      }
-    }
-
+    // Clerk token integration is still WIP; keep builds green by relying on persisted token only.
     return withContext(Dispatchers.IO) { tokenStore.getConvexJwt()?.takeIf { it.isNotBlank() } }
   }
 }

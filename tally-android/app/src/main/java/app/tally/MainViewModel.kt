@@ -17,7 +17,10 @@ class MainViewModel : ViewModel() {
   val uiState = _uiState.asStateFlow()
 
   init {
-    if (BuildConfig.CLERK_PUBLISHABLE_KEY.isBlank()) return
+    if (BuildConfig.CLERK_PUBLISHABLE_KEY.isBlank()) {
+      _uiState.value = MainUiState.MissingConfig
+      return
+    }
 
     combine(Clerk.isInitialized, Clerk.userFlow) { isInitialized, user ->
       when {

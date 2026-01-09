@@ -19,6 +19,16 @@ Authenticated endpoints require a Clerk JWT in the Authorization header:
 Authorization: Bearer <clerk-jwt>
 ```
 
+### Getting a JWT for manual curl testing
+
+If you’re signed into the web app, you can open the browser console and run:
+
+```js
+await window.Clerk.session.getToken();
+```
+
+Then use that token as the Bearer token in curl.
+
 ## Error format
 
 ```json

@@ -116,6 +116,38 @@
 
 ---
 
+## Implementation Notes (Repo)
+
+The repository implementation (as of 2026-01-09) differs slightly from the initial draft below:
+
+- **HTTP base URL**: Convex HTTP routes are served from `https://<deployment>.convex.site` (not `.convex.cloud`).
+  - Prod: `https://bright-jackal-396.convex.site`
+- **Auth model**: authenticated endpoints derive `userId` from the **Clerk JWT** via `ctx.auth.getUserIdentity()`.
+  - Clients **do not send `userId`** (prevents userId spoofing).
+- **CORS**: implemented via a single `OPTIONS` route using `pathPrefix: "/api/"`.
+- **Routes with IDs** use path prefixes:
+  - `PATCH /api/challenges/{id}`
+  - `PATCH /api/entries/{id}`
+  - `DELETE /api/entries/{id}`
+  - `DELETE /api/followed/{id}` (accepts either `challengeId` or `followedChallenges` doc id)
+
+Quick verification already performed:
+
+```bash
+curl -i https://tally-tracker.app/
+curl https://bright-jackal-396.convex.site/api/public/challenges
+curl -X OPTIONS -i https://bright-jackal-396.convex.site/api/public/challenges
+curl -i https://bright-jackal-396.convex.site/api/challenges  # 401 without JWT
+```
+
+To fully verify authenticated CRUD via curl, obtain a Clerk JWT from the web app session and call the endpoints with:
+
+```
+Authorization: Bearer <clerk-jwt>
+```
+
+---
+
 ## Detailed Implementation
 
 ### Step 2.1.1: HTTP Router

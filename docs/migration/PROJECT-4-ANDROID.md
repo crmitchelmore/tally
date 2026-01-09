@@ -9,6 +9,10 @@
 
 ---
 
+## Implementation notes (current)
+- Minimal authenticated flow implemented in `MainActivity` + `TallyViewModel`: challenges list → detail (entries) → create challenge dialog → add entry dialog.
+- Not yet verified on emulator/device (Android SDK required).
+
 ## TODO List
 
 > ⚠️ **IMPORTANT**: Do not check off any item until it has been **tested and verified working**. Run the verification steps for each task before marking complete.

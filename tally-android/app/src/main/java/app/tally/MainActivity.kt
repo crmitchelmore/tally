@@ -4,104 +4,54 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tally.auth.AuthTokenStore
 import app.tally.auth.SignInOrUpView
 import app.tally.model.Challenge
-import app.tally.model.Entry
-import app.tally.net.CreateChallengeRequest
-import app.tally.net.CreateEntryRequest
-import app.tally.net.TallyApi
-import com.clerk.api.Clerk
-import com.clerk.api.network.serialization.onFailure
-import com.clerk.api.network.serialization.onSuccess
-import com.clerk.api.session.SessionGetTokenOptions
 import java.time.LocalDate
-import java.util.UUID
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     setContent {
-      val viewModel: MainViewModel by viewModels()
-      val state by viewModel.uiState.collectAsStateWithLifecycle()
+      val authViewModel: MainViewModel by viewModels()
+      val authState by authViewModel.uiState.collectAsStateWithLifecycle()
 
-      val scope = rememberCoroutineScope()
+      val tallyViewModel: TallyViewModel by viewModels()
+      val ui by tallyViewModel.uiState.collectAsStateWithLifecycle()
 
-      var challenges by remember { mutableStateOf<List<Challenge>>(emptyList()) }
-      var entries by remember { mutableStateOf<List<Entry>>(emptyList()) }
-      var error by remember { mutableStateOf<String?>(null) }
-      var status by remember { mutableStateOf<String?>(null) }
-
-      val tokenStore = remember { AuthTokenStore(this) }
-
-      suspend fun getJwtOrFetch(): String? {
-        val session = Clerk.session
-        if (session != null) {
-          var jwt: String? = null
-          session.fetchToken(SessionGetTokenOptions(template = "convex"))
-            .onSuccess { jwt = it.jwt }
-            .onFailure { /* ignore */ }
-
-          if (!jwt.isNullOrBlank()) {
-            withContext(Dispatchers.IO) { tokenStore.setConvexJwt(jwt) }
-            return jwt
-          }
-        }
-
-        return withContext(Dispatchers.IO) { tokenStore.getConvexJwt()?.takeIf { it.isNotBlank() } }
-      }
-
-      LaunchedEffect(state) {
-        error = null
-
-        if (state != MainUiState.SignedIn) {
-          challenges = emptyList()
-          entries = emptyList()
-          withContext(Dispatchers.IO) { tokenStore.setConvexJwt(null) }
-          return@LaunchedEffect
-        }
-
-        try {
-          val jwt = getJwtOrFetch() ?: run {
-            error = "No auth token"
-            return@LaunchedEffect
-          }
-
-          val loadedChallenges = withContext(Dispatchers.IO) {
-            TallyApi.ensureUser(jwt)
-            TallyApi.getChallenges(jwt)
-          }
-          challenges = loadedChallenges
-
-          val first = loadedChallenges.firstOrNull()
-          entries = if (first == null) {
-            emptyList()
-          } else {
-            withContext(Dispatchers.IO) { TallyApi.getEntries(jwt, first._id) }
-          }
-        } catch (e: Exception) {
-          error = e.message
+      LaunchedEffect(authState) {
+        if (authState == MainUiState.SignedIn) {
+          tallyViewModel.onSignedIn()
+        } else {
+          tallyViewModel.onSignedOut()
         }
       }
+
+      val selected: Challenge? = ui.selectedChallengeId
+        ?.let { id -> ui.challenges.firstOrNull { it._id == id } }
 
       MaterialTheme {
         Column(
@@ -110,7 +60,7 @@ class MainActivity : ComponentActivity() {
         ) {
           Text("Tally (Android)", style = MaterialTheme.typography.titleLarge)
 
-          when (state) {
+          when (authState) {
             MainUiState.MissingConfig -> {
               Text("Missing CLERK_PUBLISHABLE_KEY (set env var at build time)")
             }
@@ -124,92 +74,53 @@ class MainActivity : ComponentActivity() {
             }
 
             MainUiState.SignedIn -> {
-              Button(onClick = { viewModel.signOut() }) { Text("Sign out") }
-
-              Button(onClick = {
-                scope.launch {
-                  try {
-                    status = null
-                    error = null
-
-                    val jwt = getJwtOrFetch() ?: run {
-                      error = "No auth token"
-                      return@launch
-                    }
-
-                    val nowYear = LocalDate.now().year.toDouble()
-                    val id = withContext(Dispatchers.IO) {
-                      TallyApi.createChallenge(
-                        jwt,
-                        CreateChallengeRequest(
-                          name = "Android ${UUID.randomUUID().toString().take(8)}",
-                          targetNumber = 10.0,
-                          year = nowYear,
-                          color = "blue",
-                          icon = "🔥",
-                          timeframeUnit = "year",
-                          isPublic = false,
-                        )
-                      )
-                    }
-
-                    status = "Created challenge: $id"
-                    challenges = withContext(Dispatchers.IO) { TallyApi.getChallenges(jwt) }
-                  } catch (e: Exception) {
-                    error = e.message
-                  }
+              Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(onClick = { authViewModel.signOut() }) { Text("Sign out") }
+                Spacer(modifier = Modifier.weight(1f))
+                if (selected != null) {
+                  Button(onClick = { tallyViewModel.backToList() }) { Text("Back") }
                 }
-              }) {
-                Text("Create challenge")
               }
 
-              Button(onClick = {
-                scope.launch {
-                  try {
-                    status = null
-                    error = null
-
-                    val first = challenges.firstOrNull() ?: run {
-                      error = "No challenges"
-                      return@launch
-                    }
-
-                    val jwt = getJwtOrFetch() ?: run {
-                      error = "No auth token"
-                      return@launch
-                    }
-
-                    val date = LocalDate.now().toString()
-                    val id = withContext(Dispatchers.IO) {
-                      TallyApi.createEntry(jwt, CreateEntryRequest(challengeId = first._id, date = date, count = 1.0))
-                    }
-
-                    status = "Added entry: $id"
-                    entries = withContext(Dispatchers.IO) { TallyApi.getEntries(jwt, first._id) }
-                  } catch (e: Exception) {
-                    error = e.message
-                  }
-                }
-              }) {
-                Text("Add +1 to first")
+              if (ui.isLoading) {
+                Text("Loading…")
               }
 
-              if (status != null) {
-                Text(status ?: "")
+              if (ui.status != null) {
+                Text(ui.status ?: "")
               }
 
-              if (error != null) {
-                Text("Could not load: $error")
+              if (ui.error != null) {
+                Text("Error: ${ui.error}")
+              }
+
+              if (selected == null) {
+                ChallengesList(
+                  challenges = ui.challenges,
+                  onSelect = { tallyViewModel.selectChallenge(it) },
+                  onCreate = { tallyViewModel.showCreateChallenge(true) },
+                )
               } else {
-                Text("My challenges: ${challenges.size}")
-                challenges.take(10).forEach { c ->
-                  Text("• ${c.name}")
-                }
+                ChallengeDetail(
+                  challengeName = selected.name,
+                  entriesCount = ui.entries.size,
+                  entries = ui.entries,
+                  onAddEntry = { tallyViewModel.showAddEntry(true) },
+                )
+              }
 
-                Text("Entries (first challenge): ${entries.size}")
-                entries.take(5).forEach { e ->
-                  Text("• ${e.date}: ${e.count}")
-                }
+              if (ui.showCreateChallenge) {
+                CreateChallengeDialog(
+                  onDismiss = { tallyViewModel.showCreateChallenge(false) },
+                  onCreate = { name, target, year -> tallyViewModel.createChallenge(name = name, targetNumber = target, year = year) },
+                )
+              }
+
+              if (ui.showAddEntry && selected != null) {
+                AddEntryDialog(
+                  onDismiss = { tallyViewModel.showAddEntry(false) },
+                  onAdd = { date, count -> tallyViewModel.addEntry(date = date, count = count) },
+                )
               }
             }
           }
@@ -217,4 +128,125 @@ class MainActivity : ComponentActivity() {
       }
     }
   }
+}
+
+@Composable
+private fun ChallengesList(
+  challenges: List<Challenge>,
+  onSelect: (String) -> Unit,
+  onCreate: () -> Unit,
+) {
+  Button(onClick = onCreate) {
+    Text("New challenge")
+  }
+
+  Text("My challenges: ${challenges.size}")
+
+  LazyColumn {
+    items(challenges) { c ->
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .clickable { onSelect(c._id) }
+          .padding(vertical = 8.dp)
+      ) {
+        Text(c.name, style = MaterialTheme.typography.titleMedium)
+        Text("Target: ${c.targetNumber}", style = MaterialTheme.typography.bodySmall)
+      }
+    }
+  }
+}
+
+@Composable
+private fun ChallengeDetail(
+  challengeName: String,
+  entriesCount: Int,
+  entries: List<app.tally.model.Entry>,
+  onAddEntry: () -> Unit,
+) {
+  Text(challengeName, style = MaterialTheme.typography.titleLarge)
+
+  Button(onClick = onAddEntry) {
+    Text("Add entry")
+  }
+
+  Text("Entries: $entriesCount")
+
+  LazyColumn {
+    items(entries) { e ->
+      Text("• ${e.date}: ${e.count}")
+    }
+  }
+}
+
+@Composable
+private fun CreateChallengeDialog(
+  onDismiss: () -> Unit,
+  onCreate: (name: String, targetNumber: Double, year: Double) -> Unit,
+) {
+  var name by rememberSaveable { mutableStateOf("") }
+  var target by rememberSaveable { mutableStateOf("10") }
+  var year by rememberSaveable { mutableStateOf(LocalDate.now().year.toString()) }
+
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    title = { Text("Create challenge") },
+    text = {
+      Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Name") })
+        OutlinedTextField(value = target, onValueChange = { target = it }, label = { Text("Target") })
+        OutlinedTextField(value = year, onValueChange = { year = it }, label = { Text("Year") })
+      }
+    },
+    confirmButton = {
+      Button(
+        onClick = {
+          val targetNumber = target.toDoubleOrNull() ?: return@Button
+          val yearNumber = year.toDoubleOrNull() ?: return@Button
+          onCreate(name, targetNumber, yearNumber)
+        },
+        enabled = name.isNotBlank(),
+      ) {
+        Text("Create")
+      }
+    },
+    dismissButton = {
+      Button(onClick = onDismiss) {
+        Text("Cancel")
+      }
+    },
+  )
+}
+
+@Composable
+private fun AddEntryDialog(
+  onDismiss: () -> Unit,
+  onAdd: (date: String, count: Double) -> Unit,
+) {
+  var date by rememberSaveable { mutableStateOf(LocalDate.now().toString()) }
+  var count by rememberSaveable { mutableStateOf("1") }
+
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    title = { Text("Add entry") },
+    text = {
+      Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        OutlinedTextField(value = date, onValueChange = { date = it }, label = { Text("Date (YYYY-MM-DD)") })
+        OutlinedTextField(value = count, onValueChange = { count = it }, label = { Text("Count") })
+      }
+    },
+    confirmButton = {
+      Button(onClick = {
+        val countNumber = count.toDoubleOrNull() ?: return@Button
+        onAdd(date, countNumber)
+      }) {
+        Text("Add")
+      }
+    },
+    dismissButton = {
+      Button(onClick = onDismiss) {
+        Text("Cancel")
+      }
+    },
+  )
 }

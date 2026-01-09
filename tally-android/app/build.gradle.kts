@@ -28,6 +28,8 @@ android {
     versionCode = 1
     versionName = "0.1.0"
 
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
     buildConfigField(
       "String",
       "CLERK_PUBLISHABLE_KEY",
@@ -46,6 +48,11 @@ android {
     buildConfig = true
   }
 
+  packaging {
+    resources {
+      excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+    }
+  }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -76,4 +83,16 @@ dependencies {
   implementation("androidx.security:security-crypto:1.0.0")
 
   debugImplementation("androidx.compose.ui:ui-tooling")
+
+  // Unit test dependencies
+  testImplementation("junit:junit:4.13.2")
+  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+  testImplementation("io.mockk:mockk:1.13.9")
+
+  // Android instrumented test dependencies
+  androidTestImplementation(composeBom)
+  androidTestImplementation("androidx.test.ext:junit:1.2.1")
+  androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+  androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+  debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

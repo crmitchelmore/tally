@@ -70,6 +70,9 @@ export default function Home() {
 
   const unfollowChallenge = useMutation(api.followedChallenges.unfollow);
 
+  const bulkImport = useMutation(api.import.bulkImport);
+  const clearAllData = useMutation(api.import.clearAllData);
+
   const handleAddEntry = (
     challengeId: string,
     count: number,
@@ -395,13 +398,54 @@ export default function Home() {
           onOpenChange={setExportImportOpen}
           challenges={challenges}
           entries={entries}
-          onImport={() => {
-            // TODO: Implement import via Convex mutations
-            toast.info("Import via Convex coming soon");
+          onImport={async (importedChallenges, importedEntries) => {
+            if (!convexUser) return;
+            try {
+              const result = await bulkImport({
+                userId: convexUser._id,
+                challenges: importedChallenges.map((c) => ({
+                  id: c.id,
+                  name: c.name,
+                  targetNumber: c.targetNumber,
+                  year: c.year,
+                  color: c.color,
+                  icon: c.icon,
+                  timeframeUnit: (c.timeframeUnit ?? "year") as "year" | "month" | "custom",
+                  startDate: c.startDate,
+                  endDate: c.endDate,
+                  isPublic: c.isPublic ?? false,
+                  archived: c.archived ?? false,
+                })),
+                entries: importedEntries.map((e) => ({
+                  challengeId: e.challengeId,
+                  date: e.date,
+                  count: e.count,
+                  note: e.note,
+                  sets: e.sets?.map((s) => ({ reps: s.reps })),
+                  feeling: e.feeling,
+                })),
+              });
+              toast.success("Import successful! 🎉", {
+                description: `Imported ${result.challengesCreated} challenges and ${result.entriesCreated} entries`,
+              });
+            } catch (error) {
+              toast.error("Import failed", {
+                description: error instanceof Error ? error.message : "Unknown error",
+              });
+            }
           }}
-          onClearAll={() => {
-            // TODO: Implement clear all via Convex mutations
-            toast.info("Clear all via Convex coming soon");
+          onClearAll={async () => {
+            if (!convexUser) return;
+            try {
+              const result = await clearAllData({ userId: convexUser._id });
+              toast.success("All data cleared", {
+                description: `Deleted ${result.challengesDeleted} challenges and ${result.entriesDeleted} entries`,
+              });
+            } catch (error) {
+              toast.error("Failed to clear data", {
+                description: error instanceof Error ? error.message : "Unknown error",
+              });
+            }
           }}
           userId={convexUser?._id ?? null}
         />

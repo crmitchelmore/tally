@@ -7,7 +7,6 @@ jobs:
   apply:
     name: pulumi up
     runs-on: ubuntu-latest
-    if: ${{ secrets.PULUMI_ACCESS_TOKEN != '' }}
     defaults:
       run:
         working-directory: infra
@@ -29,6 +28,11 @@ jobs:
       - name: pulumi up
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          PULUMI_STACK_NAME: ${{ secrets.PULUMI_STACK_NAME }}
         run: |
+          if [ -z "$PULUMI_ACCESS_TOKEN" ]; then
+            echo "PULUMI_ACCESS_TOKEN not set; skipping"
+            exit 0
+          fi
           export PATH="$HOME/.pulumi/bin:$PATH"
-          pulumi up --yes --stack "${{ secrets.PULUMI_STACK_NAME || 'prod' }}"
+          pulumi up --yes --stack "${PULUMI_STACK_NAME:-prod}"

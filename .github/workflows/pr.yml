@@ -63,7 +63,7 @@ jobs:
   infra-preview:
     name: infra (pulumi preview)
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' && secrets.PULUMI_ACCESS_TOKEN != '' }}
+    if: ${{ github.event_name == 'pull_request' }}
     defaults:
       run:
         working-directory: infra
@@ -85,6 +85,11 @@ jobs:
       - name: Pulumi preview
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          PULUMI_STACK_NAME: ${{ secrets.PULUMI_STACK_NAME }}
         run: |
+          if [ -z "$PULUMI_ACCESS_TOKEN" ]; then
+            echo "PULUMI_ACCESS_TOKEN not set; skipping"
+            exit 0
+          fi
           export PATH="$HOME/.pulumi/bin:$PATH"
-          pulumi preview --stack "${{ secrets.PULUMI_STACK_NAME || 'prod' }}"
+          pulumi preview --stack "${PULUMI_STACK_NAME:-prod}"

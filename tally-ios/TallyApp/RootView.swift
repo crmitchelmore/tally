@@ -23,7 +23,7 @@ final class AppState: ObservableObject {
   }
 
   func refreshToken(clerk: Clerk) async {
-    guard let session = clerk.session else { return }
+    guard let session = await clerk.session else { return }
 
     do {
       let token = try await session.getToken(Session.GetTokenOptions(template: "convex"))

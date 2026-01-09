@@ -34,7 +34,7 @@ const clerkPublishableKey = config.getSecret("clerkPublishableKey");
 // `clerkPublishableKey` is optional to avoid breaking existing stacks until it's set.
 if (clerkPublishableKey) {
   new vercel.ProjectEnvironmentVariable("clerk-publishable-key", {
-    projectId: vercelProject.id,
+    projectId: vercelProjectId,
     teamId: vercelTeamId,
     key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
     value: clerkPublishableKey,
@@ -48,7 +48,7 @@ if (clerkPublishableKey) {
 }
 
 new vercel.ProjectEnvironmentVariable("clerk-secret-key", {
-  projectId: vercelProject.id,
+  projectId: vercelProjectId,
   teamId: vercelTeamId,
   key: "CLERK_SECRET_KEY",
   value: clerkSecretKey,
@@ -95,14 +95,14 @@ const vercelTxtRecord = new cloudflare.DnsRecord("vercel-txt-record", {
 
 // Root domain
 const vercelDomain = new vercel.ProjectDomain("tally-domain", {
-  projectId: vercelProject.id,
+  projectId: vercelProjectId,
   teamId: vercelTeamId,
   domain: domain,
 });
 
 // WWW subdomain with redirect
 const vercelWwwDomain = new vercel.ProjectDomain("tally-www-domain", {
-  projectId: vercelProject.id,
+  projectId: vercelProjectId,
   teamId: vercelTeamId,
   domain: `www.${domain}`,
   redirect: domain,

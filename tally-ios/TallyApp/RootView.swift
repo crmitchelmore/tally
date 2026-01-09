@@ -2,8 +2,19 @@ import SwiftUI
 import TallyCore
 
 final class AppState: ObservableObject {
-  @AppStorage("tally.jwt") var jwt: String = ""
+  private static let jwtKey = "tally.jwt"
+
   @AppStorage("tally.apiBase") var apiBase: String = "https://bright-jackal-396.convex.site"
+
+  @Published var jwt: String = KeychainService.readString(key: jwtKey) ?? "" {
+    didSet {
+      if jwt.isEmpty {
+        KeychainService.delete(key: Self.jwtKey)
+      } else {
+        try? KeychainService.writeString(jwt, key: Self.jwtKey)
+      }
+    }
+  }
 }
 
 struct RootView: View {

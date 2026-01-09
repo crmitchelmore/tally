@@ -13,10 +13,10 @@ struct SettingsView: View {
         }
 
         Section("Auth (development)") {
-          SecureField("Clerk JWT (optional)", text: $state.jwt)
+          SecureField("Clerk JWT (stored in Keychain)", text: $state.jwt)
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
-          Text("If empty, the app uses public endpoints only.")
+          Text("If empty, the app uses public endpoints only. JWT is stored in Keychain.")
             .font(.footnote)
             .foregroundStyle(.secondary)
         }

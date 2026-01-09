@@ -4,9 +4,13 @@ export default defineConfig({
   testDir: "./tests/e2e",
   timeout: 60_000,
   retries: process.env.CI ? 2 : 0,
+  snapshotPathTemplate: "{testDir}/__screenshots__/{testFilePath}/{arg}{ext}",
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3000",
     trace: "retain-on-failure",
+    timezoneId: "UTC",
+    colorScheme: "light",
+    reducedMotion: "reduce",
   },
   webServer: {
     command: "bun run dev -- --port 3000",

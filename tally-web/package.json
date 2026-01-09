@@ -6,10 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test --grep-invert \"@ui|@auth\"",
+
+    "test:e2e:auth": "playwright test --grep @auth",
+    "test:e2e:ui": "playwright test --grep @ui --update-snapshots"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.7",

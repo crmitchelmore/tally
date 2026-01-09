@@ -1,0 +1,35 @@
+name: UI Report (non-blocking)
+
+on:
+  pull_request:
+
+jobs:
+  ui-report:
+    name: ui report (screenshots)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.1.36"
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run UI screenshot suite
+        run: bunx playwright test --grep @ui --reporter=html --update-snapshots
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-ui-report
+          path: tally-web/playwright-report

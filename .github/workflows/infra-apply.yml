@@ -1,0 +1,20 @@
+name: Infra Apply (manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  apply:
+    name: pulumi up
+    runs-on: ubuntu-latest
+    if: ${{ secrets.PULUMI_ACCESS_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pulumi/actions@v5
+        with:
+          command: up
+          stack-name: ${{ secrets.PULUMI_STACK_NAME || 'prod' }}
+          work-dir: infra
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Playwright outputs
+    "test-results/**",
+    "playwright-report/**",
     // Convex generated files
     "convex/_generated/**",
   ]),

@@ -58,9 +58,12 @@
   - [ ] Define TimeframeUnit enum with @SerialName
   - [ ] Verify: Model compiles, test serialization
 
-- [x] Create minimal API client (public)
+- [x] Create minimal API client (public + authed)
   - [x] `tally-android/app/src/main/java/app/tally/net/TallyApi.kt`
+  - [x] Base URL configurable (`TALLY_API_BASE_URL`)
   - [x] `GET /api/public/challenges`
+  - [x] `POST /api/challenges` (create)
+  - [x] `POST /api/entries` (create)
   - [ ] Promote to Retrofit + interceptors later
 - [ ] Create Entry model
   - [ ] Create data/model/Entry.kt

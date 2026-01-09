@@ -3,7 +3,10 @@ package app.tally.net
 import app.tally.BuildConfig
 import app.tally.model.Challenge
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -43,6 +46,48 @@ object TallyApi {
       if (!res.isSuccessful) {
         throw IllegalStateException("HTTP ${res.code}: ${res.body?.string()}")
       }
+    }
+  }
+
+  fun createChallenge(jwt: String, req: CreateChallengeRequest): String {
+    val body = json.encodeToString(req)
+
+    val request = Request.Builder()
+      .url("$baseUrl/api/challenges")
+      .addHeader("Authorization", "Bearer $jwt")
+      .post(body.toRequestBody(jsonMediaType))
+      .build()
+
+    client.newCall(request).execute().use { res ->
+      val raw = res.body?.string()
+      if (!res.isSuccessful) {
+        throw IllegalStateException("HTTP ${res.code}: $raw")
+      }
+      val id = raw
+        ?.let { json.parseToJsonElement(it).jsonObject["id"]?.jsonPrimitive?.content }
+        ?.takeIf { it.isNotBlank() }
+      return id ?: throw IllegalStateException("Missing id in response")
+    }
+  }
+
+  fun createEntry(jwt: String, req: CreateEntryRequest): String {
+    val body = json.encodeToString(req)
+
+    val request = Request.Builder()
+      .url("$baseUrl/api/entries")
+      .addHeader("Authorization", "Bearer $jwt")
+      .post(body.toRequestBody(jsonMediaType))
+      .build()
+
+    client.newCall(request).execute().use { res ->
+      val raw = res.body?.string()
+      if (!res.isSuccessful) {
+        throw IllegalStateException("HTTP ${res.code}: $raw")
+      }
+      val id = raw
+        ?.let { json.parseToJsonElement(it).jsonObject["id"]?.jsonPrimitive?.content }
+        ?.takeIf { it.isNotBlank() }
+      return id ?: throw IllegalStateException("Missing id in response")
     }
   }
 

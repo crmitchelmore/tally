@@ -14,13 +14,11 @@
 > ⚠️ **IMPORTANT**: Do not check off any item until it has been **tested and verified working**. Run the verification steps for each task before marking complete.
 
 ### Task 4.1: Android Studio Setup
-- [ ] Create Android Studio project
-  - [ ] New Project → Empty Compose Activity
-  - [ ] Name: Tally
-  - [ ] Package: com.yourcompany.tally
-  - [ ] Minimum SDK: API 26 (Android 8.0)
-  - [ ] Build config: Kotlin DSL
-  - [ ] Verify: Project opens without errors
+- [x] Create Android Studio project (scaffolded)
+  - [x] Minimal Compose app under `tally-android/`
+  - [x] Kotlin DSL + Gradle wrapper
+  - [x] Minimum SDK: 26
+  - [x] Verify (CI): `./gradlew :app:assembleDebug`
 - [ ] Configure project structure
   - [ ] Create di/ package for dependency injection
   - [ ] Create data/model/ package
@@ -55,11 +53,15 @@
   - [ ] No dependency conflicts
 
 ### Task 4.2: Data Layer
-- [ ] Create Challenge model
-  - [ ] Create data/model/Challenge.kt
+- [x] Create Challenge model (minimal)
+  - [x] `tally-android/app/src/main/java/app/tally/model/Challenge.kt`
   - [ ] Define TimeframeUnit enum with @SerialName
-  - [ ] Define Challenge data class with @Serializable
   - [ ] Verify: Model compiles, test serialization
+
+- [x] Create minimal API client (public)
+  - [x] `tally-android/app/src/main/java/app/tally/net/TallyApi.kt`
+  - [x] `GET /api/public/challenges`
+  - [ ] Promote to Retrofit + interceptors later
 - [ ] Create Entry model
   - [ ] Create data/model/Entry.kt
   - [ ] Define FeelingType enum

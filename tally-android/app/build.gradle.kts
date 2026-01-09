@@ -15,6 +15,10 @@ configurations.configureEach {
   }
 }
 
+kotlin {
+  jvmToolchain(17)
+}
+
 android {
   namespace = "app.tally"
   compileSdk = 35

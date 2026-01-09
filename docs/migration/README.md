@@ -158,8 +158,8 @@ Notes:
   - [x] Task 6.4: Infrastructure as Code updates (Pulumi)
     - [x] Path strategy: no DNS change expected
   - [ ] Task 6.5: Verification
-    - [ ] `https://tally-tracker.app` loads the marketing landing page
-    - [ ] App loads at `/app` and sign-in works end-to-end
+    - [x] `https://tally-tracker.app` loads the marketing landing page (verified via curl/web_fetch)
+    - [ ] App loads at `/app` and sign-in works end-to-end (route serves 200; auth flow still needs manual confirmation)
     - [x] Mobile iOS/Android links are present
   - [ ] Project 6 Completion Checklist verified
 

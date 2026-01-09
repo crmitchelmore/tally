@@ -12,13 +12,16 @@ struct SettingsView: View {
             .autocorrectionDisabled()
         }
 
-        Section("Auth (development)") {
-          SecureField("Clerk JWT (stored in Keychain)", text: $state.jwt)
-            .textInputAutocapitalization(.never)
-            .autocorrectionDisabled()
-          Text("If empty, the app uses public endpoints only. JWT is stored in Keychain.")
+        Section("Auth") {
+          Text("Signed in")
             .font(.footnote)
             .foregroundStyle(.secondary)
+
+          Button(role: .destructive) {
+            state.signOut()
+          } label: {
+            Text("Sign out")
+          }
         }
       }
       .navigationTitle("Settings")

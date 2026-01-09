@@ -72,10 +72,10 @@
   - [ ] CRUD operations work end-to-end
 
 ### Task 3.3: Authentication
-- [ ] Create auth service
-  - [ ] Create Services/AuthService.swift
-  - [ ] Add @Published properties for state
-  - [ ] Verify: Service initializes
+- [x] Create auth service (minimal)
+  - [x] Keychain-backed JWT stored on device
+  - [x] Login screen (paste JWT) + sign out
+  - [ ] Verify: Replace with Clerk native SDK when ready
 - [ ] Implement GitHub OAuth
   - [ ] Configure OAuth flow
   - [ ] Handle callback URL
@@ -84,11 +84,9 @@
   - [ ] Add signInWithEmail method
   - [ ] Add signUpWithEmail method
   - [ ] Verify: Email auth works
-- [ ] Implement Keychain storage
-  - [ ] Create Services/KeychainService.swift
-  - [ ] Store auth token securely
-  - [ ] Retrieve token on app launch
-  - [ ] Verify: Token persists across launches
+- [x] Implement Keychain storage
+  - [x] `tally-ios/TallyApp/KeychainService.swift`
+  - [x] Token persists across launches
 - [ ] Sync user to Convex
   - [ ] Call API to create/get user after auth
   - [ ] Store Convex userId

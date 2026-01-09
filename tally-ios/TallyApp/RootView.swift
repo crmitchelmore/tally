@@ -15,20 +15,33 @@ final class AppState: ObservableObject {
       }
     }
   }
+
+  var isSignedIn: Bool { !jwt.isEmpty }
+
+  func signOut() {
+    jwt = ""
+  }
 }
 
 struct RootView: View {
   @StateObject private var state = AppState()
 
   var body: some View {
-    TabView {
-      ChallengesView()
-        .environmentObject(state)
-        .tabItem { Label("Challenges", systemImage: "list.bullet") }
+    Group {
+      if state.isSignedIn {
+        TabView {
+          ChallengesView()
+            .environmentObject(state)
+            .tabItem { Label("Challenges", systemImage: "list.bullet") }
 
-      SettingsView()
-        .environmentObject(state)
-        .tabItem { Label("Settings", systemImage: "gear") }
+          SettingsView()
+            .environmentObject(state)
+            .tabItem { Label("Settings", systemImage: "gear") }
+        }
+      } else {
+        LoginView()
+          .environmentObject(state)
+      }
     }
   }
 }

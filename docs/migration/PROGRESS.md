@@ -181,11 +181,19 @@ tally-web/
 └── eslint.config.mjs
 ```
 
+## PROJECT 6: Marketing Landing Page + App Relocation
+
+- [x] Chosen strategy: landing on `/`, app on `/app`
+- [x] Landing page implemented at `tally-web/src/app/page.tsx`
+- [x] App moved to `tally-web/src/app/app/page.tsx`
+- [x] Auth redirects updated to land on `/app`
+- [x] Public iOS/Android pages added (`/ios`, `/android`)
+- [ ] Manual auth verification (blocked on real Clerk credentials)
+
 ## Next Steps
 
 1. Set up Convex account and run `npx convex dev`
 2. Set up Clerk account and add credentials to .env.local
-3. Test auth flow (sign up, sign in, sign out)
-4. Test real-time features with real data
-5. Deploy to Vercel
-6. Deploy to Vercel
+3. Verify auth flow end-to-end (sign up, sign in, sign out)
+4. Deploy to Vercel
+

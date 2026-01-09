@@ -103,7 +103,7 @@ This migration transforms Tally from a Vite + React + GitHub Spark application i
 | Document | Description | Duration |
 |----------|-------------|----------|
 | [PROJECT-1-NEXTJS.md](./PROJECT-1-NEXTJS.md) | Next.js + Vercel + Convex + Clerk | 2-3 weeks |
-| *(new)* **PROJECT 6: Marketing Landing Page + App Relocation** | Creative marketing site on `/` + move app to `/app` or `app.` subdomain (IaC-managed) | 1-2 weeks |
+| [PROJECT-6-MARKETING.md](./PROJECT-6-MARKETING.md) | Marketing site on `/` + move app to `/app` (or `app.` subdomain) | 1-2 weeks |
 | [PROJECT-2-API.md](./PROJECT-2-API.md) | Shared HTTP API Layer | 3-4 days |
 | [PROJECT-3-IOS.md](./PROJECT-3-IOS.md) | Native iOS App | 3-4 weeks |
 | [PROJECT-4-ANDROID.md](./PROJECT-4-ANDROID.md) | Native Android App | 3-4 weeks |
@@ -126,17 +126,16 @@ This migration transforms Tally from a Vite + React + GitHub Spark application i
   - [x] Task 1.7: Deployment to Vercel
   - [x] Project 1 Completion Checklist verified
 
-- [ ] **PROJECT 6: Marketing Landing Page + App Relocation**
-  - [ ] Task 6.1: Decide hosting strategy (recommended default: landing page on `/`, app on `/app`; alternative: app on `app.tally-tracker.app`)
-  - [ ] Task 6.2: Choose landing stack + build high-craft page (default: Next.js App Router + Tailwind; optionally Astro for pure-static marketing; add Framer Motion/Rive/Lottie + embedded product video)
-  - [ ] Task 6.3: Move the existing app behind `/app` (or subdomain) without breaking auth/session handling
-  - [ ] Task 6.4: Infrastructure as Code updates (Pulumi)
-    - [ ] If **subdomain**: add Cloudflare DNS + Vercel domain mapping + update Clerk redirect URLs for the new origin
-    - [ ] If **path**: ensure redirects/canonical URLs as needed (no DNS change expected)
+- [ ] **PROJECT 6: Marketing Landing Page + App Relocation** (see [PROJECT-6-MARKETING.md](./PROJECT-6-MARKETING.md))
+  - [x] Task 6.1: Decide hosting strategy (chosen: landing page on `/`, app on `/app`)
+  - [x] Task 6.2: Choose landing stack + build landing page (Next.js App Router + Tailwind)
+  - [x] Task 6.3: Move the existing app behind `/app` (without breaking auth/session handling)
+  - [x] Task 6.4: Infrastructure as Code updates (Pulumi)
+    - [x] Path strategy: no DNS change expected
   - [ ] Task 6.5: Verification
     - [ ] `https://tally-tracker.app` loads the marketing landing page
-    - [ ] App loads at chosen location (`/app` or `app.`) and sign-in works end-to-end
-    - [ ] Mobile store links (iOS/Android) present and correct
+    - [ ] App loads at `/app` and sign-in works end-to-end
+    - [ ] Mobile iOS/Android links are present
   - [ ] Project 6 Completion Checklist verified
 
 ### Phase 2: API Layer

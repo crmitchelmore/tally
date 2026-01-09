@@ -26,7 +26,7 @@ final class AppState: ObservableObject {
     guard let session = clerk.session else { return }
 
     do {
-      let token = try await session.getToken(GetTokenOptions(template: "convex"))
+      let token = try await session.getToken(Session.GetTokenOptions(template: "convex"))
       if let jwt = token?.jwt, !jwt.isEmpty {
         self.jwt = jwt
       }

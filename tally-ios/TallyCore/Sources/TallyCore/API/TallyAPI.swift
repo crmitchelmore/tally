@@ -31,6 +31,87 @@ public struct TallyAPI: Sendable {
     }
   }
 
+  public struct CreateChallengeRequest: Codable, Sendable {
+    public let name: String
+    public let targetNumber: Double
+    public let year: Double
+    public let color: String
+    public let icon: String
+    public let timeframeUnit: TimeframeUnit
+    public let startDate: String?
+    public let endDate: String?
+    public let isPublic: Bool?
+
+    public init(
+      name: String,
+      targetNumber: Double,
+      year: Double,
+      color: String,
+      icon: String,
+      timeframeUnit: TimeframeUnit,
+      startDate: String? = nil,
+      endDate: String? = nil,
+      isPublic: Bool? = nil
+    ) {
+      self.name = name
+      self.targetNumber = targetNumber
+      self.year = year
+      self.color = color
+      self.icon = icon
+      self.timeframeUnit = timeframeUnit
+      self.startDate = startDate
+      self.endDate = endDate
+      self.isPublic = isPublic
+    }
+  }
+
+  public struct UpdateChallengeRequest: Codable, Sendable {
+    public let name: String?
+    public let targetNumber: Double?
+    public let color: String?
+    public let icon: String?
+    public let isPublic: Bool?
+    public let archived: Bool?
+
+    public init(
+      name: String? = nil,
+      targetNumber: Double? = nil,
+      color: String? = nil,
+      icon: String? = nil,
+      isPublic: Bool? = nil,
+      archived: Bool? = nil
+    ) {
+      self.name = name
+      self.targetNumber = targetNumber
+      self.color = color
+      self.icon = icon
+      self.isPublic = isPublic
+      self.archived = archived
+    }
+  }
+
+  public struct UpdateEntryRequest: Codable, Sendable {
+    public let count: Double?
+    public let note: String?
+    public let date: String?
+    public let sets: [EntrySet]?
+    public let feeling: FeelingType?
+
+    public init(
+      count: Double? = nil,
+      note: String? = nil,
+      date: String? = nil,
+      sets: [EntrySet]? = nil,
+      feeling: FeelingType? = nil
+    ) {
+      self.count = count
+      self.note = note
+      self.date = date
+      self.sets = sets
+      self.feeling = feeling
+    }
+  }
+
   public struct IdResponse: Codable, Sendable { public let id: String }
   public struct SuccessResponse: Codable, Sendable { public let success: Bool }
 
@@ -59,6 +140,22 @@ public struct TallyAPI: Sendable {
     return try await send(path: "/api/leaderboard", method: "GET", token: nil, decode: [LeaderboardRow].self)
   }
 
+  public func createChallenge(_ body: CreateChallengeRequest, token: String) async throws -> String {
+    let response = try await send(path: "/api/challenges", method: "POST", token: token, body: body, decode: IdResponse.self)
+    return response.id
+  }
+
+  public func updateChallenge(id: String, body: UpdateChallengeRequest, token: String) async throws -> Bool {
+    let response = try await send(
+      path: "/api/challenges/\(urlEncode(id))",
+      method: "PATCH",
+      token: token,
+      body: body,
+      decode: SuccessResponse.self
+    )
+    return response.success
+  }
+
   public func getEntriesByChallenge(challengeId: String, token: String) async throws -> [Entry] {
     let path = "/api/entries?challengeId=\(urlEncode(challengeId))"
     return try await send(path: path, method: "GET", token: token, decode: [Entry].self)
@@ -67,6 +164,17 @@ public struct TallyAPI: Sendable {
   public func createEntry(_ body: CreateEntryRequest, token: String) async throws -> String {
     let response = try await send(path: "/api/entries", method: "POST", token: token, body: body, decode: IdResponse.self)
     return response.id
+  }
+
+  public func updateEntry(id: String, body: UpdateEntryRequest, token: String) async throws -> Bool {
+    let response = try await send(
+      path: "/api/entries/\(urlEncode(id))",
+      method: "PATCH",
+      token: token,
+      body: body,
+      decode: SuccessResponse.self
+    )
+    return response.success
   }
 
   public func deleteEntry(id: String, token: String) async throws -> Bool {

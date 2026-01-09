@@ -51,7 +51,17 @@ export default function LandingPage() {
                   </Button>
                 </Link>
               </div>
-              <p className="mt-4 text-sm text-muted-foreground">iOS + Android apps coming soon.</p>
+              <p className="mt-4 text-sm text-muted-foreground">
+                iOS + Android apps are on the way — join from the web today.
+              </p>
+              <div className="mt-6 flex flex-col items-center justify-center gap-2 sm:flex-row">
+                <Link href="/ios">
+                  <Button variant="outline">iOS</Button>
+                </Link>
+                <Link href="/android">
+                  <Button variant="outline">Android</Button>
+                </Link>
+              </div>
             </div>
           </div>
         </section>
@@ -112,6 +122,12 @@ export default function LandingPage() {
             </Link>
             <Link href="/app" className="hover:text-foreground">
               App
+            </Link>
+            <Link href="/ios" className="hover:text-foreground">
+              iOS
+            </Link>
+            <Link href="/android" className="hover:text-foreground">
+              Android
             </Link>
           </div>
         </div>

@@ -19,18 +19,17 @@ class MainViewModel : ViewModel() {
   init {
     if (BuildConfig.CLERK_PUBLISHABLE_KEY.isBlank()) {
       _uiState.value = MainUiState.MissingConfig
-      return
-    }
-
-    combine(Clerk.isInitialized, Clerk.userFlow) { isInitialized, user ->
-      when {
-        !isInitialized -> MainUiState.Loading
-        user != null -> MainUiState.SignedIn
-        else -> MainUiState.SignedOut
+    } else {
+      combine(Clerk.isInitialized, Clerk.userFlow) { isInitialized, user ->
+        when {
+          !isInitialized -> MainUiState.Loading
+          user != null -> MainUiState.SignedIn
+          else -> MainUiState.SignedOut
+        }
       }
+        .onEach { _uiState.value = it }
+        .launchIn(viewModelScope)
     }
-      .onEach { _uiState.value = it }
-      .launchIn(viewModelScope)
   }
 
   fun signOut() {

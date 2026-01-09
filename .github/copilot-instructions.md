@@ -162,8 +162,15 @@ pulumi up
 
 ## Deployment
 
-- **Web**: Auto-deploys via Vercel on push to main
-- **Infra**: Manual via `pulumi up` (or CI/CD)
+- **Web (Vercel)**: Deploys either via Vercel Git integration **or** via GitHub Actions (Vercel CLI).
+- **Backend (Convex)**: Not deployed automatically unless CI is configured to run `convex deploy` (requires a deploy key).
+- **Auth (Clerk)**: Redirect URL/config changes are managed via Pulumi (see `infra/`); do not rely on manual dashboard edits.
+- **Infra**: Always via Pulumi (`cd infra && pulumi up`), locally or in CI.
+
+### Clerk middleware gotcha
+
+- `auth.protect()` in Clerk middleware can surface as a **404** for signed-out users.
+- If relocating the app to `/app`, ensure middleware routing doesn’t unintentionally 404 the route (e.g. treat `/app(.*)` as public and handle signed-out UI in the page).
 
 ## Migration Plan
 

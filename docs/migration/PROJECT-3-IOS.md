@@ -25,7 +25,7 @@
   - [x] Added local package dependency: `TallyCore`
   - [ ] Add Alamofire (optional)
   - [ ] Add ConfettiSwiftUI (optional)
-  - [ ] Add Clerk iOS SDK (when available) or custom auth
+  - [x] Add Clerk iOS SDK (SPM)
   - [ ] Verify: Packages resolve and compile
 - [ ] Configure signing and provisioning
   - [ ] Set up Apple Developer Team
@@ -92,12 +92,8 @@
   - [x] Call `POST /api/auth/user` after auth (ensures user exists)
   - [ ] Store Convex userId (optional)
   - [ ] Verify: User appears in Convex dashboard
-- [ ] Create LoginView
-  - [ ] Create Views/Auth/LoginView.swift
-  - [ ] Add email/password fields
-  - [ ] Add GitHub sign-in button
-  - [ ] Add loading states
-  - [ ] Add error display
+- [x] Create LoginView (minimal)
+  - [x] `LoginView.swift` uses Clerk `AuthView`
   - [ ] Verify: Login flow works end-to-end
 - [ ] Handle sign out
   - [ ] Clear auth state

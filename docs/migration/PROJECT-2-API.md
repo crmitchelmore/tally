@@ -20,23 +20,23 @@
   - [x] Verify: File compiles without errors
 - [x] Create auth endpoint
   - [x] Add POST /api/auth/user route
-  - [ ] Verify: Endpoint returns userId
+  - [x] Verify: Endpoint returns userId (`bun run api:verify`)
 - [x] Create challenges endpoints
   - [x] Add GET /api/challenges route
   - [x] Add POST /api/challenges route
   - [x] Add PATCH /api/challenges/:id route
-  - [ ] Verify: All challenge operations work via curl
+  - [x] Verify: All challenge operations work (`bun run api:verify`)
 - [x] Create entries endpoints
   - [x] Add GET /api/entries route
   - [x] Add POST /api/entries route
   - [x] Add PATCH /api/entries/:id route
   - [x] Add DELETE /api/entries/:id route
-  - [ ] Verify: All entry operations work via curl
+  - [x] Verify: All entry operations work (`bun run api:verify`)
 - [x] Create followed challenges endpoints
   - [x] Add GET /api/followed route
   - [x] Add POST /api/followed route
   - [x] Add DELETE /api/followed/:id route
-  - [ ] Verify: Follow/unfollow works via curl
+  - [x] Verify: Follow/unfollow works (`bun run api:verify`)
 - [x] Create public endpoints
   - [x] Add GET /api/public/challenges route
   - [x] Add GET /api/leaderboard route
@@ -44,38 +44,39 @@
 - [x] Enable CORS
   - [x] Add CORS headers to all responses
   - [x] Verify: Mobile apps can make requests
-- [ ] **VERIFICATION**: All HTTP endpoints working
-  - [ ] Test each endpoint with curl
-  - [ ] Verify error responses have correct status codes
-  - [ ] Verify auth token validation works
+- [x] **VERIFICATION**: All HTTP endpoints working
+  - [x] Public endpoints smoke tested (`bun run api:smoke`)
+  - [x] Authenticated CRUD verified (`bun run api:verify`)
+  - [x] Verify error responses have correct status codes (smoke/verify cover 401/400 cases)
+  - [x] Verify auth token validation works
 
 ### Task 2.2: API Documentation
 - [x] Create API reference document
   - [x] Document base URLs (dev/prod)
   - [x] Document authentication method
   - [x] Verify: All endpoints listed
-- [ ] Document user endpoints
-  - [ ] POST /api/auth/user - request/response format
-  - [ ] Verify: Example works when tested
-- [ ] Document challenge endpoints
-  - [ ] GET /api/challenges - params and response
-  - [ ] POST /api/challenges - request body format
-  - [ ] PATCH /api/challenges/:id - update fields
-  - [ ] Verify: All examples work
-- [ ] Document entry endpoints
-  - [ ] GET /api/entries - query params
-  - [ ] POST /api/entries - request body
-  - [ ] PATCH /api/entries/:id - update fields
-  - [ ] DELETE /api/entries/:id - response
-  - [ ] Verify: All examples work
-- [ ] Document error responses
-  - [ ] List all error codes
-  - [ ] Document error response format
-  - [ ] Verify: Errors match documentation
-- [ ] **VERIFICATION**: Documentation complete and accurate
-  - [ ] Every endpoint documented
-  - [ ] Every example tested and working
-  - [ ] Mobile team can use docs to implement
+- [x] Document user endpoints
+  - [x] POST /api/auth/user - request/response format
+  - [x] Verify: Example works when tested
+- [x] Document challenge endpoints
+  - [x] GET /api/challenges - params and response
+  - [x] POST /api/challenges - request body format
+  - [x] PATCH /api/challenges/:id - update fields
+  - [x] Verify: All examples work
+- [x] Document entry endpoints
+  - [x] GET /api/entries - query params
+  - [x] POST /api/entries - request body
+  - [x] PATCH /api/entries/:id - update fields
+  - [x] DELETE /api/entries/:id - response
+  - [x] Verify: All examples work
+- [x] Document error responses
+  - [x] List all error codes
+  - [x] Document error response format
+  - [x] Verify: Errors match documentation
+- [x] **VERIFICATION**: Documentation complete and accurate
+  - [x] Every endpoint documented
+  - [x] Every example tested and working
+  - [x] Mobile team can use docs to implement
 
 ### Task 2.3: Shared Types Package
 - [x] Create types package

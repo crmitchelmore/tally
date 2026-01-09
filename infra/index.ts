@@ -78,6 +78,23 @@ if (convexDeployment) {
       deleteBeforeReplace: true,
     }
   );
+
+  // NEXT_PUBLIC_CONVEX_URL is required for the frontend to connect
+  // Format: https://<deployment-slug>.convex.cloud (strip "dev:" prefix)
+  const convexUrl = `https://${convexDeployment.replace(/^dev:/, "")}.convex.cloud`;
+  new vercel.ProjectEnvironmentVariable(
+    "convex-url",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "NEXT_PUBLIC_CONVEX_URL",
+      value: convexUrl,
+      targets: ["production"],
+    },
+    {
+      deleteBeforeReplace: true,
+    }
+  );
 } else {
   pulumi.log.warn(
     "Pulumi config 'convexDeployment' is not set; leaving CONVEX_DEPLOYMENT unchanged in Vercel."

@@ -26,7 +26,7 @@ dist-ssr
 
 .env
 **/agent-eval-report*
-packages
+packages/**/dist
 pids
 .file-manifest
 .devcontainer/

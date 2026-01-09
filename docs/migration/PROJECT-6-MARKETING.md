@@ -39,6 +39,19 @@ bun run test
 
 ### Manual (requires real Clerk credentials)
 
+#### Creating a test user in Clerk
+
+In the **Clerk Dashboard**:
+1. Go to **Users → Create user**
+2. Create a dedicated test account (email + password)
+3. Use that account to sign in to the web app
+
+**Important:** Do **not** store usernames/passwords in git or repo documentation.
+- Keep test credentials in a password manager (recommended), or share them out-of-band.
+- If you need automation/seeding, use the Clerk Backend API with environment secrets.
+
+#### Smoke test
+
 1. Visit `/` (landing)
 2. Click **Open app** → should redirect to Clerk sign-in if unauthenticated
 3. Sign in / sign up → should land on `/app`

@@ -21,6 +21,32 @@ final class AppState: ObservableObject {
   func signOut() {
     jwt = ""
   }
+
+  func refreshToken(clerk: Clerk) async {
+    guard let session = clerk.session else { return }
+
+    do {
+      let token = try await session.getToken(GetTokenOptions(template: "convex"))
+      if let jwt = token?.jwt, !jwt.isEmpty {
+        self.jwt = jwt
+      }
+    } catch {
+      return
+    }
+  }
+
+  func syncUserToConvex() async {
+    guard !jwt.isEmpty else { return }
+    guard let base = URL(string: apiBase) else { return }
+
+    var request = URLRequest(url: base.appending(path: "/api/auth/user"))
+    request.httpMethod = "POST"
+    request.setValue("Bearer \(jwt)", forHTTPHeaderField: "Authorization")
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = Data("{}".utf8)
+
+    _ = try? await URLSession.shared.data(for: request)
+  }
 }
 
 struct RootView: View {
@@ -40,7 +66,18 @@ struct RootView: View {
             .tabItem { Label("Settings", systemImage: "gear") }
         }
         .task {
-          await refreshToken()
+          await state.refreshToken(clerk: clerk)
+          await state.syncUserToConvex()
+        }
+        .onChange(of: clerk.user?.id) { _, newValue in
+          if newValue == nil {
+            state.signOut()
+          } else {
+            Task {
+              await state.refreshToken(clerk: clerk)
+              await state.syncUserToConvex()
+            }
+          }
         }
       } else {
         LoginView()
@@ -48,17 +85,7 @@ struct RootView: View {
       }
     }
   }
-
-  private func refreshToken() async {
-    guard let session = clerk.session else { return }
-
-    do {
-      let token = try await session.getToken(GetTokenOptions(template: "convex"))
-      if let jwt = token?.jwt, !jwt.isEmpty {
-        state.jwt = jwt
-      }
-    } catch {
-      // Ignore; API calls will fall back to public endpoints until available.
     }
   }
+
 }

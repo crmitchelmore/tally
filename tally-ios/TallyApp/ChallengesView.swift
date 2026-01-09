@@ -1,7 +1,9 @@
 import SwiftUI
 import TallyCore
+import Clerk
 
 struct ChallengesView: View {
+  @Environment(\.clerk) private var clerk
   @EnvironmentObject private var state: AppState
 
   @State private var challenges: [Challenge] = []
@@ -51,10 +53,19 @@ struct ChallengesView: View {
 
     do {
       let api = TallyAPI(baseURL: URL(string: state.apiBase)!)
-      if state.jwt.isEmpty {
-        challenges = try await api.getPublicChallenges()
+
+      if clerk.user != nil {
+        if state.jwt.isEmpty {
+          await state.refreshToken(clerk: clerk)
+        }
+
+        if !state.jwt.isEmpty {
+          challenges = try await api.getChallenges(token: state.jwt)
+        } else {
+          challenges = try await api.getPublicChallenges()
+        }
       } else {
-        challenges = try await api.getChallenges(token: state.jwt)
+        challenges = try await api.getPublicChallenges()
       }
     } catch {
       errorText = String(describing: error)

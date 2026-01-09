@@ -73,9 +73,10 @@
 
 ### Task 3.3: Authentication
 - [x] Create auth service (minimal)
-  - [x] Keychain-backed JWT stored on device
-  - [x] Login screen (paste JWT) + sign out
-  - [ ] Verify: Replace with Clerk native SDK when ready
+  - [x] Clerk iOS SDK integrated (SPM)
+  - [x] `AuthView` prebuilt sign-in/sign-up UI
+  - [x] Session JWT fetched via `getToken(template: "convex")` for Convex HTTP auth
+  - [ ] Verify: configure associated domains + native app settings in Clerk dashboard
 - [ ] Implement GitHub OAuth
   - [ ] Configure OAuth flow
   - [ ] Handle callback URL

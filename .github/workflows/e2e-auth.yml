@@ -15,9 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: "1.1.36"
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+          bun --version
 
       - name: Install deps
         run: bun install --frozen-lockfile

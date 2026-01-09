@@ -18,6 +18,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -106,6 +107,7 @@ class MainActivity : ComponentActivity() {
                   entriesCount = ui.entries.size,
                   entries = ui.entries,
                   onAddEntry = { tallyViewModel.showAddEntry(true) },
+                  onDeleteEntry = { tallyViewModel.deleteEntry(it) },
                 )
               }
 
@@ -163,6 +165,7 @@ private fun ChallengeDetail(
   entriesCount: Int,
   entries: List<app.tally.model.Entry>,
   onAddEntry: () -> Unit,
+  onDeleteEntry: (String) -> Unit,
 ) {
   Text(challengeName, style = MaterialTheme.typography.titleLarge)
 
@@ -174,7 +177,13 @@ private fun ChallengeDetail(
 
   LazyColumn {
     items(entries) { e ->
-      Text("• ${e.date}: ${e.count}")
+      Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text("${e.date}: ${e.count}")
+        Spacer(modifier = Modifier.weight(1f))
+        TextButton(onClick = { onDeleteEntry(e._id) }) {
+          Text("Delete")
+        }
+      }
     }
   }
 }

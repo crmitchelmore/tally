@@ -46,6 +46,9 @@ struct ChallengeDetailView: View {
                 .foregroundStyle(.secondary)
             }
           }
+          .onDelete { offsets in
+            Task { await delete(offsets: offsets) }
+          }
         }
       }
     }
@@ -86,6 +89,21 @@ struct ChallengeDetailView: View {
     }
 
     isLoading = false
+  }
+
+  private func delete(offsets: IndexSet) async {
+    guard let baseURL = URL(string: state.apiBase) else { return }
+    guard !state.jwt.isEmpty else { return }
+
+    do {
+      let api = TallyAPI(baseURL: baseURL)
+      for i in offsets {
+        _ = try await api.deleteEntry(id: entries[i]._id, token: state.jwt)
+      }
+      await load()
+    } catch {
+      errorText = String(describing: error)
+    }
   }
 }
 

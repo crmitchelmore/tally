@@ -159,6 +159,25 @@ class TallyViewModel(application: Application) : AndroidViewModel(application) {
     }
   }
 
+  fun deleteEntry(entryId: String) {
+    viewModelScope.launch {
+      _uiState.value = _uiState.value.copy(isLoading = true, status = null, error = null)
+
+      try {
+        val jwt = getJwtOrFetch() ?: run {
+          _uiState.value = _uiState.value.copy(isLoading = false, error = "No auth token")
+          return@launch
+        }
+
+        withContext(Dispatchers.IO) { TallyApi.deleteEntry(jwt, entryId) }
+        _uiState.value = _uiState.value.copy(status = "Deleted entry")
+        refresh()
+      } catch (e: Exception) {
+        _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+      }
+    }
+  }
+
   private suspend fun getJwtOrFetch(): String? {
     val session = Clerk.session
     if (session != null) {

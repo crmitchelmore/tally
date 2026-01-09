@@ -3,6 +3,7 @@ package app.tally.net
 import app.tally.BuildConfig
 import app.tally.model.Challenge
 import app.tally.model.Entry
+import java.net.URLEncoder
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -17,6 +18,8 @@ object TallyApi {
   private val client = OkHttpClient()
   private val json = Json { ignoreUnknownKeys = true }
   private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
+
+  private fun urlEncode(value: String): String = URLEncoder.encode(value, Charsets.UTF_8.name())
 
   var baseUrl: String = BuildConfig.TALLY_API_BASE_URL
 
@@ -94,7 +97,7 @@ object TallyApi {
 
   fun getEntries(jwt: String, challengeId: String): List<Entry> {
     val req = Request.Builder()
-      .url("$baseUrl/api/entries?challengeId=$challengeId")
+      .url("$baseUrl/api/entries?challengeId=${urlEncode(challengeId)}")
       .addHeader("Authorization", "Bearer $jwt")
       .get()
       .build()
@@ -106,6 +109,25 @@ object TallyApi {
 
       val body = res.body?.string() ?: "[]"
       return json.decodeFromString(ListSerializer(Entry.serializer()), body)
+    }
+  }
+
+  fun deleteEntry(jwt: String, entryId: String): Boolean {
+    val req = Request.Builder()
+      .url("$baseUrl/api/entries/${urlEncode(entryId)}")
+      .addHeader("Authorization", "Bearer $jwt")
+      .delete()
+      .build()
+
+    client.newCall(req).execute().use { res ->
+      val raw = res.body?.string()
+      if (!res.isSuccessful) {
+        throw IllegalStateException("HTTP ${res.code}: $raw")
+      }
+      val success = raw
+        ?.let { json.parseToJsonElement(it).jsonObject["success"]?.jsonPrimitive?.content }
+        ?.toBooleanStrictOrNull()
+      return success ?: true
     }
   }
 

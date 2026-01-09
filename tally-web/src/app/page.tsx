@@ -1,183 +1,122 @@
-"use client";
-
-import { useMemo } from "react";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import { useStoreUser, useCurrentUser } from "@/hooks/use-store-user";
-import { ChallengeCard } from "@/components/tally/ChallengeCard";
+import Link from "next/link";
+import { ArrowRight, CheckCircle2, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Target, BarChart3 } from "lucide-react";
-import Link from "next/link";
-import { toChallenges, toEntries } from "@/lib/adapters";
 
-export default function Home() {
-  // Sync user to Convex on login
-  useStoreUser();
-  const { user: convexUser, isLoaded: isUserLoaded } = useCurrentUser();
-
-  // Fetch challenges for current user
-  const challengesRaw = useQuery(
-    api.challenges.listActive,
-    convexUser ? { userId: convexUser._id } : "skip"
-  );
-
-  // Fetch all entries for current user
-  const entriesRaw = useQuery(
-    api.entries.listByUser,
-    convexUser ? { userId: convexUser._id } : "skip"
-  );
-
-  // Convert Convex documents to application types
-  const challenges = useMemo(
-    () => (challengesRaw ? toChallenges(challengesRaw) : undefined),
-    [challengesRaw]
-  );
-  const entries = useMemo(
-    () => (entriesRaw ? toEntries(entriesRaw) : undefined),
-    [entriesRaw]
-  );
-
-  const isLoading = !isUserLoaded || challenges === undefined || entries === undefined;
-
+export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Target className="h-6 w-6" />
-              <h1 className="text-xl font-bold">Tally</h1>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <SignedIn>
-              <Button variant="outline" size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                New Challenge
+      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <Link href="/" className="flex items-center gap-2 font-semibold">
+            <Target className="h-5 w-5" />
+            <span>Tally</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/sign-in">
+              <Button variant="ghost">Sign in</Button>
+            </Link>
+            <Link href="/app">
+              <Button>
+                Open app <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <UserButton afterSignOutUrl="/" />
-            </SignedIn>
-            <SignedOut>
-              <Link href="/sign-in">
-                <Button variant="outline" size="sm">
-                  Sign In
-                </Button>
-              </Link>
-            </SignedOut>
+            </Link>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <SignedOut>
-          <div className="text-center py-20">
-            <Target className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-3xl font-bold mb-2">Track Your Progress</h2>
-            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Create challenges, log entries with tally marks, and visualize your journey toward your goals.
-            </p>
-            <Link href="/sign-in">
-              <Button size="lg">
-                Get Started
-              </Button>
+      <main>
+        <section className="border-b">
+          <div className="container mx-auto px-4 py-16 md:py-24">
+            <div className="mx-auto max-w-3xl text-center">
+              <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-sm text-muted-foreground">
+                <CheckCircle2 className="h-4 w-4" />
+                Simple, fast habit tracking
+              </div>
+              <h1 className="mt-6 text-balance text-4xl font-bold tracking-tight md:text-6xl">
+                Track anything you care about — one tally at a time.
+              </h1>
+              <p className="mt-5 text-pretty text-lg text-muted-foreground md:text-xl">
+                Create challenges, log progress in seconds, and see momentum build across days, weeks, and years.
+              </p>
+              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Link href="/app">
+                  <Button size="lg">
+                    Open the app <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/sign-up">
+                  <Button size="lg" variant="outline">
+                    Create an account
+                  </Button>
+                </Link>
+              </div>
+              <p className="mt-4 text-sm text-muted-foreground">iOS + Android apps coming soon.</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="container mx-auto px-4 py-12 md:py-16">
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Frictionless logging</CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground">
+                Add entries in seconds. Perfect for reps, pages read, practice sessions, or anything countable.
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Progress you can feel</CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground">
+                Clear stats and at-a-glance summaries so you always know where you stand.
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Built for consistency</CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground">
+                Designed around momentum — small wins, repeated daily, compound into real change.
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        <section className="border-t">
+          <div className="container mx-auto flex flex-col items-start justify-between gap-6 px-4 py-10 md:flex-row md:items-center">
+            <div>
+              <h2 className="text-xl font-semibold">Ready to start?</h2>
+              <p className="mt-1 text-muted-foreground">Sign in and pick your first challenge.</p>
+            </div>
+            <div className="flex gap-2">
+              <Link href="/sign-in">
+                <Button variant="outline">Sign in</Button>
+              </Link>
+              <Link href="/app">
+                <Button>Open app</Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t">
+        <div className="container mx-auto flex flex-col gap-2 px-4 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+          <p>© Tally</p>
+          <div className="flex gap-4">
+            <Link href="/sign-in" className="hover:text-foreground">
+              Sign in
+            </Link>
+            <Link href="/app" className="hover:text-foreground">
+              App
             </Link>
           </div>
-        </SignedOut>
-
-        <SignedIn>
-          {isLoading ? (
-            <div className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i}>
-                    <CardHeader>
-                      <Skeleton className="h-6 w-32" />
-                    </CardHeader>
-                    <CardContent>
-                      <Skeleton className="h-24 w-full" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          ) : challenges && challenges.length > 0 ? (
-            <div className="space-y-8">
-              {/* Stats Overview */}
-              <div className="grid gap-4 md:grid-cols-3">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Active Challenges
-                    </CardTitle>
-                    <Target className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{challenges.length}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Total Entries
-                    </CardTitle>
-                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{entries?.length ?? 0}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Total Reps
-                    </CardTitle>
-                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {entries?.reduce((sum, e) => sum + e.count, 0).toLocaleString() ?? 0}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Challenge Cards */}
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Your Challenges</h2>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-                  {challenges.map((challenge) => (
-                    <ChallengeCard
-                      key={challenge.id}
-                      challenge={challenge}
-                      entries={entries ?? []}
-                      onClick={() => {
-                        console.log("Challenge clicked:", challenge.id);
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <Target className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-              <h2 className="text-2xl font-bold mb-2">No Challenges Yet</h2>
-              <p className="text-muted-foreground mb-8">
-                Create your first challenge to start tracking your progress!
-              </p>
-              <Button size="lg">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Challenge
-              </Button>
-            </div>
-          )}
-        </SignedIn>
-      </main>
+        </div>
+      </footer>
     </div>
   );
 }
+

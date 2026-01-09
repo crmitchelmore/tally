@@ -8,6 +8,32 @@
 - **Design Philosophy**: Read `docs/DESIGN-PHILOSOPHY.md`
 - **Domain**: https://tally-tracker.app
 
+## Product principles (apply to all changes)
+
+Tally should feel **friendly, fun, and fast**.
+
+When implementing UI/UX (web/iOS/Android), optimize for:
+- **Effortless defaults**: minimize setup and decisions; strong defaults.
+- **Progressive disclosure**: show essentials first, details on demand.
+- **Fast perceived performance**: instant feedback, fewer spinners; prefer skeletons/progressive rendering.
+- **Instant sync**: changes should appear quickly across devices; make sync state understandable but calm.
+- **Calm + accessible**: high contrast, readable type, sensible motion; respect reduced-motion.
+- **Playful (not noisy)**: delight that never reduces clarity.
+
+## Engineering principles (how to build)
+
+Decision order:
+1) **User value first**
+2) **Modular-first** (feature isolation; avoid cross-cutting churn)
+3) **Ship safely** (typed APIs, automated checks, repeatable deploys)
+4) **Performance is a feature**
+5) **Prefer boring infra, creative UI**
+
+Practical rules:
+- Keep domain logic shared where possible (contracts/types) so web/iOS/Android stay consistent.
+- Prefer small, surgical changes; avoid unrelated refactors.
+- Add lightweight regression checks when touching critical flows (auth, API, data integrity).
+
 ## Project Overview
 
 Tally is a multi-platform challenge tracking app:

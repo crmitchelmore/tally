@@ -28,6 +28,34 @@ const vercelProject = new vercel.Project(
 
 // Clerk configuration
 const clerkSecretKey = config.requireSecret("clerkSecretKey");
+const clerkPublishableKey = config.getSecret("clerkPublishableKey");
+
+// Ensure production deployments use the Clerk instance/keys managed by Pulumi config.
+// `clerkPublishableKey` is optional to avoid breaking existing stacks until it's set.
+if (clerkPublishableKey) {
+  new vercel.ProjectEnvironmentVariable("clerk-publishable-key", {
+    projectId: vercelProject.id,
+    teamId: vercelTeamId,
+    key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+    value: clerkPublishableKey,
+    targets: ["production"],
+    comment: "Clerk publishable key (production)",
+  });
+} else {
+  pulumi.log.warn(
+    "Pulumi config 'clerkPublishableKey' is not set; leaving NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY unchanged in Vercel."
+  );
+}
+
+new vercel.ProjectEnvironmentVariable("clerk-secret-key", {
+  projectId: vercelProject.id,
+  teamId: vercelTeamId,
+  key: "CLERK_SECRET_KEY",
+  value: clerkSecretKey,
+  targets: ["production"],
+  sensitive: true,
+  comment: "Clerk secret key (production)",
+});
 
 // =============================================================================
 // Cloudflare DNS Records
@@ -87,21 +115,32 @@ const vercelWwwDomain = new vercel.ProjectDomain("tally-www-domain", {
 // =============================================================================
 
 // Helper to manage Clerk redirect URLs via API
+// Include `/app` so Clerk can redirect users to the app after authentication.
+// Include SSO callback routes used by Clerk for OAuth flows.
 const clerkRedirectUrls = [
   `https://${domain}`,
+  `https://${domain}/app`,
+  `https://${domain}/sign-in/sso-callback`,
+  `https://${domain}/sign-up/sso-callback`,
   `https://www.${domain}`,
+  `https://www.${domain}/app`,
+  `https://www.${domain}/sign-in/sso-callback`,
+  `https://www.${domain}/sign-up/sso-callback`,
 ];
 
 // Create Clerk redirect URLs using the API
 const clerkRedirectUrlResources = clerkRedirectUrls.map((url, index) => {
   return new command.local.Command(`clerk-redirect-url-${index}`, {
-    create: pulumi.interpolate`curl -s -X POST "https://api.clerk.com/v1/redirect_urls" \
-      -H "Authorization: Bearer ${clerkSecretKey}" \
-      -H "Content-Type: application/json" \
-      -d '{"url": "${url}"}' | jq -r '.id // empty'`,
+    create: pulumi.interpolate`ID=$(curl -s "https://api.clerk.com/v1/redirect_urls" \
+      -H "Authorization: Bearer ${clerkSecretKey}" | jq -r '.[] | select(.url=="${url}") | .id' | head -n 1) && \
+      if [ -n "$ID" ] && [ "$ID" != "null" ]; then echo "$ID"; else \
+      curl -s -X POST "https://api.clerk.com/v1/redirect_urls" \
+        -H "Authorization: Bearer ${clerkSecretKey}" \
+        -H "Content-Type: application/json" \
+        -d '{"url": "${url}"}' | jq -r '.id // empty'; fi`,
     delete: pulumi.interpolate`ID=$(curl -s "https://api.clerk.com/v1/redirect_urls" \
-      -H "Authorization: Bearer ${clerkSecretKey}" | jq -r '.[] | select(.url=="${url}") | .id') && \
-      [ -n "$ID" ] && curl -s -X DELETE "https://api.clerk.com/v1/redirect_urls/$ID" \
+      -H "Authorization: Bearer ${clerkSecretKey}" | jq -r '.[] | select(.url=="${url}") | .id' | head -n 1) && \
+      [ -n "$ID" ] && [ "$ID" != "null" ] && curl -s -X DELETE "https://api.clerk.com/v1/redirect_urls/$ID" \
       -H "Authorization: Bearer ${clerkSecretKey}" || true`,
     environment: {},
   });

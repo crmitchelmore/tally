@@ -80,6 +80,8 @@ pulumi import vercel:index/projectDomain:ProjectDomain my-domain team_id/project
 Secrets are stored encrypted in Pulumi Cloud:
 - `cloudflare:apiToken` - Cloudflare API token
 - `vercel:apiToken` - Vercel API token
+- `tally-infra:clerkSecretKey` - Clerk secret key (used to manage Clerk config + set Vercel env)
+- `tally-infra:clerkPublishableKey` - Clerk publishable key (optional; used to set Vercel env)
 
 To update a secret:
 ```bash

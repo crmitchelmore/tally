@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
 
         if (state != MainUiState.SignedIn) {
           challenges = emptyList()
+          withContext(Dispatchers.IO) { tokenStore.setConvexJwt(null) }
           return@LaunchedEffect
         }
 

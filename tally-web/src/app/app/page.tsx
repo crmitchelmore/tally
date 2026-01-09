@@ -6,14 +6,31 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { useStoreUser, useCurrentUser } from "@/hooks/use-store-user";
-import { ChallengeCard, ChallengeDetailView, CreateChallengeDialog } from "@/components/tally";
+import {
+  ChallengeCard,
+  ChallengeDetailView,
+  CreateChallengeDialog,
+  AddEntrySheet,
+  OverallStats,
+  PersonalRecords,
+  WeeklySummaryDialog,
+  ExportImportDialog,
+  LeaderboardView,
+  PublicChallengesView,
+  FollowedChallengeCard,
+} from "@/components/tally";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Target, BarChart3 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Target, Calendar, Database, Trophy, Users } from "lucide-react";
 import Link from "next/link";
-import { toChallenges, toEntries } from "@/lib/adapters";
-import type { Challenge } from "@/types";
+import { toChallenges, toEntries, toFollowedChallenges } from "@/lib/adapters";
+import type { Challenge, SetData, FeelingType } from "@/types";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
+
+type ViewMode = "dashboard" | "leaderboard" | "public-challenges";
 
 export default function Home() {
   useStoreUser();
@@ -21,12 +38,21 @@ export default function Home() {
 
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [addEntryOpen, setAddEntryOpen] = useState(false);
+  const [weeklySummaryOpen, setWeeklySummaryOpen] = useState(false);
+  const [exportImportOpen, setExportImportOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("dashboard");
 
   const challengesRaw = useQuery(api.challenges.listActive, convexUser ? { userId: convexUser._id } : "skip");
   const entriesRaw = useQuery(api.entries.listByUser, convexUser ? { userId: convexUser._id } : "skip");
+  const followedChallengesRaw = useQuery(api.followedChallenges.listByUser, convexUser ? { userId: convexUser._id } : "skip");
 
   const challenges = useMemo(() => (challengesRaw ? toChallenges(challengesRaw) : undefined), [challengesRaw]);
   const entries = useMemo(() => (entriesRaw ? toEntries(entriesRaw) : undefined), [entriesRaw]);
+  const followedChallenges = useMemo(
+    () => (followedChallengesRaw ? toFollowedChallenges(followedChallengesRaw) : undefined),
+    [followedChallengesRaw]
+  );
 
   const selectedChallenge: Challenge | undefined = selectedChallengeId
     ? challenges?.find((c) => c.id === selectedChallengeId)
@@ -42,8 +68,64 @@ export default function Home() {
   const updateEntry = useMutation(api.entries.update);
   const deleteEntry = useMutation(api.entries.remove);
 
+  const unfollowChallenge = useMutation(api.followedChallenges.unfollow);
+
+  const handleAddEntry = (
+    challengeId: string,
+    count: number,
+    note: string,
+    date: string,
+    sets?: SetData[],
+    feeling?: FeelingType
+  ) => {
+    if (!convexUser) return;
+    void createEntry({
+      userId: convexUser._id,
+      challengeId: challengeId as Id<"challenges">,
+      date,
+      count,
+      note: note || undefined,
+      sets: sets?.map((s) => ({ reps: s.reps })),
+      feeling,
+    });
+    toast.success("Entry logged! 🔥", {
+      description: `Added ${count} to your challenge`,
+    });
+  };
+
+  const handleUnfollowChallenge = (challengeId: string, challengeName: string) => {
+    if (!convexUser) return;
+    void unfollowChallenge({
+      userId: convexUser._id,
+      challengeId: challengeId as Id<"challenges">,
+    });
+    toast.success("Unfollowed challenge", {
+      description: `Removed ${challengeName} from your dashboard`,
+    });
+  };
+
+  // Show leaderboard view
+  if (viewMode === "leaderboard" && convexUser) {
+    return (
+      <LeaderboardView
+        userId={convexUser._id}
+        onBack={() => setViewMode("dashboard")}
+      />
+    );
+  }
+
+  // Show public challenges view
+  if (viewMode === "public-challenges" && convexUser) {
+    return (
+      <PublicChallengesView
+        userId={convexUser._id}
+        onBack={() => setViewMode("dashboard")}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background tally-marks-bg">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -52,11 +134,57 @@ export default function Home() {
               <h1 className="text-xl font-bold">Tally</h1>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             <SignedIn>
-              <Button variant="outline" size="sm" onClick={() => setCreateOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                New Challenge
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setViewMode("leaderboard")}
+                className="hidden sm:flex"
+              >
+                <Trophy className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Leaderboard</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setViewMode("public-challenges")}
+                className="hidden sm:flex"
+              >
+                <Users className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Community</span>
+              </Button>
+              {challenges && challenges.length > 0 && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setWeeklySummaryOpen(true)}
+                  >
+                    <Calendar className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Weekly</span>
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => setAddEntryOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Add Entry</span>
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExportImportOpen(true)}
+              >
+                <Database className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Backup</span>
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => setCreateOpen(true)}>
+                <Target className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">New Challenge</span>
               </Button>
               <UserButton afterSignOutUrl="/" />
             </SignedIn>
@@ -106,18 +234,7 @@ export default function Home() {
               challenge={selectedChallenge}
               entries={entries}
               onBack={() => setSelectedChallengeId(null)}
-              onAddEntry={(challengeId, count, note, date, sets, feeling) => {
-                if (!convexUser) return;
-                void createEntry({
-                  userId: convexUser._id,
-                  challengeId: challengeId as Id<"challenges">,
-                  date,
-                  count,
-                  note: note || undefined,
-                  sets,
-                  feeling,
-                });
-              }}
+              onAddEntry={handleAddEntry}
               onUpdateEntry={(entryId, count, note, date, feeling) => {
                 void updateEntry({
                   id: entryId as Id<"entries">,
@@ -126,9 +243,11 @@ export default function Home() {
                   date,
                   feeling,
                 });
+                toast.success("Entry updated! ✏️");
               }}
               onDeleteEntry={(entryId) => {
                 void deleteEntry({ id: entryId as Id<"entries"> });
+                toast.success("Entry deleted");
               }}
               onUpdateChallenge={(challengeId, updates) => {
                 void updateChallenge({
@@ -140,72 +259,99 @@ export default function Home() {
                   isPublic: updates.isPublic,
                   archived: updates.archived,
                 });
+                if (updates.isPublic !== undefined) {
+                  toast.success(updates.isPublic ? "Challenge is now public! 🌍" : "Challenge is now private 🔒");
+                }
               }}
               onArchiveChallenge={(challengeId) => {
                 void archiveChallenge({ id: challengeId as Id<"challenges"> });
                 setSelectedChallengeId(null);
+                toast.success("Challenge archived");
               }}
             />
           ) : challenges && entries && challenges.length > 0 ? (
             <div className="space-y-8">
-              <div className="grid gap-4 md:grid-cols-3">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Active Challenges</CardTitle>
-                    <Target className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{challenges.length}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Entries</CardTitle>
-                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{entries.length}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Reps</CardTitle>
-                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{entries.reduce((sum, e) => sum + e.count, 0).toLocaleString()}</div>
-                  </CardContent>
-                </Card>
-              </div>
+              {/* Overall Stats */}
+              <OverallStats challenges={challenges} entries={entries} />
 
+              {/* Personal Records */}
+              <PersonalRecords challenges={challenges} entries={entries} />
+
+              {/* Followed Challenges */}
+              {followedChallenges && followedChallenges.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <Users className="w-6 h-6 text-primary" />
+                    <h2 className="text-2xl font-bold">Following</h2>
+                    <Badge variant="secondary">{followedChallenges.length}</Badge>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {followedChallenges.map((challenge) => (
+                      <FollowedChallengeCard
+                        key={challenge.id}
+                        challenge={challenge}
+                        entries={entries}
+                        onUnfollow={() => handleUnfollowChallenge(challenge.id, challenge.name)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Your Challenges */}
               <div>
-                <h2 className="text-xl font-semibold mb-4">Your Challenges</h2>
+                <h2 className="text-2xl font-bold mb-4">Your Challenges</h2>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-                  {challenges.map((challenge) => (
-                    <ChallengeCard
+                  {challenges.map((challenge, index) => (
+                    <motion.div
                       key={challenge.id}
-                      challenge={challenge}
-                      entries={entries}
-                      onClick={() => setSelectedChallengeId(challenge.id)}
-                    />
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05, duration: 0.3 }}
+                    >
+                      <ChallengeCard
+                        challenge={challenge}
+                        entries={entries}
+                        onClick={() => setSelectedChallengeId(challenge.id)}
+                      />
+                    </motion.div>
                   ))}
                 </div>
               </div>
             </div>
           ) : (
-            <div className="text-center py-20">
-              <Target className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center py-20"
+            >
+              <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                <Target className="w-12 h-12 text-primary" />
+              </div>
               <h2 className="text-2xl font-bold mb-2">No Challenges Yet</h2>
-              <p className="text-muted-foreground mb-8">Create your first challenge to start tracking your progress!</p>
+              <p className="text-muted-foreground mb-6 text-center max-w-md">
+                Create your first challenge and start tracking your progress towards greatness
+              </p>
               <Button size="lg" onClick={() => setCreateOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Create Challenge
+                Create Your First Challenge
               </Button>
-            </div>
+            </motion.div>
           )}
         </SignedIn>
       </main>
 
+      {/* AddEntry Sheet */}
+      {challenges && (
+        <AddEntrySheet
+          open={addEntryOpen}
+          onOpenChange={setAddEntryOpen}
+          challenges={challenges}
+          onAddEntry={handleAddEntry}
+        />
+      )}
+
+      {/* Create Challenge Dialog */}
       <CreateChallengeDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
@@ -225,9 +371,41 @@ export default function Home() {
               isPublic: challenge.isPublic ?? false,
             });
             setSelectedChallengeId(id);
+            toast.success("Challenge created! 🎯", {
+              description: `Ready to crush ${challenge.targetNumber.toLocaleString()} ${challenge.name}!`,
+            });
           })();
         }}
       />
+
+      {/* Weekly Summary Dialog */}
+      {challenges && entries && (
+        <WeeklySummaryDialog
+          open={weeklySummaryOpen}
+          onOpenChange={setWeeklySummaryOpen}
+          challenges={challenges}
+          entries={entries}
+        />
+      )}
+
+      {/* Export/Import Dialog */}
+      {challenges && entries && (
+        <ExportImportDialog
+          open={exportImportOpen}
+          onOpenChange={setExportImportOpen}
+          challenges={challenges}
+          entries={entries}
+          onImport={() => {
+            // TODO: Implement import via Convex mutations
+            toast.info("Import via Convex coming soon");
+          }}
+          onClearAll={() => {
+            // TODO: Implement clear all via Convex mutations
+            toast.info("Clear all via Convex coming soon");
+          }}
+          userId={convexUser?._id ?? null}
+        />
+      )}
     </div>
   );
 }

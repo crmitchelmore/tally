@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import type { LeaderboardEntry } from "@/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,29 +12,63 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, Calendar, Target, Medal, Crown, Award } from "lucide-react";
 import { motion } from "framer-motion";
+import { toChallenges, toEntries } from "@/lib/adapters";
+import { startOfWeek, startOfMonth, startOfYear, format } from "date-fns";
 
 interface LeaderboardViewProps {
-  userId: string;
-  leaderboard: LeaderboardEntry[];
-  isLoading?: boolean;
+  userId: Id<"users">;
   onBack: () => void;
-  onTimeRangeChange?: (range: "week" | "month" | "year" | "all") => void;
 }
 
-export function LeaderboardView({
-  userId,
-  leaderboard,
-  isLoading = false,
-  onBack,
-  onTimeRangeChange,
-}: LeaderboardViewProps) {
+export function LeaderboardView({ userId, onBack }: LeaderboardViewProps) {
   const [timeRange, setTimeRange] = useState<"week" | "month" | "year" | "all">("week");
 
-  const handleTimeRangeChange = (value: string) => {
-    const range = value as "week" | "month" | "year" | "all";
-    setTimeRange(range);
-    onTimeRangeChange?.(range);
-  };
+  // Fetch public challenges and entries
+  const publicChallengesRaw = useQuery(api.challenges.listPublic, {});
+  const entriesRaw = useQuery(api.entries.listByUser, { userId });
+
+  const publicChallenges = useMemo(
+    () => (publicChallengesRaw ? toChallenges(publicChallengesRaw) : []),
+    [publicChallengesRaw]
+  );
+
+  const isLoading = publicChallengesRaw === undefined;
+
+  // Build leaderboard from public challenges
+  const leaderboard: LeaderboardEntry[] = useMemo(() => {
+    if (!publicChallenges.length) return [];
+
+    const now = new Date();
+    let startDate: Date;
+    switch (timeRange) {
+      case "week":
+        startDate = startOfWeek(now, { weekStartsOn: 1 });
+        break;
+      case "month":
+        startDate = startOfMonth(now);
+        break;
+      case "year":
+        startDate = startOfYear(now);
+        break;
+      default:
+        startDate = new Date(0);
+    }
+
+    // For now, show challenges with mock data since we don't have cross-user entries
+    return publicChallenges.map((challenge, index) => ({
+      rank: index + 1,
+      username: `User ${challenge.userId.slice(0, 6)}`,
+      avatarUrl: "",
+      userId: challenge.userId,
+      challengeId: challenge.id,
+      challengeName: challenge.name,
+      totalReps: 0, // Would need aggregation across all entries for this challenge
+      targetNumber: challenge.targetNumber,
+      progress: 0,
+      daysActive: 0,
+      lastUpdated: new Date().toISOString(),
+    })).slice(0, 50);
+  }, [publicChallenges, timeRange]);
 
   const myEntries = leaderboard.filter((entry) => entry.userId === userId);
   const globalLeaderboard = leaderboard;
@@ -111,7 +148,7 @@ export function LeaderboardView({
           <p className="text-muted-foreground text-lg">See how you stack up against the community</p>
         </header>
 
-        <Tabs value={timeRange} onValueChange={handleTimeRangeChange} className="mb-6">
+        <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as typeof timeRange)} className="mb-6">
           <TabsList className="grid grid-cols-4 w-full max-w-md">
             <TabsTrigger value="week">Week</TabsTrigger>
             <TabsTrigger value="month">Month</TabsTrigger>

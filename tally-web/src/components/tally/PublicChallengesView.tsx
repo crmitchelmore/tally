@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import type { PublicChallenge } from "@/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,27 +14,47 @@ import { CircularProgress } from "./CircularProgress";
 import { Search, Users, TrendingUp, Calendar, UserPlus, UserCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { toChallenges } from "@/lib/adapters";
 
 interface PublicChallengesViewProps {
-  userId: string;
-  challenges: PublicChallenge[];
-  followedChallengeIds: string[];
-  isLoading?: boolean;
+  userId: Id<"users">;
   onBack: () => void;
-  onFollow: (challengeId: string) => void;
-  onUnfollow: (challengeId: string) => void;
 }
 
-export function PublicChallengesView({
-  userId,
-  challenges,
-  followedChallengeIds,
-  isLoading = false,
-  onBack,
-  onFollow,
-  onUnfollow,
-}: PublicChallengesViewProps) {
+export function PublicChallengesView({ userId, onBack }: PublicChallengesViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch public challenges and followed challenges
+  const publicChallengesRaw = useQuery(api.challenges.listPublic, {});
+  const followedChallengesRaw = useQuery(api.followedChallenges.listByUser, { userId });
+
+  const followChallenge = useMutation(api.followedChallenges.follow);
+  const unfollowChallenge = useMutation(api.followedChallenges.unfollow);
+
+  const isLoading = publicChallengesRaw === undefined;
+
+  const publicChallenges = useMemo(
+    () => (publicChallengesRaw ? toChallenges(publicChallengesRaw) : []),
+    [publicChallengesRaw]
+  );
+
+  const followedChallengeIds = useMemo(
+    () => (followedChallengesRaw ? followedChallengesRaw.map((c) => c._id) : []),
+    [followedChallengesRaw]
+  );
+
+  // Convert to PublicChallenge format for display
+  const challenges: PublicChallenge[] = useMemo(
+    () =>
+      publicChallenges.map((c) => ({
+        ...c,
+        totalReps: 0, // Would need aggregation
+        progress: 0,
+        ownerName: undefined,
+        ownerAvatarUrl: undefined,
+      })),
+    [publicChallenges]
+  );
 
   const filteredChallenges = challenges.filter(
     (challenge) =>
@@ -53,17 +76,23 @@ export function PublicChallengesView({
   };
 
   const isFollowing = (challengeId: string) => {
-    return followedChallengeIds.includes(challengeId);
+    return followedChallengeIds.includes(challengeId as Id<"challenges">);
   };
 
   const handleToggleFollow = (challenge: PublicChallenge) => {
     if (isFollowing(challenge.id)) {
-      onUnfollow(challenge.id);
+      void unfollowChallenge({
+        userId,
+        challengeId: challenge.id as Id<"challenges">,
+      });
       toast.success("Unfollowed challenge", {
         description: `Removed ${challenge.name} from your dashboard`,
       });
     } else {
-      onFollow(challenge.id);
+      void followChallenge({
+        userId,
+        challengeId: challenge.id as Id<"challenges">,
+      });
       toast.success("Following challenge! 🎯", {
         description: `${challenge.name} will now appear on your dashboard`,
       });

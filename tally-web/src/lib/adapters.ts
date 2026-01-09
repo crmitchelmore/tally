@@ -70,3 +70,27 @@ export function toUser(doc: Doc<"users">): User {
     createdAt: doc.createdAt,
   };
 }
+
+/**
+ * Convert followed challenges from Convex to application Challenge type
+ * Note: The listByUser query returns challenges with followedAt
+ */
+export function toFollowedChallenges(
+  docs: Array<Doc<"challenges"> & { followedAt: number }>
+): Challenge[] {
+  return docs.map((doc) => ({
+    id: doc._id as string,
+    userId: doc.userId as string,
+    name: doc.name,
+    targetNumber: doc.targetNumber,
+    year: doc.year,
+    color: doc.color,
+    icon: doc.icon,
+    timeframeUnit: doc.timeframeUnit,
+    startDate: doc.startDate,
+    endDate: doc.endDate,
+    isPublic: doc.isPublic,
+    archived: doc.archived,
+    createdAt: doc.createdAt,
+  }));
+}

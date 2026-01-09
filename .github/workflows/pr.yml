@@ -9,6 +9,8 @@ jobs:
   web:
     name: web (lint/build/test)
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
     defaults:
       run:
         working-directory: tally-web

@@ -8,6 +8,8 @@ jobs:
     name: ui report (screenshots)
     runs-on: ubuntu-latest
     continue-on-error: true
+    env:
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
     defaults:
       run:
         working-directory: tally-web

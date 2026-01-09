@@ -22,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.tally.auth.AuthTokenStore
 import app.tally.auth.SignInOrUpView
 import app.tally.model.Challenge
+import app.tally.model.Entry
 import app.tally.net.CreateChallengeRequest
 import app.tally.net.CreateEntryRequest
 import app.tally.net.TallyApi
@@ -47,6 +48,7 @@ class MainActivity : ComponentActivity() {
       val scope = rememberCoroutineScope()
 
       var challenges by remember { mutableStateOf<List<Challenge>>(emptyList()) }
+      var entries by remember { mutableStateOf<List<Entry>>(emptyList()) }
       var error by remember { mutableStateOf<String?>(null) }
       var status by remember { mutableStateOf<String?>(null) }
 
@@ -57,6 +59,7 @@ class MainActivity : ComponentActivity() {
 
         if (state != MainUiState.SignedIn) {
           challenges = emptyList()
+          entries = emptyList()
           withContext(Dispatchers.IO) { tokenStore.setConvexJwt(null) }
           return@LaunchedEffect
         }
@@ -82,9 +85,17 @@ class MainActivity : ComponentActivity() {
             jwt
           }
 
-          challenges = withContext(Dispatchers.IO) {
+          val loadedChallenges = withContext(Dispatchers.IO) {
             TallyApi.ensureUser(jwt)
             TallyApi.getChallenges(jwt)
+          }
+          challenges = loadedChallenges
+
+          val first = loadedChallenges.firstOrNull()
+          entries = if (first == null) {
+            emptyList()
+          } else {
+            withContext(Dispatchers.IO) { TallyApi.getEntries(jwt, first._id) }
           }
         } catch (e: Exception) {
           error = e.message
@@ -177,6 +188,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     status = "Added entry: $id"
+                    entries = withContext(Dispatchers.IO) { TallyApi.getEntries(jwt, first._id) }
                   } catch (e: Exception) {
                     error = e.message
                   }
@@ -195,6 +207,11 @@ class MainActivity : ComponentActivity() {
                 Text("My challenges: ${challenges.size}")
                 challenges.take(10).forEach { c ->
                   Text("• ${c.name}")
+                }
+
+                Text("Entries (first challenge): ${entries.size}")
+                entries.take(5).forEach { e ->
+                  Text("• ${e.date}: ${e.count}")
                 }
               }
             }

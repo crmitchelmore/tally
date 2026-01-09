@@ -65,11 +65,10 @@
   - [x] `POST /api/challenges` (create)
   - [x] `POST /api/entries` (create)
   - [ ] Promote to Retrofit + interceptors later
-- [ ] Create Entry model
-  - [ ] Create data/model/Entry.kt
+- [x] Create Entry model (minimal)
+  - [x] `tally-android/app/src/main/java/app/tally/model/EntrySet.kt`
+  - [x] `tally-android/app/src/main/java/app/tally/model/Entry.kt`
   - [ ] Define FeelingType enum
-  - [ ] Define EntrySet data class
-  - [ ] Define Entry data class
   - [ ] Verify: Model compiles
 - [ ] Create User model
   - [ ] Create data/model/User.kt

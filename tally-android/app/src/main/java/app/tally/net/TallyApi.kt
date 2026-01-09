@@ -2,6 +2,7 @@ package app.tally.net
 
 import app.tally.BuildConfig
 import app.tally.model.Challenge
+import app.tally.model.Entry
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -88,6 +89,23 @@ object TallyApi {
         ?.let { json.parseToJsonElement(it).jsonObject["id"]?.jsonPrimitive?.content }
         ?.takeIf { it.isNotBlank() }
       return id ?: throw IllegalStateException("Missing id in response")
+    }
+  }
+
+  fun getEntries(jwt: String, challengeId: String): List<Entry> {
+    val req = Request.Builder()
+      .url("$baseUrl/api/entries?challengeId=$challengeId")
+      .addHeader("Authorization", "Bearer $jwt")
+      .get()
+      .build()
+
+    client.newCall(req).execute().use { res ->
+      if (!res.isSuccessful) {
+        throw IllegalStateException("HTTP ${res.code}: ${res.body?.string()}")
+      }
+
+      val body = res.body?.string() ?: "[]"
+      return json.decodeFromString(ListSerializer(Entry.serializer()), body)
     }
   }
 

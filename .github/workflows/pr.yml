@@ -114,3 +114,76 @@ jobs:
           fi
           export PATH="$HOME/.pulumi/bin:$PATH"
           pulumi preview --stack "${PULUMI_STACK_NAME:-prod}"
+
+  deploy-convex:
+    name: deploy convex (prod)
+    runs-on: ubuntu-latest
+    needs: [web]
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
+          export BUN_INSTALL="$HOME/.bun"
+          export PATH="$BUN_INSTALL/bin:$PATH"
+          echo "$BUN_INSTALL/bin" >> $GITHUB_PATH
+          bun --version
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Deploy Convex (prod)
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_DEPLOYMENT: ${{ secrets.CONVEX_DEPLOYMENT }}
+        run: |
+          if [ -z "$CONVEX_DEPLOY_KEY" ]; then
+            echo "CONVEX_DEPLOY_KEY not set; skipping"
+            exit 0
+          fi
+          bunx convex deploy --prod
+
+  deploy-vercel:
+    name: deploy vercel (prod)
+    runs-on: ubuntu-latest
+    needs: [web, deploy-convex]
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Write Vercel project.json
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          if [ -z "$VERCEL_PROJECT_ID" ] || [ -z "$VERCEL_ORG_ID" ]; then
+            echo "Missing VERCEL_PROJECT_ID/VERCEL_ORG_ID; skipping"
+            exit 0
+          fi
+          mkdir -p .vercel
+          cat > .vercel/project.json <<JSON
+          {"projectId":"$VERCEL_PROJECT_ID","orgId":"$VERCEL_ORG_ID"}
+          JSON
+
+      - name: Deploy to Vercel (prod)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "VERCEL_TOKEN not set; skipping"
+            exit 0
+          fi
+          npm i -g vercel@latest
+          vercel deploy --prod --yes --token "$VERCEL_TOKEN"

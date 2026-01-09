@@ -28,7 +28,7 @@ const clerkPublishableKey = config.getSecret("clerkPublishableKey");
 // `clerkPublishableKey` is optional to avoid breaking existing stacks until it's set.
 if (clerkPublishableKey) {
   new vercel.ProjectEnvironmentVariable("clerk-publishable-key", {
-    projectId: vercelProject.id,
+    projectId: vercelProjectId,
     teamId: vercelTeamId,
     key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
     value: clerkPublishableKey,
@@ -44,7 +44,7 @@ if (clerkPublishableKey) {
 new vercel.ProjectEnvironmentVariable(
   "clerk-secret-key",
   {
-    projectId: vercelProject.id,
+    projectId: vercelProjectId,
     teamId: vercelTeamId,
     key: "CLERK_SECRET_KEY",
     value: clerkSecretKey,

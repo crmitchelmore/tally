@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tally-tracker.app/schemas/shared-types.schema.json",
+  "title": "Tally Shared Types",
+  "type": "object",
+  "$defs": {
+    "TimeframeUnit": {
+      "type": "string",
+      "enum": ["year", "month", "custom"]
+    },
+    "FeelingType": {
+      "type": "string",
+      "enum": ["very-easy", "easy", "moderate", "hard", "very-hard"]
+    },
+    "User": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["_id", "clerkId", "createdAt"],
+      "properties": {
+        "_id": { "type": "string" },
+        "clerkId": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "createdAt": { "type": "number" }
+      }
+    },
+    "Challenge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "_id",
+        "userId",
+        "name",
+        "targetNumber",
+        "year",
+        "color",
+        "icon",
+        "timeframeUnit",
+        "isPublic",
+        "archived",
+        "createdAt"
+      ],
+      "properties": {
+        "_id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "targetNumber": { "type": "number" },
+        "year": { "type": "number" },
+        "color": { "type": "string" },
+        "icon": { "type": "string" },
+        "timeframeUnit": { "$ref": "#/$defs/TimeframeUnit" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "isPublic": { "type": "boolean" },
+        "archived": { "type": "boolean" },
+        "createdAt": { "type": "number" }
+      }
+    },
+    "EntrySet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reps"],
+      "properties": {
+        "reps": { "type": "number" }
+      }
+    },
+    "Entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["_id", "userId", "challengeId", "date", "count", "createdAt"],
+      "properties": {
+        "_id": { "type": "string" },
+        "userId": { "type": "string" },
+        "challengeId": { "type": "string" },
+        "date": { "type": "string" },
+        "count": { "type": "number" },
+        "note": { "type": "string" },
+        "sets": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/EntrySet" }
+        },
+        "feeling": { "$ref": "#/$defs/FeelingType" },
+        "createdAt": { "type": "number" }
+      }
+    },
+    "FollowedChallenge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["_id", "userId", "challengeId", "followedAt"],
+      "properties": {
+        "_id": { "type": "string" },
+        "userId": { "type": "string" },
+        "challengeId": { "type": "string" },
+        "followedAt": { "type": "number" }
+      }
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["error"],
+      "properties": {
+        "error": { "type": "string" }
+      }
+    }
+  }
+}

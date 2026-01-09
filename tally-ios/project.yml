@@ -6,6 +6,9 @@ options:
 packages:
   TallyCore:
     path: TallyCore
+  Clerk:
+    url: https://github.com/clerk/clerk-ios
+    from: 0.57.0
 targets:
   Tally:
     type: application
@@ -14,11 +17,14 @@ targets:
       - path: TallyApp
     dependencies:
       - package: TallyCore
+      - package: Clerk
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.tally.ios
         DEVELOPMENT_TEAM: ""
         GENERATE_INFOPLIST_FILE: YES
+        CLERK_PUBLISHABLE_KEY: ""
+        INFOPLIST_KEY_CLERK_PUBLISHABLE_KEY: "$(CLERK_PUBLISHABLE_KEY)"
   TallyTests:
     type: bundle.unit-test
     platform: iOS

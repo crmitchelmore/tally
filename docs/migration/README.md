@@ -115,21 +115,21 @@ This migration transforms Tally from a Vite + React + GitHub Spark application i
 ## Master TODO List
 
 ### Phase 1: Foundation
-- [ ] **PROJECT 1: Next.js Web Migration** (see [PROJECT-1-NEXTJS.md](./PROJECT-1-NEXTJS.md))
-  - [ ] Task 1.1: Project Initialization
-  - [ ] Task 1.2: shadcn/ui Component Setup
-  - [ ] Task 1.3: Convex Database Setup
-  - [ ] Task 1.4: Authentication with Clerk
-  - [ ] Task 1.5: Component Migration
-  - [ ] Task 1.6: Real-time Features
-  - [ ] Task 1.7: Deployment to Vercel
-  - [ ] Project 1 Completion Checklist verified
+- [x] **PROJECT 1: Next.js Web Migration** (see [PROJECT-1-NEXTJS.md](./PROJECT-1-NEXTJS.md))
+  - [x] Task 1.1: Project Initialization
+  - [x] Task 1.2: shadcn/ui Component Setup
+  - [x] Task 1.3: Convex Database Setup
+  - [x] Task 1.4: Authentication with Clerk
+  - [x] Task 1.5: Component Migration
+  - [x] Task 1.6: Real-time Features
+  - [x] Task 1.7: Deployment to Vercel
+  - [x] Project 1 Completion Checklist verified
 
 ### Phase 2: API Layer
 - [ ] **PROJECT 2: Shared API Layer** (see [PROJECT-2-API.md](./PROJECT-2-API.md))
-  - [ ] Task 2.1: Convex HTTP Actions
-  - [ ] Task 2.2: API Documentation
-  - [ ] Task 2.3: Shared Types Package
+  - [x] Task 2.1: Convex HTTP Actions
+  - [x] Task 2.2: API Documentation
+  - [x] Task 2.3: Shared Types Package
   - [ ] Project 2 Completion Checklist verified
 
 ### Phase 3: Mobile Apps (can run in parallel)
@@ -302,13 +302,13 @@ Projects 3 and 4 can run in parallel after Project 2 is complete.
 ### Key Commands
 ```bash
 # Next.js development
-npm run dev
-npm run build
-npx tsc --noEmit
+cd tally-web && bun run dev
+cd tally-web && bun run build
+cd tally-web && bunx tsc --noEmit
 
 # Convex
-npx convex dev
-npx convex deploy --prod
+cd tally-web && bunx convex dev
+cd tally-web && bunx convex deploy --prod
 
 # iOS (in Xcode)
 Cmd+B  # Build

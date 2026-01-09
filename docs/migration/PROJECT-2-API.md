@@ -14,46 +14,46 @@
 > ⚠️ **IMPORTANT**: Do not check off any item until it has been **tested and verified working**. Run the verification steps for each task before marking complete.
 
 ### Task 2.1: Convex HTTP Actions
-- [ ] Create HTTP router
-  - [ ] Create convex/http.ts
-  - [ ] Configure httpRouter
-  - [ ] Verify: File compiles without errors
-- [ ] Create auth endpoint
-  - [ ] Add POST /api/auth/user route
+- [x] Create HTTP router
+  - [x] Create convex/http.ts
+  - [x] Configure httpRouter
+  - [x] Verify: File compiles without errors
+- [x] Create auth endpoint
+  - [x] Add POST /api/auth/user route
   - [ ] Verify: Endpoint returns userId
-- [ ] Create challenges endpoints
-  - [ ] Add GET /api/challenges route
-  - [ ] Add POST /api/challenges route
-  - [ ] Add PATCH /api/challenges/:id route
+- [x] Create challenges endpoints
+  - [x] Add GET /api/challenges route
+  - [x] Add POST /api/challenges route
+  - [x] Add PATCH /api/challenges/:id route
   - [ ] Verify: All challenge operations work via curl
-- [ ] Create entries endpoints
-  - [ ] Add GET /api/entries route
-  - [ ] Add POST /api/entries route
-  - [ ] Add PATCH /api/entries/:id route
-  - [ ] Add DELETE /api/entries/:id route
+- [x] Create entries endpoints
+  - [x] Add GET /api/entries route
+  - [x] Add POST /api/entries route
+  - [x] Add PATCH /api/entries/:id route
+  - [x] Add DELETE /api/entries/:id route
   - [ ] Verify: All entry operations work via curl
-- [ ] Create followed challenges endpoints
-  - [ ] Add GET /api/followed route
-  - [ ] Add POST /api/followed route
-  - [ ] Add DELETE /api/followed/:id route
+- [x] Create followed challenges endpoints
+  - [x] Add GET /api/followed route
+  - [x] Add POST /api/followed route
+  - [x] Add DELETE /api/followed/:id route
   - [ ] Verify: Follow/unfollow works via curl
-- [ ] Create public endpoints
-  - [ ] Add GET /api/public/challenges route
-  - [ ] Add GET /api/leaderboard route
-  - [ ] Verify: Public data accessible without auth
-- [ ] Enable CORS
-  - [ ] Add CORS headers to all responses
-  - [ ] Verify: Mobile apps can make requests
+- [x] Create public endpoints
+  - [x] Add GET /api/public/challenges route
+  - [x] Add GET /api/leaderboard route
+  - [x] Verify: Public data accessible without auth
+- [x] Enable CORS
+  - [x] Add CORS headers to all responses
+  - [x] Verify: Mobile apps can make requests
 - [ ] **VERIFICATION**: All HTTP endpoints working
   - [ ] Test each endpoint with curl
   - [ ] Verify error responses have correct status codes
   - [ ] Verify auth token validation works
 
 ### Task 2.2: API Documentation
-- [ ] Create API reference document
-  - [ ] Document base URLs (dev/prod)
-  - [ ] Document authentication method
-  - [ ] Verify: All endpoints listed
+- [x] Create API reference document
+  - [x] Document base URLs (dev/prod)
+  - [x] Document authentication method
+  - [x] Verify: All endpoints listed
 - [ ] Document user endpoints
   - [ ] POST /api/auth/user - request/response format
   - [ ] Verify: Example works when tested
@@ -78,22 +78,22 @@
   - [ ] Mobile team can use docs to implement
 
 ### Task 2.3: Shared Types Package
-- [ ] Create types package
-  - [ ] Create packages/shared-types/ directory
-  - [ ] Set up package.json
-  - [ ] Verify: Package structure correct
-- [ ] Define TypeScript types
-  - [ ] Export TimeframeUnit type
-  - [ ] Export FeelingType type
-  - [ ] Export Challenge interface
-  - [ ] Export Entry interface
-  - [ ] Export User interface
-  - [ ] Verify: Types compile without errors
-- [ ] Create JSON Schema (for non-TypeScript)
-  - [ ] Create schema.json with all types
+- [x] Create types package
+  - [x] Create packages/shared-types/ directory
+  - [x] Set up package.json
+  - [x] Verify: Package structure correct
+- [x] Define TypeScript types
+  - [x] Export TimeframeUnit type
+  - [x] Export FeelingType type
+  - [x] Export Challenge interface
+  - [x] Export Entry interface
+  - [x] Export User interface
+  - [x] Verify: Types compile without errors
+- [x] Create JSON Schema (for non-TypeScript)
+  - [x] Create schema.json with all types
   - [ ] Verify: Schema validates sample data
-- [ ] Document type usage
-  - [ ] Add README to types package
+- [x] Document type usage
+  - [x] Add README to types package
   - [ ] Include usage examples
   - [ ] Verify: Examples work
 - [ ] **VERIFICATION**: Types package usable

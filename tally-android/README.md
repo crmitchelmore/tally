@@ -1,10 +1,13 @@
 # Tally Android
 
-This directory will hold the native Android app.
+Minimal native Android scaffold (Compose) to enable CI and iterative development.
 
-## Current status
+## Build
 
-- `tallycore/` contains Kotlin model/API scaffolding (no build setup yet).
+```bash
+cd tally-android
+./gradlew :app:assembleDebug
+```
 
 ## API base URL
 

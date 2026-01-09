@@ -146,6 +146,141 @@ To fully verify authenticated CRUD via curl, obtain a Clerk JWT from the web app
 Authorization: Bearer <clerk-jwt>
 ```
 
+## API Reference (Current)
+
+Source of truth: `tally-web/convex/http.ts`.
+
+### Base URL
+
+- Production: `https://bright-jackal-396.convex.site`
+- All routes below are prefixed with `/api/...`
+
+### Authentication
+
+Authenticated routes require a **Clerk JWT**:
+
+```http
+Authorization: Bearer <clerk-jwt>
+```
+
+To get a JWT quickly from a signed-in web session (Chrome DevTools console):
+
+```js
+// Preferred (Convex template)
+await window.Clerk.session.getToken({ template: "convex" });
+
+// Fallback
+await window.Clerk.session.getToken();
+```
+
+### Error format
+
+Errors are JSON with a single `error` field:
+
+```json
+{ "error": "Unauthorized" }
+```
+
+Common codes:
+
+- `400` invalid JSON / missing required field
+- `401` missing/invalid auth
+- `403` resource is owned by another user
+- `404` not found
+
+### Endpoints
+
+#### Public (no auth)
+
+- `GET /api/public/challenges` → `200` array of public challenges
+- `GET /api/leaderboard` → `200` array of `{ challenge, followers }`
+- `OPTIONS /api/*` → `204` (CORS preflight)
+
+Examples:
+
+```bash
+API_BASE=https://bright-jackal-396.convex.site
+
+curl "$API_BASE/api/public/challenges"
+curl "$API_BASE/api/leaderboard"
+curl -i -X OPTIONS "$API_BASE/api/public/challenges"
+```
+
+#### Authenticated
+
+- `POST /api/auth/user` → `200 { userId, clerkId }`
+
+```bash
+curl -X POST "$API_BASE/api/auth/user" \
+  -H "Authorization: Bearer $JWT" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","name":"You"}'
+```
+
+- `GET /api/challenges?active=true` → `200` array
+- `POST /api/challenges` → `201 { id }`
+- `PATCH /api/challenges/{id}` → `200 { success: true }`
+
+```bash
+curl -i "$API_BASE/api/challenges" \
+  -H "Authorization: Bearer $JWT"  # expect 200
+
+curl -X POST "$API_BASE/api/challenges" \
+  -H "Authorization: Bearer $JWT" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Push-ups","targetNumber":10000,"year":2026,"color":"#3b82f6","icon":"dumbbell","timeframeUnit":"year","isPublic":false}'
+
+curl -X PATCH "$API_BASE/api/challenges/$CHALLENGE_ID" \
+  -H "Authorization: Bearer $JWT" \
+  -H "Content-Type: application/json" \
+  -d '{"archived":true}'
+```
+
+- `GET /api/entries?challengeId={challengeId}` → `200` array
+- `GET /api/entries?date=YYYY-MM-DD` → `200` array (current user)
+- `POST /api/entries` → `201 { id }`
+- `PATCH /api/entries/{id}` → `200 { success: true }`
+- `DELETE /api/entries/{id}` → `200 { success: true }`
+
+```bash
+curl "$API_BASE/api/entries?challengeId=$CHALLENGE_ID" \
+  -H "Authorization: Bearer $JWT"
+
+curl -X POST "$API_BASE/api/entries" \
+  -H "Authorization: Bearer $JWT" \
+  -H "Content-Type: application/json" \
+  -d '{"challengeId":"'$CHALLENGE_ID'","date":"2026-01-09","count":50,"note":"Morning"}'
+
+curl -X DELETE "$API_BASE/api/entries/$ENTRY_ID" \
+  -H "Authorization: Bearer $JWT"
+```
+
+- `GET /api/followed` → `200` array of followed challenges
+- `POST /api/followed` → `201 { id }`
+- `DELETE /api/followed/{idOrChallengeId}` → `200 { success: true }`
+
+```bash
+curl -X POST "$API_BASE/api/followed" \
+  -H "Authorization: Bearer $JWT" \
+  -H "Content-Type: application/json" \
+  -d '{"challengeId":"'$CHALLENGE_ID'"}'
+
+curl -X DELETE "$API_BASE/api/followed/$CHALLENGE_ID" \
+  -H "Authorization: Bearer $JWT"
+```
+
+### Automated verification scripts (repo)
+
+```bash
+cd tally-web
+
+# Public + auth enforcement smoke
+TALLY_API_BASE=$API_BASE bun run api:smoke
+
+# Full authenticated CRUD verification (requires TALLY_JWT)
+TALLY_API_BASE=$API_BASE TALLY_JWT=$JWT bun run api:verify
+```
+
 ---
 
 ## Detailed Implementation

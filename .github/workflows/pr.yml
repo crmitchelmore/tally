@@ -38,6 +38,11 @@ jobs:
       - name: Unit tests
         run: bun run test
 
+      - name: API smoke
+        env:
+          TALLY_API_BASE: https://bright-jackal-396.convex.site
+        run: bun run api:smoke
+
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
 

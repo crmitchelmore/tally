@@ -11,6 +11,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test --grep-invert \"@ui|@auth\"",
 
+    "api:smoke": "bun scripts/api-smoke.ts",
+    "api:verify": "bun scripts/api-verify.ts",
+
     "test:e2e:auth": "playwright test --grep @auth",
     "test:e2e:ui": "playwright test --grep @ui --update-snapshots"
   },

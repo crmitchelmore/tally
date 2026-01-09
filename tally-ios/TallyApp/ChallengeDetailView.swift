@@ -12,6 +12,8 @@ struct ChallengeDetailView: View {
   @State private var isLoading = false
   @State private var errorText: String?
   @State private var isShowingAddEntry = false
+  @State private var isShowingSettings = false
+  @State private var selectedEntryForEdit: Entry?
 
   var body: some View {
     List {
@@ -20,10 +22,18 @@ struct ChallengeDetailView: View {
         Text("Target: \(Int(challenge.targetNumber))")
           .font(.subheadline)
           .foregroundStyle(.secondary)
+        HStack {
+          Text("Public")
+          Spacer()
+          Image(systemName: challenge.isPublic == true ? "checkmark.circle.fill" : "xmark.circle")
+            .foregroundStyle(challenge.isPublic == true ? .green : .secondary)
+        }
       }
 
       Section {
         Button("Add entry") { isShowingAddEntry = true }
+          .disabled(state.jwt.isEmpty)
+        Button("Settings") { isShowingSettings = true }
           .disabled(state.jwt.isEmpty)
       }
 
@@ -39,12 +49,21 @@ struct ChallengeDetailView: View {
             .foregroundStyle(.secondary)
         } else {
           ForEach(entries) { e in
-            HStack {
-              Text(e.date)
-              Spacer()
-              Text("+\(Int(e.count))")
-                .foregroundStyle(.secondary)
+            Button {
+              selectedEntryForEdit = e
+            } label: {
+              HStack {
+                Text(e.date)
+                Spacer()
+                Text("+\(Int(e.count))")
+                  .foregroundStyle(.secondary)
+                if let note = e.note, !note.isEmpty {
+                  Image(systemName: "note.text")
+                    .foregroundStyle(.secondary)
+                }
+              }
             }
+            .foregroundStyle(.primary)
           }
           .onDelete { offsets in
             Task { await delete(offsets: offsets) }
@@ -58,6 +77,18 @@ struct ChallengeDetailView: View {
     }
     .sheet(isPresented: $isShowingAddEntry) {
       AddEntryView(challengeId: challenge._id) {
+        Task { await load() }
+      }
+      .environmentObject(state)
+    }
+    .sheet(isPresented: $isShowingSettings) {
+      ChallengeSettingsView(challenge: challenge) {
+        Task { await load() }
+      }
+      .environmentObject(state)
+    }
+    .sheet(item: $selectedEntryForEdit) { entry in
+      EditEntryView(entry: entry) {
         Task { await load() }
       }
       .environmentObject(state)

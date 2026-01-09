@@ -61,6 +61,14 @@ struct RootView: View {
             .environmentObject(state)
             .tabItem { Label("Challenges", systemImage: "list.bullet") }
 
+          LeaderboardView()
+            .environmentObject(state)
+            .tabItem { Label("Leaderboard", systemImage: "trophy") }
+
+          CommunityView()
+            .environmentObject(state)
+            .tabItem { Label("Community", systemImage: "person.2") }
+
           SettingsView()
             .environmentObject(state)
             .tabItem { Label("Settings", systemImage: "gear") }

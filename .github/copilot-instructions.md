@@ -4,8 +4,6 @@
 
 - **Custom Agent**: Use `tally` agent for project-specific assistance
 - **Context File**: Read `CONTEXT.md` for full project state
-- **Mental Model**: Read `docs/MENTAL-MODEL.md`
-- **Design Philosophy**: Read `docs/DESIGN-PHILOSOPHY.md`
 - **Domain**: https://tally-tracker.app
 
 ## Project Overview

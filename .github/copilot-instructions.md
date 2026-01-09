@@ -1,5 +1,11 @@
 # Tally - Copilot Instructions
 
+## Quick Reference
+
+- **Custom Agent**: Use `tally` agent for project-specific assistance
+- **Context File**: Read `CONTEXT.md` for full project state
+- **Domain**: https://tally-tracker.app
+
 ## Project Overview
 
 Tally is a multi-platform challenge tracking app:
@@ -7,6 +13,23 @@ Tally is a multi-platform challenge tracking app:
 - **iOS**: Coming soon (in `tally-ios/`)
 - **Android**: Coming soon (in `tally-android/`)
 - **Infrastructure**: Pulumi TypeScript (in `infra/`)
+
+## Critical Rules
+
+### Package Manager
+- **Web app (`tally-web/`)**: Use `bun` (NOT npm/yarn)
+- **Infrastructure (`infra/`)**: Use `npm`
+
+### Infrastructure
+- **NEVER** change infrastructure manually in dashboards
+- **ALWAYS** use Pulumi: `cd infra && pulumi up`
+- Commit all infra changes to git
+
+### Authentication (Clerk)
+- Use `clerkMiddleware()` in `proxy.ts`
+- Do NOT use deprecated `authMiddleware()`
+- App Router only (no pages router patterns)
+- Never hardcode keys - use `.env`
 
 ## Tech Stack
 
@@ -18,7 +41,7 @@ Tally is a multi-platform challenge tracking app:
 | DNS | Cloudflare |
 | Hosting | Vercel |
 | IaC | Pulumi (TypeScript) |
-| Package Manager | Bun |
+| Package Manager | Bun (web), npm (infra) |
 
 ## Infrastructure Changes (IMPORTANT)
 
@@ -68,12 +91,13 @@ The following are managed by Pulumi in `infra/index.ts`:
 
 ### Importing Existing Resources
 
-```typescript
-// To import an existing resource:
+```bash
+# Import command format:
 pulumi import <type> <name> <id>
 
-// Example:
+# Examples:
 pulumi import cloudflare:index/dnsRecord:DnsRecord my-record zone_id/record_id
+pulumi import vercel:index/projectDomain:ProjectDomain my-domain team_id/project_id/domain
 ```
 
 ## Environment Variables

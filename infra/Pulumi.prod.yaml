@@ -7,4 +7,4 @@ config:
     secure: AAABAITJePNFbOOIM28nIo/dNXkWWIpb8KZAUa2GZdzt0nR+Qkdp2XrAR3Hl4sT8Uhh18eT4vrRE0N13vpcC/j9mGeKZcDMNZX19edPXLIdT4g==
   tally-infra:clerkPublishableKey:
     secure: AAABADmercZcEOgJr0XJArm7+uMeb++PRc4BqIE16lRx9QEyc/nOGSB+1Tk6BK6uuGCfIZ27dlWa28E26FVfnC+TtC7AtPokHDxrTyR4HI+lH/YkSTYQxg==
-  tally-infra:convexDeployment: dev:gallant-boar-375
+  tally-infra:convexDeployment: dev:bright-jackal-396

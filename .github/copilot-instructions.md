@@ -56,6 +56,9 @@ The following are managed by Pulumi in `infra/index.ts`:
   - tally-tracker.app (primary)
   - www.tally-tracker.app (redirects to root)
 
+- **Clerk Configuration**
+  - Redirect URLs for OAuth flows
+
 ### Adding New Infrastructure
 
 1. Edit `infra/index.ts`

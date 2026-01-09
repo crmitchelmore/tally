@@ -3,3 +3,5 @@ config:
     secure: AAABAE+hQlRa20PFF1TQLe+3Ap0NLvMSkGpfBPc36IrRyMAiE7en5X5gKEXWRNjOHhs6QWt663c/WefOZJZ1Tvj9da1d98VU
   vercel:apiToken:
     secure: AAABALeY95TiHWHOve62FxdqgxVktNOP/oQ6lugdSF9EqkgGPIdpLoHGtcl8YeOh0P5hXnfACSs=
+  tally-infra:clerkSecretKey:
+    secure: AAABAITJePNFbOOIM28nIo/dNXkWWIpb8KZAUa2GZdzt0nR+Qkdp2XrAR3Hl4sT8Uhh18eT4vrRE0N13vpcC/j9mGeKZcDMNZX19edPXLIdT4g==

@@ -10,7 +10,6 @@ export default defineConfig({
     trace: "retain-on-failure",
     timezoneId: "UTC",
     colorScheme: "light",
-    reducedMotion: "reduce",
   },
   webServer: {
     command: "bun run dev -- --port 3000",

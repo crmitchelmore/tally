@@ -49,6 +49,17 @@ jobs:
       - name: E2E smoke
         run: bun run test:e2e
 
+      - name: E2E auth (optional)
+        env:
+          E2E_CLERK_EMAIL: ${{ secrets.E2E_CLERK_EMAIL }}
+          E2E_CLERK_PASSWORD: ${{ secrets.E2E_CLERK_PASSWORD }}
+        run: |
+          if [ -z "$E2E_CLERK_EMAIL" ] || [ -z "$E2E_CLERK_PASSWORD" ]; then
+            echo "Missing E2E_CLERK_EMAIL/E2E_CLERK_PASSWORD; skipping"
+            exit 0
+          fi
+          bun run test:e2e:auth
+
   infra:
     name: infra (typecheck)
     runs-on: ubuntu-latest

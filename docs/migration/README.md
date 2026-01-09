@@ -135,7 +135,7 @@ This migration transforms Tally from a Vite + React + GitHub Spark application i
   - [ ] Task 6.5: Verification
     - [ ] `https://tally-tracker.app` loads the marketing landing page
     - [ ] App loads at `/app` and sign-in works end-to-end
-    - [ ] Mobile iOS/Android links are present
+    - [x] Mobile iOS/Android links are present
   - [ ] Project 6 Completion Checklist verified
 
 ### Phase 2: API Layer

@@ -9,6 +9,7 @@ struct ChallengesView: View {
   @State private var challenges: [Challenge] = []
   @State private var isLoading = false
   @State private var errorText: String?
+  @State private var isShowingCreate = false
 
   var body: some View {
     NavigationStack {
@@ -30,18 +31,35 @@ struct ChallengesView: View {
           .padding()
         } else {
           List(challenges) { c in
-            VStack(alignment: .leading, spacing: 4) {
-              Text(c.name).font(.headline)
-              Text("Target: \(Int(c.targetNumber))")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            NavigationLink {
+              ChallengeDetailView(challenge: c)
+                .environmentObject(state)
+            } label: {
+              VStack(alignment: .leading, spacing: 4) {
+                Text(c.name).font(.headline)
+                Text("Target: \(Int(c.targetNumber))")
+                  .font(.subheadline)
+                  .foregroundStyle(.secondary)
+              }
             }
           }
         }
       }
       .navigationTitle("Challenges")
       .toolbar {
-        Button("Reload") { Task { await load() } }
+        ToolbarItem(placement: .topBarLeading) {
+          Button("Reload") { Task { await load() } }
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+          Button("New") { isShowingCreate = true }
+            .disabled(clerk.user == nil)
+        }
+      }
+      .sheet(isPresented: $isShowingCreate) {
+        CreateChallengeView {
+          Task { await load() }
+        }
+        .environmentObject(state)
       }
       .task { await load() }
     }
@@ -55,9 +73,8 @@ struct ChallengesView: View {
       let api = TallyAPI(baseURL: URL(string: state.apiBase)!)
 
       if clerk.user != nil {
-        if state.jwt.isEmpty {
-          await state.refreshToken(clerk: clerk)
-        }
+        await state.refreshToken(clerk: clerk)
+        await state.syncUserToConvex()
 
         if !state.jwt.isEmpty {
           challenges = try await api.getChallenges(token: state.jwt)

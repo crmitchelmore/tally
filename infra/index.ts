@@ -10,6 +10,22 @@ const zoneId = "816559836db3c2e80112bd6aeefd6d27";
 const vercelProjectId = "prj_xi1aOfL23eFPkcE4XCxCPp6CRkAF";
 const vercelTeamId = "team_ifle7fkp7usKufCL8MUCY1As";
 
+// Import + manage the existing Vercel project so domains attach consistently.
+// This does NOT create a new project; it adopts the existing one by ID.
+const vercelProject = new vercel.Project(
+  "tally-web-project",
+  {
+    teamId: vercelTeamId,
+    name: "tally-web",
+    framework: "nextjs",
+    rootDirectory: "tally-web",
+    autoAssignCustomDomains: true,
+  },
+  {
+    import: `${vercelTeamId}/${vercelProjectId}`,
+  }
+);
+
 // Clerk configuration
 const clerkSecretKey = config.requireSecret("clerkSecretKey");
 
@@ -52,14 +68,14 @@ const vercelTxtRecord = new cloudflare.DnsRecord("vercel-txt-record", {
 
 // Root domain
 const vercelDomain = new vercel.ProjectDomain("tally-domain", {
-  projectId: vercelProjectId,
+  projectId: vercelProject.id,
   teamId: vercelTeamId,
   domain: domain,
 });
 
 // WWW subdomain with redirect
 const vercelWwwDomain = new vercel.ProjectDomain("tally-www-domain", {
-  projectId: vercelProjectId,
+  projectId: vercelProject.id,
   teamId: vercelTeamId,
   domain: `www.${domain}`,
   redirect: domain,
@@ -97,6 +113,10 @@ const clerkRedirectUrlResources = clerkRedirectUrls.map((url, index) => {
 
 export const cloudflareZoneId = zoneId;
 export const vercelProjectUrl = `https://${domain}`;
+export const vercelProjectIds = {
+  teamId: vercelTeamId,
+  projectId: vercelProjectId,
+};
 export const dnsRecords = {
   root: rootRecord.name,
   www: wwwRecord.name,

@@ -1,3 +1,5 @@
+export {};
+
 const base = process.env.TALLY_API_BASE ?? "https://bright-jackal-396.convex.site";
 
 type Expect = { status: number };

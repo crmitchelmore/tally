@@ -70,14 +70,30 @@ Create **separate tokens** per signal and/or environment (recommended):
 Store tokens as **Pulumi secrets** (never in git).
 
 ### 1.3 Standardize endpoints + auth format
-We will use **OTLP/HTTP** everywhere (simplest across Vercel + mobile):
-- OTLP endpoint (Grafana Cloud provides this; record exact URL in IaC config):
-  - `https://<your-otlp-endpoint>/otlp` (or per-signal endpoints depending on stack)
+We will use **OTLP over HTTP** everywhere (simplest across Vercel + mobile).
 
-Auth will be passed as headers via env vars:
-- `OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic <base64(instanceId:token)>`
+**OTLP endpoint (multi-zone, production)**
+- Endpoint for sending OTLP signals (traces/metrics/logs):
+  - `https://otlp-gateway-prod-gb-south-1.grafana.net/otlp`
+- This instance includes a **multi-zone OTLP endpoint** that enhances ingestion reliability.
+  - Keep the endpoint centralized in IaC (Pulumi config) so we can rotate/change it without code changes.
 
-> Note: use the exact header format recommended by Grafana Cloud for OTLP. Keep this centralized in IaC so apps don’t encode auth logic.
+**Instance ID**
+- Grafana Cloud instance ID: `1491410`
+
+**Auth (Password / API Token)**
+- Generate a Grafana Cloud **API token** first.
+- Provide auth to SDKs via headers:
+  - `OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic <base64(1491410:<token>)>`
+- The Grafana Cloud UI will also show suggested **environment variables** once a token exists; mirror those via Pulumi-managed env vars.
+
+**Protocol support**
+- Only **HTTP** is supported for sending OTLP signals (do not use gRPC exporters).
+
+**Language guides**
+- Use Grafana’s language-specific instrumentation guides (Java, .NET, etc.) as reference; ensure the exporter is configured for **OTLP/HTTP**.
+
+If anything is unclear, Grafana Cloud Support can confirm the correct header format/token scopes for this stack.
 
 ---
 
@@ -120,12 +136,29 @@ Set both:
 - **All** Grafana Cloud setup and **all** Vercel env wiring is managed via **Pulumi**.
 
 ### 3.2 Pulumi configuration (secrets)
-Store in Pulumi config (secret):
+Pulumi does **not** automatically read the root `.env`, so we explicitly copy values into the Pulumi stack config.
+
+Store in Pulumi config:
 - Grafana Cloud:
-  - `grafanaCloudStackSlug` (non-secret)
-  - `grafanaCloudInstanceId` (non-secret, if needed)
-  - `grafanaCloudOtlpEndpoint` (non-secret)
-  - `grafanaCloudOtlpAuthToken` (secret; or per-signal tokens)
+  - `grafanaCloudInstanceId` (non-secret; `1491410`)
+  - `grafanaCloudOtlpEndpoint` (non-secret; `https://otlp-gateway-prod-gb-south-1.grafana.net/otlp`)
+  - `grafanaCloudAdminToken` (**secret**; set from `.env` `GRAFANA_CLOUD_ADMIN_TOKEN`)
+  - `grafanaCloudOtlpToken` (**secret**; a dedicated ingest token for OTLP writes)
+
+Example:
+
+```bash
+cd infra
+
+# From root .env (you already added this)
+pulumi config set --secret grafanaCloudAdminToken "$GRAFANA_CLOUD_ADMIN_TOKEN"
+
+pulumi config set grafanaCloudInstanceId 1491410
+pulumi config set grafanaCloudOtlpEndpoint https://otlp-gateway-prod-gb-south-1.grafana.net/otlp
+
+# After you generate an OTLP ingest token
+pulumi config set --secret grafanaCloudOtlpToken "$GRAFANA_CLOUD_OTLP_TOKEN"
+```
 
 ### 3.3 Provision Grafana resources via IaC
 Two viable approaches:

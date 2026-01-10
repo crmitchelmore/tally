@@ -1,9 +1,20 @@
+# Android CI - build and test
+#
+# Sentry ProGuard mappings are uploaded automatically during release builds
+# when SENTRY_AUTH_TOKEN is available.
+
 name: Android (build)
 
 on:
   pull_request:
+    paths:
+      - 'tally-android/**'
+      - '.github/workflows/android.yml'
   push:
     branches: [main]
+    paths:
+      - 'tally-android/**'
+      - '.github/workflows/android.yml'
 
 jobs:
   android:
@@ -22,3 +33,12 @@ jobs:
 
       - name: Build debug
         run: ./gradlew :app:assembleDebug
+
+      - name: Run unit tests
+        run: ./gradlew :app:test
+
+      - name: Build release (with Sentry mapping upload)
+        if: github.ref == 'refs/heads/main'
+        run: ./gradlew :app:assembleRelease
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}

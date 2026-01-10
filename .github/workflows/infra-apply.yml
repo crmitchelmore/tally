@@ -1,7 +1,28 @@
-name: Infra Apply (manual)
+# Infrastructure deployment via Pulumi
+#
+# This workflow manages all IaC resources defined in infra/index.ts.
+# See docs/IAC.md for the full IaC approach.
+#
+# Triggers:
+# - Manual dispatch (workflow_dispatch)
+# - Push to main on infra/ changes
+#
+# Required secrets:
+# - PULUMI_ACCESS_TOKEN: Pulumi Cloud access token
+# - PULUMI_STACK_NAME (optional): defaults to 'prod'
+#
+# Provider tokens (Cloudflare, Vercel, Sentry, etc.) are stored
+# encrypted in Pulumi config, not GitHub secrets.
+
+name: Infra Apply
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra-apply.yml'
 
 jobs:
   apply:
@@ -29,10 +50,29 @@ jobs:
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           PULUMI_STACK_NAME: ${{ secrets.PULUMI_STACK_NAME }}
+          # Optional: Grafana Cloud OTel secrets (do not hardcode)
+          GRAFANA_CLOUD_ADMIN_TOKEN: ${{ secrets.GRAFANA_CLOUD_ADMIN_TOKEN }}
+          GRAFANA_CLOUD_OTLP_TOKEN: ${{ secrets.GRAFANA_CLOUD_OTLP_TOKEN }}
         run: |
           if [ -z "$PULUMI_ACCESS_TOKEN" ]; then
             echo "PULUMI_ACCESS_TOKEN not set; skipping"
             exit 0
           fi
           export PATH="$HOME/.pulumi/bin:$PATH"
-          pulumi up --yes --stack "${PULUMI_STACK_NAME:-prod}"
+
+          STACK="${PULUMI_STACK_NAME:-prod}"
+
+          # Keep Pulumi config in sync from GitHub Actions secrets (if provided)
+          pulumi stack select "$STACK"
+          pulumi config set grafanaCloudInstanceId 1491410 --stack "$STACK"
+          pulumi config set grafanaCloudOtlpEndpoint https://otlp-gateway-prod-gb-south-1.grafana.net/otlp --stack "$STACK"
+
+          if [ -n "$GRAFANA_CLOUD_ADMIN_TOKEN" ]; then
+            pulumi config set --secret grafanaCloudAdminToken "$GRAFANA_CLOUD_ADMIN_TOKEN" --stack "$STACK"
+          fi
+
+          if [ -n "$GRAFANA_CLOUD_OTLP_TOKEN" ]; then
+            pulumi config set --secret grafanaCloudOtlpToken "$GRAFANA_CLOUD_OTLP_TOKEN" --stack "$STACK"
+          fi
+
+          pulumi up --yes --stack "$STACK"

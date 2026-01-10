@@ -4,6 +4,10 @@
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
+    // OTel must live in a Node-only module so Edge bundles don't see Node APIs.
+    const { registerOpenTelemetry } = await import("./otel.node");
+    await registerOpenTelemetry();
+
     // Import server config for Node.js runtime
     await import("./sentry.server.config");
   }

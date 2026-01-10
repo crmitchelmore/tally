@@ -8,3 +8,7 @@ config:
   tally-infra:clerkPublishableKey:
     secure: AAABADmercZcEOgJr0XJArm7+uMeb++PRc4BqIE16lRx9QEyc/nOGSB+1Tk6BK6uuGCfIZ27dlWa28E26FVfnC+TtC7AtPokHDxrTyR4HI+lH/YkSTYQxg==
   tally-infra:convexDeployment: dev:bright-jackal-396
+  tally-infra:sentryAdminToken:
+    secure: AAABAH7gcM8hJBUrGglAbNhJobin2EOli57cPvX2u7n/AypbeSEwYtMMx7v98qm3z/u9jdWsOIZwThb6UE8AYJ75M3xvU2xw1g6nq1JrLppffsaqVQzzV7G99HlNJo/nAuJdwKUYPA==
+  launchdarkly:accessToken:
+    secure: AAABAMdQT+IJ9bK0c1zFlhXIGMvwPbmD0RWHx4IyJSbJcwV0qS8v+pBTlC5k+PWZH5YVw1B0vx9qwjPRaEYmoL8dGCMLubio

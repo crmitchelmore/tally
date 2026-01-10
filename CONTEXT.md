@@ -81,11 +81,14 @@ LAUNCHDARKLY_ACCESS_TOKEN=...  # For Pulumi to manage flags
 NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID=...  # For web client
 LAUNCHDARKLY_MOBILE_KEY_IOS=...  # For iOS
 LAUNCHDARKLY_MOBILE_KEY_ANDROID=...  # For Android
+
+# Sentry (optional)
+SENTRY_ADMIN_TOKEN=...  # For Pulumi to manage projects
 ```
 
 ## Infrastructure Management
 
-**ALL infrastructure changes MUST go through Pulumi.**
+**ALL infrastructure changes MUST go through Pulumi.** See [docs/IAC.md](docs/IAC.md) for full details.
 
 ```bash
 cd infra
@@ -97,8 +100,18 @@ pulumi up        # Apply changes
 ### Managed Resources
 
 - Cloudflare DNS records (A, CNAME, TXT)
-- Vercel project domains
+- Vercel project domains and environment variables
 - Clerk redirect URLs
+- LaunchDarkly project, environments, and flags
+- Sentry projects and DSNs (javascript-nextjs, convex-backend, ios, android)
+
+### Environments
+
+| Environment | Vercel Target | Sentry | LaunchDarkly |
+|-------------|---------------|--------|--------------|
+| `development` | development | development | dev |
+| `preview` | preview | preview | preview |
+| `production` | production | production | prod |
 
 ## Development Commands
 

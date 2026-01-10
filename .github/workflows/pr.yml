@@ -73,6 +73,11 @@ jobs:
 
       - name: Build
         run: bun run build
+        env:
+          # Sentry source map upload (optional)
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: tally-lz
+          SENTRY_PROJECT: javascript-nextjs
 
       - name: Unit tests
         run: bun run test
@@ -146,13 +151,30 @@ jobs:
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           PULUMI_STACK_NAME: ${{ secrets.PULUMI_STACK_NAME }}
+          GRAFANA_CLOUD_ADMIN_TOKEN: ${{ secrets.GRAFANA_CLOUD_ADMIN_TOKEN }}
+          GRAFANA_CLOUD_OTLP_TOKEN: ${{ secrets.GRAFANA_CLOUD_OTLP_TOKEN }}
         run: |
           if [ -z "$PULUMI_ACCESS_TOKEN" ]; then
             echo "PULUMI_ACCESS_TOKEN not set; skipping"
             exit 0
           fi
           export PATH="$HOME/.pulumi/bin:$PATH"
-          pulumi preview --stack "${PULUMI_STACK_NAME:-prod}"
+
+          STACK="${PULUMI_STACK_NAME:-prod}"
+
+          pulumi stack select "$STACK"
+          pulumi config set grafanaCloudInstanceId 1491410 --stack "$STACK"
+          pulumi config set grafanaCloudOtlpEndpoint https://otlp-gateway-prod-gb-south-1.grafana.net/otlp --stack "$STACK"
+
+          if [ -n "$GRAFANA_CLOUD_ADMIN_TOKEN" ]; then
+            pulumi config set --secret grafanaCloudAdminToken "$GRAFANA_CLOUD_ADMIN_TOKEN" --stack "$STACK"
+          fi
+
+          if [ -n "$GRAFANA_CLOUD_OTLP_TOKEN" ]; then
+            pulumi config set --secret grafanaCloudOtlpToken "$GRAFANA_CLOUD_OTLP_TOKEN" --stack "$STACK"
+          fi
+
+          pulumi preview --stack "$STACK"
 
   infra-apply:
     name: infra (pulumi up)
@@ -181,13 +203,30 @@ jobs:
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           PULUMI_STACK_NAME: ${{ secrets.PULUMI_STACK_NAME }}
+          GRAFANA_CLOUD_ADMIN_TOKEN: ${{ secrets.GRAFANA_CLOUD_ADMIN_TOKEN }}
+          GRAFANA_CLOUD_OTLP_TOKEN: ${{ secrets.GRAFANA_CLOUD_OTLP_TOKEN }}
         run: |
           if [ -z "$PULUMI_ACCESS_TOKEN" ]; then
             echo "PULUMI_ACCESS_TOKEN not set; failing"
             exit 1
           fi
           export PATH="$HOME/.pulumi/bin:$PATH"
-          pulumi up --yes --stack "${PULUMI_STACK_NAME:-prod}"
+
+          STACK="${PULUMI_STACK_NAME:-prod}"
+
+          pulumi stack select "$STACK"
+          pulumi config set grafanaCloudInstanceId 1491410 --stack "$STACK"
+          pulumi config set grafanaCloudOtlpEndpoint https://otlp-gateway-prod-gb-south-1.grafana.net/otlp --stack "$STACK"
+
+          if [ -n "$GRAFANA_CLOUD_ADMIN_TOKEN" ]; then
+            pulumi config set --secret grafanaCloudAdminToken "$GRAFANA_CLOUD_ADMIN_TOKEN" --stack "$STACK"
+          fi
+
+          if [ -n "$GRAFANA_CLOUD_OTLP_TOKEN" ]; then
+            pulumi config set --secret grafanaCloudOtlpToken "$GRAFANA_CLOUD_OTLP_TOKEN" --stack "$STACK"
+          fi
+
+          pulumi up --yes --stack "$STACK"
 
   deploy-convex:
     name: deploy convex (prod)

@@ -1,9 +1,20 @@
+# iOS CI - build and test
+#
+# Sentry dSYMs are uploaded via a build phase in Xcode project
+# when SENTRY_AUTH_TOKEN is available in the environment.
+
 name: iOS (build)
 
 on:
   pull_request:
+    paths:
+      - 'tally-ios/**'
+      - '.github/workflows/ios.yml'
   push:
     branches: [main]
+    paths:
+      - 'tally-ios/**'
+      - '.github/workflows/ios.yml'
 
 jobs:
   ios:
@@ -52,6 +63,8 @@ jobs:
             -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
             CODE_SIGNING_ALLOWED=NO \
             build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Test (no signing)
         run: |

@@ -69,7 +69,9 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 
 # Convex  
-CONVEX_DEPLOYMENT=dev:gallant-boar-375
+CONVEX_DEPLOYMENT=dev:bright-jackal-396  # For local dev
+CONVEX_DEPLOY_KEY=dev:bright-jackal-396|...  # Dev deploy key
+CONVEX_DEPLOYMENT_PROD=prod:bright-jackal-396|...  # Prod deploy key
 
 # Infrastructure (Pulumi)
 CLOUDFLARE_API_TOKEN=...

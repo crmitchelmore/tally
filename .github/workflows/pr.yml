@@ -252,14 +252,14 @@ jobs:
 
       - name: Deploy Convex (prod)
         env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
-          CONVEX_DEPLOYMENT: ${{ secrets.CONVEX_DEPLOYMENT }}
+          # Use prod deploy key for production deployments
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_PROD }}
         run: |
           if [ -z "$CONVEX_DEPLOY_KEY" ]; then
-            echo "CONVEX_DEPLOY_KEY not set; skipping"
+            echo "CONVEX_DEPLOY_KEY_PROD not set; skipping"
             exit 0
           fi
-          bunx convex deploy --prod
+          bunx convex deploy --cmd-url-env-var-name CONVEX_DEPLOY_KEY
 
   deploy-vercel:
     name: deploy vercel (prod)

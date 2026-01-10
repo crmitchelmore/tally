@@ -2,9 +2,13 @@ import { httpRouter } from "convex/server";
 import type { ActionCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, components } from "./_generated/api";
+import { registerRoutes as registerLaunchDarklyRoutes } from "@convex-dev/launchdarkly";
 
 const http = httpRouter();
+
+// Register LaunchDarkly webhook routes for real-time flag sync
+registerLaunchDarklyRoutes(components.launchdarkly, http);
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",

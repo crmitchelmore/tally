@@ -26,8 +26,21 @@ All services use these standardized environment names:
 | Vercel | `development` target | `preview` target | `production` target |
 | Sentry | `development` | `preview` | `production` |
 | LaunchDarkly | `dev` | `preview` | `prod` |
-| Convex | `dev:*` deployment | `dev:*` (same) | `prod:*` deployment |
+| Convex | `dev:bright-jackal-396` | `dev:bright-jackal-396` | `prod:bright-jackal-396` |
 | Clerk | Test instance | Test instance | Production instance |
+
+### Convex Deployments
+
+Convex has separate dev and prod deployments:
+
+- **Dev** (`dev:bright-jackal-396`): Used for local development and PR previews
+- **Prod** (`prod:bright-jackal-396`): Used for production (tally-tracker.app)
+
+**Deploy keys** (stored as GitHub secrets):
+- `CONVEX_DEPLOY_KEY_DEV`: Dev deployment key (for testing/CI)
+- `CONVEX_DEPLOY_KEY_PROD`: Prod deployment key (for production deploys)
+
+**Local development**: Uses `CONVEX_DEPLOYMENT=dev:bright-jackal-396` from `.env`
 
 ## Managed Resources
 
@@ -187,9 +200,31 @@ jobs:
 
 ### Required GitHub Secrets
 
+**Infrastructure (Pulumi)**:
 - `PULUMI_ACCESS_TOKEN` - Pulumi Cloud access token
+- `PULUMI_STACK_NAME` - Stack name (optional, defaults to `prod`)
 
-Provider tokens (Cloudflare, Vercel, etc.) are stored encrypted in Pulumi config, not GitHub secrets.
+**Convex**:
+- `CONVEX_DEPLOY_KEY_DEV` - Dev deployment key (optional, for testing)
+- `CONVEX_DEPLOY_KEY_PROD` - Prod deployment key (for production deploys)
+
+**Vercel**:
+- `VERCEL_TOKEN` - Vercel API token
+- `VERCEL_PROJECT_ID` - Vercel project ID
+- `VERCEL_ORG_ID` - Vercel team/org ID
+
+**Auth & Testing**:
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
+- `CLERK_SECRET_KEY` - Clerk secret key
+- `TEST_USER_EMAIL` - Test user email (for E2E auth tests)
+- `TEST_USER_PASSWORD` - Test user password (for E2E auth tests)
+
+**Monitoring**:
+- `SENTRY_AUTH_TOKEN` - Sentry auth token (for source map uploads)
+- `GRAFANA_CLOUD_ADMIN_TOKEN` - Grafana Cloud admin token (optional)
+- `GRAFANA_CLOUD_OTLP_TOKEN` - Grafana Cloud OTLP token (optional)
+
+Provider tokens (Cloudflare, Vercel API, Sentry admin, etc.) are stored encrypted in Pulumi config, not GitHub secrets.
 
 ## Local Development
 

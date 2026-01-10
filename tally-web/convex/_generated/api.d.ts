@@ -13,6 +13,8 @@ import type * as entries from "../entries.js";
 import type * as followedChallenges from "../followedChallenges.js";
 import type * as http from "../http.js";
 import type * as import_ from "../import.js";
+import type * as lib_launchdarkly from "../lib/launchdarkly.js";
+import type * as lib_sentry from "../lib/sentry.js";
 import type * as users from "../users.js";
 
 import type {
@@ -27,6 +29,8 @@ declare const fullApi: ApiFromModules<{
   followedChallenges: typeof followedChallenges;
   http: typeof http;
   import: typeof import_;
+  "lib/launchdarkly": typeof lib_launchdarkly;
+  "lib/sentry": typeof lib_sentry;
   users: typeof users;
 }>;
 
@@ -56,4 +60,55 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  launchdarkly: {
+    events: {
+      storeEvents: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          options?: {
+            allAttributesPrivate?: boolean;
+            eventBatchSize?: number;
+            eventCapacity?: number;
+            eventProcessingIntervalSeconds?: number;
+            eventsUri?: string;
+            privateAttributes?: Array<string>;
+          };
+          payloads: Array<string>;
+          sdkKey: string;
+        },
+        null
+      >;
+    };
+    store: {
+      get: FunctionReference<
+        "query",
+        "internal",
+        { key: string; kind: "flags" | "segments" },
+        string | null
+      >;
+      getAll: FunctionReference<
+        "query",
+        "internal",
+        { kind: "flags" | "segments" },
+        Array<string>
+      >;
+      initialized: FunctionReference<"query", "internal", {}, boolean>;
+      write: FunctionReference<
+        "mutation",
+        "internal",
+        { payload: string },
+        null
+      >;
+    };
+    tokens: {
+      validate: FunctionReference<
+        "query",
+        "internal",
+        { token?: string },
+        { error?: string; success: boolean }
+      >;
+    };
+  };
+};

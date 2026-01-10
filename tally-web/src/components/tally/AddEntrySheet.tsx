@@ -24,6 +24,7 @@ export function AddEntrySheet({
   open,
   onOpenChange,
   challenges,
+  onAddEntry,
 }: AddEntrySheetProps) {
   const [selectedChallengeId, setSelectedChallengeId] = useState<string>(
     challenges.length === 1 ? challenges[0].id : ''
@@ -61,10 +62,19 @@ export function AddEntrySheet({
     if (trackSets && sets.length === 0) return
     if (!trackSets && count <= 0) return
 
-    // TODO: Call Convex mutation here
-    // const finalCount = trackSets 
-    //   ? sets.reduce((sum, set) => sum + set.reps, 0)
-    //   : count
+    const finalCount = trackSets 
+      ? sets.reduce((sum, set) => sum + set.reps, 0)
+      : count
+
+    // Call the Convex mutation via the callback
+    onAddEntry(
+      selectedChallengeId,
+      finalCount,
+      note,
+      date,
+      trackSets ? sets : undefined,
+      feeling
+    )
 
     canvasConfetti({
       particleCount: 80,

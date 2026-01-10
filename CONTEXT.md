@@ -27,6 +27,7 @@ Tally is a multi-platform challenge/goal tracking app being migrated from Vite +
 | Web Frontend | Next.js 16, React 19, Tailwind, shadcn/ui | `tally-web/` |
 | Database | Convex (real-time) | `tally-web/convex/` |
 | Auth | Clerk | Configured in Pulumi |
+| Feature Flags | LaunchDarkly | [docs/LAUNCHDARKLY.md](docs/LAUNCHDARKLY.md) |
 | DNS | Cloudflare | Managed by Pulumi |
 | Hosting | Vercel | Managed by Pulumi |
 | IaC | Pulumi (TypeScript) | `infra/` |
@@ -38,6 +39,7 @@ Tally is a multi-platform challenge/goal tracking app being migrated from Vite +
 - **Vercel Dashboard**: https://vercel.com/chris-projects-b617a778/tally-web
 - **Convex Dashboard**: https://dashboard.convex.dev
 - **Clerk Dashboard**: https://dashboard.clerk.com
+- **LaunchDarkly Dashboard**: https://app.launchdarkly.com
 - **Pulumi Console**: https://app.pulumi.com/tally-tracker-org/tally-infra/prod
 
 ## Directory Structure

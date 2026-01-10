@@ -17,9 +17,10 @@ async function signIn(page: Page): Promise<void> {
 
   await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
   await page.getByLabel(/email address|email/i).fill(email);
-  await page.getByRole("button", { name: /continue|sign in/i }).click();
+  // Use exact match for primary "Continue" button (not social login buttons)
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
   await page.getByLabel(/password/i).fill(password);
-  await page.getByRole("button", { name: /continue|sign in/i }).click();
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
 
   // Wait for redirect and auth to complete
   await page.waitForURL(/\/(app)?$/, { timeout: 30000 });

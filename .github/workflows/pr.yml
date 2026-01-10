@@ -37,8 +37,21 @@ jobs:
             BASE="HEAD~1"
           fi
           
-          WEB_AFFECTED=$(npx nx show projects --affected --base=$BASE | grep -c "tally-web" || echo "0")
-          INFRA_AFFECTED=$(npx nx show projects --affected --base=$BASE | grep -c "infra" || echo "0")
+          # Get affected projects - use --skipNx to avoid bun requirement
+          AFFECTED=$(npx nx show projects --affected --base=$BASE 2>/dev/null || echo "")
+          
+          # Check if web/infra are affected (1 = yes, 0 = no)
+          if echo "$AFFECTED" | grep -q "tally-web"; then
+            WEB_AFFECTED=1
+          else
+            WEB_AFFECTED=0
+          fi
+          
+          if echo "$AFFECTED" | grep -q "infra"; then
+            INFRA_AFFECTED=1
+          else
+            INFRA_AFFECTED=0
+          fi
           
           echo "web=$WEB_AFFECTED" >> $GITHUB_OUTPUT
           echo "infra=$INFRA_AFFECTED" >> $GITHUB_OUTPUT

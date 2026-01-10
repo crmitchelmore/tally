@@ -136,6 +136,12 @@ function calculateCurrentStreak(
   const today = new Date().toISOString().split("T")[0];
   const checkDate = new Date(today);
 
+  // If no entry today, start checking from yesterday (streak persists until end of day)
+  const todayStr = checkDate.toISOString().split("T")[0];
+  if (!dayMap.has(todayStr) || dayMap.get(todayStr)! === 0) {
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
   while (true) {
     const dateStr = checkDate.toISOString().split("T")[0];
     if (!dayMap.has(dateStr) || dayMap.get(dateStr)! === 0) break;

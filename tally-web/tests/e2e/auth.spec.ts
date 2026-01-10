@@ -2,10 +2,10 @@ import { test, expect } from "@playwright/test";
 import { getApiBaseUrl } from "./apiAuth";
 
 test("@auth sign-in shows signed-in UI", async ({ page, request }) => {
-  const email = process.env.E2E_CLERK_EMAIL;
-  const password = process.env.E2E_CLERK_PASSWORD;
+  const email = process.env.TEST_USER_EMAIL;
+  const password = process.env.TEST_USER_PASSWORD;
 
-  test.skip(!email || !password, "Missing E2E_CLERK_EMAIL/E2E_CLERK_PASSWORD");
+  test.skip(!email || !password, "Missing TEST_USER_EMAIL/TEST_USER_PASSWORD");
 
   await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
 

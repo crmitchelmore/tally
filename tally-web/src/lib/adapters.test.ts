@@ -1,14 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { toChallenge, toChallenges, toEntry, toEntries, toUser } from "@/lib/adapters";
+import { toChallenge, toChallenges, toEntry, toUser } from "@/lib/adapters";
 import type { Doc } from "../../convex/_generated/dataModel";
+import type { Id } from "../../convex/_generated/dataModel";
+
+// Helper to create mock IDs for testing
+const mockId = <T extends string>(id: string): Id<T> => id as Id<T>;
 
 describe("adapters", () => {
   describe("toChallenge", () => {
     it("converts Convex document to Challenge type", () => {
       const doc = {
-        _id: "ch_123" as any,
+        _id: mockId<"challenges">("ch_123"),
         _creationTime: Date.now(),
-        userId: "u_456" as any,
+        userId: mockId<"users">("u_456"),
         name: "Push-ups",
         targetNumber: 1000,
         year: 2026,
@@ -39,9 +43,9 @@ describe("adapters", () => {
     it("converts array of documents", () => {
       const docs = [
         {
-          _id: "ch_1" as any,
+          _id: mockId<"challenges">("ch_1"),
           _creationTime: Date.now(),
-          userId: "u_1" as any,
+          userId: mockId<"users">("u_1"),
           name: "Test 1",
           targetNumber: 100,
           year: 2026,
@@ -53,9 +57,9 @@ describe("adapters", () => {
           createdAt: Date.now(),
         },
         {
-          _id: "ch_2" as any,
+          _id: mockId<"challenges">("ch_2"),
           _creationTime: Date.now(),
-          userId: "u_1" as any,
+          userId: mockId<"users">("u_1"),
           name: "Test 2",
           targetNumber: 200,
           year: 2026,
@@ -84,10 +88,10 @@ describe("adapters", () => {
   describe("toEntry", () => {
     it("converts Convex entry document", () => {
       const doc = {
-        _id: "e_123" as any,
+        _id: mockId<"entries">("e_123"),
         _creationTime: Date.now(),
-        userId: "u_1" as any,
-        challengeId: "ch_1" as any,
+        userId: mockId<"users">("u_1"),
+        challengeId: mockId<"challenges">("ch_1"),
         date: "2026-01-09",
         count: 50,
         note: "Good session",
@@ -109,10 +113,10 @@ describe("adapters", () => {
 
     it("handles entry without optional fields", () => {
       const doc = {
-        _id: "e_456" as any,
+        _id: mockId<"entries">("e_456"),
         _creationTime: Date.now(),
-        userId: "u_1" as any,
-        challengeId: "ch_1" as any,
+        userId: mockId<"users">("u_1"),
+        challengeId: mockId<"challenges">("ch_1"),
         date: "2026-01-09",
         count: 25,
         createdAt: Date.now(),
@@ -130,7 +134,7 @@ describe("adapters", () => {
   describe("toUser", () => {
     it("converts Convex user document", () => {
       const doc = {
-        _id: "u_123" as any,
+        _id: mockId<"users">("u_123"),
         _creationTime: Date.now(),
         clerkId: "clerk_abc",
         email: "test@example.com",

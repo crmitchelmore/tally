@@ -5,10 +5,49 @@ on:
   push:
     branches: [main]
 
+env:
+  NX_DAEMON: false
+
 jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    outputs:
+      affected_web: ${{ steps.affected.outputs.web }}
+      affected_infra: ${{ steps.affected.outputs.infra }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install root deps
+        run: npm ci
+
+      - name: Get affected projects
+        id: affected
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="origin/${{ github.base_ref }}"
+          else
+            BASE="HEAD~1"
+          fi
+          
+          WEB_AFFECTED=$(npx nx show projects --affected --base=$BASE | grep -c "tally-web" || echo "0")
+          INFRA_AFFECTED=$(npx nx show projects --affected --base=$BASE | grep -c "infra" || echo "0")
+          
+          echo "web=$WEB_AFFECTED" >> $GITHUB_OUTPUT
+          echo "infra=$INFRA_AFFECTED" >> $GITHUB_OUTPUT
+          echo "Affected - web: $WEB_AFFECTED, infra: $INFRA_AFFECTED"
+
   web:
     name: web (lint/build/test)
     runs-on: ubuntu-latest
+    needs: setup
     env:
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
       CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
@@ -51,11 +90,11 @@ jobs:
 
       - name: E2E auth (optional)
         env:
-          E2E_CLERK_EMAIL: ${{ secrets.E2E_CLERK_EMAIL }}
-          E2E_CLERK_PASSWORD: ${{ secrets.E2E_CLERK_PASSWORD }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
         run: |
-          if [ -z "$E2E_CLERK_EMAIL" ] || [ -z "$E2E_CLERK_PASSWORD" ]; then
-            echo "Missing E2E_CLERK_EMAIL/E2E_CLERK_PASSWORD; skipping"
+          if [ -z "$TEST_USER_EMAIL" ] || [ -z "$TEST_USER_PASSWORD" ]; then
+            echo "Missing TEST_USER_EMAIL/TEST_USER_PASSWORD; skipping"
             exit 0
           fi
           bun run test:e2e:auth

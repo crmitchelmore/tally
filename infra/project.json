@@ -1,0 +1,27 @@
+{
+  "name": "infra",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "infra",
+  "projectType": "application",
+  "tags": ["scope:infra", "type:app"],
+  "targets": {
+    "preview": {
+      "command": "pulumi preview",
+      "options": {
+        "cwd": "infra"
+      }
+    },
+    "up": {
+      "command": "pulumi up --yes",
+      "options": {
+        "cwd": "infra"
+      }
+    },
+    "stack": {
+      "command": "pulumi stack",
+      "options": {
+        "cwd": "infra"
+      }
+    }
+  }
+}

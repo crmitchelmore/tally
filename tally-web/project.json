@@ -1,0 +1,71 @@
+{
+  "name": "tally-web",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tally-web/src",
+  "projectType": "application",
+  "tags": ["scope:web", "type:app"],
+  "targets": {
+    "dev": {
+      "command": "next dev",
+      "options": {
+        "cwd": "tally-web"
+      }
+    },
+    "build": {
+      "command": "next build",
+      "options": {
+        "cwd": "tally-web"
+      },
+      "outputs": ["{projectRoot}/.next"]
+    },
+    "start": {
+      "command": "next start",
+      "options": {
+        "cwd": "tally-web"
+      },
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "command": "eslint .",
+      "options": {
+        "cwd": "tally-web"
+      }
+    },
+    "test": {
+      "command": "vitest run",
+      "options": {
+        "cwd": "tally-web"
+      }
+    },
+    "test:watch": {
+      "command": "vitest",
+      "options": {
+        "cwd": "tally-web"
+      }
+    },
+    "test:coverage": {
+      "command": "vitest run --coverage",
+      "options": {
+        "cwd": "tally-web"
+      }
+    },
+    "e2e": {
+      "command": "playwright test --grep-invert \"@ui|@auth\"",
+      "options": {
+        "cwd": "tally-web"
+      }
+    },
+    "e2e:auth": {
+      "command": "playwright test --grep @auth",
+      "options": {
+        "cwd": "tally-web"
+      }
+    },
+    "e2e:ui": {
+      "command": "playwright test --grep @ui --update-snapshots",
+      "options": {
+        "cwd": "tally-web"
+      }
+    }
+  }
+}

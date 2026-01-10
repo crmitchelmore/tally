@@ -53,3 +53,41 @@ test.describe("Navigation flows", () => {
     await expect(page.getByRole("heading", { name: /android/i })).toBeVisible();
   });
 });
+
+test.describe("Landing page features", () => {
+  test("displays feature highlights", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    
+    // Check for key value propositions
+    await expect(page.getByText(/track anything/i)).toBeVisible();
+  });
+
+  test("CTA buttons navigate correctly", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    
+    // Test sign-up CTA
+    const signUpBtn = page.getByRole("link", { name: /create an account|get started/i }).first();
+    await signUpBtn.click();
+    await expect(page).toHaveURL(/\/sign-up/);
+  });
+
+  test("has accessible navigation", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    
+    // Check main navigation is accessible
+    const nav = page.getByRole("banner");
+    await expect(nav).toBeVisible();
+    
+    // Logo/brand link exists
+    await expect(page.getByRole("heading", { name: "Tally" })).toBeVisible();
+  });
+});
+
+test.describe("Error handling", () => {
+  test("404 page for unknown routes", async ({ page }) => {
+    const response = await page.goto("/this-page-does-not-exist", { waitUntil: "domcontentloaded" });
+    
+    // Should return 404 status
+    expect(response?.status()).toBe(404);
+  });
+});

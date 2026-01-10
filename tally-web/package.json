@@ -10,10 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test --grep-invert \"@ui|@auth\"",
-
     "api:smoke": "bun scripts/api-smoke.ts",
     "api:verify": "bun scripts/api-verify.ts",
-
     "test:e2e:auth": "playwright test --grep @auth",
     "test:e2e:ui": "playwright test --grep @ui --update-snapshots"
   },
@@ -83,6 +81,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
+    "@vitest/coverage-v8": "^4.0.16",
+    "convex-test": "^0.0.41",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "tailwindcss": "^4",

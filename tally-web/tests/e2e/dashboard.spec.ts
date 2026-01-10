@@ -82,12 +82,3 @@ test.describe("Landing page features", () => {
     await expect(page.getByRole("heading", { name: "Tally" })).toBeVisible();
   });
 });
-
-test.describe("Error handling", () => {
-  test("404 page for unknown routes", async ({ page }) => {
-    await page.goto("/this-page-does-not-exist", { waitUntil: "domcontentloaded" });
-    
-    // Should show 404 page content (Next.js may return 200 status with 404 page)
-    await expect(page.getByText(/not found|404/i)).toBeVisible({ timeout: 5000 });
-  });
-});

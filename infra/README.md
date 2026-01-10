@@ -13,6 +13,23 @@ Infrastructure as Code using [Pulumi](https://www.pulumi.com/) with TypeScript.
   - tally-tracker.app (primary)
   - www.tally-tracker.app (redirects to root)
 
+- **Vercel Environment Variables**
+  - Clerk keys
+  - Convex deployment URL
+  - LaunchDarkly client ID
+  - Sentry DSN, org, project, auth token, environment
+
+- **Sentry Projects** (when `sentryAdminToken` is configured)
+  - `javascript-nextjs` - Next.js web app
+  - `convex-backend` - Convex backend
+  - `ios` - iOS app
+  - `android` - Android app
+
+- **LaunchDarkly**
+  - Project: `tally`
+  - Environments: dev, preview, prod
+  - Feature flags
+
 ## Prerequisites
 
 1. Install Pulumi CLI:
@@ -82,8 +99,23 @@ Secrets are stored encrypted in Pulumi Cloud:
 - `vercel:apiToken` - Vercel API token
 - `tally-infra:clerkSecretKey` - Clerk secret key (used to manage Clerk config + set Vercel env)
 - `tally-infra:clerkPublishableKey` - Clerk publishable key (optional; used to set Vercel env)
+- `tally-infra:sentryAdminToken` - Sentry admin token (for project/DSN provisioning)
+- `tally-infra:launchDarklyClientSideId` - LaunchDarkly client-side ID
 
 To update a secret:
 ```bash
 pulumi config set <key> <value> --secret
 ```
+
+## Setting Up Sentry
+
+1. Create a Sentry organization (e.g., `tally-lz`) at https://sentry.io
+2. Create an admin token at https://sentry.io/settings/auth-tokens/ with scopes:
+   - `project:read`, `project:write`
+   - `org:read`
+   - `project:releases`
+3. Set the token in Pulumi:
+   ```bash
+   pulumi config set --secret sentryAdminToken <your-token>
+   ```
+4. Run `pulumi up` to provision Sentry projects and configure Vercel env vars

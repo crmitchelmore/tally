@@ -2,9 +2,11 @@
 
 import { Challenge, Entry } from '@/types'
 import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { motion } from 'framer-motion'
-import { TrendingUp, Flame, Target, Calendar } from 'lucide-react'
+import { TrendingUp, Flame, Target, Calendar, Sparkles } from 'lucide-react'
 import { calculateStats } from '@/lib/stats'
+import { useFlag } from '@/providers/feature-flags-provider'
 
 interface OverallStatsProps {
   challenges: Challenge[]
@@ -12,6 +14,8 @@ interface OverallStatsProps {
 }
 
 export function OverallStats({ challenges, entries }: OverallStatsProps) {
+  const streaksEnabled = useFlag("streaks-enabled", false);
+  
   if (challenges.length === 0) return null
 
   const challengeIds = new Set(challenges.map(c => c.id))
@@ -64,29 +68,44 @@ export function OverallStats({ challenges, entries }: OverallStatsProps) {
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      {stats.map((stat, index) => {
-        const Icon = stat.icon
-        return (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-          >
-            <Card className="p-4 bg-card border-2 border-border">
-              <div className="flex items-center gap-2 mb-2">
-                <Icon className="w-4 h-4" style={{ color: stat.color }} />
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</span>
-              </div>
-              <div className="text-3xl font-bold font-mono mb-1" style={{ color: stat.color }}>
-                {stat.value}
-              </div>
-              <div className="text-xs text-muted-foreground">{stat.subtext}</div>
-            </Card>
-          </motion.div>
-        )
-      })}
+    <div className="space-y-4 mb-8">
+      {/* Feature Flag Test Indicator */}
+      {streaksEnabled && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <Badge variant="secondary" className="gap-1">
+            <Sparkles className="w-3 h-3" />
+            Streaks Feature Enabled
+          </Badge>
+        </motion.div>
+      )}
+      
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat, index) => {
+          const Icon = stat.icon
+          return (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <Card className="p-4 bg-card border-2 border-border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Icon className="w-4 h-4" style={{ color: stat.color }} />
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</span>
+                </div>
+                <div className="text-3xl font-bold font-mono mb-1" style={{ color: stat.color }}>
+                  {stat.value}
+                </div>
+                <div className="text-xs text-muted-foreground">{stat.subtext}</div>
+              </Card>
+            </motion.div>
+          )
+        })}
+      </div>
     </div>
   )
 }

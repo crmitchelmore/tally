@@ -1,5 +1,7 @@
 # Sentry integration plan (Tally)
 
+> **Status**: ✅ Implementation complete. See verification checklist at bottom.
+
 ## Goals
 
 - Add **crash + error monitoring**, **performance monitoring**, and **release health** across **Web (Next.js)**, **Backend (Convex)**, **iOS**, and **Android**.
@@ -186,14 +188,16 @@ Set up (via API/IaC):
 
 ## Rollout order (low risk → high value)
 
-1. **IaC**: provision Sentry projects, DSNs, and upload tokens via Pulumi.
-2. **Next.js**: run wizard, wire env vars via Pulumi to Vercel, verify source maps + one forced error.
-3. **Convex**: add backend project and minimal action instrumentation, verify an error appears with action tags.
-4. **Android**: run wizard, verify crash + mapping upload.
-5. **iOS**: run wizard, verify crash + dSYM upload.
-6. Tighten sampling + privacy, then enable replay-on-error for web.
+1. ✅ **IaC**: provision Sentry projects, DSNs, and upload tokens via Pulumi.
+2. ✅ **Next.js**: configured @sentry/nextjs, wire env vars via Pulumi to Vercel.
+3. ✅ **Convex**: add backend project and minimal action instrumentation helper.
+4. ✅ **Android**: configured Sentry Gradle plugin and SDK initialization.
+5. ✅ **iOS**: configured Sentry SDK and dSYM upload script.
+6. ⏳ Tighten sampling + privacy, then enable replay-on-error for web (after initial testing).
 
 ## Verification checklist (per platform)
+
+After setting `sentryAdminToken` in Pulumi and running `pulumi up`:
 
 - A test exception appears in the correct **project** and **environment**
 - Release is attached and stack traces are **de-minified / symbolicated**

@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -29,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.tally.auth.SignInOrUpView
+import app.tally.featureflags.FeatureFlags
 import app.tally.model.Challenge
 import java.time.LocalDate
 
@@ -42,6 +45,9 @@ class MainActivity : ComponentActivity() {
 
       val tallyViewModel: TallyViewModel by viewModels()
       val ui by tallyViewModel.uiState.collectAsStateWithLifecycle()
+
+      // Observe feature flags
+      val streaksEnabled by FeatureFlags.streaksEnabled.collectAsStateWithLifecycle()
 
       LaunchedEffect(authState) {
         if (authState == MainUiState.SignedIn) {
@@ -60,6 +66,17 @@ class MainActivity : ComponentActivity() {
           verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
           Text("Tally (Android)", style = MaterialTheme.typography.titleLarge)
+
+          // Feature flag test indicator
+          if (streaksEnabled) {
+            AssistChip(
+              onClick = { },
+              label = { Text("Streaks Feature Enabled") },
+              colors = AssistChipDefaults.assistChipColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+              )
+            )
+          }
 
           when (authState) {
             MainUiState.MissingConfig -> {

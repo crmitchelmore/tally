@@ -9,6 +9,9 @@ packages:
   Clerk:
     url: https://github.com/clerk/clerk-ios
     from: 0.57.0
+  Sentry:
+    url: https://github.com/getsentry/sentry-cocoa
+    from: 8.40.0
 targets:
   Tally:
     type: application
@@ -18,13 +21,28 @@ targets:
     dependencies:
       - package: TallyCore
       - package: Clerk
+      - package: Sentry
+        product: Sentry
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.tally.ios
         DEVELOPMENT_TEAM: ""
         GENERATE_INFOPLIST_FILE: YES
         CLERK_PUBLISHABLE_KEY: ""
+        LAUNCHDARKLY_MOBILE_KEY: ""
+        SENTRY_DSN: ""
         INFOPLIST_KEY_CLERK_PUBLISHABLE_KEY: "$(CLERK_PUBLISHABLE_KEY)"
+        INFOPLIST_KEY_LAUNCHDARKLY_MOBILE_KEY: "$(LAUNCHDARKLY_MOBILE_KEY)"
+        INFOPLIST_KEY_SENTRY_DSN: "$(SENTRY_DSN)"
+    preBuildScripts:
+      - name: Upload dSYMs to Sentry
+        script: |
+          if [ -n "${SENTRY_AUTH_TOKEN}" ]; then
+            export SENTRY_ORG="tally-lz"
+            export SENTRY_PROJECT="ios"
+            /usr/local/bin/sentry-cli upload-dif "${DWARF_DSYM_FOLDER_PATH}" --include-sources || true
+          fi
+        runOnlyWhenInstalling: false
   TallyTests:
     type: bundle.unit-test
     platform: iOS

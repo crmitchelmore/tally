@@ -6,6 +6,7 @@
         "typescript": "^5.0.0"
     },
     "dependencies": {
+        "@lbrlabs/pulumi-launchdarkly": "^0.0.6",
         "@pulumi/cloudflare": "^6.12.0",
         "@pulumi/command": "^1.1.3",
         "@pulumi/pulumi": "^3.113.0",

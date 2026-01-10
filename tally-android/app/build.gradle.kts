@@ -3,6 +3,7 @@ plugins {
   id("org.jetbrains.kotlin.android")
   id("org.jetbrains.kotlin.plugin.compose")
   id("org.jetbrains.kotlin.plugin.serialization")
+  id("io.sentry.android.gradle")
 }
 
 configurations.configureEach {
@@ -41,6 +42,18 @@ android {
       "TALLY_API_BASE_URL",
       "\"${System.getenv("TALLY_API_BASE_URL") ?: "https://bright-jackal-396.convex.site"}\""
     )
+
+    buildConfigField(
+      "String",
+      "LAUNCHDARKLY_MOBILE_KEY",
+      "\"${System.getenv("LAUNCHDARKLY_MOBILE_KEY") ?: ""}\""
+    )
+
+    buildConfigField(
+      "String",
+      "SENTRY_DSN",
+      "\"${System.getenv("SENTRY_DSN") ?: ""}\""
+    )
   }
 
   buildFeatures {
@@ -59,6 +72,38 @@ android {
     targetCompatibility = JavaVersion.VERSION_17
   }
 
+}
+
+// Sentry configuration for ProGuard mapping uploads
+sentry {
+  org.set("tally-lz")
+  projectName.set("android")
+  
+  // Enable auto-upload of ProGuard mappings only if auth token is available
+  autoUploadProguardMapping.set(System.getenv("SENTRY_AUTH_TOKEN")?.isNotBlank() == true)
+  
+  // Enable source context for better stack traces
+  includeSourceContext.set(true)
+  
+  // Disable debug logging
+  debug.set(false)
+  
+  // Auto-install Sentry integrations
+  autoInstallation {
+    enabled.set(true)
+    sentryVersion.set("8.8.0")
+  }
+  
+  // Enable tracing instrumentation
+  tracingInstrumentation {
+    enabled.set(true)
+    features.set(setOf(
+      io.sentry.android.gradle.extensions.InstrumentationFeature.DATABASE,
+      io.sentry.android.gradle.extensions.InstrumentationFeature.FILE_IO,
+      io.sentry.android.gradle.extensions.InstrumentationFeature.OKHTTP,
+      io.sentry.android.gradle.extensions.InstrumentationFeature.COMPOSE
+    ))
+  }
 }
 
 dependencies {
@@ -81,6 +126,9 @@ dependencies {
   implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.2")
   implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2")
   implementation("androidx.security:security-crypto:1.0.0")
+
+  // LaunchDarkly
+  implementation("com.launchdarkly:launchdarkly-android-client-sdk:5.4.0")
 
   debugImplementation("androidx.compose.ui:ui-tooling")
 

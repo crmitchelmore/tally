@@ -75,6 +75,12 @@ CONVEX_DEPLOYMENT=dev:gallant-boar-375
 CLOUDFLARE_API_TOKEN=...
 VERCEL_API_TOKEN=...
 PULUMI_ACCESS_TOKEN=...
+
+# LaunchDarkly (optional)
+LAUNCHDARKLY_ACCESS_TOKEN=...  # For Pulumi to manage flags
+NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID=...  # For web client
+LAUNCHDARKLY_MOBILE_KEY_IOS=...  # For iOS
+LAUNCHDARKLY_MOBILE_KEY_ANDROID=...  # For Android
 ```
 
 ## Infrastructure Management

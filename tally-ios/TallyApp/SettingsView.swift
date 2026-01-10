@@ -1,8 +1,10 @@
 import SwiftUI
 import Clerk
+import TallyCore
 
 struct SettingsView: View {
   @EnvironmentObject private var state: AppState
+  @EnvironmentObject private var featureFlags: FeatureFlags
   @Environment(\.clerk) private var clerk
 
   var body: some View {
@@ -12,6 +14,20 @@ struct SettingsView: View {
           TextField("Convex HTTP base (https://<deployment>.convex.site)", text: $state.apiBase)
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
+        }
+
+        Section("Feature Flags") {
+          HStack {
+            Text("Streaks Enabled")
+            Spacer()
+            if featureFlags.streaksEnabled {
+              Image(systemName: "checkmark.circle.fill")
+                .foregroundStyle(.green)
+            } else {
+              Image(systemName: "xmark.circle.fill")
+                .foregroundStyle(.secondary)
+            }
+          }
         }
 
         Section("Auth") {

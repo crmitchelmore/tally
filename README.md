@@ -1,23 +1,71 @@
-# ✨ Welcome to Your Spark Template!
-You've just launched your brand-new Spark Template Codespace — everything’s fired up and ready for you to explore, build, and create with Spark!
+# Tally
 
-This template is your blank canvas. It comes with a minimal setup to help you get started quickly with Spark development.
+Tally is a **friendly, fast, multi-platform** challenge/progress tracker inspired by classic tally marks.
 
-🚀 What's Inside?
-- A clean, minimal Spark environment
-- Pre-configured for local development
-- Ready to scale with your ideas
-  
-🧠 What Can You Do?
+- **Production:** https://tally-tracker.app
+- **CI:** https://github.com/crmitchelmore/tally/actions
 
-Right now, this is just a starting point — the perfect place to begin building and testing your Spark applications.
+## Repo layout
+- `tally-web/` — Next.js 16 + React 19 web app (package manager: **Bun**)
+- `infra/` — Pulumi TypeScript (package manager: **npm**)
+- `tally-ios/` — iOS app (Swift) (WIP)
+- `tally-android/` — Android app (Kotlin) (WIP)
+- `docs/` — mental model, design philosophy, migration plan
 
-🧹 Just Exploring?
-No problem! If you were just checking things out and don’t need to keep this code:
+## Tech stack
+- Web: Next.js (App Router), Tailwind, shadcn/ui
+- Backend/DB: Convex
+- Auth: Clerk
+- Hosting: Vercel
+- DNS: Cloudflare
+- IaC: Pulumi
+- Observability:
+  - Sentry (errors + performance UX)
+  - PostHog (product analytics)
+  - Grafana Cloud + OpenTelemetry (traces/logs/metrics)
 
-- Simply delete your Spark.
-- Everything will be cleaned up — no traces left behind.
+## Quickstart
 
-📄 License For Spark Template Resources 
+### Web
+```bash
+cd tally-web
+bun install
+bun run dev
+```
 
-The Spark Template files and resources from GitHub are licensed under the terms of the MIT license, Copyright GitHub, Inc.
+### Tests
+```bash
+cd tally-web
+bun run lint
+bun run test
+```
+
+### Infrastructure (Pulumi)
+> Infra changes must go through Pulumi (no dashboard clickops).
+
+```bash
+cd infra
+npm ci
+pulumi preview
+pulumi up
+```
+
+## Configuration & secrets
+- Local development uses a root `.env` file (gitignored).
+- CI uses GitHub Actions secrets; see `.github/workflows/*.yml` for required names.
+
+## Observability
+- Grafana Cloud + OTel plan: [`grafana-cloud-otel.md`](grafana-cloud-otel.md)
+- Sentry plan: [`sentry integration.md`](sentry%20integration.md)
+- PostHog plan: [`posthog.md`](posthog.md)
+
+## Docs
+- Project context: [`CONTEXT.md`](CONTEXT.md)
+- Mental model: [`docs/MENTAL-MODEL.md`](docs/MENTAL-MODEL.md)
+- Design philosophy: [`docs/DESIGN-PHILOSOPHY.md`](docs/DESIGN-PHILOSOPHY.md)
+
+## Security
+See [`SECURITY.md`](SECURITY.md).
+
+## License
+MIT — see [`LICENSE`](LICENSE).

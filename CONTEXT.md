@@ -127,6 +127,7 @@ SENTRY_ADMIN_TOKEN=...  # For Pulumi to manage projects
 ### Infra change preflight
 - Confirm correct stack name via `cd infra && pulumi stack ls`
 - Confirm domain ownership before adding any new domain resources
+- Don’t create/overwrite `.env` with placeholder/empty secrets; require secrets via `pulumi config set --secret ...`
 
 ```bash
 cd infra

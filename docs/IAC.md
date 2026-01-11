@@ -110,6 +110,20 @@ We host the dev environment at `https://dev.tally-tracker.app` (managed via the 
   - `ios` - iOS app
   - `android` - Android app
 
+### Analytics (PostHog)
+Pulumi wires PostHog into Vercel by setting:
+- `NEXT_PUBLIC_POSTHOG_KEY`
+- `NEXT_PUBLIC_POSTHOG_HOST`
+
+**Auth (for IaC provisioning)**
+- Preferred: set a PostHog Personal API key as Pulumi secret `posthog:adminToken`.
+- Local-only fallback: export `POSTHOG_ADMIN_TOKEN` (or set it in `../.env`) when running `pulumi up`.
+
+**Project creation limits**
+Some PostHog plans limit the number of projects. If creating additional projects is blocked,
+Pulumi falls back to using the first existing project in the org (its `api_token`).
+If you want separate dev/preview/prod projects, upgrade the plan or create them first.
+
 ## Pulumi Configuration
 
 ### Required Secrets

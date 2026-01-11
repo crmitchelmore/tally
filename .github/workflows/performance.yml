@@ -35,19 +35,31 @@ jobs:
         env:
           # Minimal env vars for static build
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           SKIP_ENV_VALIDATION: true
 
       - name: Start server
         run: |
           bun run start &
-          sleep 10 # Wait for server to start
+          for i in $(seq 1 30); do
+            if curl -fsSL http://localhost:3000 >/dev/null; then
+              echo "Server is up"
+              break
+            fi
+            sleep 1
+          done
+          curl -fsSL http://localhost:3000 >/dev/null
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          SKIP_ENV_VALIDATION: true
 
       - name: Run Lighthouse
         uses: treosh/lighthouse-ci-action@v12
         with:
           urls: |
             http://localhost:3000
-          configPath: ./tally-web/lighthouserc.json
+          configPath: ./lighthouserc.json
           uploadArtifacts: true
           temporaryPublicStorage: true
 

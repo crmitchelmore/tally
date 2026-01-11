@@ -66,9 +66,13 @@ tally/
 All secrets in root `.env` (gitignored):
 
 ```bash
-# Clerk
+# Clerk (separate dev/prod instances)
+# Dev instance (for local dev, CI, E2E tests)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
+# Prod instance (for production - also stored in Pulumi config)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD=pk_live_...
+CLERK_SECRET_KEY_PROD=sk_live_...
 
 # Convex  
 CONVEX_DEPLOYMENT=dev:bright-jackal-396  # For local dev

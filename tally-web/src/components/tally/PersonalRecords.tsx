@@ -126,7 +126,7 @@ export function PersonalRecords({ challenges, entries }: PersonalRecordsProps) {
       label: 'Best Single Day',
       value: bestSingleDay.count.toLocaleString(),
       subtext: `${bestSingleDay.challengeName} • ${format(new Date(bestSingleDay.date), 'MMM d, yyyy')}`,
-      color: 'oklch(0.65 0.24 60)'
+      color: 'var(--record-best-day)'
     })
   }
 
@@ -136,7 +136,7 @@ export function PersonalRecords({ challenges, entries }: PersonalRecordsProps) {
       label: 'Longest Streak',
       value: `${longestStreak.days} ${longestStreak.days === 1 ? 'day' : 'days'}`,
       subtext: longestStreak.challengeName,
-      color: 'oklch(0.55 0.22 25)'
+      color: 'var(--record-streak)'
     })
   }
 
@@ -146,7 +146,7 @@ export function PersonalRecords({ challenges, entries }: PersonalRecordsProps) {
       label: 'Highest Daily Average',
       value: highestAverage.average.toLocaleString(),
       subtext: `${highestAverage.challengeName} per day`,
-      color: 'oklch(0.45 0.18 145)'
+      color: 'var(--record-average)'
     })
   }
 
@@ -156,7 +156,7 @@ export function PersonalRecords({ challenges, entries }: PersonalRecordsProps) {
       label: 'Most Active Days',
       value: mostConsistentDays.days.toLocaleString(),
       subtext: mostConsistentDays.challengeName,
-      color: 'oklch(0.5 0.2 260)'
+      color: 'var(--record-active)'
     })
   }
 
@@ -166,7 +166,7 @@ export function PersonalRecords({ challenges, entries }: PersonalRecordsProps) {
       label: 'Biggest Single Entry',
       value: biggestSingleEntry.count.toLocaleString(),
       subtext: `${biggestSingleEntry.challengeName} • ${format(new Date(biggestSingleEntry.date), 'MMM d')}`,
-      color: 'oklch(0.55 0.25 280)'
+      color: 'var(--record-entry)'
     })
   }
 
@@ -176,7 +176,7 @@ export function PersonalRecords({ challenges, entries }: PersonalRecordsProps) {
       label: 'Fastest Milestone',
       value: `${fastestToMilestone.days} ${fastestToMilestone.days === 1 ? 'day' : 'days'}`,
       subtext: `${fastestToMilestone.milestone.toLocaleString()} ${fastestToMilestone.challengeName}`,
-      color: 'oklch(0.6 0.22 40)'
+      color: 'var(--record-milestone)'
     })
   }
 
@@ -186,7 +186,7 @@ export function PersonalRecords({ challenges, entries }: PersonalRecordsProps) {
       label: 'Max Reps in Single Set',
       value: maxRepsPerSet.reps.toLocaleString(),
       subtext: `${maxRepsPerSet.challengeName} • ${format(new Date(maxRepsPerSet.date), 'MMM d, yyyy')}`,
-      color: 'oklch(0.58 0.26 30)'
+      color: 'var(--record-max-reps)'
     })
   }
 

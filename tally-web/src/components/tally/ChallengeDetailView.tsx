@@ -180,7 +180,7 @@ export function ChallengeDetailView({
 
           <Card className="p-4 border-2 border-border">
             <div className="flex items-center gap-2 mb-2">
-              <Flame className="w-4 h-4" style={{ color: "oklch(0.55 0.22 25)" }} />
+              <Flame className="w-4 h-4" style={{ color: "var(--status-streak)" }} />
               <span className="text-xs text-muted-foreground uppercase tracking-wider">Current Streak</span>
             </div>
             <div className="text-2xl font-bold font-mono">{stats.currentStreak}</div>
@@ -189,7 +189,7 @@ export function ChallengeDetailView({
 
           <Card className="p-4 border-2 border-border">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4" style={{ color: "oklch(0.25 0.02 30)" }} />
+              <TrendingUp className="w-4 h-4" style={{ color: "var(--tally-line)" }} />
               <span className="text-xs text-muted-foreground uppercase tracking-wider">Longest Streak</span>
             </div>
             <div className="text-2xl font-bold font-mono">{stats.longestStreak}</div>
@@ -198,7 +198,7 @@ export function ChallengeDetailView({
 
           <Card className="p-4 border-2 border-border">
             <div className="flex items-center gap-2 mb-2">
-              <Calendar className="w-4 h-4" style={{ color: "oklch(0.25 0.02 30)" }} />
+              <Calendar className="w-4 h-4" style={{ color: "var(--tally-line)" }} />
               <span className="text-xs text-muted-foreground uppercase tracking-wider">Days Active</span>
             </div>
             <div className="text-2xl font-bold font-mono">{stats.daysActive}</div>
@@ -226,20 +226,20 @@ export function ChallengeDetailView({
           </h2>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={cumulativeData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.85 0.01 50)" />
-              <XAxis dataKey="date" stroke="oklch(0.5 0.01 30)" fontSize={12} />
-              <YAxis stroke="oklch(0.5 0.01 30)" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+              <XAxis dataKey="date" stroke="var(--chart-axis)" fontSize={12} />
+              <YAxis stroke="var(--chart-axis)" fontSize={12} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "oklch(0.99 0.002 50)",
-                  border: "2px solid oklch(0.85 0.01 50)",
+                  backgroundColor: "var(--chart-tooltip-bg)",
+                  border: "2px solid var(--chart-tooltip-border)",
                   borderRadius: "8px",
                 }}
               />
               <Line
                 type="monotone"
                 dataKey="target"
-                stroke="oklch(0.7 0.01 30)"
+                stroke="var(--chart-target-line)"
                 strokeDasharray="5 5"
                 strokeWidth={2}
                 dot={false}
@@ -263,13 +263,13 @@ export function ChallengeDetailView({
           </h2>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={weeklyData.slice(-12)}>
-              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.85 0.01 50)" />
-              <XAxis dataKey="week" stroke="oklch(0.5 0.01 30)" fontSize={12} />
-              <YAxis stroke="oklch(0.5 0.01 30)" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+              <XAxis dataKey="week" stroke="var(--chart-axis)" fontSize={12} />
+              <YAxis stroke="var(--chart-axis)" fontSize={12} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "oklch(0.99 0.002 50)",
-                  border: "2px solid oklch(0.85 0.01 50)",
+                  backgroundColor: "var(--chart-tooltip-bg)",
+                  border: "2px solid var(--chart-tooltip-border)",
                   borderRadius: "8px",
                 }}
               />

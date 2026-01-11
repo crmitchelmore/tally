@@ -1,0 +1,27 @@
+{
+  "name": "@tally/design-tokens",
+  "version": "1.0.0",
+  "description": "Cross-platform design tokens for Tally",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./tokens.json": "./tokens.json"
+  },
+  "files": [
+    "dist",
+    "tokens.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "generate:ios": "node scripts/generate-ios.js",
+    "generate:android": "node scripts/generate-android.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

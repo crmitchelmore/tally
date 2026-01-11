@@ -19,7 +19,7 @@ struct ChallengesView: View {
         } else if let errorText {
           VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle")
-              .font(.system(size: 44))
+              .font(.largeTitle)
               .foregroundStyle(.secondary)
             Text("Could not load")
               .font(.headline)

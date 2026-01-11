@@ -127,8 +127,61 @@
 
 /* Tally-specific styles */
 :root {
+  /* Brand colors */
   --tally-line: oklch(0.25 0.02 30);
   --tally-cross: oklch(0.55 0.22 25);
+  
+  /* Status colors (light mode) */
+  --status-ahead: oklch(0.45 0.18 145);
+  --status-on-pace: oklch(0.55 0.15 90);
+  --status-behind: oklch(0.55 0.22 25);
+  
+  /* Streak/fire color */
+  --status-streak: oklch(0.6 0.2 50);
+  
+  /* Chart styling */
+  --chart-grid: oklch(0.85 0.01 50);
+  --chart-axis: oklch(0.5 0.01 30);
+  --chart-tooltip-bg: oklch(0.99 0.002 50);
+  --chart-tooltip-border: oklch(0.85 0.01 50);
+  --chart-target-line: oklch(0.7 0.01 30);
+  
+  /* Heatmap levels */
+  --heatmap-0: oklch(0.94 0.006 50);
+  --heatmap-1: oklch(0.75 0.08 35);
+  --heatmap-2: oklch(0.6 0.12 35);
+  --heatmap-3: oklch(0.45 0.15 35);
+  --heatmap-4: oklch(0.3 0.18 35);
+  
+  /* Record/stat colors */
+  --record-best-day: oklch(0.65 0.24 60);
+  --record-streak: oklch(0.55 0.22 25);
+  --record-average: oklch(0.45 0.18 145);
+  --record-active: oklch(0.5 0.2 260);
+  --record-entry: oklch(0.55 0.25 280);
+  --record-milestone: oklch(0.6 0.22 40);
+  --record-max-reps: oklch(0.58 0.26 30);
+}
+
+.dark {
+  /* Status colors (dark mode) */
+  --status-ahead: oklch(0.55 0.18 145);
+  --status-on-pace: oklch(0.65 0.15 90);
+  --status-behind: oklch(0.65 0.22 25);
+  
+  /* Chart styling (dark mode) */
+  --chart-grid: oklch(0.35 0.01 50);
+  --chart-axis: oklch(0.6 0.01 30);
+  --chart-tooltip-bg: oklch(0.25 0.002 50);
+  --chart-tooltip-border: oklch(0.35 0.01 50);
+  --chart-target-line: oklch(0.5 0.01 30);
+  
+  /* Heatmap levels (dark mode) */
+  --heatmap-0: oklch(0.25 0.006 50);
+  --heatmap-1: oklch(0.35 0.08 35);
+  --heatmap-2: oklch(0.45 0.12 35);
+  --heatmap-3: oklch(0.55 0.15 35);
+  --heatmap-4: oklch(0.65 0.18 35);
 }
 
 .geist-mono {

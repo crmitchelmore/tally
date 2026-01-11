@@ -27,7 +27,7 @@ struct CommunityView: View {
         } else if let errorText {
           VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle")
-              .font(.system(size: 44))
+              .font(.largeTitle)
               .foregroundStyle(.secondary)
             Text("Could not load")
               .font(.headline)
@@ -40,7 +40,7 @@ struct CommunityView: View {
         } else if filteredChallenges.isEmpty {
           VStack(spacing: 12) {
             Image(systemName: "person.2")
-              .font(.system(size: 44))
+              .font(.largeTitle)
               .foregroundStyle(.secondary)
             Text(searchText.isEmpty ? "No public challenges yet" : "No matches")
               .font(.headline)

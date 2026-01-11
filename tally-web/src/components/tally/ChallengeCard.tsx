@@ -8,6 +8,7 @@ import { HeatmapCalendar } from "./HeatmapCalendar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Target, Flame } from "lucide-react";
+import { useMotionPreference } from "@/hooks/use-reduced-motion";
 
 interface ChallengeCardProps {
   challenge: Challenge;
@@ -19,18 +20,20 @@ export function ChallengeCard({ challenge, entries, onClick }: ChallengeCardProp
   const stats = calculateStats(challenge, entries);
   const heatmapData = generateHeatmapData(challenge, entries);
   const paceMessage = getPaceMessage(stats);
+  const { shouldAnimate, tapScale, hoverY, hoverScale } = useMotionPreference();
 
-  const paceColor =
+  // Use CSS custom properties for status colors
+  const paceColorVar =
     stats.paceStatus === "ahead"
-      ? "oklch(0.45 0.18 145)"
+      ? "var(--status-ahead)"
       : stats.paceStatus === "behind"
-        ? "oklch(0.55 0.22 25)"
-        : "oklch(0.55 0.15 90)";
+        ? "var(--status-behind)"
+        : "var(--status-on-pace)";
 
   return (
     <motion.div
-      whileHover={{ y: -4, scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={shouldAnimate ? { y: hoverY, scale: hoverScale } : undefined}
+      whileTap={shouldAnimate ? { scale: tapScale } : undefined}
       transition={{ duration: 0.2 }}
     >
       <Card
@@ -76,8 +79,8 @@ export function ChallengeCard({ challenge, entries, onClick }: ChallengeCardProp
                   variant="outline"
                   className="text-xs flex items-center gap-1"
                   style={{
-                    borderColor: "oklch(0.6 0.2 50)",
-                    color: "oklch(0.5 0.18 50)",
+                    borderColor: "var(--status-streak)",
+                    color: "var(--status-streak)",
                   }}
                 >
                   <Flame className="w-3 h-3" />
@@ -131,7 +134,7 @@ export function ChallengeCard({ challenge, entries, onClick }: ChallengeCardProp
               </div>
               <div
                 className="text-lg font-bold geist-mono"
-                style={{ color: paceColor }}
+                style={{ color: paceColorVar }}
               >
                 {stats.requiredPerDay}
               </div>
@@ -139,7 +142,7 @@ export function ChallengeCard({ challenge, entries, onClick }: ChallengeCardProp
           </div>
           <div
             className="flex items-center gap-2 text-sm font-medium"
-            style={{ color: paceColor }}
+            style={{ color: paceColorVar }}
           >
             {stats.paceStatus === "ahead" ? (
               <TrendingUp className="w-4 h-4" />

@@ -33,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.tally.auth.SignInOrUpView
 import app.tally.featureflags.FeatureFlags
 import app.tally.model.Challenge
+import app.tally.ui.theme.TallyTheme
 import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
@@ -60,7 +61,7 @@ class MainActivity : ComponentActivity() {
       val selected: Challenge? = ui.selectedChallengeId
         ?.let { id -> ui.challenges.firstOrNull { it._id == id } }
 
-      MaterialTheme {
+      TallyTheme {
         Column(
           modifier = Modifier.padding(16.dp),
           verticalArrangement = Arrangement.spacedBy(12.dp),

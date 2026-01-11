@@ -96,14 +96,18 @@ cd infra
 pulumi config set --secret cloudflare:apiToken <token>
 pulumi config set --secret vercel:apiToken <token>
 
-# Service secrets
-pulumi config set --secret clerkSecretKey <key>
-pulumi config set --secret clerkPublishableKey <key>
+# Clerk secrets (separate dev/prod instances)
+pulumi config set --secret clerkSecretKey <prod-secret-key>       # sk_live_*
+pulumi config set --secret clerkPublishableKey <prod-pub-key>     # pk_live_*
+pulumi config set --secret clerkSecretKeyDev <dev-secret-key>     # sk_test_*
+pulumi config set --secret clerkPublishableKeyDev <dev-pub-key>   # pk_test_*
+
+# Other service secrets
 pulumi config set --secret sentryAdminToken <token>
 pulumi config set --secret launchDarklyClientSideId <id>
 
 # Non-secret config
-pulumi config set convexDeployment dev:bright-jackal-396
+pulumi config set convexDeployment prod:bright-jackal-396
 ```
 
 ### Stack Structure
@@ -214,9 +218,11 @@ jobs:
 - `VERCEL_ORG_ID` - Vercel team/org ID
 
 **Auth & Testing**:
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
-- `CLERK_SECRET_KEY` - Clerk secret key
-- `TEST_USER_EMAIL` - Test user email (for E2E auth tests)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV` - Clerk dev publishable key (for CI/tests)
+- `CLERK_SECRET_KEY_DEV` - Clerk dev secret key (for CI/tests)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD` - Clerk prod publishable key (for production deploy)
+- `CLERK_SECRET_KEY_PROD` - Clerk prod secret key (stored in Pulumi config)
+- `TEST_USER_EMAIL` - Test user email (for E2E auth tests, user in dev Clerk instance)
 - `TEST_USER_PASSWORD` - Test user password (for E2E auth tests)
 
 **Monitoring**:

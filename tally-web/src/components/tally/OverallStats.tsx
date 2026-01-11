@@ -41,28 +41,28 @@ export function OverallStats({ challenges, entries }: OverallStatsProps) {
       icon: TrendingUp,
       label: 'Total Marks',
       value: totalRepsAllTime.toLocaleString(),
-      color: 'oklch(0.25 0.02 30)',
+      color: 'var(--tally-line)',
       subtext: 'all time'
     },
     {
       icon: Calendar,
       label: 'Today',
       value: repsToday.toLocaleString(),
-      color: 'oklch(0.3 0.025 35)',
+      color: 'var(--tally-line)',
       subtext: `${entriesToday.length} ${entriesToday.length === 1 ? 'entry' : 'entries'}`
     },
     {
       icon: Flame,
       label: 'Best Streak',
       value: totalCurrentStreak.toString(),
-      color: 'oklch(0.55 0.22 25)',
+      color: 'var(--status-streak)',
       subtext: 'days'
     },
     {
       icon: Target,
       label: 'Ahead of Pace',
       value: challengesAheadOfPace.toString(),
-      color: 'oklch(0.45 0.18 145)',
+      color: 'var(--status-ahead)',
       subtext: `of ${challenges.length} ${challenges.length === 1 ? 'challenge' : 'challenges'}`
     },
   ]

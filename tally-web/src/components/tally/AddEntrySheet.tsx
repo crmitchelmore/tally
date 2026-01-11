@@ -12,6 +12,7 @@ import { Challenge, SetData, FeelingType } from '@/types'
 import { QUICK_ADD_PRESETS, FEELING_OPTIONS } from '@/lib/constants'
 import { Plus, Minus, Check, X, Dumbbell } from 'lucide-react'
 import canvasConfetti from 'canvas-confetti'
+import { useReducedMotion, useMotionPreference } from '@/hooks/use-reduced-motion'
 
 interface AddEntrySheetProps {
   open: boolean
@@ -36,6 +37,9 @@ export function AddEntrySheet({
   const [trackSets, setTrackSets] = useState(false)
   const [sets, setSets] = useState<SetData[]>([])
   const [feeling, setFeeling] = useState<FeelingType | undefined>(undefined)
+  
+  const prefersReducedMotion = useReducedMotion()
+  const { shouldAnimate, tapScale } = useMotionPreference()
 
   // Auto-select when only one challenge and sheet opens
   const autoSelectId = open && challenges.length === 1 ? challenges[0].id : null;
@@ -76,15 +80,19 @@ export function AddEntrySheet({
       feeling
     )
 
-    canvasConfetti({
-      particleCount: 80,
-      spread: 60,
-      origin: { y: 0.6 },
-      colors: ['#3a3a3a', '#4a4a4a', '#5a5a5a', '#6a6a6a'],
-      shapes: ['square'],
-      scalar: 0.8,
-    })
+    // Only show confetti when reduced motion is not preferred
+    if (!prefersReducedMotion) {
+      canvasConfetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.6 },
+        colors: ['#3a3a3a', '#4a4a4a', '#5a5a5a', '#6a6a6a'],
+        shapes: ['square'],
+        scalar: 0.8,
+      })
+    }
 
+    // Haptics are generally OK even with reduced motion, but keep them subtle
     if (navigator.vibrate) {
       navigator.vibrate([50, 30, 50])
     }
@@ -225,9 +233,10 @@ export function AddEntrySheet({
                       <Label className="text-sm mb-2 block">Count</Label>
                       <div className="flex items-center gap-3 mb-3">
                         <motion.button
-                          whileTap={{ scale: 0.9 }}
+                          whileTap={shouldAnimate ? { scale: 0.9 } : undefined}
                           onClick={() => setCount(Math.max(0, count - 1))}
                           className="w-12 h-12 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center transition-colors"
+                          aria-label="Decrease count"
                         >
                           <Minus className="w-6 h-6" />
                         </motion.button>
@@ -240,12 +249,14 @@ export function AddEntrySheet({
                           style={{ color: selectedChallenge?.color }}
                           placeholder="0"
                           min="0"
+                          aria-label="Entry count"
                         />
 
                         <motion.button
-                          whileTap={{ scale: 0.9 }}
+                          whileTap={shouldAnimate ? { scale: 0.9 } : undefined}
                           onClick={() => setCount(count + 1)}
                           className="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center transition-colors"
+                          aria-label="Increase count"
                         >
                           <Plus className="w-6 h-6 text-primary-foreground" />
                         </motion.button>
@@ -255,9 +266,10 @@ export function AddEntrySheet({
                         {QUICK_ADD_PRESETS.map((preset) => (
                           <motion.button
                             key={preset}
-                            whileTap={{ scale: 0.95 }}
+                            whileTap={shouldAnimate ? { scale: 0.95 } : undefined}
                             onClick={() => setCount(count + preset)}
                             className="px-3 py-2 rounded-md bg-secondary hover:bg-primary/20 text-sm font-medium transition-colors border border-border hover:border-primary/50"
+                            aria-label={`Add ${preset}`}
                           >
                             +{preset}
                           </motion.button>
@@ -279,7 +291,7 @@ export function AddEntrySheet({
                         {sets.map((set, index) => (
                           <motion.div
                             key={index}
-                            initial={{ opacity: 0, x: -20 }}
+                            initial={shouldAnimate ? { opacity: 0, x: -20 } : undefined}
                             animate={{ opacity: 1, x: 0 }}
                             className="flex items-center gap-2 p-3 rounded-lg bg-secondary/50 border border-border"
                           >
@@ -288,9 +300,10 @@ export function AddEntrySheet({
                             </span>
                             <div className="flex items-center gap-2 flex-1">
                               <motion.button
-                                whileTap={{ scale: 0.9 }}
+                                whileTap={shouldAnimate ? { scale: 0.9 } : undefined}
                                 onClick={() => updateSetReps(index, set.reps - 1)}
                                 className="w-8 h-8 rounded-full bg-background hover:bg-muted flex items-center justify-center transition-colors"
+                                aria-label={`Decrease reps for set ${index + 1}`}
                               >
                                 <Minus className="w-4 h-4" />
                               </motion.button>
@@ -302,12 +315,14 @@ export function AddEntrySheet({
                                 className="text-center text-lg font-bold font-mono h-10 flex-1"
                                 placeholder="0"
                                 min="0"
+                                aria-label={`Reps for set ${index + 1}`}
                               />
 
                               <motion.button
-                                whileTap={{ scale: 0.9 }}
+                                whileTap={shouldAnimate ? { scale: 0.9 } : undefined}
                                 onClick={() => updateSetReps(index, set.reps + 1)}
                                 className="w-8 h-8 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center transition-colors"
+                                aria-label={`Increase reps for set ${index + 1}`}
                               >
                                 <Plus className="w-4 h-4 text-primary-foreground" />
                               </motion.button>
@@ -317,6 +332,7 @@ export function AddEntrySheet({
                               size="icon"
                               onClick={() => removeSet(index)}
                               className="h-8 w-8"
+                              aria-label={`Remove set ${index + 1}`}
                             >
                               <X className="w-4 h-4" />
                             </Button>
@@ -337,21 +353,23 @@ export function AddEntrySheet({
 
                   <div>
                     <Label className="text-sm mb-2 block">How did it feel? (optional)</Label>
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="grid grid-cols-5 gap-2" role="radiogroup" aria-label="How did it feel?">
                       {FEELING_OPTIONS.map((option) => (
                         <motion.button
                           key={option.type}
                           type="button"
-                          whileTap={{ scale: 0.95 }}
+                          role="radio"
+                          aria-checked={feeling === option.type}
+                          whileTap={shouldAnimate ? { scale: 0.95 } : undefined}
                           onClick={() => setFeeling(feeling === option.type ? undefined : option.type)}
                           className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
                             feeling === option.type
                               ? 'border-primary bg-primary/10 shadow-sm'
                               : 'border-border bg-card hover:border-primary/30'
                           }`}
-                          title={option.description}
+                          aria-label={option.description}
                         >
-                          <span className="text-2xl">{option.emoji}</span>
+                          <span className="text-2xl" aria-hidden="true">{option.emoji}</span>
                           <span className="text-xs font-medium text-center leading-tight">{option.label.split(' ')[0]}</span>
                         </motion.button>
                       ))}

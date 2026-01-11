@@ -18,7 +18,7 @@ struct LeaderboardView: View {
         } else if let errorText {
           VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle")
-              .font(.system(size: 44))
+              .font(.largeTitle)
               .foregroundStyle(.secondary)
             Text("Could not load")
               .font(.headline)
@@ -31,7 +31,7 @@ struct LeaderboardView: View {
         } else if leaderboard.isEmpty {
           VStack(spacing: 12) {
             Image(systemName: "trophy")
-              .font(.system(size: 44))
+              .font(.largeTitle)
               .foregroundStyle(.secondary)
             Text("No public challenges yet")
               .font(.headline)

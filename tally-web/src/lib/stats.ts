@@ -199,11 +199,11 @@ export function getPaceMessage(stats: ChallengeStats): string {
 
 export function getHeatmapColor(level: number): string {
   const colors = [
-    "oklch(0.94 0.006 50)",
-    "oklch(0.75 0.08 35)",
-    "oklch(0.6 0.12 35)",
-    "oklch(0.45 0.15 35)",
-    "oklch(0.3 0.18 35)",
+    "var(--heatmap-0)",
+    "var(--heatmap-1)",
+    "var(--heatmap-2)",
+    "var(--heatmap-3)",
+    "var(--heatmap-4)",
   ];
   return colors[level] || colors[0];
 }

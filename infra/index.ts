@@ -510,18 +510,23 @@ if [ -z "$TOKEN" ]; then
   exit 1
 fi
 
-CURL='curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30'
+CURL='curl -sfL --http1.1 --retry 10 --retry-all-errors --retry-delay 2 --connect-timeout 10 --max-time 60'
+PROJECT_NAME="${projectName}"
 
 if [ -z "$ORG_ID" ]; then
   ORG_ID=$($CURL "$BASE/api/organizations/" -H "Authorization: Bearer $TOKEN" | jq -r '.results[0].id')
 fi
 
-PROJECT_ID=$($CURL "$BASE/api/organizations/$ORG_ID/projects/" -H "Authorization: Bearer $TOKEN" | jq -r --arg name "${projectName}" '.results[]? | select(.name==$name) | .id' | head -n 1)
+PROJECT_ID=$($CURL "$BASE/api/organizations/$ORG_ID/projects/" -H "Authorization: Bearer $TOKEN" | jq -r --arg name "$PROJECT_NAME" '.results[]? | select(.name==$name) | .id' | head -n 1)
+
+# If the project doesn't exist (or plan doesn't allow creating more), fall back to the first existing project.
+if [ -z "$PROJECT_ID" ] || [ "$PROJECT_ID" = "null" ]; then
+  PROJECT_ID=$($CURL "$BASE/api/organizations/$ORG_ID/projects/" -H "Authorization: Bearer $TOKEN" | jq -r '.results[0].id')
+fi
 
 if [ -z "$PROJECT_ID" ] || [ "$PROJECT_ID" = "null" ]; then
-  PROJECT_ID=$($CURL -X POST "$BASE/api/organizations/$ORG_ID/projects/" \
-    -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-    -d "$(jq -cn --arg name \"${projectName}\" '{name:$name}')" | jq -r '.id')
+  echo "No PostHog projects found" >&2
+  exit 1
 fi
 
 $CURL "$BASE/api/projects/$PROJECT_ID/" -H "Authorization: Bearer $TOKEN" | jq -r '.api_token'`,

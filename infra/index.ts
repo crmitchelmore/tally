@@ -269,14 +269,14 @@ if (!isProd) {
 const clerkRedirectUrlResources = clerkRedirectUrls.map((url, index) => {
   return new command.local.Command(`clerk-redirect-url-${stack}-${index}`, {
     create: pulumi.interpolate`ID=$(curl -s "https://api.clerk.com/v1/redirect_urls" \
-      -H "Authorization: Bearer ${clerkSecretKey}" | jq -r '.[] | select(.url=="${url}") | .id' | head -n 1) && \
+      -H "Authorization: Bearer ${clerkSecretKey}" | jq -r 'first(.[]? | select(.url=="${url}") | .id) // empty') && \
       if [ -n "$ID" ] && [ "$ID" != "null" ]; then echo "$ID"; else \
       curl -s -X POST "https://api.clerk.com/v1/redirect_urls" \
         -H "Authorization: Bearer ${clerkSecretKey}" \
         -H "Content-Type: application/json" \
         -d '{"url": "${url}"}' | jq -r '.id // empty'; fi`,
     delete: pulumi.interpolate`ID=$(curl -s "https://api.clerk.com/v1/redirect_urls" \
-      -H "Authorization: Bearer ${clerkSecretKey}" | jq -r '.[] | select(.url=="${url}") | .id' | head -n 1) && \
+      -H "Authorization: Bearer ${clerkSecretKey}" | jq -r 'first(.[]? | select(.url=="${url}") | .id) // empty') && \
       [ -n "$ID" ] && [ "$ID" != "null" ] && curl -s -X DELETE "https://api.clerk.com/v1/redirect_urls/$ID" \
       -H "Authorization: Bearer ${clerkSecretKey}" || true`,
     environment: {},
@@ -352,7 +352,7 @@ function ensureLdEnvClientSideId(envKey: string, envName: string, color: string)
   if (!ldAccessToken) return undefined;
 
   return new command.local.Command(`ld-client-side-id-${envKey}-${stack}`, {
-    create: pulumi.interpolate`set -euo pipefail
+    create: pulumi.interpolate`set -eu
 TOKEN=${ldAccessToken}
 
 # Ensure project exists
@@ -399,7 +399,7 @@ function upsertVercelEnvVar(
   if (!vercelApiToken) return undefined;
 
   return new command.local.Command(`vercel-env-${name}-${stack}`, {
-    create: pulumi.interpolate`set -euo pipefail
+    create: pulumi.interpolate`set -eu
 TOKEN=${vercelApiToken}
 TEAM=${vercelTeamId}
 PROJ=${vercelProjectId}
@@ -409,7 +409,7 @@ CURL='curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10
 
 EXISTING_ID=$($CURL "https://api.vercel.com/v9/projects/$PROJ/env?teamId=$TEAM" \
   -H "Authorization: Bearer $TOKEN" | jq -r --arg key "$KEY" --arg target "$TARGET" \
-  '.envs[]? | select(.key==$key and (.target|length==1) and .target[0]==$target and (.gitBranch==null)) | .id' | head -n 1)
+  'first(.envs[]? | select(.key==$key and (.target|length==1) and .target[0]==$target and (.gitBranch==null)) | .id) // ""')
 
 if [ -n "$EXISTING_ID" ] && [ "$EXISTING_ID" != "null" ]; then
   $CURL -X PATCH "https://api.vercel.com/v9/projects/$PROJ/env/$EXISTING_ID?teamId=$TEAM" \
@@ -424,7 +424,7 @@ else
     -d "$(jq -cn --arg key "$KEY" --arg value "$VALUE" --arg target "$TARGET" '{key:$key,value:$value,type:\"encrypted\",target:[$target]}')" \
     | jq -r '.id'
 fi`,
-    delete: pulumi.interpolate`set -euo pipefail
+    delete: pulumi.interpolate`set -eu
 TOKEN=${vercelApiToken}
 TEAM=${vercelTeamId}
 PROJ=${vercelProjectId}
@@ -434,7 +434,7 @@ CURL='curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10
 
 EXISTING_ID=$($CURL "https://api.vercel.com/v9/projects/$PROJ/env?teamId=$TEAM" \
   -H "Authorization: Bearer $TOKEN" | jq -r --arg key "$KEY" --arg target "$TARGET" \
-  '.envs[]? | select(.key==$key and (.target|length==1) and .target[0]==$target and (.gitBranch==null)) | .id' | head -n 1)
+  'first(.envs[]? | select(.key==$key and (.target|length==1) and .target[0]==$target and (.gitBranch==null)) | .id) // ""')
 
 [ -n "$EXISTING_ID" ] && [ "$EXISTING_ID" != "null" ] && \
   $CURL -X DELETE "https://api.vercel.com/v9/projects/$PROJ/env/$EXISTING_ID?teamId=$TEAM" \
@@ -491,7 +491,7 @@ function ensurePosthogProjectApiKey(projectName: string) {
   if (!posthogAdminToken) return undefined;
 
   return new command.local.Command(`posthog-project-key-${projectName}-${stack}`.replace(/[^a-zA-Z0-9-]/g, "-"), {
-    create: pulumi.interpolate`set -euo pipefail
+    create: pulumi.interpolate`set -eu
 
 TOKEN="$TOKEN"
 BASE="${posthogApiHost}"
@@ -517,7 +517,7 @@ if [ -z "$ORG_ID" ]; then
   ORG_ID=$($CURL "$BASE/api/organizations/" -H "Authorization: Bearer $TOKEN" | jq -r '.results[0].id')
 fi
 
-PROJECT_ID=$($CURL "$BASE/api/organizations/$ORG_ID/projects/" -H "Authorization: Bearer $TOKEN" | jq -r --arg name "$PROJECT_NAME" '.results[]? | select(.name==$name) | .id' | head -n 1)
+PROJECT_ID=$($CURL "$BASE/api/organizations/$ORG_ID/projects/" -H "Authorization: Bearer $TOKEN" | jq -r --arg name "$PROJECT_NAME" 'first(.results[]? | select(.name==$name) | .id) // ""')
 
 # If the project doesn't exist (or plan doesn't allow creating more), fall back to the first existing project.
 if [ -z "$PROJECT_ID" ] || [ "$PROJECT_ID" = "null" ]; then
@@ -642,7 +642,7 @@ if (isProd && sentryAdminToken) {
     create: pulumi.interpolate`
       # List existing tokens to see if we already have one
       EXISTING=$(curl -s "https://sentry.io/api/0/api-tokens/" \
-        -H "Authorization: Bearer ${sentryAdminToken}" | jq -r '.[] | select(.name=="tally-ci-uploads") | .token // empty' | head -n 1)
+        -H "Authorization: Bearer ${sentryAdminToken}" | jq -r 'first(.[]? | select(.name=="tally-ci-uploads") | .token) // empty')
       if [ -n "$EXISTING" ]; then
         echo "$EXISTING"
       else

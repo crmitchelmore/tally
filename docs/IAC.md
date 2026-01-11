@@ -70,6 +70,7 @@ Convex has separate dev and prod deployments:
 ### Hosting (Vercel)
 - Project: `tally-web`
 - Domains: `tally-tracker.app`, `www.tally-tracker.app`
+- Legacy domain: `tally-tracker.com` (and `www`) redirect → `tally-tracker.app` (managed via Pulumi)
 - Environment variables (managed by Pulumi):
   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
   - `CLERK_SECRET_KEY`

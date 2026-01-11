@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useMemo, useState } from "react";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
@@ -40,6 +42,8 @@ import { useMotionPreference } from "@/hooks/use-reduced-motion";
 type ViewMode = "dashboard" | "leaderboard" | "community";
 
 export default function Home() {
+  const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
   useStoreUser();
   const { user: convexUser, isLoaded: isUserLoaded } = useCurrentUser();
   const { shouldAnimate } = useMotionPreference();
@@ -144,7 +148,8 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <SignedIn>
+            {clerkEnabled ? (
+              <SignedIn>
               {/* Primary action - Add Entry (always visible when challenges exist) */}
               {challenges && challenges.length > 0 && (
                 <Button
@@ -184,20 +189,42 @@ export default function Home() {
               </DropdownMenu>
               
               <UserButton afterSignOutUrl="/" />
-            </SignedIn>
-            <SignedOut>
+              </SignedIn>
+            ) : null}
+            {clerkEnabled ? (
+              <SignedOut>
               <Link href="/sign-in">
                 <Button variant="outline" size="sm">
                   Sign In
                 </Button>
               </Link>
-            </SignedOut>
+              </SignedOut>
+            ) : (
+              <Link href="/sign-in">
+                <Button variant="outline" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 pb-24 md:pb-8">
-        <SignedOut>
+        {clerkEnabled ? (
+          <SignedOut>
+            <div className="text-center py-20">
+              <Target className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+              <h2 className="text-3xl font-bold mb-2">Track Your Progress</h2>
+              <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                Create challenges, log entries with tally marks, and visualize your journey toward your goals.
+              </p>
+              <Link href="/sign-in">
+                <Button size="lg">Get Started</Button>
+              </Link>
+            </div>
+          </SignedOut>
+        ) : (
           <div className="text-center py-20">
             <Target className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
             <h2 className="text-3xl font-bold mb-2">Track Your Progress</h2>
@@ -208,9 +235,10 @@ export default function Home() {
               <Button size="lg">Get Started</Button>
             </Link>
           </div>
-        </SignedOut>
+        )}
 
-        <SignedIn>
+        {clerkEnabled ? (
+          <SignedIn>
           {isLoading ? (
             <div className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -336,7 +364,8 @@ export default function Home() {
               </Button>
             </motion.div>
           )}
-        </SignedIn>
+          </SignedIn>
+        ) : null}
       </main>
 
       {/* AddEntry Sheet */}
@@ -445,58 +474,60 @@ export default function Home() {
       )}
 
       {/* Mobile Bottom Navigation - visible only on small screens */}
-      <SignedIn>
-        <nav 
-          className="fixed bottom-0 left-0 right-0 bg-card border-t md:hidden z-50"
-          role="navigation"
-          aria-label="Main navigation"
-        >
-          <div className="flex justify-around items-center h-16 px-2">
-            <button
-              onClick={() => {
-                setSelectedChallengeId(null);
-                setViewMode("dashboard");
-              }}
-              className={`flex flex-col items-center justify-center flex-1 py-2 px-1 rounded-lg transition-colors ${
-                viewMode === "dashboard" && !selectedChallengeId
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              aria-label="Dashboard"
-              aria-current={viewMode === "dashboard" && !selectedChallengeId ? "page" : undefined}
-            >
-              <LayoutDashboard className="h-5 w-5" />
-              <span className="text-xs mt-1 font-medium">Dashboard</span>
-            </button>
-            <button
-              onClick={() => setViewMode("community")}
-              className={`flex flex-col items-center justify-center flex-1 py-2 px-1 rounded-lg transition-colors ${
-                viewMode === "community"
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              aria-label="Community"
-              aria-current={viewMode === "community" ? "page" : undefined}
-            >
-              <Users className="h-5 w-5" />
-              <span className="text-xs mt-1 font-medium">Community</span>
-            </button>
-            <button
-              onClick={() => setViewMode("leaderboard")}
-              className={`flex flex-col items-center justify-center flex-1 py-2 px-1 rounded-lg transition-colors ${
-                viewMode === "leaderboard"
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              aria-label="Leaderboard"
-              aria-current={viewMode === "leaderboard" ? "page" : undefined}
-            >
-              <Trophy className="h-5 w-5" />
-              <span className="text-xs mt-1 font-medium">Leaderboard</span>
-            </button>
-          </div>
-        </nav>
-      </SignedIn>
+      {clerkEnabled ? (
+        <SignedIn>
+          <nav 
+            className="fixed bottom-0 left-0 right-0 bg-card border-t md:hidden z-50"
+            role="navigation"
+            aria-label="Main navigation"
+          >
+            <div className="flex justify-around items-center h-16 px-2">
+              <button
+                onClick={() => {
+                  setSelectedChallengeId(null);
+                  setViewMode("dashboard");
+                }}
+                className={`flex flex-col items-center justify-center flex-1 py-2 px-1 rounded-lg transition-colors ${
+                  viewMode === "dashboard" && !selectedChallengeId
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                aria-label="Dashboard"
+                aria-current={viewMode === "dashboard" && !selectedChallengeId ? "page" : undefined}
+              >
+                <LayoutDashboard className="h-5 w-5" />
+                <span className="text-xs mt-1 font-medium">Dashboard</span>
+              </button>
+              <button
+                onClick={() => setViewMode("community")}
+                className={`flex flex-col items-center justify-center flex-1 py-2 px-1 rounded-lg transition-colors ${
+                  viewMode === "community"
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                aria-label="Community"
+                aria-current={viewMode === "community" ? "page" : undefined}
+              >
+                <Users className="h-5 w-5" />
+                <span className="text-xs mt-1 font-medium">Community</span>
+              </button>
+              <button
+                onClick={() => setViewMode("leaderboard")}
+                className={`flex flex-col items-center justify-center flex-1 py-2 px-1 rounded-lg transition-colors ${
+                  viewMode === "leaderboard"
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                aria-label="Leaderboard"
+                aria-current={viewMode === "leaderboard" ? "page" : undefined}
+              >
+                <Trophy className="h-5 w-5" />
+                <span className="text-xs mt-1 font-medium">Leaderboard</span>
+              </button>
+            </div>
+          </nav>
+        </SignedIn>
+      ) : null}
     </div>
   );
 }

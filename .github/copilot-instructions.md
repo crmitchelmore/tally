@@ -41,6 +41,7 @@ Practical rules:
 - Keep domain logic shared where possible (contracts/types) so web/iOS/Android stay consistent.
 - Prefer small, surgical changes; avoid unrelated refactors.
 - **Never discard unrelated local edits.** If a clean working tree is needed, use `git stash push -u -m "wip: <desc>"` and restore later; only discard changes with explicit user approval.
+- If the Copilot CLI `bash` tool errors with `posix_spawnp failed`, retry via the `task` agent as a fallback.
 - Add lightweight regression checks when touching critical flows (auth, API, data integrity).
 
 ## Project Overview

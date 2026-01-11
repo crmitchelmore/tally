@@ -42,6 +42,17 @@ jobs:
       - name: Run unit tests
         run: ./gradlew :app:test
 
+      - name: Run instrumented tests (emulator)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: medium_phone
+          script: cd tally-android && ./gradlew :app:connectedDebugAndroidTest
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN_ANDROID }}
+
       - name: Build release (with Sentry mapping upload)
         if: github.ref == 'refs/heads/main'
         run: ./gradlew :app:assembleRelease

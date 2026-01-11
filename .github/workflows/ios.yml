@@ -77,3 +77,12 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             -skip-testing:TallyUITests \
             test
+
+      - name: UI smoke tests (no signing)
+        run: |
+          xcodebuild \
+            -project Tally.xcodeproj \
+            -scheme TallyUITests \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
+            CODE_SIGNING_ALLOWED=NO \
+            test

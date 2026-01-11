@@ -261,15 +261,12 @@ jobs:
         id: deploy
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           npm i -g vercel@latest
           DEPLOYMENT_URL=$(vercel deploy --yes --token "$VERCEL_TOKEN" \
-            --build-env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
             --build-env SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
             --build-env SENTRY_ENVIRONMENT="development" \
-            --env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
             --env SENTRY_ENVIRONMENT="development")
           
           echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
@@ -412,15 +409,12 @@ jobs:
       - name: Deploy to Vercel (prod)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           npm i -g vercel@latest
           vercel deploy --prod --yes --token "$VERCEL_TOKEN" \
-            --build-env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
             --build-env SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
             --build-env SENTRY_ENVIRONMENT="production" \
-            --env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
             --env SENTRY_ENVIRONMENT="production"
 
   # ===========================================================================

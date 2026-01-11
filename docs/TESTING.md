@@ -1,6 +1,58 @@
 # Tally Testing Guide
 
-This document describes the testing strategy and setup for each platform.
+This document describes the testing strategy, test pyramid, and setup for each platform.
+
+## Test Pyramid & Boundaries
+
+Our testing strategy follows the test pyramid principle: many fast unit tests at the base, fewer integration tests in the middle, and minimal E2E tests at the top.
+
+```
+        /\
+       /  \      E2E (3-7 golden flows)
+      /----\     - Critical user journeys only
+     /      \    - Slow, expensive, can be flaky
+    /--------\   
+   /          \  Integration (moderate)
+  /   ------   \ - Convex functions + auth
+ /   |      |   \- API contract tests
+/    |------|    \
+------------------
+     Unit          - Pure logic, deterministic
+     (many)        - Fast, no network/DB
+                   - Components in isolation
+```
+
+### Test Responsibilities
+
+| Layer | What to Test | What NOT to Test |
+|-------|-------------|------------------|
+| **Unit** | Pure functions, data transforms, utils, component logic | Network calls, database, auth flows |
+| **Integration** | Convex mutations, authz rules, API handlers | Full user journeys, UI rendering |
+| **E2E** | Critical paths: signup, create challenge, log entry | Edge cases, error states, visual styling |
+
+### Golden E2E Flows
+
+Keep E2E tests to 3-7 critical user journeys:
+
+1. ✅ **Anonymous landing** - Homepage loads, CTA visible
+2. ✅ **Sign up flow** - New user can register
+3. ✅ **Sign in flow** - Existing user can authenticate  
+4. ✅ **Create challenge** - User creates first challenge
+5. ✅ **Log entry** - User logs an entry
+6. ✅ **View progress** - User sees their stats
+7. ⬜ **Share challenge** - User shares (future)
+
+Everything else should be tested at unit/integration level.
+
+### Test File Naming
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| Unit | `*.test.ts` | `stats.test.ts` |
+| Integration | `*.integration.test.ts` | `challenges.integration.test.ts` |
+| E2E | `*.spec.ts` | `auth.spec.ts` |
+
+---
 
 ## Web (tally-web/)
 
@@ -246,4 +298,127 @@ Enable code coverage in Xcode scheme settings.
 ### Android
 ```bash
 ./gradlew testDebugUnitTestCoverage
+```
+
+---
+
+## Convex Integration Tests
+
+Integration tests for Convex functions verify authorization and data integrity.
+
+### Location
+
+`tally-web/convex/*.integration.test.ts`
+
+### What to Test
+
+1. **Authorization checks**
+   - User can only access own challenges
+   - Public challenges accessible to all
+   - Ownership verified on mutations
+
+2. **Data invariants**
+   - Entry dates validated
+   - Challenge constraints enforced
+   - Cascade deletes work
+
+### Example Pattern
+
+```typescript
+// challenges.integration.test.ts
+import { convexTest } from "convex-test";
+import { describe, expect, it } from "vitest";
+import schema from "./schema";
+import { api } from "./_generated/api";
+
+describe("challenges authorization", () => {
+  it("user cannot update another user's challenge", async () => {
+    const t = convexTest(schema);
+    
+    // Setup: create two users and a challenge
+    const user1 = await t.run(async (ctx) => {
+      return await ctx.db.insert("users", { clerkId: "user1", ... });
+    });
+    const user2 = await t.run(async (ctx) => {
+      return await ctx.db.insert("users", { clerkId: "user2", ... });
+    });
+    const challenge = await t.run(async (ctx) => {
+      return await ctx.db.insert("challenges", { userId: user1, ... });
+    });
+    
+    // Act: user2 tries to update user1's challenge
+    // Assert: should throw UnauthorizedError
+    await expect(
+      t.mutation(api.challenges.update, { id: challenge, ... })
+        .withIdentity({ subject: "user2" })
+    ).rejects.toThrow("UnauthorizedError");
+  });
+});
+```
+
+### Running Integration Tests
+
+```bash
+cd tally-web
+bun run test:integration  # If script exists, or:
+bun run test -- --grep integration
+```
+
+### Key Auth Scenarios to Cover
+
+| Scenario | Expected Result |
+|----------|-----------------|
+| Owner updates own challenge | ✅ Allowed |
+| Non-owner updates challenge | ❌ UnauthorizedError |
+| Owner deletes own entry | ✅ Allowed |
+| Non-owner deletes entry | ❌ UnauthorizedError |
+| Anonymous views public challenge | ✅ Allowed |
+| Anonymous views private challenge | ❌ Denied |
+| Follower views followed challenge | ✅ Allowed |
+
+---
+
+## E2E Stability Tips
+
+### Reducing Flakiness
+
+1. **Use resilient locators**
+   ```typescript
+   // ❌ Fragile
+   page.locator('.btn-primary')
+   
+   // ✅ Resilient
+   page.getByRole('button', { name: 'Create Challenge' })
+   page.getByTestId('submit-button')
+   ```
+
+2. **Wait for network idle**
+   ```typescript
+   await page.waitForLoadState('networkidle');
+   ```
+
+3. **Avoid timing-based waits**
+   ```typescript
+   // ❌ Arbitrary delays
+   await page.waitForTimeout(2000);
+   
+   // ✅ Wait for condition
+   await expect(page.getByText('Challenge created')).toBeVisible();
+   ```
+
+4. **Handle Clerk auth carefully**
+   - Use dedicated test user
+   - Store auth state to avoid re-login
+   - Skip if secrets missing
+
+### CI Configuration
+
+```typescript
+// playwright.config.ts
+export default defineConfig({
+  retries: process.env.CI ? 2 : 0,  // Retry flaky tests in CI
+  workers: process.env.CI ? 4 : undefined,
+  timeout: 30000,
+  expect: { timeout: 5000 },
+});
 ```

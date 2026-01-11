@@ -33,21 +33,8 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
-          # Use security-extended for more thorough analysis
           queries: security-extended
-          # Custom config for better monorepo support
-          config: |
-            paths:
-              - tally-web/src
-              - tally-web/convex
-              - infra
-            paths-ignore:
-              - '**/node_modules'
-              - '**/*.test.ts'
-              - '**/*.spec.ts'
-              - '**/test/**'
-              - '**/tests/**'
-              - '**/_generated/**'
+          config-file: ./.github/codeql/codeql-config.yml
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v4

@@ -1,4 +1,102 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## 1.0.0 (2026-01-11)
 
+
+### ⚠ BREAKING CHANGES
+
+* **ci:** Workflows now use GitHub environments. Secrets must be set in development/production environments.
+
+### Features
+
+* **a11y:** add accessibility linting rules and guidelines ([#31](https://github.com/crmitchelmore/tally/issues/31)) ([f679cb5](https://github.com/crmitchelmore/tally/commit/f679cb5f50e03cec3b81fb95d4f0a1a2120edd62))
+* add Convex LaunchDarkly component for server-side flags ([ae16235](https://github.com/crmitchelmore/tally/commit/ae16235d1a21986af8408c4d63573b324593de2e))
+* add LaunchDarkly feature flag integration ([a0e45e6](https://github.com/crmitchelmore/tally/commit/a0e45e693c14165620de6b547d585b318790ee37))
+* add Nx monorepo management and improve test coverage ([c7ac849](https://github.com/crmitchelmore/tally/commit/c7ac849a7cd68f693349d5162fb0e0fc81ea7545))
+* **android:** add create challenge and entry ([397a510](https://github.com/crmitchelmore/tally/commit/397a51044dce8cbe4f4f6ec910281319188e92fc))
+* **android:** add edit entry, settings, leaderboard, community API ([b674ee4](https://github.com/crmitchelmore/tally/commit/b674ee4ad8e945b1059f7e9bba425f0d02f5c1bc))
+* **android:** fetch entries for challenge ([79b2b2c](https://github.com/crmitchelmore/tally/commit/79b2b2c9ad9b849f1f44ee496aa5b0825239b6cc))
+* **api:** add convex http api layer ([dbabeaa](https://github.com/crmitchelmore/tally/commit/dbabeaaa629198cd46449794b645bb5baff2568f))
+* **api:** Zod validation schemas and API versioning docs (Project 06) ([#28](https://github.com/crmitchelmore/tally/issues/28)) ([321fbea](https://github.com/crmitchelmore/tally/commit/321fbead16ef35b1edd5b9430f595d2767f5f8b0))
+* **ci:** add lockfile guards and package manager documentation ([#16](https://github.com/crmitchelmore/tally/issues/16)) ([0165371](https://github.com/crmitchelmore/tally/commit/01653713f8c62d6e73236a3cc7f00db6478880e6))
+* **ci:** CI/CD hardening - secrets verification and deploy summary (Project 03) ([#27](https://github.com/crmitchelmore/tally/issues/27)) ([f0c1593](https://github.com/crmitchelmore/tally/commit/f0c15936c0e7770255c965a26051272042d8d19f))
+* **ci:** migrate to GitHub environments with dev→prod pipeline ([#14](https://github.com/crmitchelmore/tally/issues/14)) ([f496176](https://github.com/crmitchelmore/tally/commit/f496176007ff2e28b1e69ab6b0c1bda3794b37c9))
+* complete redesign polish (Android components, haptics, a11y) ([899d103](https://github.com/crmitchelmore/tally/commit/899d1034ac892a7cf47000e56b5f0c431bf095bb))
+* implement architecture review recommendations ([089409a](https://github.com/crmitchelmore/tally/commit/089409aed0784c7d7bcde5e81fd5f5a98f1173ab))
+* implement cross-platform design system (redesign.md) ([6dd6a9c](https://github.com/crmitchelmore/tally/commit/6dd6a9cd8343dd4d90bad092369474495dca1db1))
+* implement mobile observability and analytics taxonomy ([#25](https://github.com/crmitchelmore/tally/issues/25)) ([a364c8a](https://github.com/crmitchelmore/tally/commit/a364c8ac65cd953835746742f19147f029c5b1f3))
+* **infra:** add Clerk redirect URLs via Pulumi ([c91d471](https://github.com/crmitchelmore/tally/commit/c91d471c00d845657866c1388e9a07fb144dd5ab))
+* **infra:** add drift detection workflow and IaC documentation ([#29](https://github.com/crmitchelmore/tally/issues/29)) ([9d3d9c4](https://github.com/crmitchelmore/tally/commit/9d3d9c4d613f7fe9843516f5f8c63f18fc45a2f9))
+* **infra:** add Pulumi IaC for Cloudflare DNS and Vercel ([a30bdc2](https://github.com/crmitchelmore/tally/commit/a30bdc2cd4b708219da27773862fbb19f3c5f7fc))
+* **infra:** fix Clerk redirects and prod keys ([7bbf1f1](https://github.com/crmitchelmore/tally/commit/7bbf1f192b41c1d3e68806464242b370ada2b8cd))
+* **infra:** migrate to Pulumi Cloud backend ([df3a9e9](https://github.com/crmitchelmore/tally/commit/df3a9e952e79923aa9cbffc25266b85e1d94c499))
+* **ios:** add create challenge and add entry flows ([1573a66](https://github.com/crmitchelmore/tally/commit/1573a666251e47d359f97d7791d77d8c51da90c4))
+* **ios:** add edit entry, settings, leaderboard, community views ([1f2ee87](https://github.com/crmitchelmore/tally/commit/1f2ee87ce3a4bd4d841f1c00bcec2cc74fb61be9))
+* **ios:** add xcodegen app scaffold ([d338602](https://github.com/crmitchelmore/tally/commit/d338602c174880e34b09a3588d58df07a32237dd))
+* **ios:** expand tallycore api client ([eb13b56](https://github.com/crmitchelmore/tally/commit/eb13b56d3fb2c68a9d843e4b96da850dc4ec3fec))
+* **marketing:** redesign landing page (ink + momentum) ([e02ed78](https://github.com/crmitchelmore/tally/commit/e02ed786f19d7b9e6f71697585d951b4b11c4e7f))
+* **mobile:** scaffold ios and android core ([cdaa446](https://github.com/crmitchelmore/tally/commit/cdaa4468718d58c80a3426b3725dea7851f89a3d))
+* **perf:** Lighthouse CI and performance budgets (Project 10) ([#30](https://github.com/crmitchelmore/tally/issues/30)) ([c0b26ab](https://github.com/crmitchelmore/tally/commit/c0b26ab24e7d731ba55f21dd5ff8c140e3534682))
+* **security:** Authorization regression tests (Project 05) ([#26](https://github.com/crmitchelmore/tally/issues/26)) ([7e85de4](https://github.com/crmitchelmore/tally/commit/7e85de4a95f32fc6420dcc9b72d2a173c87c133a))
+* **sentry:** add release tracking with commit SHA ([#22](https://github.com/crmitchelmore/tally/issues/22)) ([26b5630](https://github.com/crmitchelmore/tally/commit/26b563056560aba153d9c455dbe52e037f06c86d))
+* **shared-types:** add json schema ([1211999](https://github.com/crmitchelmore/tally/commit/12119992e51bf9317f30140281780e14c0638de9))
+* **web:** add ios/android landing links ([747d2fe](https://github.com/crmitchelmore/tally/commit/747d2febd53061c340c1f61f0b92b45957d17ca7))
+* **web:** add marketing landing and move app to /app ([d21b456](https://github.com/crmitchelmore/tally/commit/d21b456cef820e0c7df7ccfb4876e1c797124c77))
+* **web:** deploy to Vercel production ([34981da](https://github.com/crmitchelmore/tally/commit/34981da005b0827ed732a3bc91a1bfc7afe7280a))
+* **web:** implement data import/export functionality ([940c866](https://github.com/crmitchelmore/tally/commit/940c86634a6ac917c6e4bd1ffa43ed10c2299e2a))
+* **web:** Next.js migration - Project 1 foundation complete ([d0bab64](https://github.com/crmitchelmore/tally/commit/d0bab64dd95f8b125a2c437c51ffdc2cd6f1ae06))
+* **web:** wire /app challenge CRUD ([b2dbb59](https://github.com/crmitchelmore/tally/commit/b2dbb59a18247cd43470b108644c864668fc6b7e))
+* **web:** wire all missing features to /app dashboard ([88affbe](https://github.com/crmitchelmore/tally/commit/88affbede9816e04b4474b584fbec47884079fa8))
+
+
+### Bug Fixes
+
+* AddEntrySheet now properly calls onAddEntry callback ([c596526](https://github.com/crmitchelmore/tally/commit/c5965264b7137df6b429e05bc8c22dba6d5d1bf0))
+* **android:** add kotlin jvmToolchain for JVM target consistency ([15ea105](https://github.com/crmitchelmore/tally/commit/15ea10562794f907d50b4fc967ea30b77c6e4f05))
+* **android:** align Java/Kotlin JVM target ([779c295](https://github.com/crmitchelmore/tally/commit/779c29519234215be01e9af0a82be034b05f834f))
+* **android:** migrate kotlin compilerOptions ([fcba86a](https://github.com/crmitchelmore/tally/commit/fcba86ae19ab302dae803fb2d5f3afa7ecc3e553))
+* **android:** pin androidx.browser to compatible version ([0fe0541](https://github.com/crmitchelmore/tally/commit/0fe0541ec1c1cbb32fe6ffea0c16ca199ca5251d))
+* **android:** pin deps to kotlin 1.9 compatible ([31cff59](https://github.com/crmitchelmore/tally/commit/31cff592bceaf2c9085c19ec0f9e54a8d83b4c41))
+* **android:** refresh Convex JWT via Clerk ([6298514](https://github.com/crmitchelmore/tally/commit/629851455fc7c3ca18f9282b97152f687047d8bb))
+* **android:** remove init return ([dd8b0f6](https://github.com/crmitchelmore/tally/commit/dd8b0f65960ca477f4217b140a6e734e2446d5a3))
+* **android:** unblock compile ([eb5e747](https://github.com/crmitchelmore/tally/commit/eb5e7477fc6ae8b41ec5dadc11a716cec3908267))
+* **android:** update Clerk auth state ([233bca5](https://github.com/crmitchelmore/tally/commit/233bca5f10839111e53f7818ee9ba34ac1f62069))
+* **android:** update toolchain for sdk 35 ([bbc7d01](https://github.com/crmitchelmore/tally/commit/bbc7d01d8113ff8c845a70ab1481e840585ec6b9))
+* **android:** upgrade Kotlin to match deps ([96fb6ab](https://github.com/crmitchelmore/tally/commit/96fb6ab743adb1b703cad22e0ac45d61ac79b2e7))
+* **ci:** add prod redeploy + avoid Clerk env conflicts ([#36](https://github.com/crmitchelmore/tally/issues/36)) ([f1c104a](https://github.com/crmitchelmore/tally/commit/f1c104a9fd3f50beb5d5c21d60af8f9bfa856310))
+* **ci:** android packaging + vercel env ([817bf4d](https://github.com/crmitchelmore/tally/commit/817bf4d3c984efa55f34336a37d7ba06db674b7b))
+* **ci:** deploy Vercel from repo root ([#38](https://github.com/crmitchelmore/tally/issues/38)) ([98064b7](https://github.com/crmitchelmore/tally/commit/98064b75089249db9c00a32626b44b1b56724e8a))
+* **ci:** pass clerk key to vercel ([023af4a](https://github.com/crmitchelmore/tally/commit/023af4ada1c8ed7ce8f5c080aa9648df25d5845c))
+* **ci:** pass Clerk publishable key to Vercel build ([d13a937](https://github.com/crmitchelmore/tally/commit/d13a93747f31d824ea7c3c2a18c95e49a48abd67))
+* **ci:** remove unsupported playwright option ([4369adb](https://github.com/crmitchelmore/tally/commit/4369adbb3a0cf0aacdb714340a9792111563cdce))
+* **ci:** unblock ios+pulumi ([c28091c](https://github.com/crmitchelmore/tally/commit/c28091c8ed1be8e8acab8c296869b1d0933768c0))
+* **ci:** update OSV Scanner to use reusable workflow format ([2003df6](https://github.com/crmitchelmore/tally/commit/2003df67311a685c4fea71e98c4b0e39b4295bc8))
+* E2E auth test use exact match for Continue button ([8757efd](https://github.com/crmitchelmore/tally/commit/8757efd9664c628a20aa3ded2e10e7d255c5c7d0))
+* **e2e:** update smoke test for new landing ([01531c4](https://github.com/crmitchelmore/tally/commit/01531c4c88e86787d0d435890782953bbc4178ae))
+* improve affected projects detection in CI ([8587e24](https://github.com/crmitchelmore/tally/commit/8587e2483747325bc02adf70ce5f87892ea25dcf))
+* **infra:** add NEXT_PUBLIC_CONVEX_URL to Vercel env vars ([818aadc](https://github.com/crmitchelmore/tally/commit/818aadc68fbdacbe30d4bd0fd7dc48c2fa939518))
+* **infra:** avoid Vercel env replace ([a5f6652](https://github.com/crmitchelmore/tally/commit/a5f66520af444200ffa38fa21dc9687a0aa13a3d))
+* **infra:** import existing Vercel Clerk env ([18c16c2](https://github.com/crmitchelmore/tally/commit/18c16c29248caa7a25d05074de2ee600de6b8611))
+* **infra:** match Vercel env targets ([43af61f](https://github.com/crmitchelmore/tally/commit/43af61f90a25e25e89532af037c2e6f0f29a9051))
+* **infra:** remove one-time import ([33b0cdc](https://github.com/crmitchelmore/tally/commit/33b0cdc4e078acfdf80e2b917ec361330b0c32eb))
+* **infra:** stabilize Vercel env + remove import ([bd1249f](https://github.com/crmitchelmore/tally/commit/bd1249f72d752232560416f32705662cbd29364f))
+* **infra:** update Convex deployment to bright-jackal-396 ([f38146f](https://github.com/crmitchelmore/tally/commit/f38146f29a3567ab7f897ab37b759289a3bb964e))
+* **infra:** update Vercel project ID and sync Pulumi state ([78dc95c](https://github.com/crmitchelmore/tally/commit/78dc95cd4cc8aeac26b21c34f4667183fc1beb9a))
+* **infra:** use vercel projectId ([545de14](https://github.com/crmitchelmore/tally/commit/545de14caa8ad7e1b22b39983370fb0230a26c2a))
+* **ios:** bump deployment target to iOS 17 ([ad449ec](https://github.com/crmitchelmore/tally/commit/ad449ec98f180c276f97eaab685dc24be23d3ed8))
+* **ios:** repair RootView compile error ([d514c8c](https://github.com/crmitchelmore/tally/commit/d514c8cefe710ca19e863561dc5c6d27a40bcb84))
+* **ios:** use fully qualified Session.GetTokenOptions ([54f227d](https://github.com/crmitchelmore/tally/commit/54f227df38781ea8d92539b7300ce125e52599bc))
+* make E2E auth tests truly optional with continue-on-error ([8067c2c](https://github.com/crmitchelmore/tally/commit/8067c2c9711610184c5a3475ade9f2656d438cad))
+* rely on Pulumi-managed Clerk env vars ([#35](https://github.com/crmitchelmore/tally/issues/35)) ([b1f89e1](https://github.com/crmitchelmore/tally/commit/b1f89e1094b00043e01a82fc2d86b1357b52ec4e))
+* remove 404 E2E test (no 404 page implemented yet) ([337561e](https://github.com/crmitchelmore/tally/commit/337561e3c9cec756e7ab51f6c44cb3b6af963930))
+* sync npm lockfile for CI ([7abec11](https://github.com/crmitchelmore/tally/commit/7abec11495ef0ed8d00031571ea89e58b7778356))
+* **test:** update tests for auth context and CSS variable changes ([5ec6a33](https://github.com/crmitchelmore/tally/commit/5ec6a3331899866de7756947b87075a396e3b28d))
+* update 404 E2E test to check content not status code ([8149a46](https://github.com/crmitchelmore/tally/commit/8149a468437dffd2d4befa3c8284aedc8bfe3cc5))
+* use lazy initializer for useReducedMotion to avoid setState in effect ([ad9b6b2](https://github.com/crmitchelmore/tally/commit/ad9b6b212a07b70ddad8b588b038cfcc691b7d85))
+* use specific locators for Clerk E2E auth tests ([62d18ff](https://github.com/crmitchelmore/tally/commit/62d18ff7d46c3080c99759988d5e21ebf3bdbc36))
+* **web:** make /app public to avoid Clerk protect 404 ([840fdd2](https://github.com/crmitchelmore/tally/commit/840fdd299318c24267bd62ff70dae74787f478bf))
+* **web:** satisfy eslint no-explicit-any ([44627a2](https://github.com/crmitchelmore/tally/commit/44627a23725969ec0f38a89cb2689515c83df00c))
+
+## Changelog
+
+All notable changes to this project will be documented in this file.

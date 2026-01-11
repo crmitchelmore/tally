@@ -1,0 +1,11 @@
+paths:
+  - tally-web/src
+  - tally-web/convex
+  - infra
+paths-ignore:
+  - '**/node_modules'
+  - '**/*.test.ts'
+  - '**/*.spec.ts'
+  - '**/test/**'
+  - '**/tests/**'
+  - '**/_generated/**'

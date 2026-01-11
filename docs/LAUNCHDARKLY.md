@@ -29,8 +29,8 @@ Tally uses [LaunchDarkly](https://launchdarkly.com) for feature flags and experi
 
 | Environment | Purpose | SDK Key Prefix |
 |-------------|---------|----------------|
-| `test` | Local dev, preview deploys | `sdk-6bb9...` |
-| `production` | Production app | `sdk-170a...` |
+| `test` | Local dev, preview deploys | `sdk-...` |
+| `production` | Production app | `sdk-...` |
 
 ## Client-Side Integration
 
@@ -149,19 +149,19 @@ All platforms use the same user context for consistent targeting:
 
 ### Environment Variables
 
-**Root `.env`**:
+**Root `.env` (example values; do not commit real secrets)**:
 ```bash
 # LaunchDarkly Admin (for Pulumi)
 LAUNCHDARKLY_ADMIN_TOKEN=api-...
 
 # Test environment
-NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID=696289808d68b409f087c889
-LAUNCHDARKLY_SDK_KEY_TEST=sdk-6bb9436b-910d-4e41-83ba-b1970d25b315
-LAUNCHDARKLY_MOBILE_KEY_TEST=mob-6a53c5fb-d459-4542-8be3-e54aa44d75fb
+NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID=...
+LAUNCHDARKLY_SDK_KEY_TEST=sdk-...
+LAUNCHDARKLY_MOBILE_KEY_TEST=mob-...
 
 # Production environment
-LAUNCHDARKLY_SDK_KEY_PROD=sdk-170a340d-c26c-4915-8255-de72482b61e8
-LAUNCHDARKLY_MOBILE_KEY_PROD=mob-2a697b72-9db3-4179-b3a6-f0944fd6d127
+LAUNCHDARKLY_SDK_KEY_PROD=sdk-...
+LAUNCHDARKLY_MOBILE_KEY_PROD=mob-...
 ```
 
 **Convex env var** (set via CLI):

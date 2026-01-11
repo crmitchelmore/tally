@@ -27,32 +27,19 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          # Use security-extended for more thorough analysis
           queries: security-extended
-          # Custom config for better monorepo support
-          config: |
-            paths:
-              - tally-web/src
-              - tally-web/convex
-              - infra
-            paths-ignore:
-              - '**/node_modules'
-              - '**/*.test.ts'
-              - '**/*.spec.ts'
-              - '**/test/**'
-              - '**/tests/**'
-              - '**/_generated/**'
+          config-file: ./.github/codeql/codeql-config.yml
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v4
+        uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"

@@ -300,7 +300,6 @@ http.route({
     if (!data.challengeId) return json(400, { error: "challengeId is required" });
 
     const id = await ctx.runMutation(api.followedChallenges.follow, {
-      userId: user.userId,
       challengeId: data.challengeId,
     });
     return json(201, { id });
@@ -320,7 +319,6 @@ http.route({
     // Accept either a challengeId or a followedChallenges document id.
     try {
       await ctx.runMutation(api.followedChallenges.unfollow, {
-        userId: user.userId,
         challengeId: idOrChallengeId as unknown as Id<"challenges">,
       });
       return json(200, { success: true });

@@ -1,0 +1,29 @@
+# CODEOWNERS - Define code owners for security-sensitive areas
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything
+* @tally-tracker-org/maintainers
+
+# Infrastructure (Pulumi) - requires careful review
+/infra/ @tally-tracker-org/infrastructure
+
+# Authentication and security-sensitive code
+/tally-web/src/proxy.ts @tally-tracker-org/security
+/tally-web/convex/auth.config.ts @tally-tracker-org/security
+/tally-web/convex/users.ts @tally-tracker-org/security
+/tally-web/convex/lib/auth.ts @tally-tracker-org/security
+
+# CI/CD and GitHub configuration
+/.github/ @tally-tracker-org/maintainers
+/.github/workflows/ @tally-tracker-org/infrastructure
+
+# Security documentation
+/SECURITY.md @tally-tracker-org/security
+/sec-plan.md @tally-tracker-org/security
+
+# Convex schema changes (data model)
+/tally-web/convex/schema.ts @tally-tracker-org/maintainers
+
+# Environment and secrets documentation
+/.env.example @tally-tracker-org/security
+/CONTEXT.md @tally-tracker-org/maintainers

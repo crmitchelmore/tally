@@ -27,7 +27,24 @@ All services use these standardized environment names:
 | Sentry | `development` | `preview` | `production` |
 | LaunchDarkly | `dev` | `preview` | `prod` |
 | Convex | `dev:bright-jackal-396` | `dev:bright-jackal-396` | `prod:bright-jackal-396` |
-| Clerk | Test instance | Test instance | Production instance |
+| Clerk | Dev instance (`pk_test_*`) | Dev instance (`pk_test_*`) | Prod instance (`pk_live_*`) |
+
+### Clerk Instances
+
+Clerk has separate dev and prod instances to isolate test users from production users:
+
+- **Dev** (`pk_test_*`): Used for local development, CI builds, PR previews, and E2E tests
+- **Prod** (`pk_live_*`): Used for production (tally-tracker.app)
+
+**GitHub secrets**:
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV` / `CLERK_SECRET_KEY_DEV`: Dev instance keys
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD` / `CLERK_SECRET_KEY_PROD`: Prod instance keys
+
+**Pulumi config** (in `Pulumi.prod.yaml`):
+- `clerkPublishableKey` / `clerkSecretKey`: Prod instance keys
+- `clerkPublishableKeyDev` / `clerkSecretKeyDev`: Dev instance keys
+
+**Local development**: Uses dev keys from `tally-web/.env.local`
 
 ### Convex Deployments
 

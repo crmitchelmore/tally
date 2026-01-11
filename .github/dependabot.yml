@@ -1,11 +1,89 @@
 version: 2
 updates:
+  # Root workspace (Nx)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+        patterns: ["*"]
+      prod-dependencies:
+        dependency-type: "production"
+        patterns: ["*"]
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+    open-pull-requests-limit: 10
 
-  - package-ecosystem: "devcontainers"
+  # tally-web (Bun/npm)
+  - package-ecosystem: "npm"
+    directory: "/tally-web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      next-ecosystem:
+        patterns: ["next", "next-*", "@next/*"]
+      react-ecosystem:
+        patterns: ["react", "react-dom", "@types/react*"]
+      clerk:
+        patterns: ["@clerk/*"]
+      convex:
+        patterns: ["convex"]
+      ui-components:
+        patterns: ["@radix-ui/*", "tailwind*", "class-variance-authority", "clsx"]
+      testing:
+        patterns: ["vitest", "@testing-library/*", "playwright*", "@playwright/*"]
+        dependency-type: "development"
+      dev-dependencies:
+        dependency-type: "development"
+        exclude-patterns: ["vitest", "@testing-library/*", "playwright*", "@playwright/*"]
+    commit-message:
+      prefix: "deps(web)"
+    labels:
+      - "dependencies"
+      - "web"
+    open-pull-requests-limit: 10
+
+  # Infrastructure (Pulumi)
+  - package-ecosystem: "npm"
+    directory: "/infra"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      pulumi:
+        patterns: ["@pulumi/*", "pulumi"]
+    commit-message:
+      prefix: "deps(infra)"
+    labels:
+      - "dependencies"
+      - "infrastructure"
+    open-pull-requests-limit: 5
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "ci"
+      - "dependencies"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Devcontainers
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "devcontainer"

@@ -205,9 +205,16 @@ private struct AddEntryView: View {
         token: state.jwt
       )
 
+      // Success haptic feedback
+      let generator = UINotificationFeedbackGenerator()
+      generator.notificationOccurred(.success)
+
       onAdded()
       dismiss()
     } catch {
+      // Error haptic feedback
+      let generator = UINotificationFeedbackGenerator()
+      generator.notificationOccurred(.error)
       errorText = String(describing: error)
     }
 

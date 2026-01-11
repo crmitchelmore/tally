@@ -25,18 +25,24 @@ const vercelProject = new vercel.Project("tally-web-project", {
   autoAssignCustomDomains: true,
 });
 
-// Clerk configuration
-const clerkSecretKey = config.requireSecret("clerkSecretKey");
-const clerkPublishableKey = config.getSecret("clerkPublishableKey");
+// Clerk configuration - separate dev and prod instances
+// Dev keys are used for development/preview, prod keys for production
+const clerkSecretKey = config.requireSecret("clerkSecretKey"); // prod
+const clerkPublishableKey = config.getSecret("clerkPublishableKey"); // prod
+const clerkSecretKeyDev = config.getSecret("clerkSecretKeyDev"); // dev/preview
+const clerkPublishableKeyDev = config.getSecret("clerkPublishableKeyDev"); // dev/preview
 
 // Convex configuration
 const convexDeployment = config.get("convexDeployment");
 
-// Ensure production deployments use the Clerk instance/keys managed by Pulumi config.
-// `clerkPublishableKey` is optional to avoid breaking existing stacks until it's set.
+// =============================================================================
+// Clerk Environment Variables (separate dev/prod instances)
+// =============================================================================
+
+// Production Clerk keys
 if (clerkPublishableKey) {
   new vercel.ProjectEnvironmentVariable(
-    "clerk-publishable-key",
+    "clerk-publishable-key-prod",
     {
       projectId: vercelProjectId,
       teamId: vercelTeamId,
@@ -50,12 +56,12 @@ if (clerkPublishableKey) {
   );
 } else {
   pulumi.log.warn(
-    "Pulumi config 'clerkPublishableKey' is not set; leaving NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY unchanged in Vercel."
+    "Pulumi config 'clerkPublishableKey' is not set; leaving NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY unchanged for production."
   );
 }
 
 new vercel.ProjectEnvironmentVariable(
-  "clerk-secret-key",
+  "clerk-secret-key-prod",
   {
     projectId: vercelProjectId,
     teamId: vercelTeamId,
@@ -67,6 +73,47 @@ new vercel.ProjectEnvironmentVariable(
     deleteBeforeReplace: true,
   }
 );
+
+// Dev/Preview Clerk keys (separate Clerk instance for testing)
+if (clerkPublishableKeyDev) {
+  new vercel.ProjectEnvironmentVariable(
+    "clerk-publishable-key-dev",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+      value: clerkPublishableKeyDev,
+      targets: ["preview", "development"],
+    },
+    {
+      deleteBeforeReplace: true,
+    }
+  );
+} else {
+  pulumi.log.warn(
+    "Pulumi config 'clerkPublishableKeyDev' is not set; leaving NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY unchanged for dev/preview."
+  );
+}
+
+if (clerkSecretKeyDev) {
+  new vercel.ProjectEnvironmentVariable(
+    "clerk-secret-key-dev",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "CLERK_SECRET_KEY",
+      value: clerkSecretKeyDev,
+      targets: ["preview", "development"],
+    },
+    {
+      deleteBeforeReplace: true,
+    }
+  );
+} else {
+  pulumi.log.warn(
+    "Pulumi config 'clerkSecretKeyDev' is not set; leaving CLERK_SECRET_KEY unchanged for dev/preview."
+  );
+}
 
 // Convex deployment env var
 if (convexDeployment) {

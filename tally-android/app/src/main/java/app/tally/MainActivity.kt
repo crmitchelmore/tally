@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,14 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,11 +29,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.tally.auth.SignInOrUpView
 import app.tally.featureflags.FeatureFlags
 import app.tally.model.Challenge
+import app.tally.ui.theme.TallyCard
+import app.tally.ui.theme.TallyChallengeItem
+import app.tally.ui.theme.TallyEmptyState
+import app.tally.ui.theme.TallyEntryItem
+import app.tally.ui.theme.TallyPrimaryButton
+import app.tally.ui.theme.TallySecondaryButton
 import app.tally.ui.theme.TallyTheme
 import java.time.LocalDate
 
@@ -94,10 +105,18 @@ class MainActivity : ComponentActivity() {
 
             MainUiState.SignedIn -> {
               Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(onClick = { authViewModel.signOut() }) { Text("Sign out") }
+                TallySecondaryButton(
+                  text = "Sign out",
+                  onClick = { authViewModel.signOut() },
+                  modifier = Modifier.semantics { contentDescription = "Sign out button" }
+                )
                 Spacer(modifier = Modifier.weight(1f))
                 if (selected != null) {
-                  Button(onClick = { tallyViewModel.backToList() }) { Text("Back") }
+                  TallySecondaryButton(
+                    text = "Back",
+                    onClick = { tallyViewModel.backToList() },
+                    modifier = Modifier.semantics { contentDescription = "Back to challenges list" }
+                  )
                 }
               }
 
@@ -156,22 +175,40 @@ private fun ChallengesList(
   onSelect: (String) -> Unit,
   onCreate: () -> Unit,
 ) {
-  Button(onClick = onCreate) {
-    Text("New challenge")
-  }
+  Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    TallyPrimaryButton(
+      text = "New challenge",
+      onClick = onCreate,
+      icon = Icons.Default.Add,
+      modifier = Modifier
+        .fillMaxWidth()
+        .semantics { contentDescription = "Create new challenge button" }
+    )
 
-  Text("My challenges: ${challenges.size}")
+    if (challenges.isEmpty()) {
+      TallyEmptyState(
+        icon = Icons.Default.List,
+        title = "No challenges yet",
+        message = "Create your first challenge to start tracking progress.",
+      )
+    } else {
+      Text(
+        "My challenges: ${challenges.size}",
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
 
-  LazyColumn {
-    items(challenges) { c ->
-      Column(
-        modifier = Modifier
-          .fillMaxWidth()
-          .clickable { onSelect(c._id) }
-          .padding(vertical = 8.dp)
+      LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
       ) {
-        Text(c.name, style = MaterialTheme.typography.titleMedium)
-        Text("Target: ${c.targetNumber}", style = MaterialTheme.typography.bodySmall)
+        items(challenges) { c ->
+          TallyChallengeItem(
+            name = c.name,
+            target = c.targetNumber.toInt(),
+            onClick = { onSelect(c._id) },
+            modifier = Modifier.semantics { contentDescription = "Challenge: ${c.name}, target: ${c.targetNumber.toInt()}" }
+          )
+        }
       }
     }
   }
@@ -185,22 +222,39 @@ private fun ChallengeDetail(
   onAddEntry: () -> Unit,
   onDeleteEntry: (String) -> Unit,
 ) {
-  Text(challengeName, style = MaterialTheme.typography.titleLarge)
+  val haptic = LocalHapticFeedback.current
+  
+  Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Text(challengeName, style = MaterialTheme.typography.titleLarge)
 
-  Button(onClick = onAddEntry) {
-    Text("Add entry")
-  }
+    TallyPrimaryButton(
+      text = "Add entry",
+      onClick = {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onAddEntry()
+      },
+      icon = Icons.Default.Add,
+      modifier = Modifier
+        .fillMaxWidth()
+        .semantics { contentDescription = "Add entry button" }
+    )
 
-  Text("Entries: $entriesCount")
+    Text(
+      "Entries: $entriesCount",
+      style = MaterialTheme.typography.labelMedium,
+      color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 
-  LazyColumn {
-    items(entries) { e ->
-      Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("${e.date}: ${e.count}")
-        Spacer(modifier = Modifier.weight(1f))
-        TextButton(onClick = { onDeleteEntry(e._id) }) {
-          Text("Delete")
-        }
+    LazyColumn(
+      verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+      items(entries) { e ->
+        TallyEntryItem(
+          date = e.date,
+          count = e.count.toInt(),
+          onDelete = { onDeleteEntry(e._id) },
+          modifier = Modifier.semantics { contentDescription = "Entry on ${e.date}: ${e.count.toInt()} marks" }
+        )
       }
     }
   }
@@ -214,6 +268,7 @@ private fun CreateChallengeDialog(
   var name by rememberSaveable { mutableStateOf("") }
   var target by rememberSaveable { mutableStateOf("10") }
   var year by rememberSaveable { mutableStateOf(LocalDate.now().year.toString()) }
+  val haptic = LocalHapticFeedback.current
 
   AlertDialog(
     onDismissRequest = onDismiss,
@@ -226,21 +281,22 @@ private fun CreateChallengeDialog(
       }
     },
     confirmButton = {
-      Button(
+      TallyPrimaryButton(
+        text = "Create",
         onClick = {
-          val targetNumber = target.toDoubleOrNull() ?: return@Button
-          val yearNumber = year.toDoubleOrNull() ?: return@Button
+          val targetNumber = target.toDoubleOrNull() ?: return@TallyPrimaryButton
+          val yearNumber = year.toDoubleOrNull() ?: return@TallyPrimaryButton
+          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
           onCreate(name, targetNumber, yearNumber)
         },
         enabled = name.isNotBlank(),
-      ) {
-        Text("Create")
-      }
+      )
     },
     dismissButton = {
-      Button(onClick = onDismiss) {
-        Text("Cancel")
-      }
+      TallySecondaryButton(
+        text = "Cancel",
+        onClick = onDismiss
+      )
     },
   )
 }
@@ -252,6 +308,7 @@ private fun AddEntryDialog(
 ) {
   var date by rememberSaveable { mutableStateOf(LocalDate.now().toString()) }
   var count by rememberSaveable { mutableStateOf("1") }
+  val haptic = LocalHapticFeedback.current
 
   AlertDialog(
     onDismissRequest = onDismiss,
@@ -263,17 +320,20 @@ private fun AddEntryDialog(
       }
     },
     confirmButton = {
-      Button(onClick = {
-        val countNumber = count.toDoubleOrNull() ?: return@Button
-        onAdd(date, countNumber)
-      }) {
-        Text("Add")
-      }
+      TallyPrimaryButton(
+        text = "Add",
+        onClick = {
+          val countNumber = count.toDoubleOrNull() ?: return@TallyPrimaryButton
+          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+          onAdd(date, countNumber)
+        }
+      )
     },
     dismissButton = {
-      Button(onClick = onDismiss) {
-        Text("Cancel")
-      }
+      TallySecondaryButton(
+        text = "Cancel",
+        onClick = onDismiss
+      )
     },
   )
 }

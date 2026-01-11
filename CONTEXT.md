@@ -89,6 +89,8 @@ tally/
 
 ## Environment Variables
 
+If iOS shows “Set CLERK_PUBLISHABLE_KEY…”, ensure `.env` has `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV` set; iOS Info.plist reads `CLERK_PUBLISHABLE_KEY` from build settings (Debug maps to `*_DEV`).
+
 All secrets in root `.env` (gitignored):
 
 ```bash

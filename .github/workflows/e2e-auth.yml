@@ -13,7 +13,7 @@ jobs:
       run:
         working-directory: tally-web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install Bun
         run: |
@@ -41,7 +41,7 @@ jobs:
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-auth-report
           path: tally-web/playwright-report

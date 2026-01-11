@@ -1,0 +1,10 @@
+{
+  "extends": ["config:base"],
+  "enabledManagers": ["npm", "bun", "github-actions"],
+  "packageRules": [
+    {
+      "matchManagers": ["bun"],
+      "groupName": "bun dependencies"
+    }
+  ]
+}

@@ -1,5 +1,10 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import {
+  requireCurrentUser,
+  assertChallengeOwner,
+  canAccessChallenge,
+} from "./lib/auth";
 
 export const list = query({
   args: { userId: v.id("users") },
@@ -30,6 +35,17 @@ export const listActive = query({
   },
 });
 
+export const listMine = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await requireCurrentUser(ctx);
+    return await ctx.db
+      .query("challenges")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+  },
+});
+
 export const listPublic = query({
   args: {},
   handler: async (ctx) => {
@@ -44,13 +60,19 @@ export const listPublic = query({
 export const get = query({
   args: { id: v.id("challenges") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const challenge = await ctx.db.get(args.id);
+    if (!challenge) return null;
+    
+    // Check access permissions
+    const hasAccess = await canAccessChallenge(ctx, args.id);
+    if (!hasAccess) return null;
+    
+    return challenge;
   },
 });
 
 export const create = mutation({
   args: {
-    userId: v.id("users"),
     name: v.string(),
     targetNumber: v.number(),
     year: v.number(),
@@ -66,8 +88,12 @@ export const create = mutation({
     isPublic: v.boolean(),
   },
   handler: async (ctx, args) => {
+    // Require authentication - get current user
+    const user = await requireCurrentUser(ctx);
+    
     return await ctx.db.insert("challenges", {
       ...args,
+      userId: user._id,
       archived: false,
       createdAt: Date.now(),
     });
@@ -85,6 +111,9 @@ export const update = mutation({
     archived: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    // Verify ownership before update
+    await assertChallengeOwner(ctx, args.id);
+    
     const { id, ...updates } = args;
     const filtered = Object.fromEntries(
       Object.entries(updates).filter(([, val]) => val !== undefined)
@@ -96,6 +125,8 @@ export const update = mutation({
 export const archive = mutation({
   args: { id: v.id("challenges") },
   handler: async (ctx, args) => {
+    // Verify ownership before archiving
+    await assertChallengeOwner(ctx, args.id);
     await ctx.db.patch(args.id, { archived: true });
   },
 });
@@ -103,6 +134,9 @@ export const archive = mutation({
 export const remove = mutation({
   args: { id: v.id("challenges") },
   handler: async (ctx, args) => {
+    // Verify ownership before deletion
+    await assertChallengeOwner(ctx, args.id);
+    
     // First delete all entries for this challenge
     const entries = await ctx.db
       .query("entries")

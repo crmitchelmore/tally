@@ -115,7 +115,6 @@ http.route({
     }
 
     const id = await ctx.runMutation(api.challenges.create, {
-      userId: user.userId,
       name: data.name,
       targetNumber: data.targetNumber,
       year: data.year,
@@ -212,7 +211,6 @@ http.route({
     if (challenge.userId !== user.userId) return json(403, { error: "Forbidden" });
 
     const id = await ctx.runMutation(api.entries.create, {
-      userId: user.userId,
       challengeId: data.challengeId,
       date: data.date,
       count: data.count,

@@ -1,6 +1,7 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
+import { requireCurrentUser } from "./lib/auth";
 
 /**
  * Bulk import challenges and entries.
@@ -8,7 +9,6 @@ import { Id } from "./_generated/dataModel";
  */
 export const bulkImport = mutation({
   args: {
-    userId: v.id("users"),
     challenges: v.array(
       v.object({
         id: v.string(), // Original ID from export (used to map entries)
@@ -48,10 +48,14 @@ export const bulkImport = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    // Require authentication
+    const user = await requireCurrentUser(ctx);
+    const userId = user._id;
+
     // 1. Delete all existing entries for this user
     const existingEntries = await ctx.db
       .query("entries")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
 
     for (const entry of existingEntries) {
@@ -61,7 +65,7 @@ export const bulkImport = mutation({
     // 2. Delete all existing challenges for this user
     const existingChallenges = await ctx.db
       .query("challenges")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
 
     for (const challenge of existingChallenges) {
@@ -71,7 +75,7 @@ export const bulkImport = mutation({
     // 3. Delete all follows for this user
     const existingFollows = await ctx.db
       .query("followedChallenges")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
 
     for (const follow of existingFollows) {
@@ -84,7 +88,7 @@ export const bulkImport = mutation({
 
     for (const challenge of args.challenges) {
       const newId = await ctx.db.insert("challenges", {
-        userId: args.userId,
+        userId,
         name: challenge.name,
         targetNumber: challenge.targetNumber,
         year: challenge.year,
@@ -111,7 +115,7 @@ export const bulkImport = mutation({
       }
 
       await ctx.db.insert("entries", {
-        userId: args.userId,
+        userId,
         challengeId: newChallengeIdStr as Id<"challenges">,
         date: entry.date,
         count: entry.count,
@@ -134,14 +138,16 @@ export const bulkImport = mutation({
  * Clear all data for a user.
  */
 export const clearAllData = mutation({
-  args: {
-    userId: v.id("users"),
-  },
-  handler: async (ctx, args) => {
+  args: {},
+  handler: async (ctx) => {
+    // Require authentication
+    const user = await requireCurrentUser(ctx);
+    const userId = user._id;
+
     // Delete all entries for this user
     const entries = await ctx.db
       .query("entries")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
 
     for (const entry of entries) {
@@ -151,7 +157,7 @@ export const clearAllData = mutation({
     // Delete all challenges for this user
     const challenges = await ctx.db
       .query("challenges")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
 
     for (const challenge of challenges) {
@@ -161,7 +167,7 @@ export const clearAllData = mutation({
     // Delete all follows for this user
     const follows = await ctx.db
       .query("followedChallenges")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
 
     for (const follow of follows) {

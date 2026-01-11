@@ -244,6 +244,8 @@ jobs:
 
 **Monitoring**:
 - `SENTRY_AUTH_TOKEN` - Sentry auth token (for source map uploads)
+- `SENTRY_DSN_IOS` - Sentry DSN for iOS app (from Pulumi output)
+- `SENTRY_DSN_ANDROID` - Sentry DSN for Android app (from Pulumi output)
 - `GRAFANA_CLOUD_ADMIN_TOKEN` - Grafana Cloud admin token (optional)
 - `GRAFANA_CLOUD_OTLP_TOKEN` - Grafana Cloud OTLP token (optional)
 

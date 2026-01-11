@@ -60,6 +60,14 @@ Tally is a multi-platform challenge tracking app:
 - App Router only (no pages router patterns)
 - Never hardcode keys - use `.env`
 
+### Convex Authorization Pattern
+- **Never trust client-provided `userId`** in mutations - always derive from `ctx.auth.getUserIdentity()`
+- Use centralized auth helpers from `convex/lib/auth.ts`:
+  - `requireCurrentUser(ctx)` - get authenticated user or throw
+  - `assertChallengeOwner(ctx, id)` - verify ownership before update/delete
+  - `canAccessChallenge(ctx, id)` - check read access (owner OR public OR following)
+- When changing mutation signatures, update: `http.ts` API handlers + all frontend callers
+
 ## Tech Stack
 
 | Layer | Technology |

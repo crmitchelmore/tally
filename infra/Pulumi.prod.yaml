@@ -12,3 +12,7 @@ config:
     secure: AAABAH7gcM8hJBUrGglAbNhJobin2EOli57cPvX2u7n/AypbeSEwYtMMx7v98qm3z/u9jdWsOIZwThb6UE8AYJ75M3xvU2xw1g6nq1JrLppffsaqVQzzV7G99HlNJo/nAuJdwKUYPA==
   launchdarkly:accessToken:
     secure: AAABAMdQT+IJ9bK0c1zFlhXIGMvwPbmD0RWHx4IyJSbJcwV0qS8v+pBTlC5k+PWZH5YVw1B0vx9qwjPRaEYmoL8dGCMLubio
+  tally-infra:clerkPublishableKeyDev:
+    secure: AAABAOK1KDEuilFT+ah0gtv+1ANPT6EhIhr3HhszTxc1RnAqXxfn3awUbuihUXfSWFAe1dGspHz3d8tVNsmGXfT6pyGAwKtJC3bkjRfF+5+bjhBAM+PzsA==
+  tally-infra:clerkSecretKeyDev:
+    secure: AAABANyt8kmUb+OhymMzX1cmLWG/xdgtj9XeBXfXIoPLoNvgXrxs3o1UYhYtVAY3yXttslfepmTN40Vq8JghapeH2MosITQrrvw2piZSnRuvDw==

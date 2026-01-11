@@ -41,10 +41,13 @@ CLERK_SECRET_KEY=sk_test_...
 NEXT_PUBLIC_CONVEX_URL=https://...convex.cloud
 ```
 
+> Note: this repo also supports a single root `.env` (gitignored) for shared secrets; `next.config.ts` loads it for local dev.
+
 ### 4. Run the Development Server
 
 ```bash
-npm run dev
+bun install
+bun run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the app.
@@ -83,11 +86,11 @@ tally-web/
 ## Scripts
 
 ```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run lint     # Run ESLint
-npx tsc --noEmit # Type check
-npx convex dev   # Start Convex development
+bun run dev      # Start development server
+bun run build    # Build for production
+bun run lint     # Run ESLint
+bunx tsc --noEmit # Type check
+bunx convex dev   # Start Convex development
 ```
 
 ## Components

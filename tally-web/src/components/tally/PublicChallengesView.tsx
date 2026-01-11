@@ -82,7 +82,6 @@ export function PublicChallengesView({ userId, onBack }: PublicChallengesViewPro
   const handleToggleFollow = (challenge: PublicChallenge) => {
     if (isFollowing(challenge.id)) {
       void unfollowChallenge({
-        userId,
         challengeId: challenge.id as Id<"challenges">,
       });
       toast.success("Unfollowed challenge", {
@@ -90,7 +89,6 @@ export function PublicChallengesView({ userId, onBack }: PublicChallengesViewPro
       });
     } else {
       void followChallenge({
-        userId,
         challengeId: challenge.id as Id<"challenges">,
       });
       toast.success("Following challenge! 🎯", {

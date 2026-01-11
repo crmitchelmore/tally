@@ -310,6 +310,8 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           # Use prod Clerk keys for production deployment
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD }}
+          # Sentry for source map uploads during build
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           if [ -z "$VERCEL_TOKEN" ]; then
             echo "VERCEL_TOKEN not set; skipping"
@@ -322,4 +324,5 @@ jobs:
           npm i -g vercel@latest
           vercel deploy --prod --yes --token "$VERCEL_TOKEN" \
             --build-env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
+            --build-env SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
             --env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"

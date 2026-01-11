@@ -62,9 +62,11 @@ jobs:
             -scheme Tally \
             -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
             CODE_SIGNING_ALLOWED=NO \
+            SENTRY_DSN="${SENTRY_DSN}" \
             build
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN_IOS }}
 
       - name: Test (no signing)
         run: |

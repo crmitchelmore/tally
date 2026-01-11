@@ -23,18 +23,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Target, Calendar, Database, Trophy, Users } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Plus, Target, Calendar, Database, Trophy, Users, LayoutDashboard, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { toChallenges, toEntries, toFollowedChallenges } from "@/lib/adapters";
 import type { Challenge, SetData, FeelingType } from "@/types";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useMotionPreference } from "@/hooks/use-reduced-motion";
 
-type ViewMode = "dashboard" | "leaderboard" | "public-challenges";
+type ViewMode = "dashboard" | "leaderboard" | "community";
 
 export default function Home() {
   useStoreUser();
   const { user: convexUser, isLoaded: isUserLoaded } = useCurrentUser();
+  const { shouldAnimate } = useMotionPreference();
 
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -83,7 +91,6 @@ export default function Home() {
   ) => {
     if (!convexUser) return;
     void createEntry({
-      userId: convexUser._id,
       challengeId: challengeId as Id<"challenges">,
       date,
       count,
@@ -99,7 +106,6 @@ export default function Home() {
   const handleUnfollowChallenge = (challengeId: string, challengeName: string) => {
     if (!convexUser) return;
     void unfollowChallenge({
-      userId: convexUser._id,
       challengeId: challengeId as Id<"challenges">,
     });
     toast.success("Unfollowed challenge", {
@@ -117,8 +123,8 @@ export default function Home() {
     );
   }
 
-  // Show public challenges view
-  if (viewMode === "public-challenges" && convexUser) {
+  // Show community/public challenges view
+  if (viewMode === "community" && convexUser) {
     return (
       <PublicChallengesView
         userId={convexUser._id}
@@ -137,58 +143,46 @@ export default function Home() {
               <h1 className="text-xl font-bold">Tally</h1>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap justify-end">
+          <div className="flex items-center gap-2">
             <SignedIn>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setViewMode("leaderboard")}
-                className="hidden sm:flex"
-              >
-                <Trophy className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Leaderboard</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setViewMode("public-challenges")}
-                className="hidden sm:flex"
-              >
-                <Users className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Community</span>
-              </Button>
+              {/* Primary action - Add Entry (always visible when challenges exist) */}
               {challenges && challenges.length > 0 && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setWeeklySummaryOpen(true)}
-                  >
-                    <Calendar className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Weekly</span>
-                  </Button>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => setAddEntryOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Add Entry</span>
-                  </Button>
-                </>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setAddEntryOpen(true)}
+                  aria-label="Add entry"
+                >
+                  <Plus className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Add Entry</span>
+                </Button>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setExportImportOpen(true)}
-              >
-                <Database className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Backup</span>
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => setCreateOpen(true)}>
-                <Target className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">New Challenge</span>
-              </Button>
+              
+              {/* Secondary actions in dropdown on mobile */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" aria-label="More options">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setCreateOpen(true)}>
+                    <Target className="h-4 w-4 mr-2" />
+                    New Challenge
+                  </DropdownMenuItem>
+                  {challenges && challenges.length > 0 && (
+                    <DropdownMenuItem onClick={() => setWeeklySummaryOpen(true)}>
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Weekly Summary
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => setExportImportOpen(true)}>
+                    <Database className="h-4 w-4 mr-2" />
+                    Backup & Restore
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
               <UserButton afterSignOutUrl="/" />
             </SignedIn>
             <SignedOut>
@@ -202,7 +196,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pb-24 md:pb-8">
         <SignedOut>
           <div className="text-center py-20">
             <Target className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
@@ -308,9 +302,9 @@ export default function Home() {
                   {challenges.map((challenge, index) => (
                     <motion.div
                       key={challenge.id}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05, duration: 0.3 }}
+                      transition={shouldAnimate ? { delay: index * 0.05, duration: 0.3 } : { duration: 0 }}
                     >
                       <ChallengeCard
                         challenge={challenge}
@@ -324,8 +318,9 @@ export default function Home() {
             </div>
           ) : (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
               animate={{ opacity: 1, y: 0 }}
+              transition={shouldAnimate ? { duration: 0.3 } : { duration: 0 }}
               className="flex flex-col items-center justify-center py-20"
             >
               <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6">
@@ -362,7 +357,6 @@ export default function Home() {
           if (!convexUser) return;
           void (async () => {
             const id = await createChallenge({
-              userId: convexUser._id,
               name: challenge.name,
               targetNumber: challenge.targetNumber,
               year: challenge.year,
@@ -402,7 +396,6 @@ export default function Home() {
             if (!convexUser) return;
             try {
               const result = await bulkImport({
-                userId: convexUser._id,
                 challenges: importedChallenges.map((c) => ({
                   id: c.id,
                   name: c.name,
@@ -437,7 +430,7 @@ export default function Home() {
           onClearAll={async () => {
             if (!convexUser) return;
             try {
-              const result = await clearAllData({ userId: convexUser._id });
+              const result = await clearAllData({});
               toast.success("All data cleared", {
                 description: `Deleted ${result.challengesDeleted} challenges and ${result.entriesDeleted} entries`,
               });
@@ -450,6 +443,60 @@ export default function Home() {
           userId={convexUser?._id ?? null}
         />
       )}
+
+      {/* Mobile Bottom Navigation - visible only on small screens */}
+      <SignedIn>
+        <nav 
+          className="fixed bottom-0 left-0 right-0 bg-card border-t md:hidden z-50"
+          role="navigation"
+          aria-label="Main navigation"
+        >
+          <div className="flex justify-around items-center h-16 px-2">
+            <button
+              onClick={() => {
+                setSelectedChallengeId(null);
+                setViewMode("dashboard");
+              }}
+              className={`flex flex-col items-center justify-center flex-1 py-2 px-1 rounded-lg transition-colors ${
+                viewMode === "dashboard" && !selectedChallengeId
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              aria-label="Dashboard"
+              aria-current={viewMode === "dashboard" && !selectedChallengeId ? "page" : undefined}
+            >
+              <LayoutDashboard className="h-5 w-5" />
+              <span className="text-xs mt-1 font-medium">Dashboard</span>
+            </button>
+            <button
+              onClick={() => setViewMode("community")}
+              className={`flex flex-col items-center justify-center flex-1 py-2 px-1 rounded-lg transition-colors ${
+                viewMode === "community"
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              aria-label="Community"
+              aria-current={viewMode === "community" ? "page" : undefined}
+            >
+              <Users className="h-5 w-5" />
+              <span className="text-xs mt-1 font-medium">Community</span>
+            </button>
+            <button
+              onClick={() => setViewMode("leaderboard")}
+              className={`flex flex-col items-center justify-center flex-1 py-2 px-1 rounded-lg transition-colors ${
+                viewMode === "leaderboard"
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              aria-label="Leaderboard"
+              aria-current={viewMode === "leaderboard" ? "page" : undefined}
+            >
+              <Trophy className="h-5 w-5" />
+              <span className="text-xs mt-1 font-medium">Leaderboard</span>
+            </button>
+          </div>
+        </nav>
+      </SignedIn>
     </div>
   );
 }

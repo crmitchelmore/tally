@@ -1,16 +1,33 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import {
+  requireCurrentUser,
+  assertEntryOwner,
+  assertChallengeOwner,
+  canAccessChallenge,
+} from "./lib/auth";
 
 export const get = query({
   args: { id: v.id("entries") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const entry = await ctx.db.get(args.id);
+    if (!entry) return null;
+    
+    // Verify user can access the challenge this entry belongs to
+    const hasAccess = await canAccessChallenge(ctx, entry.challengeId);
+    if (!hasAccess) return null;
+    
+    return entry;
   },
 });
 
 export const listByChallenge = query({
   args: { challengeId: v.id("challenges") },
   handler: async (ctx, args) => {
+    // Verify access to challenge
+    const hasAccess = await canAccessChallenge(ctx, args.challengeId);
+    if (!hasAccess) return [];
+    
     return await ctx.db
       .query("entries")
       .withIndex("by_challenge", (q) => q.eq("challengeId", args.challengeId))
@@ -24,6 +41,17 @@ export const listByUser = query({
     return await ctx.db
       .query("entries")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+  },
+});
+
+export const listMine = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await requireCurrentUser(ctx);
+    return await ctx.db
+      .query("entries")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
   },
 });
@@ -60,7 +88,6 @@ export const listByDateRange = query({
 
 export const create = mutation({
   args: {
-    userId: v.id("users"),
     challengeId: v.id("challenges"),
     date: v.string(),
     count: v.number(),
@@ -77,8 +104,15 @@ export const create = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    // Require authentication
+    const user = await requireCurrentUser(ctx);
+    
+    // Verify ownership of the challenge
+    await assertChallengeOwner(ctx, args.challengeId);
+    
     return await ctx.db.insert("entries", {
       ...args,
+      userId: user._id,
       createdAt: Date.now(),
     });
   },
@@ -102,6 +136,9 @@ export const update = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    // Verify ownership before update
+    await assertEntryOwner(ctx, args.id);
+    
     const { id, ...updates } = args;
     const filtered = Object.fromEntries(
       Object.entries(updates).filter(([, val]) => val !== undefined)
@@ -113,6 +150,8 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("entries") },
   handler: async (ctx, args) => {
+    // Verify ownership before deletion
+    await assertEntryOwner(ctx, args.id);
     await ctx.db.delete(args.id);
   },
 });

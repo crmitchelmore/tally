@@ -60,7 +60,7 @@ const convexDeployment = config.get("convexDeployment");
 
 if (isProd) {
   // Production stack manages both prod and dev/preview Vercel targets
-  
+
   // Production Clerk keys
   if (clerkPublishableKey) {
     new vercel.ProjectEnvironmentVariable(
@@ -116,6 +116,33 @@ if (isProd) {
       { deleteBeforeReplace: true }
     );
   }
+} else {
+  // Dev stack manages only the "development" Vercel target
+  if (clerkPublishableKey) {
+    new vercel.ProjectEnvironmentVariable(
+      `clerk-publishable-key-${stack}`,
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+        value: clerkPublishableKey,
+        targets: ["development"],
+      },
+      { deleteBeforeReplace: true }
+    );
+  }
+
+  new vercel.ProjectEnvironmentVariable(
+    `clerk-secret-key-${stack}`,
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "CLERK_SECRET_KEY",
+      value: clerkSecretKey,
+      targets: ["development"],
+    },
+    { deleteBeforeReplace: true }
+  );
 }
 
 // =============================================================================

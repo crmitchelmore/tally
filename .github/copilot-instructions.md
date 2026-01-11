@@ -8,6 +8,14 @@
 - **Design Philosophy**: Read `docs/DESIGN-PHILOSOPHY.md`
 - **Domain**: https://tally-tracker.app
 
+## Marketing assets convention
+
+When adding marketing/app store materials:
+- Put source art + listing copy in `docs/` (use a single index file that links out).
+- Prefer vector sources (SVG) + export instructions over committing large binary icon sets.
+- Add a link from the root `README.md` under “Docs”.
+- If asked to “document then reflect”, update repo docs first, then provide the reflection.
+
 ## Product principles (apply to all changes)
 
 Tally should feel **friendly, fun, and fast**.

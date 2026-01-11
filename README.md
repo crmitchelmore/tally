@@ -63,6 +63,7 @@ pulumi up
 - Project context: [`CONTEXT.md`](CONTEXT.md)
 - Mental model: [`docs/MENTAL-MODEL.md`](docs/MENTAL-MODEL.md)
 - Design philosophy: [`docs/DESIGN-PHILOSOPHY.md`](docs/DESIGN-PHILOSOPHY.md)
+- Marketing + app store assets: [`docs/MARKETING.md`](docs/MARKETING.md)
 
 ## Security
 See [`SECURITY.md`](SECURITY.md).

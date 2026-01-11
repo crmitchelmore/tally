@@ -29,11 +29,27 @@ jobs:
     name: CI (lint/build/test)
     runs-on: ubuntu-latest
     environment: development
+    outputs:
+      commit_sha: ${{ github.sha }}
     defaults:
       run:
         working-directory: tally-web
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify required secrets
+        env:
+          CLERK_PK: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SK: ${{ secrets.CLERK_SECRET_KEY }}
+        run: |
+          missing=""
+          [ -z "$CLERK_PK" ] && missing="$missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
+          [ -z "$CLERK_SK" ] && missing="$missing CLERK_SECRET_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing required secrets:$missing"
+            exit 1
+          fi
+          echo "✓ All required secrets present"
 
       - name: Install Bun
         run: |
@@ -141,6 +157,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify required secrets
+        env:
+          PULUMI_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$PULUMI_TOKEN" ]; then
+            echo "::error::Missing required secret: PULUMI_ACCESS_TOKEN"
+            exit 1
+          fi
+          echo "✓ PULUMI_ACCESS_TOKEN present"
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -166,11 +192,23 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [lint-build-test]
     environment: development
+    outputs:
+      convex_version: ${{ github.sha }}
     defaults:
       run:
         working-directory: tally-web
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify required secrets
+        env:
+          CONVEX_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+        run: |
+          if [ -z "$CONVEX_KEY" ]; then
+            echo "::error::Missing required secret: CONVEX_DEPLOY_KEY"
+            exit 1
+          fi
+          echo "✓ CONVEX_DEPLOY_KEY present"
 
       - name: Install Bun
         run: |
@@ -193,11 +231,28 @@ jobs:
     environment: development
     outputs:
       deployment_url: ${{ steps.deploy.outputs.url }}
+      web_version: ${{ github.sha }}
     defaults:
       run:
         working-directory: tally-web
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify required secrets
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          missing=""
+          [ -z "$VERCEL_TOKEN" ] && missing="$missing VERCEL_TOKEN"
+          [ -z "$VERCEL_PROJECT_ID" ] && missing="$missing VERCEL_PROJECT_ID"
+          [ -z "$VERCEL_ORG_ID" ] && missing="$missing VERCEL_ORG_ID"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing required secrets:$missing"
+            exit 1
+          fi
+          echo "✓ All Vercel secrets present"
 
       - uses: actions/setup-node@v4
         with:
@@ -295,6 +350,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify required secrets
+        env:
+          PULUMI_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$PULUMI_TOKEN" ]; then
+            echo "::error::Missing required secret: PULUMI_ACCESS_TOKEN"
+            exit 1
+          fi
+          echo "✓ PULUMI_ACCESS_TOKEN present"
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -320,11 +385,23 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [e2e-dev]
     environment: production
+    outputs:
+      convex_version: ${{ github.sha }}
     defaults:
       run:
         working-directory: tally-web
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify required secrets
+        env:
+          CONVEX_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+        run: |
+          if [ -z "$CONVEX_KEY" ]; then
+            echo "::error::Missing required secret: CONVEX_DEPLOY_KEY"
+            exit 1
+          fi
+          echo "✓ CONVEX_DEPLOY_KEY present"
 
       - name: Install Bun
         run: |
@@ -345,11 +422,29 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [deploy-prod-infra, deploy-prod-convex]
     environment: production
+    outputs:
+      web_version: ${{ github.sha }}
     defaults:
       run:
         working-directory: tally-web
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify required secrets
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          missing=""
+          [ -z "$VERCEL_TOKEN" ] && missing="$missing VERCEL_TOKEN"
+          [ -z "$VERCEL_PROJECT_ID" ] && missing="$missing VERCEL_PROJECT_ID"
+          [ -z "$VERCEL_ORG_ID" ] && missing="$missing VERCEL_ORG_ID"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing required secrets:$missing"
+            exit 1
+          fi
+          echo "✓ All Vercel secrets present"
 
       - uses: actions/setup-node@v4
         with:
@@ -418,3 +513,38 @@ jobs:
         with:
           name: playwright-report-prod
           path: tally-web/playwright-report/
+
+  # ===========================================================================
+  # Deploy Summary
+  # ===========================================================================
+  
+  deploy-summary:
+    name: Deploy Summary
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && always()
+    needs: [deploy-prod-convex, deploy-prod-vercel, e2e-prod]
+    steps:
+      - name: Print deployment summary
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+          CONVEX_VERSION: ${{ needs.deploy-prod-convex.outputs.convex_version }}
+          WEB_VERSION: ${{ needs.deploy-prod-vercel.outputs.web_version }}
+        run: |
+          echo "## Production Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Version |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${COMMIT_SHA:0:8}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Convex | \`${CONVEX_VERSION:0:8}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Web (Vercel) | \`${WEB_VERSION:0:8}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Full SHA:** \`$COMMIT_SHA\`" >> $GITHUB_STEP_SUMMARY
+          
+          # Verify version alignment
+          if [ "$CONVEX_VERSION" != "$WEB_VERSION" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Warning:** Convex and Web versions may be misaligned" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ All components deployed from same commit" >> $GITHUB_STEP_SUMMARY
+          fi

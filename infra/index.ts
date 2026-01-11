@@ -268,21 +268,13 @@ const clerkRedirectUrls = [
   `https://${domain}/sign-up/sso-callback`,
 ];
 
-// Add www + legacy redirects only for prod
+// Add www redirects only for prod
 if (isProd) {
   clerkRedirectUrls.push(
     `https://www.${baseDomain}`,
     `https://www.${baseDomain}/app`,
     `https://www.${baseDomain}/sign-in/sso-callback`,
-    `https://www.${baseDomain}/sign-up/sso-callback`,
-    `https://${legacyDomain}`,
-    `https://${legacyDomain}/app`,
-    `https://${legacyDomain}/sign-in/sso-callback`,
-    `https://${legacyDomain}/sign-up/sso-callback`,
-    `https://www.${legacyDomain}`,
-    `https://www.${legacyDomain}/app`,
-    `https://www.${legacyDomain}/sign-in/sso-callback`,
-    `https://www.${legacyDomain}/sign-up/sso-callback`
+    `https://www.${baseDomain}/sign-up/sso-callback`
   );
 }
 

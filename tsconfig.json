@@ -20,14 +20,16 @@
     "jsx": "react-jsx",
     /* Linting */
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-    "paths": {
-      "@/*": [
-        "./legacy/src/*"
-      ]
-    },
+    "noUncheckedSideEffectImports": true
   },
-  "include": [
-    "legacy/src"
+  "include": [],
+  "exclude": [
+    "node_modules",
+    "legacy",
+    "tally-web",
+    "tally-ios",
+    "tally-android",
+    "infra",
+    "packages"
   ]
 }

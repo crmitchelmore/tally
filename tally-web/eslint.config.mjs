@@ -18,6 +18,23 @@ const eslintConfig = defineConfig([
     // Convex generated files
     "convex/_generated/**",
   ]),
+  // Custom rules
+  {
+    rules: {
+      // Prevent imports from legacy directory
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/legacy/*", "../legacy/*", "../../legacy/*"],
+              message: "Imports from legacy/ are not allowed. The legacy code is deprecated.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

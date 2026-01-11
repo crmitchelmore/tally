@@ -1,0 +1,40 @@
+name: Redeploy Production (Vercel)
+
+on:
+  workflow_dispatch:
+
+env:
+  NX_DAEMON: false
+
+jobs:
+  redeploy-prod-vercel:
+    name: Redeploy Vercel (prod)
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Write Vercel project.json
+        run: |
+          mkdir -p .vercel
+          cat > .vercel/project.json <<JSON
+          {"projectId":"prj_tXdIJDmRB1qKZyo5Ngat62XoaMgw","orgId":"team_ifle7fkp7usKufCL8MUCY1As"}
+          JSON
+
+      - name: Redeploy to Vercel (prod)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          npm i -g vercel@latest
+          vercel deploy --prod --yes --token "$VERCEL_TOKEN" \
+            --build-env SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
+            --build-env SENTRY_ENVIRONMENT="production" \
+            --env SENTRY_ENVIRONMENT="production"

@@ -12,6 +12,16 @@ interface SentryProviderProps {
  * Place inside ClerkProvider to have access to user context.
  */
 export function SentryProvider({ children }: SentryProviderProps) {
+  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  return clerkPublishableKey ? (
+    <SentryProviderWithClerk>{children}</SentryProviderWithClerk>
+  ) : (
+    <>{children}</>
+  );
+}
+
+function SentryProviderWithClerk({ children }: SentryProviderProps) {
   useSentryUser();
   return <>{children}</>;
 }

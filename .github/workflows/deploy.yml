@@ -126,10 +126,10 @@ jobs:
           cache-dependency-path: infra/package-lock.json
 
       - name: Install deps
-        run: npm ci --workspaces=false --include=dev
+        run: npm ci --prefix "$GITHUB_WORKSPACE/infra" --include=dev
 
       - name: Typecheck
-        run: npx tsc -p tsconfig.json --noEmit
+        run: npx --prefix "$GITHUB_WORKSPACE/infra" tsc -p tsconfig.json --noEmit
 
   # ===========================================================================
   # Pulumi Preview (PRs only)
@@ -153,7 +153,7 @@ jobs:
           cache-dependency-path: infra/package-lock.json
 
       - name: Install deps
-        run: npm ci --workspaces=false --include=dev
+        run: npm ci --prefix "$GITHUB_WORKSPACE/infra" --include=dev
 
       - name: Install Pulumi CLI
         run: curl -fsSL https://get.pulumi.com | sh
@@ -195,7 +195,7 @@ jobs:
           cache-dependency-path: infra/package-lock.json
 
       - name: Install deps
-        run: npm ci --workspaces=false --include=dev
+        run: npm ci --prefix "$GITHUB_WORKSPACE/infra" --include=dev
 
       - name: Install Pulumi CLI
         run: curl -fsSL https://get.pulumi.com | sh
@@ -346,7 +346,7 @@ jobs:
           cache-dependency-path: infra/package-lock.json
 
       - name: Install deps
-        run: npm ci --workspaces=false --include=dev
+        run: npm ci --prefix "$GITHUB_WORKSPACE/infra" --include=dev
 
       - name: Install Pulumi CLI
         run: curl -fsSL https://get.pulumi.com | sh

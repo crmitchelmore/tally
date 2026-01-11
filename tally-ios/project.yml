@@ -58,7 +58,6 @@ targets:
     type: bundle.ui-testing
     platform: iOS
     sources:
-      - path: TallyAppUITests
-        optional: true
+      - path: TallyAppUITests.swift
     dependencies:
       - target: Tally

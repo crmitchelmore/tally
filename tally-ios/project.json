@@ -25,6 +25,18 @@
       },
       "cache": true
     },
+    "e2e": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "xcodegen generate",
+          "xcodebuild -project Tally.xcodeproj -scheme TallyUITests -destination 'platform=iOS Simulator,name=iPhone 16' CODE_SIGNING_ALLOWED=NO test"
+        ],
+        "cwd": "tally-ios",
+        "parallel": false
+      },
+      "cache": false
+    },
     "generate": {
       "executor": "nx:run-commands",
       "options": {

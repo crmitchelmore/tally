@@ -11,9 +11,7 @@ jobs:
     name: Redeploy Vercel (prod)
     runs-on: ubuntu-latest
     environment: production
-    defaults:
-      run:
-        working-directory: tally-web
+    # Run from repo root; Vercel project Root Directory is already set to "tally-web"
     steps:
       - uses: actions/checkout@v4
 

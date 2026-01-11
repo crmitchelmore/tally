@@ -2,7 +2,7 @@
     "name": "tally-infra",
     "main": "index.ts",
     "devDependencies": {
-        "@types/node": "^18",
+        "@types/node": "^25",
         "typescript": "^5.0.0"
     },
     "dependencies": {

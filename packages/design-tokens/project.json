@@ -1,0 +1,44 @@
+{
+  "name": "design-tokens",
+  "projectType": "library",
+  "sourceRoot": "packages/design-tokens/src",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["npm run build"],
+        "cwd": "packages/design-tokens"
+      },
+      "cache": true,
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "generate-ios": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["node scripts/generate-ios.js"],
+        "cwd": "packages/design-tokens"
+      },
+      "outputs": ["{workspaceRoot}/tally-ios/TallyDesignSystem/Sources/Tokens.swift"]
+    },
+    "generate-android": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["node scripts/generate-android.js"],
+        "cwd": "packages/design-tokens"
+      },
+      "outputs": ["{workspaceRoot}/tally-android/tallycore/src/main/java/app/tally/core/design/Tokens.kt"]
+    },
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node scripts/generate-ios.js",
+          "node scripts/generate-android.js"
+        ],
+        "cwd": "packages/design-tokens",
+        "parallel": false
+      }
+    }
+  },
+  "tags": ["type:lib", "scope:shared"]
+}

@@ -4,229 +4,269 @@ import * as vercel from "@pulumiverse/vercel";
 import * as command from "@pulumi/command";
 import * as launchdarkly from "@lbrlabs/pulumi-launchdarkly";
 
-// Configuration
+// =============================================================================
+// Stack-aware Configuration
+// =============================================================================
+const stack = pulumi.getStack();
+const isProd = stack === "prod";
 const config = new pulumi.Config();
-const domain = "tally-tracker.app";
+
+// Base domain and stack-specific subdomain
+const baseDomain = "tally-tracker.app";
+const domain = isProd ? baseDomain : `dev.${baseDomain}`;
 const zoneId = "816559836db3c2e80112bd6aeefd6d27";
 const vercelProjectId = "prj_tXdIJDmRB1qKZyo5Ngat62XoaMgw";
 const vercelTeamId = "team_ifle7fkp7usKufCL8MUCY1As";
+
+// Vercel target environment based on stack
+const vercelTarget = isProd ? "production" : "development";
 
 // Sentry configuration
 const sentryOrg = "tally-lz";
 const sentryAdminToken = config.getSecret("sentryAdminToken");
 
-// Manage the existing Vercel project.
-// NOTE: the `import` option is one-time only; keeping it can cause Pulumi to re-import/delete.
-const vercelProject = new vercel.Project("tally-web-project", {
-  teamId: vercelTeamId,
-  name: "tally-web",
-  framework: "nextjs",
-  rootDirectory: "tally-web",
-  autoAssignCustomDomains: true,
-});
+// Manage the existing Vercel project (only in prod stack to avoid conflicts)
+let vercelProject: vercel.Project | undefined;
+if (isProd) {
+  vercelProject = new vercel.Project("tally-web-project", {
+    teamId: vercelTeamId,
+    name: "tally-web",
+    framework: "nextjs",
+    rootDirectory: "tally-web",
+    autoAssignCustomDomains: true,
+  });
+}
 
-// Clerk configuration - separate dev and prod instances
-// Dev keys are used for development/preview, prod keys for production
-const clerkSecretKey = config.requireSecret("clerkSecretKey"); // prod
-const clerkPublishableKey = config.getSecret("clerkPublishableKey"); // prod
-const clerkSecretKeyDev = config.getSecret("clerkSecretKeyDev"); // dev/preview
-const clerkPublishableKeyDev = config.getSecret("clerkPublishableKeyDev"); // dev/preview
+// Clerk configuration
+// In prod stack: use prod keys for production, dev keys for preview/development
+// In dev stack: use the stack's keys (which are dev instance keys)
+const clerkSecretKey = config.requireSecret("clerkSecretKey");
+const clerkPublishableKey = config.getSecret("clerkPublishableKey");
+// Only needed in prod stack for preview/development targets
+const clerkSecretKeyDev = isProd ? config.getSecret("clerkSecretKeyDev") : undefined;
+const clerkPublishableKeyDev = isProd ? config.getSecret("clerkPublishableKeyDev") : undefined;
 
 // Convex configuration
 const convexDeployment = config.get("convexDeployment");
 
 // =============================================================================
-// Clerk Environment Variables (separate dev/prod instances)
+// Clerk Environment Variables (stack-aware)
 // =============================================================================
 
-// Production Clerk keys
-if (clerkPublishableKey) {
-  new vercel.ProjectEnvironmentVariable(
-    "clerk-publishable-key-prod",
-    {
-      projectId: vercelProjectId,
-      teamId: vercelTeamId,
-      key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
-      value: clerkPublishableKey,
-      targets: ["production"],
-    },
-    {
-      deleteBeforeReplace: true,
-    }
-  );
-} else {
-  pulumi.log.warn(
-    "Pulumi config 'clerkPublishableKey' is not set; leaving NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY unchanged for production."
-  );
-}
-
-new vercel.ProjectEnvironmentVariable(
-  "clerk-secret-key-prod",
-  {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    key: "CLERK_SECRET_KEY",
-    value: clerkSecretKey,
-    targets: ["production"],
-  },
-  {
-    deleteBeforeReplace: true,
+if (isProd) {
+  // Production stack manages both prod and dev/preview Vercel targets
+  
+  // Production Clerk keys
+  if (clerkPublishableKey) {
+    new vercel.ProjectEnvironmentVariable(
+      "clerk-publishable-key-prod",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+        value: clerkPublishableKey,
+        targets: ["production"],
+      },
+      { deleteBeforeReplace: true }
+    );
   }
-);
 
-// Dev/Preview Clerk keys (separate Clerk instance for testing)
-if (clerkPublishableKeyDev) {
   new vercel.ProjectEnvironmentVariable(
-    "clerk-publishable-key-dev",
-    {
-      projectId: vercelProjectId,
-      teamId: vercelTeamId,
-      key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
-      value: clerkPublishableKeyDev,
-      targets: ["preview", "development"],
-    },
-    {
-      deleteBeforeReplace: true,
-    }
-  );
-} else {
-  pulumi.log.warn(
-    "Pulumi config 'clerkPublishableKeyDev' is not set; leaving NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY unchanged for dev/preview."
-  );
-}
-
-if (clerkSecretKeyDev) {
-  new vercel.ProjectEnvironmentVariable(
-    "clerk-secret-key-dev",
+    "clerk-secret-key-prod",
     {
       projectId: vercelProjectId,
       teamId: vercelTeamId,
       key: "CLERK_SECRET_KEY",
-      value: clerkSecretKeyDev,
-      targets: ["preview", "development"],
+      value: clerkSecretKey,
+      targets: ["production"],
     },
-    {
-      deleteBeforeReplace: true,
-    }
+    { deleteBeforeReplace: true }
   );
-} else {
-  pulumi.log.warn(
-    "Pulumi config 'clerkSecretKeyDev' is not set; leaving CLERK_SECRET_KEY unchanged for dev/preview."
-  );
+
+  // Dev/Preview Clerk keys (separate Clerk instance)
+  if (clerkPublishableKeyDev) {
+    new vercel.ProjectEnvironmentVariable(
+      "clerk-publishable-key-dev",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+        value: clerkPublishableKeyDev,
+        targets: ["preview", "development"],
+      },
+      { deleteBeforeReplace: true }
+    );
+  }
+
+  if (clerkSecretKeyDev) {
+    new vercel.ProjectEnvironmentVariable(
+      "clerk-secret-key-dev",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "CLERK_SECRET_KEY",
+        value: clerkSecretKeyDev,
+        targets: ["preview", "development"],
+      },
+      { deleteBeforeReplace: true }
+    );
+  }
 }
 
-// Convex deployment env var
+// =============================================================================
+// Convex Environment Variables (stack-aware)
+// =============================================================================
+
 if (convexDeployment) {
+  // Strip env prefix (dev:, prod:) to get the deployment slug
+  const deploymentSlug = convexDeployment.replace(/^(dev|prod):/, "");
+  const convexUrl = `https://${deploymentSlug}.convex.cloud`;
+  
+  // Target based on stack
+  const targets: ("production" | "preview" | "development")[] = isProd 
+    ? ["production"] 
+    : ["development"];
+
   new vercel.ProjectEnvironmentVariable(
-    "convex-deployment",
+    `convex-deployment-${stack}`,
     {
       projectId: vercelProjectId,
       teamId: vercelTeamId,
       key: "CONVEX_DEPLOYMENT",
       value: convexDeployment,
-      targets: ["production"],
+      targets,
     },
-    {
-      deleteBeforeReplace: true,
-    }
+    { deleteBeforeReplace: true }
   );
 
-  // NEXT_PUBLIC_CONVEX_URL is required for the frontend to connect
-  // Format: https://<deployment-slug>.convex.cloud (strip "dev:" prefix)
-  const convexUrl = `https://${convexDeployment.replace(/^dev:/, "")}.convex.cloud`;
   new vercel.ProjectEnvironmentVariable(
-    "convex-url",
+    `convex-url-${stack}`,
     {
       projectId: vercelProjectId,
       teamId: vercelTeamId,
       key: "NEXT_PUBLIC_CONVEX_URL",
       value: convexUrl,
-      targets: ["production"],
+      targets,
     },
-    {
-      deleteBeforeReplace: true,
-    }
-  );
-} else {
-  pulumi.log.warn(
-    "Pulumi config 'convexDeployment' is not set; leaving CONVEX_DEPLOYMENT unchanged in Vercel."
+    { deleteBeforeReplace: true }
   );
 }
 
 // =============================================================================
-// Cloudflare DNS Records
+// Cloudflare DNS Records (stack-aware)
 // =============================================================================
 
-// Root domain -> Vercel (A record for apex domain)
-const rootRecord = new cloudflare.DnsRecord("root-record", {
-  zoneId: zoneId,
-  name: "@",
-  type: "A",
-  content: "76.76.21.21", // Vercel's IP
-  proxied: false,
-  ttl: 1,
-});
+let rootRecord: cloudflare.DnsRecord | undefined;
+let wwwRecord: cloudflare.DnsRecord | undefined;
+let vercelTxtRecord: cloudflare.DnsRecord | undefined;
+let devRecord: cloudflare.DnsRecord | undefined;
 
-// WWW subdomain -> Vercel
-const wwwRecord = new cloudflare.DnsRecord("www-record", {
-  zoneId: zoneId,
-  name: "www",
-  type: "CNAME",
-  content: "cname.vercel-dns.com",
-  proxied: false,
-  ttl: 1,
-});
+if (isProd) {
+  // Production: Root domain and www
+  rootRecord = new cloudflare.DnsRecord("root-record", {
+    zoneId: zoneId,
+    name: "@",
+    type: "A",
+    content: "76.76.21.21", // Vercel's IP
+    proxied: false,
+    ttl: 1,
+  });
 
-// Vercel domain verification TXT record
-const vercelTxtRecord = new cloudflare.DnsRecord("vercel-txt-record", {
-  zoneId: zoneId,
-  name: "_vercel",
-  type: "TXT",
-  content: "vc-domain-verify=tally-tracker.app,90cf862f53bce1742529,dc",
-  ttl: 1,
-});
+  wwwRecord = new cloudflare.DnsRecord("www-record", {
+    zoneId: zoneId,
+    name: "www",
+    type: "CNAME",
+    content: "cname.vercel-dns.com",
+    proxied: false,
+    ttl: 1,
+  });
 
-// =============================================================================
-// Vercel Domain Configuration
-// =============================================================================
-
-// Root domain
-const vercelDomain = new vercel.ProjectDomain("tally-domain", {
-  projectId: vercelProjectId,
-  teamId: vercelTeamId,
-  domain: domain,
-});
-
-// WWW subdomain with redirect
-const vercelWwwDomain = new vercel.ProjectDomain("tally-www-domain", {
-  projectId: vercelProjectId,
-  teamId: vercelTeamId,
-  domain: `www.${domain}`,
-  redirect: domain,
-  redirectStatusCode: 308,
-});
+  vercelTxtRecord = new cloudflare.DnsRecord("vercel-txt-record", {
+    zoneId: zoneId,
+    name: "_vercel",
+    type: "TXT",
+    content: "vc-domain-verify=tally-tracker.app,90cf862f53bce1742529,dc",
+    ttl: 1,
+  });
+} else {
+  // Dev stack: dev subdomain
+  devRecord = new cloudflare.DnsRecord("dev-record", {
+    zoneId: zoneId,
+    name: "dev",
+    type: "CNAME",
+    content: "cname.vercel-dns.com",
+    proxied: false,
+    ttl: 1,
+  });
+}
 
 // =============================================================================
-// Clerk Redirect URLs
+// Vercel Domain Configuration (stack-aware)
 // =============================================================================
 
-// Helper to manage Clerk redirect URLs via API
-// Include `/app` so Clerk can redirect users to the app after authentication.
-// Include SSO callback routes used by Clerk for OAuth flows.
+let vercelDomain: vercel.ProjectDomain | undefined;
+let vercelWwwDomain: vercel.ProjectDomain | undefined;
+let vercelDevDomain: vercel.ProjectDomain | undefined;
+
+if (isProd) {
+  // Production: Root domain and www redirect
+  vercelDomain = new vercel.ProjectDomain("tally-domain", {
+    projectId: vercelProjectId,
+    teamId: vercelTeamId,
+    domain: baseDomain,
+  });
+
+  vercelWwwDomain = new vercel.ProjectDomain("tally-www-domain", {
+    projectId: vercelProjectId,
+    teamId: vercelTeamId,
+    domain: `www.${baseDomain}`,
+    redirect: baseDomain,
+    redirectStatusCode: 308,
+  });
+} else {
+  // Dev stack: dev subdomain
+  vercelDevDomain = new vercel.ProjectDomain("tally-dev-domain", {
+    projectId: vercelProjectId,
+    teamId: vercelTeamId,
+    domain: domain, // dev.tally-tracker.app
+  });
+}
+
+// =============================================================================
+// Clerk Redirect URLs (stack-aware)
+// =============================================================================
+
+// Build redirect URLs for this stack's domain
 const clerkRedirectUrls = [
   `https://${domain}`,
   `https://${domain}/app`,
   `https://${domain}/sign-in/sso-callback`,
   `https://${domain}/sign-up/sso-callback`,
-  `https://www.${domain}`,
-  `https://www.${domain}/app`,
-  `https://www.${domain}/sign-in/sso-callback`,
-  `https://www.${domain}/sign-up/sso-callback`,
 ];
+
+// Add www redirects only for prod
+if (isProd) {
+  clerkRedirectUrls.push(
+    `https://www.${baseDomain}`,
+    `https://www.${baseDomain}/app`,
+    `https://www.${baseDomain}/sign-in/sso-callback`,
+    `https://www.${baseDomain}/sign-up/sso-callback`
+  );
+}
+
+// Add localhost for dev stack
+if (!isProd) {
+  clerkRedirectUrls.push(
+    "http://localhost:3000",
+    "http://localhost:3000/app",
+    "http://localhost:3000/sign-in/sso-callback",
+    "http://localhost:3000/sign-up/sso-callback"
+  );
+}
 
 // Create Clerk redirect URLs using the API
 const clerkRedirectUrlResources = clerkRedirectUrls.map((url, index) => {
-  return new command.local.Command(`clerk-redirect-url-${index}`, {
+  return new command.local.Command(`clerk-redirect-url-${stack}-${index}`, {
     create: pulumi.interpolate`ID=$(curl -s "https://api.clerk.com/v1/redirect_urls" \
       -H "Authorization: Bearer ${clerkSecretKey}" | jq -r '.[] | select(.url=="${url}") | .id' | head -n 1) && \
       if [ -n "$ID" ] && [ "$ID" != "null" ]; then echo "$ID"; else \
@@ -318,7 +358,7 @@ if (ldClientSideId) {
 }
 
 // =============================================================================
-// Sentry Configuration (IaC-first provisioning)
+// Sentry Configuration (IaC-first provisioning) - Prod stack only
 // =============================================================================
 
 // Sentry projects to provision
@@ -334,7 +374,8 @@ const sentryProjectResources: { [key: string]: command.local.Command } = {};
 const sentryDsns: { [key: string]: pulumi.Output<string> } = {};
 const sentryTeam = "tally"; // Team slug within the org
 
-if (sentryAdminToken) {
+// Only manage Sentry resources from prod stack to avoid conflicts
+if (isProd && sentryAdminToken) {
   for (const project of sentryProjects) {
     // Create or get project (idempotent)
     const projectResource = new command.local.Command(`sentry-project-${project.slug}`, {
@@ -503,14 +544,10 @@ if (sentryAdminToken) {
       deleteBeforeReplace: true,
     }
   );
-} else {
-  pulumi.log.warn(
-    "Pulumi config 'sentryAdminToken' is not set; Sentry resources will not be provisioned."
-  );
 }
 
 // =============================================================================
-// Grafana Cloud OpenTelemetry (OTel)
+// Grafana Cloud OpenTelemetry (OTel) - Prod stack only
 // =============================================================================
 
 const grafanaCloudAdminToken = config.getSecret("grafanaCloudAdminToken");
@@ -520,189 +557,168 @@ const grafanaCloudOtlpEndpoint =
 const grafanaCloudInstanceId = config.get("grafanaCloudInstanceId") ?? "1491410";
 const grafanaCloudOtlpToken = config.getSecret("grafanaCloudOtlpToken");
 
-new vercel.ProjectEnvironmentVariable(
-  "otel-service-name",
-  {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    key: "OTEL_SERVICE_NAME",
-    value: "tally-web",
-    targets: ["production", "preview", "development"],
-  },
-  {
-    deleteBeforeReplace: true,
-  }
-);
-
-new vercel.ProjectEnvironmentVariable(
-  "otel-otlp-endpoint",
-  {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    key: "OTEL_EXPORTER_OTLP_ENDPOINT",
-    value: grafanaCloudOtlpEndpoint,
-    targets: ["production", "preview", "development"],
-  },
-  {
-    deleteBeforeReplace: true,
-  }
-);
-
-new vercel.ProjectEnvironmentVariable(
-  "otel-otlp-protocol",
-  {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    key: "OTEL_EXPORTER_OTLP_PROTOCOL",
-    value: "http/protobuf",
-    targets: ["production", "preview", "development"],
-  },
-  {
-    deleteBeforeReplace: true,
-  }
-);
-
-new vercel.ProjectEnvironmentVariable(
-  "otel-traces-sampler",
-  {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    key: "OTEL_TRACES_SAMPLER",
-    value: "parentbased_traceidratio",
-    targets: ["production", "preview", "development"],
-  },
-  {
-    deleteBeforeReplace: true,
-  }
-);
-
-new vercel.ProjectEnvironmentVariable(
-  "otel-resource-prod",
-  {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    key: "OTEL_RESOURCE_ATTRIBUTES",
-    value: "deployment.environment=production,service.namespace=tally",
-    targets: ["production"],
-  },
-  {
-    deleteBeforeReplace: true,
-  }
-);
-
-new vercel.ProjectEnvironmentVariable(
-  "otel-resource-preview",
-  {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    key: "OTEL_RESOURCE_ATTRIBUTES",
-    value: "deployment.environment=preview,service.namespace=tally",
-    targets: ["preview"],
-  },
-  {
-    deleteBeforeReplace: true,
-  }
-);
-
-new vercel.ProjectEnvironmentVariable(
-  "otel-resource-dev",
-  {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    key: "OTEL_RESOURCE_ATTRIBUTES",
-    value: "deployment.environment=development,service.namespace=tally",
-    targets: ["development"],
-  },
-  {
-    deleteBeforeReplace: true,
-  }
-);
-
-new vercel.ProjectEnvironmentVariable(
-  "otel-sampler-arg-prod",
-  {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    key: "OTEL_TRACES_SAMPLER_ARG",
-    value: "0.1",
-    targets: ["production"],
-  },
-  {
-    deleteBeforeReplace: true,
-  }
-);
-
-new vercel.ProjectEnvironmentVariable(
-  "otel-sampler-arg-preview",
-  {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    key: "OTEL_TRACES_SAMPLER_ARG",
-    value: "0.2",
-    targets: ["preview"],
-  },
-  {
-    deleteBeforeReplace: true,
-  }
-);
-
-new vercel.ProjectEnvironmentVariable(
-  "otel-sampler-arg-dev",
-  {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    key: "OTEL_TRACES_SAMPLER_ARG",
-    value: "1.0",
-    targets: ["development"],
-  },
-  {
-    deleteBeforeReplace: true,
-  }
-);
-
-if (grafanaCloudOtlpToken) {
-  const otelHeaders = grafanaCloudOtlpToken.apply((token) => {
-    const basic = Buffer.from(`${grafanaCloudInstanceId}:${token}`).toString("base64");
-    return `Authorization=Basic ${basic}`;
-  });
-
+// Only manage OTel Vercel env vars from prod stack to avoid conflicts
+if (isProd) {
   new vercel.ProjectEnvironmentVariable(
-    "otel-otlp-headers",
+    "otel-service-name",
     {
       projectId: vercelProjectId,
       teamId: vercelTeamId,
-      key: "OTEL_EXPORTER_OTLP_HEADERS",
-      value: otelHeaders,
+      key: "OTEL_SERVICE_NAME",
+      value: "tally-web",
       targets: ["production", "preview", "development"],
     },
+    { deleteBeforeReplace: true }
+  );
+
+  new vercel.ProjectEnvironmentVariable(
+    "otel-otlp-endpoint",
     {
-      deleteBeforeReplace: true,
-    }
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "OTEL_EXPORTER_OTLP_ENDPOINT",
+      value: grafanaCloudOtlpEndpoint,
+      targets: ["production", "preview", "development"],
+    },
+    { deleteBeforeReplace: true }
   );
-} else {
-  const hasAdminToken = !!grafanaCloudAdminToken;
-  pulumi.log.warn(
-    hasAdminToken
-      ? "Pulumi config 'grafanaCloudOtlpToken' is not set; OTEL_EXPORTER_OTLP_HEADERS will not be set in Vercel."
-      : "Pulumi config 'grafanaCloudAdminToken' is not set; Grafana Cloud OTel provisioning is not configured yet."
+
+  new vercel.ProjectEnvironmentVariable(
+    "otel-otlp-protocol",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "OTEL_EXPORTER_OTLP_PROTOCOL",
+      value: "http/protobuf",
+      targets: ["production", "preview", "development"],
+    },
+    { deleteBeforeReplace: true }
   );
-}
+
+  new vercel.ProjectEnvironmentVariable(
+    "otel-traces-sampler",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "OTEL_TRACES_SAMPLER",
+      value: "parentbased_traceidratio",
+      targets: ["production", "preview", "development"],
+    },
+    { deleteBeforeReplace: true }
+  );
+
+  new vercel.ProjectEnvironmentVariable(
+    "otel-resource-prod",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "OTEL_RESOURCE_ATTRIBUTES",
+      value: "deployment.environment=production,service.namespace=tally",
+      targets: ["production"],
+    },
+    { deleteBeforeReplace: true }
+  );
+
+  new vercel.ProjectEnvironmentVariable(
+    "otel-resource-preview",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "OTEL_RESOURCE_ATTRIBUTES",
+      value: "deployment.environment=preview,service.namespace=tally",
+      targets: ["preview"],
+    },
+    { deleteBeforeReplace: true }
+  );
+
+  new vercel.ProjectEnvironmentVariable(
+    "otel-resource-dev",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "OTEL_RESOURCE_ATTRIBUTES",
+      value: "deployment.environment=development,service.namespace=tally",
+      targets: ["development"],
+    },
+    { deleteBeforeReplace: true }
+  );
+
+  new vercel.ProjectEnvironmentVariable(
+    "otel-sampler-arg-prod",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "OTEL_TRACES_SAMPLER_ARG",
+      value: "0.1",
+      targets: ["production"],
+    },
+    { deleteBeforeReplace: true }
+  );
+
+  new vercel.ProjectEnvironmentVariable(
+    "otel-sampler-arg-preview",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "OTEL_TRACES_SAMPLER_ARG",
+      value: "0.2",
+      targets: ["preview"],
+    },
+    { deleteBeforeReplace: true }
+  );
+
+  new vercel.ProjectEnvironmentVariable(
+    "otel-sampler-arg-dev",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "OTEL_TRACES_SAMPLER_ARG",
+      value: "1.0",
+      targets: ["development"],
+    },
+    { deleteBeforeReplace: true }
+  );
+
+  if (grafanaCloudOtlpToken) {
+    const otelHeaders = grafanaCloudOtlpToken.apply((token) => {
+      const basic = Buffer.from(`${grafanaCloudInstanceId}:${token}`).toString("base64");
+      return `Authorization=Basic ${basic}`;
+    });
+
+    new vercel.ProjectEnvironmentVariable(
+      "otel-otlp-headers",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "OTEL_EXPORTER_OTLP_HEADERS",
+        value: otelHeaders,
+        targets: ["production", "preview", "development"],
+      },
+      { deleteBeforeReplace: true }
+    );
+  }
+} // End isProd block for OTel
 
 // =============================================================================
-// Exports
+// Exports (stack-aware)
 // =============================================================================
 
+export const stackName = stack;
 export const cloudflareZoneId = zoneId;
 export const vercelProjectUrl = `https://${domain}`;
 export const vercelProjectIds = {
   teamId: vercelTeamId,
   projectId: vercelProjectId,
 };
-export const dnsRecords = {
-  root: rootRecord.name,
-  www: wwwRecord.name,
-  vercelTxt: vercelTxtRecord.name,
-};
+export const dnsRecords = isProd
+  ? {
+      root: rootRecord?.name,
+      www: wwwRecord?.name,
+      vercelTxt: vercelTxtRecord?.name,
+    }
+  : {
+      dev: devRecord?.name,
+    };
 export const clerkRedirects = clerkRedirectUrls;
 
 // LaunchDarkly exports (temporarily hardcoded while provider is disabled)

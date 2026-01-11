@@ -46,7 +46,7 @@ Tally is a multi-platform challenge/goal tracking app being migrated from Vite +
 
 ```
 tally/
-├── tally-web/           # Next.js web app
+├── tally-web/           # Next.js web app (production)
 │   ├── src/
 │   │   ├── app/         # App Router pages
 │   │   ├── components/  # UI components (shadcn + tally)
@@ -54,9 +54,15 @@ tally/
 │   │   ├── lib/         # Utilities
 │   │   └── providers/   # Context providers
 │   └── convex/          # Convex schema + functions
+├── tally-ios/           # iOS app (Swift/SwiftUI)
+├── tally-android/       # Android app (Kotlin/Compose)
+├── packages/
+│   ├── shared-types/    # Cross-platform API contract types
+│   └── design-tokens/   # Cross-platform design tokens
 ├── infra/               # Pulumi infrastructure
 │   ├── index.ts         # Resource definitions
 │   └── Pulumi.prod.yaml # Stack config
+├── legacy/              # DEPRECATED: Original Vite/Spark prototype
 ├── docs/migration/      # Migration plan documents
 └── .github/             # GitHub config + Copilot instructions
 ```

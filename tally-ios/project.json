@@ -1,0 +1,38 @@
+{
+  "name": "tally-ios",
+  "projectType": "application",
+  "sourceRoot": "tally-ios",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "xcodegen generate",
+          "xcodebuild -project Tally.xcodeproj -scheme Tally -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build"
+        ],
+        "cwd": "tally-ios",
+        "parallel": false
+      },
+      "cache": true
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "xcodebuild -project Tally.xcodeproj -scheme TallyTests -destination 'platform=iOS Simulator,name=iPhone 16' CODE_SIGNING_ALLOWED=NO test"
+        ],
+        "cwd": "tally-ios"
+      },
+      "cache": true
+    },
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["xcodegen generate"],
+        "cwd": "tally-ios"
+      }
+    }
+  },
+  "tags": ["platform:ios", "type:app"],
+  "implicitDependencies": ["shared-types", "design-tokens"]
+}

@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tally-tracker.app/schemas/shared-types.schema.json",
   "title": "Tally Shared Types",
+  "description": "Cross-platform API contract definitions for Tally. DTOs use 'id' (not '_id').",
   "type": "object",
   "$defs": {
     "TimeframeUnit": {
@@ -12,12 +13,16 @@
       "type": "string",
       "enum": ["very-easy", "easy", "moderate", "hard", "very-hard"]
     },
-    "User": {
+    "PaceStatus": {
+      "type": "string",
+      "enum": ["ahead", "onPace", "behind"]
+    },
+    "UserDTO": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["_id", "clerkId", "createdAt"],
+      "required": ["id", "clerkId", "createdAt"],
       "properties": {
-        "_id": { "type": "string" },
+        "id": { "type": "string" },
         "clerkId": { "type": "string" },
         "email": { "type": "string" },
         "name": { "type": "string" },
@@ -25,11 +30,11 @@
         "createdAt": { "type": "number" }
       }
     },
-    "Challenge": {
+    "ChallengeDTO": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "_id",
+        "id",
         "userId",
         "name",
         "targetNumber",
@@ -42,7 +47,7 @@
         "createdAt"
       ],
       "properties": {
-        "_id": { "type": "string" },
+        "id": { "type": "string" },
         "userId": { "type": "string" },
         "name": { "type": "string" },
         "targetNumber": { "type": "number" },
@@ -57,7 +62,7 @@
         "createdAt": { "type": "number" }
       }
     },
-    "EntrySet": {
+    "EntrySetDTO": {
       "type": "object",
       "additionalProperties": false,
       "required": ["reps"],
@@ -65,12 +70,12 @@
         "reps": { "type": "number" }
       }
     },
-    "Entry": {
+    "EntryDTO": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["_id", "userId", "challengeId", "date", "count", "createdAt"],
+      "required": ["id", "userId", "challengeId", "date", "count", "createdAt"],
       "properties": {
-        "_id": { "type": "string" },
+        "id": { "type": "string" },
         "userId": { "type": "string" },
         "challengeId": { "type": "string" },
         "date": { "type": "string" },
@@ -78,21 +83,62 @@
         "note": { "type": "string" },
         "sets": {
           "type": "array",
-          "items": { "$ref": "#/$defs/EntrySet" }
+          "items": { "$ref": "#/$defs/EntrySetDTO" }
         },
         "feeling": { "$ref": "#/$defs/FeelingType" },
         "createdAt": { "type": "number" }
       }
     },
-    "FollowedChallenge": {
+    "FollowedChallengeDTO": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["_id", "userId", "challengeId", "followedAt"],
+      "required": ["id", "userId", "challengeId", "followedAt"],
       "properties": {
-        "_id": { "type": "string" },
+        "id": { "type": "string" },
         "userId": { "type": "string" },
         "challengeId": { "type": "string" },
         "followedAt": { "type": "number" }
+      }
+    },
+    "ChallengeStatsDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total",
+        "remaining",
+        "daysLeft",
+        "requiredPerDay",
+        "currentStreak",
+        "longestStreak",
+        "averagePerDay",
+        "daysActive",
+        "paceStatus",
+        "paceOffset"
+      ],
+      "properties": {
+        "total": { "type": "number" },
+        "remaining": { "type": "number" },
+        "daysLeft": { "type": "number" },
+        "requiredPerDay": { "type": "number" },
+        "currentStreak": { "type": "number" },
+        "longestStreak": { "type": "number" },
+        "bestDay": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": ["date", "count"],
+              "properties": {
+                "date": { "type": "string" },
+                "count": { "type": "number" }
+              }
+            }
+          ]
+        },
+        "averagePerDay": { "type": "number" },
+        "daysActive": { "type": "number" },
+        "paceStatus": { "$ref": "#/$defs/PaceStatus" },
+        "paceOffset": { "type": "number" }
       }
     },
     "ErrorResponse": {
@@ -101,6 +147,22 @@
       "required": ["error"],
       "properties": {
         "error": { "type": "string" }
+      }
+    },
+    "SuccessResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["success"],
+      "properties": {
+        "success": { "const": true }
+      }
+    },
+    "CreateResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string" }
       }
     }
   }

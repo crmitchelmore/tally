@@ -1,0 +1,41 @@
+{
+  "name": "tally-android",
+  "projectType": "application",
+  "sourceRoot": "tally-android",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["./gradlew :app:assembleDebug"],
+        "cwd": "tally-android"
+      },
+      "cache": true
+    },
+    "build-release": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["./gradlew :app:assembleRelease"],
+        "cwd": "tally-android"
+      },
+      "cache": true
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["./gradlew :app:test"],
+        "cwd": "tally-android"
+      },
+      "cache": true
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["./gradlew :app:lint"],
+        "cwd": "tally-android"
+      },
+      "cache": true
+    }
+  },
+  "tags": ["platform:android", "type:app"],
+  "implicitDependencies": ["shared-types", "design-tokens"]
+}

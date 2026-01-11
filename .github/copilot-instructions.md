@@ -126,6 +126,15 @@ The following are managed by Pulumi in `infra/index.ts`:
 3. Run `pulumi up` to apply
 4. Commit changes to git
 
+### Verifying Vercel Environment Variables
+
+After Pulumi changes, verify Vercel env vars via API:
+```bash
+VERCEL_TOKEN=$(grep VERCEL_API_TOKEN .env | cut -d= -f2)
+curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+  "https://api.vercel.com/v9/projects/{projectId}/env?teamId={teamId}" | jq '.envs[] | {key, target}'
+```
+
 ### Importing Existing Resources
 
 ```bash

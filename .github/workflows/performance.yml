@@ -1,0 +1,164 @@
+# Performance Budget CI
+#
+# Runs Lighthouse CI on PRs to catch performance regressions.
+# Non-blocking for now (continues on error) to establish baselines.
+
+name: Performance Budget
+
+on:
+  pull_request:
+    paths:
+      - 'tally-web/**'
+      - '!tally-web/**/*.md'
+
+jobs:
+  lighthouse:
+    name: Lighthouse CI
+    runs-on: ubuntu-latest
+    environment: development
+    continue-on-error: true # Non-blocking until baselines established
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.1.36
+          cache: true
+          cache-dependency-path: tally-web/bun.lockb
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bun run build
+        env:
+          # Minimal env vars for static build
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          SKIP_ENV_VALIDATION: true
+
+      - name: Start server
+        run: |
+          bun run start &
+          for i in $(seq 1 30); do
+            if curl -fsSL http://localhost:3000 >/dev/null; then
+              echo "Server is up"
+              break
+            fi
+            sleep 1
+          done
+          curl -fsSL http://localhost:3000 >/dev/null
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          SKIP_ENV_VALIDATION: true
+
+      - name: Run Lighthouse
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            http://localhost:3000
+          configPath: ./tally-web/lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          artifactName: lighthouse-results-desktop
+
+      - name: Run Lighthouse (mobile)
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            http://localhost:3000
+          configPath: ./tally-web/lighthouserc.mobile.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          artifactName: lighthouse-results-mobile
+
+      - name: Check bundle size
+        run: |
+          # Report bundle sizes
+          echo "## Bundle Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Get first-load JS size from build output
+          if [ -f .next/BUILD_ID ]; then
+            echo "### First Load JS" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            # Parse the build manifest for sizes
+            node -e "
+              const manifest = require('./.next/build-manifest.json');
+              const pages = Object.keys(manifest.pages);
+              console.log('Pages:', pages.length);
+              
+              // Check for large chunks
+              const fs = require('fs');
+              const path = require('path');
+              const chunksDir = '.next/static/chunks';
+              if (fs.existsSync(chunksDir)) {
+                const chunks = fs.readdirSync(chunksDir)
+                  .filter(f => f.endsWith('.js'))
+                  .map(f => ({
+                    name: f,
+                    size: fs.statSync(path.join(chunksDir, f)).size
+                  }))
+                  .sort((a, b) => b.size - a.size)
+                  .slice(0, 10);
+                
+                console.log('\\nLargest chunks:');
+                chunks.forEach(c => {
+                  const kb = (c.size / 1024).toFixed(1);
+                  const warn = c.size > 200 * 1024 ? ' ⚠️' : '';
+                  console.log('  ' + c.name + ': ' + kb + ' KB' + warn);
+                });
+              }
+            " 2>/dev/null || echo "Could not parse build manifest"
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+  bundle-analysis:
+    name: Bundle Size Check
+    runs-on: ubuntu-latest
+    environment: development
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.1.36
+          cache: true
+          cache-dependency-path: tally-web/bun.lockb
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Analyze bundle
+        run: |
+          # Build with bundle analyzer
+          ANALYZE=true bun run build 2>/dev/null || bun run build
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          SKIP_ENV_VALIDATION: true
+
+      - name: Report sizes
+        run: |
+          echo "## Bundle Size Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Calculate total JS size
+          TOTAL_JS=$(find .next/static -name '*.js' -exec stat --printf="%s\n" {} + 2>/dev/null | awk '{s+=$1} END {print s+0}')
+          TOTAL_JS_KB=$((TOTAL_JS / 1024))
+          
+          echo "| Metric | Size | Budget | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Budget: 500KB total JS
+          if [ "$TOTAL_JS_KB" -lt 500 ]; then
+            echo "| Total JS | ${TOTAL_JS_KB} KB | 500 KB | ✅ |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Total JS | ${TOTAL_JS_KB} KB | 500 KB | ⚠️ |" >> $GITHUB_STEP_SUMMARY
+          fi

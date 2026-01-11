@@ -352,7 +352,7 @@ function ensureLdEnvClientSideId(envKey: string, envName: string, color: string)
   if (!ldAccessToken) return undefined;
 
   return new command.local.Command(`ld-client-side-id-${envKey}-${stack}`, {
-    create: pulumi.interpolate`set -euo pipefail
+    create: pulumi.interpolate`set -eu
 TOKEN=${ldAccessToken}
 
 # Ensure project exists
@@ -399,7 +399,7 @@ function upsertVercelEnvVar(
   if (!vercelApiToken) return undefined;
 
   return new command.local.Command(`vercel-env-${name}-${stack}`, {
-    create: pulumi.interpolate`set -euo pipefail
+    create: pulumi.interpolate`set -eu
 TOKEN=${vercelApiToken}
 TEAM=${vercelTeamId}
 PROJ=${vercelProjectId}
@@ -424,7 +424,7 @@ else
     -d "$(jq -cn --arg key "$KEY" --arg value "$VALUE" --arg target "$TARGET" '{key:$key,value:$value,type:\"encrypted\",target:[$target]}')" \
     | jq -r '.id'
 fi`,
-    delete: pulumi.interpolate`set -euo pipefail
+    delete: pulumi.interpolate`set -eu
 TOKEN=${vercelApiToken}
 TEAM=${vercelTeamId}
 PROJ=${vercelProjectId}
@@ -491,7 +491,7 @@ function ensurePosthogProjectApiKey(projectName: string) {
   if (!posthogAdminToken) return undefined;
 
   return new command.local.Command(`posthog-project-key-${projectName}-${stack}`.replace(/[^a-zA-Z0-9-]/g, "-"), {
-    create: pulumi.interpolate`set -euo pipefail
+    create: pulumi.interpolate`set -eu
 
 TOKEN="$TOKEN"
 BASE="${posthogApiHost}"

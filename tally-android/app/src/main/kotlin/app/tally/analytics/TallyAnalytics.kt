@@ -1,7 +1,7 @@
 package app.tally.analytics
 
 import android.content.Context
-import com.posthog.PostHog
+import com.posthog.PostHogInterface
 import com.posthog.android.PostHogAndroid
 import com.posthog.android.PostHogAndroidConfig
 import io.sentry.Sentry
@@ -14,8 +14,8 @@ import io.sentry.protocol.User
  * See docs/ANALYTICS.md for the event taxonomy.
  */
 object TallyAnalytics {
-    @Volatile
     private var isInitialized = false
+    private var posthog: PostHogInterface? = null
 
     /**
      * Initialize analytics (call once from Application.onCreate)
@@ -30,17 +30,18 @@ object TallyAnalytics {
         // Initialize PostHog
         if (!posthogApiKey.isNullOrBlank()) {
             val config = PostHogAndroidConfig(
-                apiKey = posthogApiKey,
-                host = "https://app.posthog.com",
+                posthogApiKey,
+                "https://app.posthog.com"
             ).apply {
                 captureScreenViews = false
                 captureDeepLinks = false
             }
 
             PostHogAndroid.setup(context, config)
+            posthog = PostHogAndroid.with(context, config)
 
-            PostHog.register("platform", "android")
-            PostHog.register("app_version", appVersion)
+            posthog?.register("platform", "android")
+            posthog?.register("app_version", appVersion)
         }
 
         // Note: Sentry is auto-initialized by the Gradle plugin
@@ -57,7 +58,7 @@ object TallyAnalytics {
      */
     fun identify(userId: String, traits: Map<String, Any>? = null) {
         val hashedId = hashUserId(userId)
-        PostHog.identify(hashedId, traits ?: emptyMap(), emptyMap())
+        posthog?.identify(hashedId, traits ?: emptyMap(), emptyMap())
 
         val sentryUser = User().apply {
             id = hashedId
@@ -69,7 +70,7 @@ object TallyAnalytics {
      * Clear user identity on sign out
      */
     fun reset() {
-        PostHog.reset()
+        posthog?.reset()
         Sentry.setUser(null)
     }
 
@@ -77,10 +78,18 @@ object TallyAnalytics {
      * Track an analytics event
      */
     fun track(event: String, properties: Map<String, Any>? = null) {
+        val distinctId = posthog?.distinctId() ?: "anonymous"
         val props = (properties ?: emptyMap()).toMutableMap()
         props["platform"] = "android"
 
-        PostHog.capture(event, null, props)
+        posthog?.capture(
+            event,
+            distinctId,
+            props,
+            emptyMap<String, Any>(),
+            emptyMap<String, Any>(),
+            emptyMap<String, String>(),
+        )
     }
 
     // MARK: - Convenience Methods
@@ -136,11 +145,11 @@ object TallyAnalytics {
      * Add a breadcrumb for debugging
      */
     fun addBreadcrumb(message: String, category: String? = null) {
-        if (category != null) {
-            Sentry.addBreadcrumb(message, category)
-        } else {
-            Sentry.addBreadcrumb(message)
+        val breadcrumb = io.sentry.Breadcrumb().apply {
+            this.message = message
+            this.category = category ?: "app"
         }
+        Sentry.addBreadcrumb(breadcrumb)
     }
 
     // MARK: - Private

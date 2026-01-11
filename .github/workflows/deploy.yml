@@ -142,7 +142,7 @@ jobs:
           cache-dependency-path: infra/package-lock.json
 
       - name: Install deps
-        run: npm ci --workspaces=false
+        run: npm ci --workspaces=false --include=dev
 
       - name: Typecheck
         run: npx --yes --package typescript tsc -p tsconfig.json --noEmit
@@ -169,7 +169,7 @@ jobs:
           cache-dependency-path: infra/package-lock.json
 
       - name: Install deps
-        run: npm ci --workspaces=false
+        run: npm ci --workspaces=false --include=dev
 
       - name: Install Pulumi CLI
         run: curl -fsSL https://get.pulumi.com | sh
@@ -221,7 +221,7 @@ jobs:
           cache-dependency-path: infra/package-lock.json
 
       - name: Install deps
-        run: npm ci --workspaces=false
+        run: npm ci --workspaces=false --include=dev
 
       - name: Install Pulumi CLI
         run: curl -fsSL https://get.pulumi.com | sh
@@ -411,7 +411,7 @@ jobs:
           cache-dependency-path: infra/package-lock.json
 
       - name: Install deps
-        run: npm ci --workspaces=false
+        run: npm ci --workspaces=false --include=dev
 
       - name: Install Pulumi CLI
         run: curl -fsSL https://get.pulumi.com | sh

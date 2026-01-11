@@ -36,11 +36,13 @@ Tally is a multi-platform challenge/goal tracking app being migrated from Vite +
 ## Key URLs
 
 - **Production**: https://tally-tracker.app
+- **Development**: https://dev.tally-tracker.app
 - **Vercel Dashboard**: https://vercel.com/chris-projects-b617a778/tally-web
 - **Convex Dashboard**: https://dashboard.convex.dev
 - **Clerk Dashboard**: https://dashboard.clerk.com
 - **LaunchDarkly Dashboard**: https://app.launchdarkly.com
-- **Pulumi Console**: https://app.pulumi.com/tally-tracker-org/tally-infra/prod
+- **Pulumi Console (prod)**: https://app.pulumi.com/tally-tracker-org/tally-infra/prod
+- **Pulumi Console (dev)**: https://app.pulumi.com/tally-tracker-org/tally-infra/dev
 
 ## Directory Structure
 
@@ -60,12 +62,30 @@ tally/
 │   ├── shared-types/    # Cross-platform API contract types
 │   └── design-tokens/   # Cross-platform design tokens
 ├── infra/               # Pulumi infrastructure
-│   ├── index.ts         # Resource definitions
-│   └── Pulumi.prod.yaml # Stack config
+│   ├── index.ts         # Stack-aware resource definitions
+│   ├── Pulumi.yaml      # Project config
+│   └── Pulumi.prod.yaml # Prod stack secrets
 ├── legacy/              # DEPRECATED: Original Vite/Spark prototype
 ├── docs/migration/      # Migration plan documents
+├── env-fix.md           # Environment setup plan/status
 └── .github/             # GitHub config + Copilot instructions
+    └── workflows/
+        ├── pr.yml       # CI checks + prod deploy on main
+        └── dev-deploy.yml # Dev deploy on develop branch
 ```
+
+## Environments
+
+| Environment | URL | Pulumi Stack | Convex | Clerk Instance |
+|-------------|-----|--------------|--------|----------------|
+| Local | `localhost:3000` | N/A | `dev:bright-jackal-396` | Dev (`pk_test_*`) |
+| Dev | `dev.tally-tracker.app` | `dev` | `dev:bright-jackal-396` | Dev (`pk_test_*`) |
+| Prod | `tally-tracker.app` | `prod` | `prod:bright-jackal-396` | Prod (`pk_live_*`) |
+
+### Deployment Triggers
+
+- **Prod**: Push to `main` branch → `.github/workflows/pr.yml`
+- **Dev**: Push to `develop` branch OR manual → `.github/workflows/dev-deploy.yml`
 
 ## Environment Variables
 
@@ -107,25 +127,40 @@ SENTRY_ADMIN_TOKEN=...  # For Pulumi to manage projects
 ```bash
 cd infra
 export PULUMI_ACCESS_TOKEN=$(grep PULUMI_ACCESS_TOKEN ../.env | cut -d= -f2)
+
+# Dev environment
+pulumi stack select tally-tracker-org/dev
 pulumi preview   # See changes
 pulumi up        # Apply changes
+
+# Prod environment
+pulumi stack select tally-tracker-org/prod
+pulumi preview
+pulumi up
 ```
 
 ### Managed Resources
 
-- Cloudflare DNS records (A, CNAME, TXT)
-- Vercel project domains and environment variables
-- Clerk redirect URLs
-- LaunchDarkly project, environments, and flags
-- Sentry projects and DSNs (javascript-nextjs, convex-backend, ios, android)
+**Prod stack (`tally-tracker-org/prod`):**
+- Cloudflare DNS: `@` (A), `www` (CNAME), `_vercel` (TXT)
+- Vercel domains: `tally-tracker.app`, `www.tally-tracker.app`
+- Vercel env vars: Prod Clerk keys, Convex prod, Sentry, OTel
+- Clerk redirect URLs for prod domain
+- Sentry projects and DSNs
 
-### Environments
+**Dev stack (`tally-tracker-org/dev`):**
+- Cloudflare DNS: `dev` (CNAME)
+- Vercel domain: `dev.tally-tracker.app`
+- Vercel env vars: Dev Clerk keys, Convex dev
+- Clerk redirect URLs for dev domain + localhost
 
-| Environment | Vercel Target | Sentry | LaunchDarkly |
-|-------------|---------------|--------|--------------|
-| `development` | development | development | dev |
-| `preview` | preview | preview | preview |
-| `production` | production | production | prod |
+### Environment Variables in Vercel
+
+| Environment | Vercel Target | Sentry Env | Managed By |
+|-------------|---------------|------------|------------|
+| Development | development | development | Dev stack |
+| Preview | preview | preview | Prod stack |
+| Production | production | production | Prod stack |
 
 ## Development Commands
 

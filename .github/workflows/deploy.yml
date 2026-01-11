@@ -1,0 +1,420 @@
+# Continuous Integration & Deployment Pipeline
+#
+# Flow:
+# 1. CI checks (lint, build, unit tests) - always runs
+# 2. Deploy to dev (infra + convex + vercel) - on main push
+# 3. E2E tests on dev.tally-tracker.app - on main push
+# 4. Deploy to prod (only if E2E passes) - on main push
+#
+# Uses GitHub environments for secret isolation:
+# - development: dev Clerk, dev Convex, Pulumi dev stack
+# - production: prod Clerk, prod Convex, Pulumi prod stack
+
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  NX_DAEMON: false
+
+jobs:
+  # ===========================================================================
+  # CI Checks - Always Run
+  # ===========================================================================
+  
+  lint-build-test:
+    name: CI (lint/build/test)
+    runs-on: ubuntu-latest
+    environment: development
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Build
+        run: bun run build
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: tally-lz
+          SENTRY_PROJECT: javascript-nextjs
+
+      - name: Unit tests
+        run: bun run test
+
+      - name: API smoke
+        run: bun run api:smoke
+        env:
+          TALLY_API_BASE: https://bright-jackal-396.convex.site
+
+  infra-typecheck:
+    name: Infra (typecheck)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: infra/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc -p tsconfig.json --noEmit
+
+  # ===========================================================================
+  # Pulumi Preview (PRs only)
+  # ===========================================================================
+  
+  infra-preview:
+    name: Infra Preview (dev + prod)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: [infra-typecheck]
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: infra/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Pulumi CLI
+        run: curl -fsSL https://get.pulumi.com | sh
+
+      - name: Preview dev stack
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        run: |
+          export PATH="$HOME/.pulumi/bin:$PATH"
+          pulumi preview --stack tally-tracker-org/dev
+
+      - name: Preview prod stack
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        run: |
+          export PATH="$HOME/.pulumi/bin:$PATH"
+          pulumi preview --stack tally-tracker-org/prod
+
+  # ===========================================================================
+  # Deploy to Development (main push only)
+  # ===========================================================================
+  
+  deploy-dev-infra:
+    name: Deploy Infra (dev)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [lint-build-test, infra-typecheck]
+    environment: development
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: infra/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Pulumi CLI
+        run: curl -fsSL https://get.pulumi.com | sh
+
+      - name: Pulumi up (dev)
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        run: |
+          export PATH="$HOME/.pulumi/bin:$PATH"
+          pulumi up --yes --stack tally-tracker-org/dev
+
+  deploy-dev-convex:
+    name: Deploy Convex (dev)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [lint-build-test]
+    environment: development
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Deploy Convex (dev)
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+        run: bunx convex deploy --cmd-url-env-var-name CONVEX_DEPLOY_KEY
+
+  deploy-dev-vercel:
+    name: Deploy Vercel (dev)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [deploy-dev-infra, deploy-dev-convex]
+    environment: development
+    outputs:
+      deployment_url: ${{ steps.deploy.outputs.url }}
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Write Vercel project.json
+        run: |
+          mkdir -p .vercel
+          cat > .vercel/project.json <<JSON
+          {"projectId":"${{ secrets.VERCEL_PROJECT_ID }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}
+          JSON
+
+      - name: Deploy to Vercel (dev)
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          npm i -g vercel@latest
+          DEPLOYMENT_URL=$(vercel deploy --yes --token "$VERCEL_TOKEN" \
+            --build-env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
+            --build-env SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
+            --build-env SENTRY_ENVIRONMENT="development" \
+            --env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
+            --env SENTRY_ENVIRONMENT="development")
+          
+          echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          
+          # Alias to dev subdomain
+          vercel alias "$DEPLOYMENT_URL" dev.tally-tracker.app --token "$VERCEL_TOKEN"
+
+  # ===========================================================================
+  # E2E Tests on Development
+  # ===========================================================================
+  
+  e2e-dev:
+    name: E2E Tests (dev)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [deploy-dev-vercel]
+    environment: development
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps chromium
+
+      - name: Wait for deployment
+        run: sleep 30
+
+      - name: E2E smoke tests
+        run: bun run test:e2e
+        env:
+          BASE_URL: https://dev.tally-tracker.app
+
+      - name: E2E auth tests
+        run: bun run test:e2e:auth
+        env:
+          BASE_URL: https://dev.tally-tracker.app
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-dev
+          path: tally-web/playwright-report/
+
+  # ===========================================================================
+  # Deploy to Production (only after E2E passes)
+  # ===========================================================================
+  
+  deploy-prod-infra:
+    name: Deploy Infra (prod)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [e2e-dev]
+    environment: production
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: infra/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Pulumi CLI
+        run: curl -fsSL https://get.pulumi.com | sh
+
+      - name: Pulumi up (prod)
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        run: |
+          export PATH="$HOME/.pulumi/bin:$PATH"
+          pulumi up --yes --stack tally-tracker-org/prod
+
+  deploy-prod-convex:
+    name: Deploy Convex (prod)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [e2e-dev]
+    environment: production
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Deploy Convex (prod)
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+        run: bunx convex deploy --cmd-url-env-var-name CONVEX_DEPLOY_KEY
+
+  deploy-prod-vercel:
+    name: Deploy Vercel (prod)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [deploy-prod-infra, deploy-prod-convex]
+    environment: production
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Write Vercel project.json
+        run: |
+          mkdir -p .vercel
+          cat > .vercel/project.json <<JSON
+          {"projectId":"${{ secrets.VERCEL_PROJECT_ID }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}
+          JSON
+
+      - name: Deploy to Vercel (prod)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          npm i -g vercel@latest
+          vercel deploy --prod --yes --token "$VERCEL_TOKEN" \
+            --build-env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
+            --build-env SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
+            --build-env SENTRY_ENVIRONMENT="production" \
+            --env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
+            --env SENTRY_ENVIRONMENT="production"
+
+  # ===========================================================================
+  # Post-deployment E2E on Production
+  # ===========================================================================
+  
+  e2e-prod:
+    name: E2E Tests (prod)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [deploy-prod-vercel]
+    environment: production
+    continue-on-error: true  # Don't fail the pipeline, just report
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps chromium
+
+      - name: Wait for deployment
+        run: sleep 30
+
+      - name: E2E smoke tests (prod)
+        run: bun run test:e2e
+        env:
+          BASE_URL: https://tally-tracker.app
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-prod
+          path: tally-web/playwright-report/

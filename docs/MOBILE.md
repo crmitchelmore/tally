@@ -150,6 +150,34 @@ extension TallyAPI {
 }
 ```
 
+## Store deployment (CI)
+
+This repo now includes GitHub Actions workflows for **iOS (TestFlight/App Store)** and **Android (Google Play)**.
+
+Required GitHub Actions secrets (recommended in an environment named `mobile-release`):
+
+### iOS (App Store Connect)
+- `IOS_TEAM_ID`
+- `IOS_PROFILE_NAME` (the provisioning profile name in Apple Developer)
+- `IOS_KEYCHAIN_PASSWORD`
+- `IOS_SIGNING_CERT_P12_BASE64` (base64 of an Apple Distribution `.p12`)
+- `IOS_SIGNING_CERT_PASSWORD`
+- `IOS_PROVISIONING_PROFILE_BASE64` (base64 of the `.mobileprovision`)
+- `ASC_KEY_ID`
+- `ASC_ISSUER_ID`
+- `ASC_KEY_CONTENT_BASE64` (base64 of the `.p8` file)
+
+### Android (Google Play)
+- `PLAY_SERVICE_ACCOUNT_JSON_BASE64` (base64 of the service-account JSON)
+- `ANDROID_KEYSTORE_BASE64` (base64 of your upload keystore)
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+
+Workflows:
+- `.github/workflows/ios.yml` (manual `workflow_dispatch`: `beta` or `release`)
+- `.github/workflows/android.yml` (manual `workflow_dispatch`: `internal` or `production`)
+
 ## Android Implementation
 
 ### Project Structure

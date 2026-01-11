@@ -3,7 +3,7 @@
     "main": "index.ts",
     "devDependencies": {
         "@types/node": "^25",
-        "typescript": "^5.0.0"
+        "typescript": "^5.9.3"
     },
     "dependencies": {
         "@lbrlabs/pulumi-launchdarkly": "^0.0.6",

@@ -141,20 +141,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check E2E auth secrets
-        id: check_auth_secrets
-        env:
-          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-        run: |
-          if [ -n "$TEST_USER_EMAIL" ] && [ -n "$TEST_USER_PASSWORD" ]; then
-            echo "has_auth_secrets=true" >> $GITHUB_OUTPUT
-            echo "✓ E2E auth secrets available"
-          else
-            echo "has_auth_secrets=false" >> $GITHUB_OUTPUT
-            echo "::warning::Missing TEST_USER_EMAIL or TEST_USER_PASSWORD - skipping authenticated E2E tests"
-          fi
-
       - name: Install Bun
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
@@ -173,15 +159,8 @@ jobs:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           NEXT_PUBLIC_CONVEX_URL: https://bright-jackal-396.convex.cloud
 
-      - name: Run E2E auth tests
-        if: steps.check_auth_secrets.outputs.has_auth_secrets == 'true'
-        run: bun run test:e2e:auth
-        env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          NEXT_PUBLIC_CONVEX_URL: https://bright-jackal-396.convex.cloud
-          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      # Note: E2E auth tests run against deployed dev environment (post-merge to main)
+      # They require real Clerk/Convex backends and can't run reliably against local dev server
 
       - name: Upload Playwright report
         if: failure()

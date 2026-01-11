@@ -279,9 +279,7 @@ jobs:
     outputs:
       deployment_url: ${{ steps.deploy.outputs.url }}
       web_version: ${{ github.sha }}
-    defaults:
-      run:
-        working-directory: tally-web
+    # Run from repo root; Vercel project Root Directory is already set to "tally-web"
     steps:
       - uses: actions/checkout@v4
 
@@ -468,9 +466,7 @@ jobs:
     environment: production
     outputs:
       web_version: ${{ github.sha }}
-    defaults:
-      run:
-        working-directory: tally-web
+    # Run from repo root; Vercel project Root Directory is already set to "tally-web"
     steps:
       - uses: actions/checkout@v4
 

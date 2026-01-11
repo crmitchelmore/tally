@@ -5,11 +5,17 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist", "schema.json"],
+  "files": [
+    "dist",
+    "schema.json"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json"
   },
   "devDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "zod": "^4.3.5"
   }
 }

@@ -25,7 +25,7 @@ jobs:
         run: |
           mkdir -p .vercel
           cat > .vercel/project.json <<JSON
-          {"projectId":"${{ secrets.VERCEL_PROJECT_ID }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}
+          {"projectId":"prj_tXdIJDmRB1qKZyo5Ngat62XoaMgw","orgId":"team_ifle7fkp7usKufCL8MUCY1As"}
           JSON
 
       - name: Redeploy to Vercel (prod)

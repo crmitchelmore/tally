@@ -13,10 +13,12 @@ The following projects have been implemented via PRs:
 | 07-testing-strategy | [#21](https://github.com/crmitchelmore/tally/pull/21) | Merged |
 | 08-observability-and-ops | [#22](https://github.com/crmitchelmore/tally/pull/22) | Merged |
 | 09-security-and-compliance | [#20](https://github.com/crmitchelmore/tally/pull/20) | Merged |
+| 12-mobile-platform | [#25](https://github.com/crmitchelmore/tally/pull/25) | Merged |
+| 13-product-analytics | [#25](https://github.com/crmitchelmore/tally/pull/25) | Merged |
 | 14-legacy-and-tech-debt | [#17](https://github.com/crmitchelmore/tally/pull/17) | Merged |
 | 18-incident-response | [#19](https://github.com/crmitchelmore/tally/pull/19) | Merged |
 
-## Remaining Projects
+## Remaining Projects (6)
 
 ### High Priority (Next Up)
 
@@ -32,9 +34,6 @@ The following projects have been implemented via PRs:
 
 ### Lower Priority / Deferred
 
-- **12-mobile-platform-plan.md** — iOS/Android foundations (separate track)
-- **13-product-analytics-and-growth.md** — Event taxonomy (needs product input)
-- **16-finops-and-cost-control.md** — Cost budgets (needs usage data)
 - **17-privacy-and-data-governance.md** — Data classification (needs compliance review)
 
 ### Reference

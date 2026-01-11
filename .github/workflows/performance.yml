@@ -60,7 +60,7 @@ jobs:
         with:
           urls: |
             http://localhost:3000
-          configPath: ./lighthouserc.json
+          configPath: ./tally-web/lighthouserc.json
           uploadArtifacts: true
           temporaryPublicStorage: true
 

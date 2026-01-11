@@ -31,6 +31,9 @@ jobs:
           java-version: 17
           cache: gradle
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Build debug
         run: ./gradlew :app:assembleDebug
         env:

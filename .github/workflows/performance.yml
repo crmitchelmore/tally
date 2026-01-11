@@ -15,6 +15,7 @@ jobs:
   lighthouse:
     name: Lighthouse CI
     runs-on: ubuntu-latest
+    environment: development
     continue-on-error: true # Non-blocking until baselines established
     defaults:
       run:
@@ -107,6 +108,7 @@ jobs:
   bundle-analysis:
     name: Bundle Size Check
     runs-on: ubuntu-latest
+    environment: development
     defaults:
       run:
         working-directory: tally-web

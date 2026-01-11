@@ -22,6 +22,8 @@ android {
   namespace = "app.tally"
   compileSdk = 35
 
+  val keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+
   defaultConfig {
     applicationId = "app.tally"
     minSdk = 26
@@ -50,6 +52,17 @@ android {
     )
   }
 
+  if (!keystorePath.isNullOrBlank()) {
+    signingConfigs {
+      create("release") {
+        storeFile = file(keystorePath)
+        storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+        keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+        keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+      }
+    }
+  }
+
   buildTypes {
     getByName("debug") {
       buildConfigField(
@@ -65,6 +78,11 @@ android {
     }
 
     getByName("release") {
+      isMinifyEnabled = false
+      // Only wire signing when CI provides a keystore path.
+      if (!keystorePath.isNullOrBlank()) {
+        signingConfig = signingConfigs.getByName("release")
+      }
       buildConfigField(
         "String",
         "CLERK_PUBLISHABLE_KEY",

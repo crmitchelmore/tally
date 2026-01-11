@@ -1,0 +1,66 @@
+name: iOS (store release)
+
+on:
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: "fastlane lane (beta|release)"
+        required: true
+        default: "beta"
+
+jobs:
+  deploy:
+    runs-on: macos-15
+    environment: mobile-release
+    defaults:
+      run:
+        working-directory: tally-ios
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: brew install xcodegen sentry-cli
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - name: Install gems
+        run: bundle install
+
+      - name: Install signing assets
+        env:
+          IOS_KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
+          IOS_SIGNING_CERT_P12_BASE64: ${{ secrets.IOS_SIGNING_CERT_P12_BASE64 }}
+          IOS_SIGNING_CERT_PASSWORD: ${{ secrets.IOS_SIGNING_CERT_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          set -euo pipefail
+
+          KEYCHAIN=build.keychain
+          security create-keychain -p "$IOS_KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$IOS_KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN"
+
+          echo "$IOS_SIGNING_CERT_P12_BASE64" | base64 --decode > signing.p12
+          security import signing.p12 -k "$KEYCHAIN" -P "$IOS_SIGNING_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$IOS_KEYCHAIN_PASSWORD" "$KEYCHAIN"
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          uuid=$(uuidgen)
+          echo "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/$uuid.mobileprovision
+
+      - name: Deploy
+        env:
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+          IOS_PROFILE_NAME: ${{ secrets.IOS_PROFILE_NAME }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT_BASE64: ${{ secrets.ASC_KEY_CONTENT_BASE64 }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: bundle exec fastlane ios ${{ inputs.lane }}

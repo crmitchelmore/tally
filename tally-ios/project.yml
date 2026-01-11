@@ -26,7 +26,10 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.tally.ios
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: "$(DEVELOPMENT_TEAM)"
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "Apple Distribution"
+        PROVISIONING_PROFILE_SPECIFIER: "$(PROVISIONING_PROFILE_SPECIFIER)"
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CLERK_PUBLISHABLE_KEY: "$(CLERK_PUBLISHABLE_KEY)"
         INFOPLIST_KEY_LAUNCHDARKLY_MOBILE_KEY: "$(LAUNCHDARKLY_MOBILE_KEY)"
@@ -44,7 +47,7 @@ targets:
           if [ -n "${SENTRY_AUTH_TOKEN}" ]; then
             export SENTRY_ORG="tally-lz"
             export SENTRY_PROJECT="ios"
-            /usr/local/bin/sentry-cli upload-dif "${DWARF_DSYM_FOLDER_PATH}" --include-sources || true
+            sentry-cli upload-dif "${DWARF_DSYM_FOLDER_PATH}" --include-sources || true
           fi
         runOnlyWhenInstalling: false
   TallyTests:

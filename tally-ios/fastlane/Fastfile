@@ -1,0 +1,63 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Upload a build to TestFlight"
+  lane :beta do
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_content: ENV.fetch("ASC_KEY_CONTENT_BASE64"),
+      is_key_content_base64: true
+    )
+
+    profile = ENV.fetch("IOS_PROFILE_NAME")
+
+    build_app(
+      scheme: "Tally",
+      project: "Tally.xcodeproj",
+      export_method: "app-store",
+      export_team_id: ENV.fetch("IOS_TEAM_ID"),
+      export_options: {
+        provisioningProfiles: {
+          "app.tally.ios" => profile
+        }
+      },
+      xcargs: "DEVELOPMENT_TEAM=#{ENV.fetch("IOS_TEAM_ID")} PROVISIONING_PROFILE_SPECIFIER=#{profile}"
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "Upload to App Store (manual review submission still required)"
+  lane :release do
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_content: ENV.fetch("ASC_KEY_CONTENT_BASE64"),
+      is_key_content_base64: true
+    )
+
+    profile = ENV.fetch("IOS_PROFILE_NAME")
+
+    build_app(
+      scheme: "Tally",
+      project: "Tally.xcodeproj",
+      export_method: "app-store",
+      export_team_id: ENV.fetch("IOS_TEAM_ID"),
+      export_options: {
+        provisioningProfiles: {
+          "app.tally.ios" => profile
+        }
+      },
+      xcargs: "DEVELOPMENT_TEAM=#{ENV.fetch("IOS_TEAM_ID")} PROVISIONING_PROFILE_SPECIFIER=#{profile}"
+    )
+
+    upload_to_app_store(
+      api_key: api_key,
+      submit_for_review: false
+    )
+  end
+end

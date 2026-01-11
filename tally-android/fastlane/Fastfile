@@ -1,0 +1,49 @@
+require "base64"
+
+def play_json_key
+  Base64.decode64(ENV.fetch("PLAY_SERVICE_ACCOUNT_JSON_BASE64"))
+end
+
+def require_android_signing_env!
+  %w[ANDROID_KEYSTORE_PATH ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD].each do |k|
+    UI.user_error!("Missing #{k}") if ENV[k].to_s.strip.empty?
+  end
+end
+
+def require_play_env!
+  UI.user_error!("Missing PLAY_SERVICE_ACCOUNT_JSON_BASE64") if ENV["PLAY_SERVICE_ACCOUNT_JSON_BASE64"].to_s.strip.empty?
+end
+
+def gradle_bundle_release
+  require_android_signing_env!
+  gradle(task: "clean bundle", build_type: "Release")
+end
+
+def upload_to_play(track:)
+  require_play_env!
+  supply(
+    track: track,
+    package_name: "app.tally",
+    aab: lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
+    json_key_data: play_json_key,
+    skip_upload_metadata: true,
+    skip_upload_images: true,
+    skip_upload_screenshots: true
+  )
+end
+
+default_platform(:android)
+
+platform :android do
+  desc "Upload to internal track"
+  lane :internal do
+    gradle_bundle_release
+    upload_to_play(track: "internal")
+  end
+
+  desc "Upload to production track"
+  lane :production do
+    gradle_bundle_release
+    upload_to_play(track: "production")
+  end
+end

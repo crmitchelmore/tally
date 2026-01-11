@@ -85,12 +85,12 @@ jobs:
 
       - name: Verify required secrets
         env:
-          CLERK_PK: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
-          CLERK_SK: ${{ secrets.CLERK_SECRET_KEY_DEV }}
+          CLERK_PK_DEV: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
+          CLERK_SK_DEV: ${{ secrets.CLERK_SECRET_KEY_DEV }}
         run: |
           missing=""
-          [ -z "$CLERK_PK" ] && missing="$missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV"
-          [ -z "$CLERK_SK" ] && missing="$missing CLERK_SECRET_KEY_DEV"
+          [ -z "$CLERK_PK_DEV" ] && missing="$missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV"
+          [ -z "$CLERK_SK_DEV" ] && missing="$missing CLERK_SECRET_KEY_DEV"
           if [ -n "$missing" ]; then
             echo "::error::Missing required secrets:$missing"
             exit 1

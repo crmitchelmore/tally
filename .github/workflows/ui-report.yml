@@ -3,13 +3,42 @@ name: UI Report (non-blocking)
 on:
   pull_request:
 
+# Allow one concurrent run per PR, cancel previous
+concurrency:
+  group: ui-report-${{ github.head_ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
+  # Wait for Vercel preview deployment (if available)
+  wait-for-preview:
+    name: wait for preview
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    outputs:
+      preview_url: ${{ steps.preview.outputs.url }}
+    steps:
+      - name: Wait for Vercel preview
+        id: preview
+        uses: patrickedqvist/wait-for-vercel-preview@v1.3.2
+        continue-on-error: true
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          max_timeout: 300
+          check_interval: 10
+
   ui-report:
     name: ui report (screenshots)
     runs-on: ubuntu-latest
+    needs: wait-for-preview
     continue-on-error: true
     env:
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      # Use Vercel preview URL if available, otherwise localhost
+      E2E_BASE_URL: ${{ needs.wait-for-preview.outputs.preview_url || '' }}
     defaults:
       run:
         working-directory: tally-web
@@ -34,7 +63,16 @@ jobs:
           bunx playwright install --with-deps chromium
 
       - name: Run UI screenshot suite
-        run: bunx playwright test --grep @ui --reporter=html --update-snapshots
+        id: screenshots
+        run: |
+          if [ -n "$E2E_BASE_URL" ]; then
+            echo "Running against Vercel preview: $E2E_BASE_URL"
+            # No webServer needed when testing against preview
+            bunx playwright test --grep @ui --reporter=html --update-snapshots --config=playwright.config.ts
+          else
+            echo "No preview URL, running against local dev server"
+            bunx playwright test --grep @ui --reporter=html --update-snapshots
+          fi
 
       - name: Upload Playwright report
         if: always()
@@ -42,3 +80,80 @@ jobs:
         with:
           name: playwright-ui-report
           path: tally-web/playwright-report
+          retention-days: 14
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: tally-web/tests/e2e/__screenshots__
+          retention-days: 14
+
+      - name: Post screenshot comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            const screenshotDir = 'tally-web/tests/e2e/__screenshots__/ui-report.spec.ts';
+            let screenshots = [];
+            
+            try {
+              if (fs.existsSync(screenshotDir)) {
+                screenshots = fs.readdirSync(screenshotDir)
+                  .filter(f => f.endsWith('.png'))
+                  .map(f => f.replace('.png', ''));
+              }
+            } catch (e) {
+              console.log('Could not read screenshots:', e.message);
+            }
+            
+            const previewUrl = process.env.E2E_BASE_URL || 'localhost:3000';
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+            
+            let body = `## 📸 UI Screenshots\n\n`;
+            body += `**Preview URL:** ${previewUrl.startsWith('http') ? previewUrl : 'Local dev server'}\n`;
+            body += `**Status:** ${{ steps.screenshots.outcome }}\n\n`;
+            
+            if (screenshots.length > 0) {
+              body += `### Captured Screenshots\n`;
+              body += `| Page | Status |\n|------|--------|\n`;
+              screenshots.forEach(name => {
+                body += `| ${name} | ✅ |\n`;
+              });
+              body += `\n[View full report](${runUrl}) (download \`playwright-ui-report\` artifact)\n`;
+            } else {
+              body += `No screenshots captured. [View workflow run](${runUrl})\n`;
+            }
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(c => 
+              c.user.type === 'Bot' && c.body.includes('📸 UI Screenshots')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+          env:
+            E2E_BASE_URL: ${{ needs.wait-for-preview.outputs.preview_url }}

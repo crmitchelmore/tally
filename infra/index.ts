@@ -13,6 +13,11 @@ const config = new pulumi.Config();
 
 // Base domain and stack-specific subdomain
 const baseDomain = "tally-tracker.app";
+
+// Legacy/vanity domain: ensure this never accidentally points at a preview deployment.
+// We manage it as a redirect to the canonical .app domain.
+const legacyDomain = "tally-tracker.com";
+
 const domain = isProd ? baseDomain : `dev.${baseDomain}`;
 const zoneId = "816559836db3c2e80112bd6aeefd6d27";
 const vercelProjectId = "prj_tXdIJDmRB1qKZyo5Ngat62XoaMgw";
@@ -206,6 +211,8 @@ if (isProd) {
 
 let vercelDomain: vercel.ProjectDomain | undefined;
 let vercelWwwDomain: vercel.ProjectDomain | undefined;
+let vercelLegacyDomain: vercel.ProjectDomain | undefined;
+let vercelLegacyWwwDomain: vercel.ProjectDomain | undefined;
 let vercelDevDomain: vercel.ProjectDomain | undefined;
 
 if (isProd) {
@@ -220,6 +227,23 @@ if (isProd) {
     projectId: vercelProjectId,
     teamId: vercelTeamId,
     domain: `www.${baseDomain}`,
+    redirect: baseDomain,
+    redirectStatusCode: 308,
+  });
+
+  // Legacy .com domain: force redirect to canonical .app to avoid accidental preview/dev env vars.
+  vercelLegacyDomain = new vercel.ProjectDomain("tally-legacy-domain", {
+    projectId: vercelProjectId,
+    teamId: vercelTeamId,
+    domain: legacyDomain,
+    redirect: baseDomain,
+    redirectStatusCode: 308,
+  });
+
+  vercelLegacyWwwDomain = new vercel.ProjectDomain("tally-legacy-www-domain", {
+    projectId: vercelProjectId,
+    teamId: vercelTeamId,
+    domain: `www.${legacyDomain}`,
     redirect: baseDomain,
     redirectStatusCode: 308,
   });
@@ -244,13 +268,21 @@ const clerkRedirectUrls = [
   `https://${domain}/sign-up/sso-callback`,
 ];
 
-// Add www redirects only for prod
+// Add www + legacy redirects only for prod
 if (isProd) {
   clerkRedirectUrls.push(
     `https://www.${baseDomain}`,
     `https://www.${baseDomain}/app`,
     `https://www.${baseDomain}/sign-in/sso-callback`,
-    `https://www.${baseDomain}/sign-up/sso-callback`
+    `https://www.${baseDomain}/sign-up/sso-callback`,
+    `https://${legacyDomain}`,
+    `https://${legacyDomain}/app`,
+    `https://${legacyDomain}/sign-in/sso-callback`,
+    `https://${legacyDomain}/sign-up/sso-callback`,
+    `https://www.${legacyDomain}`,
+    `https://www.${legacyDomain}/app`,
+    `https://www.${legacyDomain}/sign-in/sso-callback`,
+    `https://www.${legacyDomain}/sign-up/sso-callback`
   );
 }
 

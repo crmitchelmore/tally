@@ -70,13 +70,22 @@ Convex has separate dev and prod deployments:
 ### Hosting (Vercel)
 - Project: `tally-web`
 - Domains: `tally-tracker.app`, `www.tally-tracker.app`
-- Legacy domain: `tally-tracker.com` (and `www`) redirect → `tally-tracker.app` (managed via Pulumi)
+
+#### Domain ownership rule
+Only add/manage domains in Pulumi if we verifiably own/control them (registrar + DNS zone + Vercel).
+If ownership is unclear, do not provision the domain—confirm first.
+
+#### Dev environment domain
+We host the dev environment at `https://dev.tally-tracker.app` (managed via the Pulumi dev stack).
+
 - Environment variables (managed by Pulumi):
   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
   - `CLERK_SECRET_KEY`
   - `CONVEX_DEPLOYMENT`
   - `NEXT_PUBLIC_CONVEX_URL`
   - `NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID`
+  - `NEXT_PUBLIC_POSTHOG_KEY`
+  - `NEXT_PUBLIC_POSTHOG_HOST`
   - `NEXT_PUBLIC_SENTRY_DSN`
   - `SENTRY_DSN`
   - `SENTRY_ORG`
@@ -100,6 +109,20 @@ Convex has separate dev and prod deployments:
   - `convex-backend` - Backend
   - `ios` - iOS app
   - `android` - Android app
+
+### Analytics (PostHog)
+Pulumi wires PostHog into Vercel by setting:
+- `NEXT_PUBLIC_POSTHOG_KEY`
+- `NEXT_PUBLIC_POSTHOG_HOST`
+
+**Auth (for IaC provisioning)**
+- Preferred: set a PostHog Personal API key as Pulumi secret `posthog:adminToken`.
+- Local-only fallback: export `POSTHOG_ADMIN_TOKEN` (or set it in `../.env`) when running `pulumi up`.
+
+**Project creation limits**
+Some PostHog plans limit the number of projects. If creating additional projects is blocked,
+Pulumi falls back to using the first existing project in the org (its `api_token`).
+If you want separate dev/preview/prod projects, upgrade the plan or create them first.
 
 ## Pulumi Configuration
 
@@ -264,6 +287,60 @@ export PATH="$HOME/.pulumi/bin:$PATH"
 pulumi preview
 pulumi up
 ```
+
+## Drift Detection
+
+Infrastructure drift is automatically detected weekly via GitHub Actions (`.github/workflows/infra-drift.yml`).
+
+### How It Works
+
+1. **Schedule**: Runs every Monday at 9am UTC
+2. **Process**: Runs `pulumi refresh --diff` on both dev and prod stacks
+3. **Alerts**: Creates a GitHub issue if drift is detected
+
+### Manual Drift Check
+
+```bash
+cd infra
+pulumi refresh --diff --stack tally-tracker-org/prod
+```
+
+### Handling Drift
+
+When drift is detected:
+
+1. **Review the diff** - Understand what changed
+2. **Decide on action**:
+   - Accept drift: `pulumi refresh --yes` (updates state to match reality)
+   - Revert drift: `pulumi up` (reverts resources to match desired state)
+3. **Document** - If intentional, update IaC code; if accidental, investigate
+
+## Shell-Based Resources (command.local)
+
+Some resources use `command.local.Command` with curl/jq because stable Pulumi providers don't exist:
+
+| Resource | Why command.local | Alternative Considered |
+|----------|-------------------|----------------------|
+| Clerk redirect URLs | No official Pulumi provider | Dynamic provider (too complex) |
+| Sentry projects | Official provider exists but limited | May migrate when provider matures |
+
+### Trade-offs
+
+**Pros:**
+- Works today without custom provider development
+- Idempotent (checks before create, deletes on destroy)
+- Fully visible in Pulumi state
+
+**Cons:**
+- Depends on external tools (`curl`, `jq`)
+- Fragile if APIs change
+- Harder to diff/review than native resources
+
+### Future Migration Path
+
+1. Monitor for official providers (Clerk, improved Sentry)
+2. Consider `pulumi.dynamic.Resource` if patterns stabilize
+3. Document any API changes that break existing resources
 
 ## Troubleshooting
 

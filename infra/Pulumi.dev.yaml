@@ -12,3 +12,4 @@ config:
     secure: AAABAL9gKZMbZwbhykUMz/RyXQ3ybCoBCXI6pfui3xu09tTEXlUreiuAEYddaCU0nWH/KCYOydF5WmP9OzGDkARrUG7C5oDIlbInd56VrqXsO/YN+fdW0Jn1SagqD2ykfoiz4tdUcw==
   launchdarkly:accessToken:
     secure: AAABAKsMJXt+LxXOaUmNI/fKVdJqd7xZ7wP53IRoriguiy49Xu/ffzKI02jtHNz7WWtZtOc0POUiQsfDwCv+Gqut+8q9lu3j
+  tally-infra:posthogHost: https://eu.i.posthog.com

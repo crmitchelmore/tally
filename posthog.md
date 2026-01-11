@@ -30,9 +30,13 @@
   - `cd tally-web && bun add posthog-js`
 
 ### 1.2 Env vars
-Add to `tally-web/.env.local` and Vercel env settings:
+Add to `tally-web/.env.local` (for local dev) and configure via Pulumi for Vercel:
 - `NEXT_PUBLIC_POSTHOG_KEY=...` (from PostHog project settings)
 - `NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com`
+
+Pulumi config keys supported (recommended for per-environment keys):
+- `posthogKeyDev`, `posthogKeyPreview`, `posthogKeyProd` (fallback: `posthogKey`)
+- optional `posthogHost` (default `https://eu.i.posthog.com`)
 - Optional but recommended:
   - `NEXT_PUBLIC_APP_ENV=dev|preview|prod`
 

@@ -8,6 +8,9 @@
  * The http.ts adapter layer handles this transformation.
  */
 
+// Re-export Zod schemas for runtime validation
+export * from "./schemas.js";
+
 export type TimeframeUnit = "year" | "month" | "custom";
 export type FeelingType = "very-easy" | "easy" | "moderate" | "hard" | "very-hard";
 

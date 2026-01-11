@@ -16,3 +16,4 @@ config:
     secure: AAABAOK1KDEuilFT+ah0gtv+1ANPT6EhIhr3HhszTxc1RnAqXxfn3awUbuihUXfSWFAe1dGspHz3d8tVNsmGXfT6pyGAwKtJC3bkjRfF+5+bjhBAM+PzsA==
   tally-infra:clerkSecretKeyDev:
     secure: AAABANyt8kmUb+OhymMzX1cmLWG/xdgtj9XeBXfXIoPLoNvgXrxs3o1UYhYtVAY3yXttslfepmTN40Vq8JghapeH2MosITQrrvw2piZSnRuvDw==
+  tally-infra:posthogHost: https://eu.i.posthog.com

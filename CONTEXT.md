@@ -124,6 +124,11 @@ SENTRY_ADMIN_TOKEN=...  # For Pulumi to manage projects
 
 **ALL infrastructure changes MUST go through Pulumi.** See [docs/IAC.md](docs/IAC.md) for full details.
 
+### Infra change preflight
+- Confirm correct stack name via `cd infra && pulumi stack ls`
+- Confirm domain ownership before adding any new domain resources
+- Don’t create/overwrite `.env` with placeholder/empty secrets; require secrets via `pulumi config set --secret ...`
+
 ```bash
 cd infra
 export PULUMI_ACCESS_TOKEN=$(grep PULUMI_ACCESS_TOKEN ../.env | cut -d= -f2)
@@ -143,7 +148,7 @@ pulumi up
 
 **Prod stack (`tally-tracker-org/prod`):**
 - Cloudflare DNS: `@` (A), `www` (CNAME), `_vercel` (TXT)
-- Vercel domains: `tally-tracker.app`, `www.tally-tracker.app`, `tally-tracker.com` (redirect), `www.tally-tracker.com` (redirect)
+- Vercel domains: `tally-tracker.app`, `www.tally-tracker.app`
 - Vercel env vars: Prod Clerk keys, Convex prod, Sentry, OTel
 - Clerk redirect URLs for prod domain
 - Sentry projects and DSNs

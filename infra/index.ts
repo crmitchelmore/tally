@@ -14,10 +14,6 @@ const config = new pulumi.Config();
 // Base domain and stack-specific subdomain
 const baseDomain = "tally-tracker.app";
 
-// Legacy/vanity domain: ensure this never accidentally points at a preview deployment.
-// We manage it as a redirect to the canonical .app domain.
-const legacyDomain = "tally-tracker.com";
-
 const domain = isProd ? baseDomain : `dev.${baseDomain}`;
 const zoneId = "816559836db3c2e80112bd6aeefd6d27";
 const vercelProjectId = "prj_tXdIJDmRB1qKZyo5Ngat62XoaMgw";
@@ -211,8 +207,6 @@ if (isProd) {
 
 let vercelDomain: vercel.ProjectDomain | undefined;
 let vercelWwwDomain: vercel.ProjectDomain | undefined;
-let vercelLegacyDomain: vercel.ProjectDomain | undefined;
-let vercelLegacyWwwDomain: vercel.ProjectDomain | undefined;
 let vercelDevDomain: vercel.ProjectDomain | undefined;
 
 if (isProd) {
@@ -227,23 +221,6 @@ if (isProd) {
     projectId: vercelProjectId,
     teamId: vercelTeamId,
     domain: `www.${baseDomain}`,
-    redirect: baseDomain,
-    redirectStatusCode: 308,
-  });
-
-  // Legacy .com domain: force redirect to canonical .app to avoid accidental preview/dev env vars.
-  vercelLegacyDomain = new vercel.ProjectDomain("tally-legacy-domain", {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    domain: legacyDomain,
-    redirect: baseDomain,
-    redirectStatusCode: 308,
-  });
-
-  vercelLegacyWwwDomain = new vercel.ProjectDomain("tally-legacy-www-domain", {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    domain: `www.${legacyDomain}`,
     redirect: baseDomain,
     redirectStatusCode: 308,
   });
@@ -361,23 +338,252 @@ const streaksEnabledFlag = { key: "streaks-enabled" };
 // Vercel Environment Variables for LaunchDarkly
 // =============================================================================
 
-// We'll use Pulumi outputs from the LD project to set Vercel env vars
-// The client-side ID is needed for browser-side SDK initialization
-const ldClientSideId = config.getSecret("launchDarklyClientSideId");
+// The LaunchDarkly client-side ID is environment-specific.
+// Vercel target mapping:
+// - production -> prod env
+// - preview -> preview env (fallback to dev)
+// - development -> dev env
+const ldClientSideIdDefault = config.getSecret("launchDarklyClientSideId");
 
-if (ldClientSideId) {
-  new vercel.ProjectEnvironmentVariable(
-    "ld-client-side-id",
-    {
-      projectId: vercelProjectId,
-      teamId: vercelTeamId,
-      key: "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
-      value: ldClientSideId,
-      targets: ["production", "preview", "development"],
+const ldAccessToken = new pulumi.Config("launchdarkly").getSecret("accessToken");
+const ldProjectKey = config.get("launchDarklyProjectKey") ?? "tally";
+
+function ensureLdEnvClientSideId(envKey: string, envName: string, color: string) {
+  if (!ldAccessToken) return undefined;
+
+  return new command.local.Command(`ld-client-side-id-${envKey}-${stack}`, {
+    create: pulumi.interpolate`set -euo pipefail
+TOKEN=${ldAccessToken}
+
+# Ensure project exists
+curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30 "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}" -H "Authorization: $TOKEN" >/dev/null || \
+  curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30 -X POST "https://app.launchdarkly.com/api/v2/projects" \
+    -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+    -d '{"key":"${ldProjectKey}","name":"Tally"}' >/dev/null
+
+# Ensure environment exists
+curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30 "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}/environments/${envKey}" -H "Authorization: $TOKEN" >/dev/null || \
+  curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30 -X POST "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}/environments" \
+    -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+    -d '{"key":"${envKey}","name":"${envName}","color":"${color}"}' >/dev/null
+
+curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30 "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}/environments/${envKey}" -H "Authorization: $TOKEN" | jq -r '.apiKey'`,
+    environment: {},
+  }).stdout;
+}
+
+const ldClientSideIdDev =
+  config.getSecret("launchDarklyClientSideIdDev") ??
+  ensureLdEnvClientSideId("dev", "Development", "7B68EE") ??
+  ldClientSideIdDefault;
+
+// Only the prod stack needs preview/prod LaunchDarkly environments.
+const ldClientSideIdPreview: pulumi.Output<string> | undefined = isProd
+  ? config.getSecret("launchDarklyClientSideIdPreview") ?? ldClientSideIdDev ?? ldClientSideIdDefault
+  : undefined;
+
+const ldClientSideIdProd: pulumi.Output<string> | undefined = isProd
+  ? config.getSecret("launchDarklyClientSideIdProd") ??
+    ensureLdEnvClientSideId("prod", "Production", "32CD32") ??
+    ldClientSideIdDefault
+  : undefined;
+
+const vercelApiToken = new pulumi.Config("vercel").getSecret("apiToken");
+
+function upsertVercelEnvVar(
+  name: string,
+  key: string,
+  value: pulumi.Input<string>,
+  target: "production" | "preview" | "development"
+) {
+  if (!vercelApiToken) return undefined;
+
+  return new command.local.Command(`vercel-env-${name}-${stack}`, {
+    create: pulumi.interpolate`set -euo pipefail
+TOKEN=${vercelApiToken}
+TEAM=${vercelTeamId}
+PROJ=${vercelProjectId}
+KEY="${key}"
+TARGET="${target}"
+CURL='curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30'
+
+EXISTING_ID=$($CURL "https://api.vercel.com/v9/projects/$PROJ/env?teamId=$TEAM" \
+  -H "Authorization: Bearer $TOKEN" | jq -r --arg key "$KEY" --arg target "$TARGET" \
+  '.envs[]? | select(.key==$key and (.target|length==1) and .target[0]==$target and (.gitBranch==null)) | .id' | head -n 1)
+
+if [ -n "$EXISTING_ID" ] && [ "$EXISTING_ID" != "null" ]; then
+  $CURL -X PATCH "https://api.vercel.com/v9/projects/$PROJ/env/$EXISTING_ID?teamId=$TEAM" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "$(jq -cn --arg value "$VALUE" '{value:$value}')" >/dev/null
+  echo "$EXISTING_ID"
+else
+  $CURL -X POST "https://api.vercel.com/v9/projects/$PROJ/env?teamId=$TEAM" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "$(jq -cn --arg key "$KEY" --arg value "$VALUE" --arg target "$TARGET" '{key:$key,value:$value,type:\"encrypted\",target:[$target]}')" \
+    | jq -r '.id'
+fi`,
+    delete: pulumi.interpolate`set -euo pipefail
+TOKEN=${vercelApiToken}
+TEAM=${vercelTeamId}
+PROJ=${vercelProjectId}
+KEY="${key}"
+TARGET="${target}"
+CURL='curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30'
+
+EXISTING_ID=$($CURL "https://api.vercel.com/v9/projects/$PROJ/env?teamId=$TEAM" \
+  -H "Authorization: Bearer $TOKEN" | jq -r --arg key "$KEY" --arg target "$TARGET" \
+  '.envs[]? | select(.key==$key and (.target|length==1) and .target[0]==$target and (.gitBranch==null)) | .id' | head -n 1)
+
+[ -n "$EXISTING_ID" ] && [ "$EXISTING_ID" != "null" ] && \
+  $CURL -X DELETE "https://api.vercel.com/v9/projects/$PROJ/env/$EXISTING_ID?teamId=$TEAM" \
+    -H "Authorization: Bearer $TOKEN" >/dev/null || true`,
+    environment: {
+      VALUE: value,
     },
-    {
-      deleteBeforeReplace: true,
-    }
+  });
+}
+
+if (ldClientSideIdProd) {
+  upsertVercelEnvVar(
+    "ld-client-side-id-prod",
+    "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
+    ldClientSideIdProd,
+    "production"
+  );
+}
+
+if (ldClientSideIdPreview) {
+  upsertVercelEnvVar(
+    "ld-client-side-id-preview",
+    "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
+    ldClientSideIdPreview,
+    "preview"
+  );
+}
+
+if (ldClientSideIdDev) {
+  upsertVercelEnvVar(
+    `ld-client-side-id-dev${isProd ? "" : "-stack"}`,
+    "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
+    ldClientSideIdDev,
+    "development"
+  );
+}
+
+// =============================================================================
+// Vercel Environment Variables for PostHog
+// =============================================================================
+
+const posthogKeyDefault = config.getSecret("posthogKey");
+
+// Optionally auto-provision PostHog projects and read their public project API keys.
+// Uses (in order): pulumi config `posthog:adminToken`, env var `POSTHOG_ADMIN_TOKEN`, or ../.env (when running locally).
+const posthogConfig = new pulumi.Config("posthog");
+const posthogAdminToken =
+  posthogConfig.getSecret("adminToken") ??
+  (process.env.POSTHOG_ADMIN_TOKEN ? pulumi.secret(process.env.POSTHOG_ADMIN_TOKEN) : undefined);
+const posthogApiHost = posthogConfig.get("apiHost") ?? "https://eu.posthog.com";
+const posthogOrgId = posthogConfig.get("organizationId");
+
+function ensurePosthogProjectApiKey(projectName: string) {
+  if (!posthogAdminToken) return undefined;
+
+  return new command.local.Command(`posthog-project-key-${projectName}-${stack}`.replace(/[^a-zA-Z0-9-]/g, "-"), {
+    create: pulumi.interpolate`set -euo pipefail
+
+TOKEN="$TOKEN"
+BASE="${posthogApiHost}"
+ORG_ID="${posthogOrgId ?? ""}"
+
+if [ -z "$TOKEN" ] && [ -f ../.env ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . ../.env
+  set +a
+  TOKEN="$POSTHOG_ADMIN_TOKEN"
+fi
+
+if [ -z "$TOKEN" ]; then
+  echo "Missing PostHog admin token" >&2
+  exit 1
+fi
+
+CURL='curl -sfL --http1.1 --retry 10 --retry-all-errors --retry-delay 2 --connect-timeout 10 --max-time 60'
+PROJECT_NAME="${projectName}"
+
+if [ -z "$ORG_ID" ]; then
+  ORG_ID=$($CURL "$BASE/api/organizations/" -H "Authorization: Bearer $TOKEN" | jq -r '.results[0].id')
+fi
+
+PROJECT_ID=$($CURL "$BASE/api/organizations/$ORG_ID/projects/" -H "Authorization: Bearer $TOKEN" | jq -r --arg name "$PROJECT_NAME" '.results[]? | select(.name==$name) | .id' | head -n 1)
+
+# If the project doesn't exist (or plan doesn't allow creating more), fall back to the first existing project.
+if [ -z "$PROJECT_ID" ] || [ "$PROJECT_ID" = "null" ]; then
+  PROJECT_ID=$($CURL "$BASE/api/organizations/$ORG_ID/projects/" -H "Authorization: Bearer $TOKEN" | jq -r '.results[0].id')
+fi
+
+if [ -z "$PROJECT_ID" ] || [ "$PROJECT_ID" = "null" ]; then
+  echo "No PostHog projects found" >&2
+  exit 1
+fi
+
+$CURL "$BASE/api/projects/$PROJECT_ID/" -H "Authorization: Bearer $TOKEN" | jq -r '.api_token'`,
+    environment: {
+      TOKEN: posthogAdminToken,
+    },
+  }).stdout;
+}
+
+const posthogKeyDev =
+  config.getSecret("posthogKeyDev") ??
+  ensurePosthogProjectApiKey("Tally (Dev)") ??
+  posthogKeyDefault;
+
+const posthogKeyPreview = isProd
+  ? config.getSecret("posthogKeyPreview") ??
+    ensurePosthogProjectApiKey("Tally (Preview)") ??
+    posthogKeyDev ??
+    posthogKeyDefault
+  : undefined;
+
+const posthogKeyProd = isProd
+  ? config.getSecret("posthogKeyProd") ?? ensurePosthogProjectApiKey("Tally (Prod)") ?? posthogKeyDefault
+  : undefined;
+
+const posthogHost = config.get("posthogHost") ?? "https://eu.i.posthog.com";
+
+const anyPosthogKey = posthogKeyProd ?? posthogKeyPreview ?? posthogKeyDev;
+
+if (posthogKeyProd) {
+  upsertVercelEnvVar("posthog-key-prod", "NEXT_PUBLIC_POSTHOG_KEY", posthogKeyProd, "production");
+}
+
+if (posthogKeyPreview) {
+  upsertVercelEnvVar("posthog-key-preview", "NEXT_PUBLIC_POSTHOG_KEY", posthogKeyPreview, "preview");
+}
+
+if (posthogKeyDev) {
+  upsertVercelEnvVar(
+    `posthog-key-dev${isProd ? "" : "-stack"}`,
+    "NEXT_PUBLIC_POSTHOG_KEY",
+    posthogKeyDev,
+    "development"
+  );
+}
+
+if (anyPosthogKey) {
+  if (isProd) {
+    upsertVercelEnvVar("posthog-host-prod", "NEXT_PUBLIC_POSTHOG_HOST", posthogHost, "production");
+    upsertVercelEnvVar("posthog-host-preview", "NEXT_PUBLIC_POSTHOG_HOST", posthogHost, "preview");
+  }
+
+  upsertVercelEnvVar(
+    `posthog-host-dev${isProd ? "" : "-stack"}`,
+    "NEXT_PUBLIC_POSTHOG_HOST",
+    posthogHost,
+    "development"
   );
 }
 

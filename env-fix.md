@@ -64,13 +64,13 @@ Push to main
 - `GRAFANA_CLOUD_OTLP_TOKEN`
 
 **Development environment:**
-- `CLERK_SECRET_KEY` (dev instance: sk_test_*)
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (dev instance: pk_test_*)
+- `CLERK_SECRET_KEY_DEV` (dev instance: sk_test_*)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV` (dev instance: pk_test_*)
 - `CONVEX_DEPLOY_KEY` (dev deployment key)
 
 **Production environment:**
-- `CLERK_SECRET_KEY` (prod instance: sk_live_*)
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (prod instance: pk_live_*)
+- `CLERK_SECRET_KEY_PROD` (prod instance: sk_live_*)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD` (prod instance: pk_live_*)
 - `CONVEX_DEPLOY_KEY` (prod deployment key)
 
 ### Migration Script
@@ -94,13 +94,13 @@ If you prefer to migrate manually:
 
 ```bash
 # Development environment
-gh secret set CLERK_SECRET_KEY --env development --body "$DEV_CLERK_SECRET"
-gh secret set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY --env development --body "$DEV_CLERK_PUB"
+gh secret set CLERK_SECRET_KEY_DEV --env development --body "$DEV_CLERK_SECRET"
+gh secret set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV --env development --body "$DEV_CLERK_PUB"
 gh secret set CONVEX_DEPLOY_KEY --env development --body "$DEV_CONVEX_KEY"
 
 # Production environment
-gh secret set CLERK_SECRET_KEY --env production --body "$PROD_CLERK_SECRET"
-gh secret set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY --env production --body "$PROD_CLERK_PUB"
+gh secret set CLERK_SECRET_KEY_PROD --env production --body "$PROD_CLERK_SECRET"
+gh secret set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD --env production --body "$PROD_CLERK_PUB"
 gh secret set CONVEX_DEPLOY_KEY --env production --body "$PROD_CONVEX_KEY"
 ```
 

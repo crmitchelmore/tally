@@ -85,12 +85,12 @@ jobs:
 
       - name: Verify required secrets
         env:
-          CLERK_PK: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SK: ${{ secrets.CLERK_SECRET_KEY }}
+          CLERK_PK: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
+          CLERK_SK: ${{ secrets.CLERK_SECRET_KEY_DEV }}
         run: |
           missing=""
-          [ -z "$CLERK_PK" ] && missing="$missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
-          [ -z "$CLERK_SK" ] && missing="$missing CLERK_SECRET_KEY"
+          [ -z "$CLERK_PK" ] && missing="$missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV"
+          [ -z "$CLERK_SK" ] && missing="$missing CLERK_SECRET_KEY_DEV"
           if [ -n "$missing" ]; then
             echo "::error::Missing required secrets:$missing"
             exit 1
@@ -111,8 +111,8 @@ jobs:
       - name: Build
         run: bun run build
         env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
+          CLERK_SECRET_KEY_DEV: ${{ secrets.CLERK_SECRET_KEY_DEV }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: tally-lz
           SENTRY_PROJECT: javascript-nextjs
@@ -294,14 +294,13 @@ jobs:
       - name: Check Convex deploy key
         id: convex_key
         env:
-          CONVEX_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_DEV }}
         run: |
           if [ -z "$CONVEX_KEY" ]; then
-            echo "::warning::CONVEX_DEPLOY_KEY not set; skipping Convex deploy"
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "::error::Missing required secret: CONVEX_DEPLOY_KEY_DEV"
+            exit 1
           fi
+          echo "✓ CONVEX_DEPLOY_KEY_DEV present"
 
       - name: Install Bun
         run: |
@@ -314,12 +313,8 @@ jobs:
       - name: Deploy Convex (dev)
         if: steps.convex_key.outputs.skip != 'true'
         env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
-        run: |
-          bunx convex deploy --cmd-url-env-var-name CONVEX_DEPLOY_KEY || {
-            echo "::warning::Convex deploy failed (check CONVEX_DEPLOY_KEY)";
-            exit 0;
-          }
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_DEV }}
+        run: bunx convex deploy --cmd-url-env-var-name CONVEX_DEPLOY_KEY
 
   deploy-dev-vercel:
     name: Deploy Vercel (dev)
@@ -503,14 +498,13 @@ jobs:
       - name: Check Convex deploy key
         id: convex_key
         env:
-          CONVEX_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_PROD }}
         run: |
           if [ -z "$CONVEX_KEY" ]; then
-            echo "::warning::CONVEX_DEPLOY_KEY not set; skipping Convex deploy"
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "::error::Missing required secret: CONVEX_DEPLOY_KEY_PROD"
+            exit 1
           fi
+          echo "✓ CONVEX_DEPLOY_KEY_PROD present"
 
       - name: Install Bun
         run: |
@@ -523,12 +517,8 @@ jobs:
       - name: Deploy Convex (prod)
         if: steps.convex_key.outputs.skip != 'true'
         env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
-        run: |
-          bunx convex deploy --cmd-url-env-var-name CONVEX_DEPLOY_KEY || {
-            echo "::warning::Convex deploy failed (check CONVEX_DEPLOY_KEY)";
-            exit 0;
-          }
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_PROD }}
+        run: bunx convex deploy --cmd-url-env-var-name CONVEX_DEPLOY_KEY
 
   deploy-prod-vercel:
     name: Deploy Vercel (prod)

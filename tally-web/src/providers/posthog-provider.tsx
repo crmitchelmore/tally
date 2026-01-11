@@ -2,12 +2,13 @@
 
 import { ReactNode, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
+import { getClerkPublishableKey } from "@/lib/clerk-public";
 
 const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
 export function PostHogProvider({ children }: { children: ReactNode }) {
-  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const clerkPublishableKey = getClerkPublishableKey();
 
   return clerkPublishableKey ? (
     <PostHogProviderWithClerk>{children}</PostHogProviderWithClerk>

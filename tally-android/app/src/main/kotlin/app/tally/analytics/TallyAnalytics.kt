@@ -1,8 +1,9 @@
 package app.tally.analytics
 
 import android.content.Context
-import com.posthog.android.PostHog
-import com.posthog.android.PostHogConfig
+import com.posthog.PostHogInterface
+import com.posthog.android.PostHogAndroid
+import com.posthog.android.PostHogAndroidConfig
 import io.sentry.Sentry
 import io.sentry.protocol.User
 
@@ -14,6 +15,7 @@ import io.sentry.protocol.User
  */
 object TallyAnalytics {
     private var isInitialized = false
+    private var posthog: PostHogInterface? = null
 
     /**
      * Initialize analytics (call once from Application.onCreate)
@@ -27,18 +29,19 @@ object TallyAnalytics {
 
         // Initialize PostHog
         if (!posthogApiKey.isNullOrBlank()) {
-            val config = PostHogConfig(
+            val config = PostHogAndroidConfig(
                 apiKey = posthogApiKey,
-                host = "https://app.posthog.com"
+                host = "https://app.posthog.com",
             ).apply {
                 captureScreenViews = false
                 captureDeepLinks = false
             }
-            PostHog.setup(context, config)
-            PostHog.register(mapOf(
-                "platform" to "android",
-                "app_version" to appVersion
-            ))
+
+            PostHogAndroid.Companion.setup(context, config)
+            posthog = PostHogAndroid.Companion.with(context, config)
+
+            posthog?.register("platform", "android")
+            posthog?.register("app_version", appVersion)
         }
 
         // Note: Sentry is auto-initialized by the Gradle plugin
@@ -55,7 +58,7 @@ object TallyAnalytics {
      */
     fun identify(userId: String, traits: Map<String, Any>? = null) {
         val hashedId = hashUserId(userId)
-        PostHog.identify(hashedId, traits)
+        posthog?.identify(hashedId, traits ?: emptyMap(), emptyMap())
 
         val sentryUser = User().apply {
             id = hashedId
@@ -67,7 +70,7 @@ object TallyAnalytics {
      * Clear user identity on sign out
      */
     fun reset() {
-        PostHog.reset()
+        posthog?.reset()
         Sentry.setUser(null)
     }
 
@@ -77,7 +80,17 @@ object TallyAnalytics {
     fun track(event: String, properties: Map<String, Any>? = null) {
         val props = (properties ?: emptyMap()).toMutableMap()
         props["platform"] = "android"
-        PostHog.capture(event, props)
+
+        val distinctId = posthog?.distinctId() ?: ""
+        posthog?.capture(
+            event,
+            distinctId,
+            props,
+            emptyMap(),
+            emptyMap(),
+            emptyMap(),
+            emptyMap()
+        )
     }
 
     // MARK: - Convenience Methods
@@ -122,7 +135,7 @@ object TallyAnalytics {
         if (context != null) {
             Sentry.configureScope { scope ->
                 context.forEach { (key, value) ->
-                    scope.setExtra(key, value)
+                    scope.setExtra(key, value.toString())
                 }
             }
         }
@@ -133,7 +146,11 @@ object TallyAnalytics {
      * Add a breadcrumb for debugging
      */
     fun addBreadcrumb(message: String, category: String? = null) {
-        Sentry.addBreadcrumb(message, category)
+        if (category != null) {
+            Sentry.addBreadcrumb(message, category)
+        } else {
+            Sentry.addBreadcrumb(message)
+        }
     }
 
     // MARK: - Private

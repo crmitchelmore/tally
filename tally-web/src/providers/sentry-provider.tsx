@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import { getClerkPublishableKey } from "@/lib/clerk-public";
 import { useSentryUser } from "@/hooks/use-sentry-user";
 
 interface SentryProviderProps {
@@ -12,7 +13,7 @@ interface SentryProviderProps {
  * Place inside ClerkProvider to have access to user context.
  */
 export function SentryProvider({ children }: SentryProviderProps) {
-  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const clerkPublishableKey = getClerkPublishableKey();
 
   return clerkPublishableKey ? (
     <SentryProviderWithClerk>{children}</SentryProviderWithClerk>

@@ -42,7 +42,11 @@ import { useMotionPreference } from "@/hooks/use-reduced-motion";
 type ViewMode = "dashboard" | "leaderboard" | "community";
 
 export default function Home() {
-  const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  const clerkEnabled = Boolean(
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD ??
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV ??
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  );
 
   useStoreUser();
   const { user: convexUser, isLoaded: isUserLoaded } = useCurrentUser();

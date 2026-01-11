@@ -64,7 +64,7 @@ if (isProd) {
       {
         projectId: vercelProjectId,
         teamId: vercelTeamId,
-        key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+        key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD",
         value: clerkPublishableKey,
         targets: ["production"],
       },
@@ -77,7 +77,7 @@ if (isProd) {
     {
       projectId: vercelProjectId,
       teamId: vercelTeamId,
-      key: "CLERK_SECRET_KEY",
+      key: "CLERK_SECRET_KEY_PROD",
       value: clerkSecretKey,
       targets: ["production"],
     },
@@ -91,7 +91,7 @@ if (isProd) {
       {
         projectId: vercelProjectId,
         teamId: vercelTeamId,
-        key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+        key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV",
         value: clerkPublishableKeyDev,
         targets: ["preview", "development"],
       },
@@ -105,7 +105,7 @@ if (isProd) {
       {
         projectId: vercelProjectId,
         teamId: vercelTeamId,
-        key: "CLERK_SECRET_KEY",
+        key: "CLERK_SECRET_KEY_DEV",
         value: clerkSecretKeyDev,
         targets: ["preview", "development"],
       },

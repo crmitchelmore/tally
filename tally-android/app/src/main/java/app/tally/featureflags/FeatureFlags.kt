@@ -3,6 +3,7 @@ package app.tally.featureflags
 import android.app.Application
 import com.launchdarkly.sdk.ContextKind
 import com.launchdarkly.sdk.LDContext
+import com.launchdarkly.sdk.android.FeatureFlagChangeListener
 import com.launchdarkly.sdk.android.LDClient
 import com.launchdarkly.sdk.android.LDConfig
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +35,7 @@ object FeatureFlags {
   fun initialize(application: Application, mobileKey: String) {
     if (mobileKey.isBlank() || isInitialized) return
 
-    val config = LDConfig.Builder()
+    val config = LDConfig.Builder(LDConfig.Builder.AutoEnvAttributes.Enabled)
       .mobileKey(mobileKey)
       .build()
 
@@ -104,8 +105,9 @@ object FeatureFlags {
   }
 
   private fun observeFlagChanges() {
-    client?.registerFeatureFlagListener("streaks-enabled") {
-      refreshFlagValues()
-    }
+    client?.registerFeatureFlagListener(
+      "streaks-enabled",
+      FeatureFlagChangeListener { refreshFlagValues() }
+    )
   }
 }

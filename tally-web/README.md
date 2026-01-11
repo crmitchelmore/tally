@@ -28,16 +28,16 @@ This will:
 1. Create an account at [clerk.com](https://clerk.com)
 2. Create a new application
 3. Get your keys from the API Keys section:
-   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-   - `CLERK_SECRET_KEY`
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV`
+   - `CLERK_SECRET_KEY_DEV`
 
 ### 3. Configure Environment Variables
 
 Copy `.env.local.example` to `.env.local` and fill in:
 
 ```env
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV=pk_test_...
+CLERK_SECRET_KEY_DEV=sk_test_...
 NEXT_PUBLIC_CONVEX_URL=https://...convex.cloud
 ```
 

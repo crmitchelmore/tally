@@ -70,15 +70,15 @@ echo ""
 # - repo = stays at repo level (shared)
 
 declare -a SECRET_MAPPINGS=(
-  # Development environment secrets (from _DEV suffix)
-  "CLERK_SECRET_KEY_DEV:CLERK_SECRET_KEY:development"
-  "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV:NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:development"
-  "CONVEX_DEPLOY_KEY_DEV:CONVEX_DEPLOY_KEY:development"
+  # Development environment secrets (rename to explicit _DEV names)
+  "CLERK_SECRET_KEY:CLERK_SECRET_KEY_DEV:development"
+  "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV:development"
+  "CONVEX_DEPLOY_KEY:CONVEX_DEPLOY_KEY_DEV:development"
   
-  # Production environment secrets (from _PROD suffix)
-  "CLERK_SECRET_KEY_PROD:CLERK_SECRET_KEY:production"
-  "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD:NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:production"
-  "CONVEX_DEPLOY_KEY_PROD:CONVEX_DEPLOY_KEY:production"
+  # Production environment secrets (rename to explicit _PROD names)
+  "CLERK_SECRET_KEY:CLERK_SECRET_KEY_PROD:production"
+  "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD:production"
+  "CONVEX_DEPLOY_KEY:CONVEX_DEPLOY_KEY_PROD:production"
   
   # Shared secrets (stay at repo level - no migration needed)
   # PULUMI_ACCESS_TOKEN - repo
@@ -155,14 +155,14 @@ if [[ "$proceed" != "y" && "$proceed" != "Y" ]]; then
   echo "Migration cancelled. You can set secrets manually with:"
   echo ""
   echo "  # Development secrets:"
-  echo "  gh secret set CLERK_SECRET_KEY --env development --body \"\$VALUE\""
-  echo "  gh secret set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY --env development --body \"\$VALUE\""
-  echo "  gh secret set CONVEX_DEPLOY_KEY --env development --body \"\$VALUE\""
+  echo "  gh secret set CLERK_SECRET_KEY_DEV --env development --body \"\$VALUE\""
+  echo "  gh secret set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV --env development --body \"\$VALUE\""
+  echo "  gh secret set CONVEX_DEPLOY_KEY_DEV --env development --body \"\$VALUE\""
   echo ""
   echo "  # Production secrets:"
-  echo "  gh secret set CLERK_SECRET_KEY --env production --body \"\$VALUE\""
-  echo "  gh secret set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY --env production --body \"\$VALUE\""
-  echo "  gh secret set CONVEX_DEPLOY_KEY --env production --body \"\$VALUE\""
+  echo "  gh secret set CLERK_SECRET_KEY_PROD --env production --body \"\$VALUE\""
+  echo "  gh secret set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD --env production --body \"\$VALUE\""
+  echo "  gh secret set CONVEX_DEPLOY_KEY_PROD --env production --body \"\$VALUE\""
   echo ""
   exit 0
 fi

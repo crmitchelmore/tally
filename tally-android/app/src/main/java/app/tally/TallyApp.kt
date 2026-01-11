@@ -4,7 +4,7 @@ import android.app.Application
 import com.clerk.api.Clerk
 import app.tally.featureflags.FeatureFlags
 import io.sentry.android.core.SentryAndroid
-import io.sentry.SentryOptions
+import io.sentry.android.core.SentryAndroidOptions
 
 class TallyApp : Application() {
   override fun onCreate() {
@@ -13,7 +13,7 @@ class TallyApp : Application() {
     // Initialize Sentry (first, to capture any startup errors)
     val sentryDsn = BuildConfig.SENTRY_DSN
     if (sentryDsn.isNotBlank()) {
-      SentryAndroid.init(this) { options: SentryOptions ->
+      SentryAndroid.init(this) { options: SentryAndroidOptions ->
         options.dsn = sentryDsn
         options.environment = "production"
         

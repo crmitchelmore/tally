@@ -57,7 +57,7 @@ Convex has separate dev and prod deployments:
 - `CONVEX_DEPLOY_KEY_DEV`: Dev deployment key (for testing/CI)
 - `CONVEX_DEPLOY_KEY_PROD`: Prod deployment key (for production deploys)
 
-**Local development**: Uses `CONVEX_DEPLOYMENT=dev:bright-jackal-396` from `.env`
+**Local development**: Uses `NEXT_PUBLIC_CONVEX_URL` (and optionally `CONVEX_DEPLOY_KEY_DEV` for deploys) from `.env`
 
 ## Managed Resources
 
@@ -79,8 +79,10 @@ If ownership is unclear, do not provision the domain—confirm first.
 We host the dev environment at `https://dev.tally-tracker.app` (managed via the Pulumi dev stack).
 
 - Environment variables (managed by Pulumi):
-  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-  - `CLERK_SECRET_KEY`
+  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV`
+  - `CLERK_SECRET_KEY_DEV`
+  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD`
+  - `CLERK_SECRET_KEY_PROD`
   - `CONVEX_DEPLOYMENT`
   - `NEXT_PUBLIC_CONVEX_URL`
   - `NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID`

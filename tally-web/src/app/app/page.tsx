@@ -295,7 +295,7 @@ export default function Home() {
               }}
             />
           ) : challenges && entries && challenges.length > 0 ? (
-            <div className="space-y-8">
+            <div className="space-y-8" data-testid="challenges-section">
               {/* Overall Stats */}
               <OverallStats challenges={challenges} entries={entries} />
 
@@ -350,6 +350,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={shouldAnimate ? { duration: 0.3 } : { duration: 0 }}
               className="flex flex-col items-center justify-center py-20"
+              data-testid="empty-state"
             >
               <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6">
                 <Target className="w-12 h-12 text-primary" />

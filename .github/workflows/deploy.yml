@@ -125,6 +125,47 @@ jobs:
         env:
           TALLY_API_BASE: https://bright-jackal-396.convex.site
 
+  # ===========================================================================
+  # E2E Tests on PRs (run against local dev server)
+  # ===========================================================================
+  
+  e2e-pr:
+    name: E2E Tests (PR)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: [lint-build-test]
+    environment: development
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run E2E smoke tests
+        run: bun run test:e2e
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CONVEX_URL: https://bright-jackal-396.convex.cloud
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-pr
+          path: tally-web/playwright-report/
+
   infra-typecheck:
     name: Infra (typecheck)
     runs-on: ubuntu-latest

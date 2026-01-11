@@ -47,6 +47,40 @@ test.describe("Authenticated Dashboard", () => {
     });
   });
 
+  test("@auth dashboard does not show blank screen (convex auth regression)", async ({ page }) => {
+    await signIn(page);
+    await page.goto("/app", { waitUntil: "domcontentloaded" });
+
+    // The page should NOT be stuck in a blank state - either:
+    // 1. Show loading skeletons (data loading)
+    // 2. Show "No Challenges Yet" empty state
+    // 3. Show actual challenges
+    // If Convex isn't authenticated with Clerk, queries hang forever and content never loads
+
+    // Wait for either: challenges section, empty state, or loading skeleton
+    const hasContent = page.locator('[data-testid="challenges-section"], [data-testid="empty-state"]').or(
+      page.getByText(/your challenges|no challenges yet/i)
+    ).or(
+      page.getByRole("button", { name: /new challenge|create.*challenge/i })
+    );
+
+    // This will fail if the page stays blank (Convex queries hanging due to missing auth)
+    await expect(hasContent).toBeVisible({ timeout: 20000 });
+
+    // Ensure we're not stuck on loading state indefinitely
+    // After 20s, loading skeletons should have resolved to actual content
+    const skeletons = page.locator('[class*="skeleton"], [data-slot="skeleton"]');
+    const skeletonCount = await skeletons.count();
+    
+    // If there are still loading skeletons after the content check, wait a bit more
+    // and verify they eventually disappear
+    if (skeletonCount > 0) {
+      await page.waitForTimeout(5000);
+      const stillLoading = await skeletons.count();
+      expect(stillLoading).toBeLessThan(skeletonCount);
+    }
+  });
+
   test("@auth can open new challenge dialog", async ({ page }) => {
     await signIn(page);
     await page.goto("/app", { waitUntil: "networkidle" });

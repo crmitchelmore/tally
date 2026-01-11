@@ -4,9 +4,9 @@ config:
   vercel:apiToken:
     secure: AAABALeY95TiHWHOve62FxdqgxVktNOP/oQ6lugdSF9EqkgGPIdpLoHGtcl8YeOh0P5hXnfACSs=
   tally-infra:clerkSecretKey:
-    secure: AAABAITJePNFbOOIM28nIo/dNXkWWIpb8KZAUa2GZdzt0nR+Qkdp2XrAR3Hl4sT8Uhh18eT4vrRE0N13vpcC/j9mGeKZcDMNZX19edPXLIdT4g==
+    secure: AAABADeWWn6WkmctnpZszaQ0hBEwYSfUIl3ci8Ef8wpltu8AitMD4v1QVzuUFTo46psAp6hUNveRYssrbabPSKMQhmjuRozqKsIZCiioR4kvKA==
   tally-infra:clerkPublishableKey:
-    secure: AAABADmercZcEOgJr0XJArm7+uMeb++PRc4BqIE16lRx9QEyc/nOGSB+1Tk6BK6uuGCfIZ27dlWa28E26FVfnC+TtC7AtPokHDxrTyR4HI+lH/YkSTYQxg==
+    secure: AAABAPLvowOG3TIpr1lEmPIN7INhWZhifUg58vTBoEvSJJkZjLkqDHhWbz6YwJljzjFXTq1C9I8j17v/B4fNHaMM2H8HrNe5
   tally-infra:convexDeployment: prod:bright-jackal-396
   tally-infra:sentryAdminToken:
     secure: AAABAH7gcM8hJBUrGglAbNhJobin2EOli57cPvX2u7n/AypbeSEwYtMMx7v98qm3z/u9jdWsOIZwThb6UE8AYJ75M3xvU2xw1g6nq1JrLppffsaqVQzzV7G99HlNJo/nAuJdwKUYPA==

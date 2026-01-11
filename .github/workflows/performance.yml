@@ -64,6 +64,7 @@ jobs:
           configPath: ./tally-web/lighthouserc.json
           uploadArtifacts: true
           temporaryPublicStorage: true
+          artifactName: lighthouse-results-desktop
 
       - name: Run Lighthouse (mobile)
         uses: treosh/lighthouse-ci-action@v12
@@ -73,6 +74,7 @@ jobs:
           configPath: ./tally-web/lighthouserc.mobile.json
           uploadArtifacts: true
           temporaryPublicStorage: true
+          artifactName: lighthouse-results-mobile
 
       - name: Check bundle size
         run: |

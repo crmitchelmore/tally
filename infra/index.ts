@@ -477,9 +477,76 @@ if (ldClientSideIdDev) {
 // =============================================================================
 
 const posthogKeyDefault = config.getSecret("posthogKey");
-const posthogKeyDev = config.getSecret("posthogKeyDev") ?? posthogKeyDefault;
-const posthogKeyPreview = config.getSecret("posthogKeyPreview") ?? posthogKeyDev ?? posthogKeyDefault;
-const posthogKeyProd = config.getSecret("posthogKeyProd") ?? posthogKeyDefault;
+
+// Optionally auto-provision PostHog projects and read their public project API keys.
+// Uses (in order): pulumi config `posthog:adminToken`, env var `POSTHOG_ADMIN_TOKEN`, or ../.env (when running locally).
+const posthogConfig = new pulumi.Config("posthog");
+const posthogAdminToken =
+  posthogConfig.getSecret("adminToken") ??
+  (process.env.POSTHOG_ADMIN_TOKEN ? pulumi.secret(process.env.POSTHOG_ADMIN_TOKEN) : undefined);
+const posthogApiHost = posthogConfig.get("apiHost") ?? "https://eu.posthog.com";
+const posthogOrgId = posthogConfig.get("organizationId");
+
+function ensurePosthogProjectApiKey(projectName: string) {
+  if (!posthogAdminToken) return undefined;
+
+  return new command.local.Command(`posthog-project-key-${projectName}-${stack}`.replace(/[^a-zA-Z0-9-]/g, "-"), {
+    create: pulumi.interpolate`set -euo pipefail
+
+TOKEN="$TOKEN"
+BASE="${posthogApiHost}"
+ORG_ID="${posthogOrgId ?? ""}"
+
+if [ -z "$TOKEN" ] && [ -f ../.env ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . ../.env
+  set +a
+  TOKEN="$POSTHOG_ADMIN_TOKEN"
+fi
+
+if [ -z "$TOKEN" ]; then
+  echo "Missing PostHog admin token" >&2
+  exit 1
+fi
+
+CURL='curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30'
+
+if [ -z "$ORG_ID" ]; then
+  ORG_ID=$($CURL "$BASE/api/organizations/" -H "Authorization: Bearer $TOKEN" | jq -r '.results[0].id')
+fi
+
+PROJECT_ID=$($CURL "$BASE/api/organizations/$ORG_ID/projects/" -H "Authorization: Bearer $TOKEN" | jq -r --arg name "${projectName}" '.results[]? | select(.name==$name) | .id' | head -n 1)
+
+if [ -z "$PROJECT_ID" ] || [ "$PROJECT_ID" = "null" ]; then
+  PROJECT_ID=$($CURL -X POST "$BASE/api/organizations/$ORG_ID/projects/" \
+    -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+    -d "$(jq -cn --arg name \"${projectName}\" '{name:$name}')" | jq -r '.id')
+fi
+
+$CURL "$BASE/api/projects/$PROJECT_ID/" -H "Authorization: Bearer $TOKEN" | jq -r '.api_token'`,
+    environment: {
+      TOKEN: posthogAdminToken,
+    },
+  }).stdout;
+}
+
+const posthogKeyDev =
+  config.getSecret("posthogKeyDev") ??
+  ensurePosthogProjectApiKey("Tally (Dev)") ??
+  posthogKeyDefault;
+
+const posthogKeyPreview = isProd
+  ? config.getSecret("posthogKeyPreview") ??
+    ensurePosthogProjectApiKey("Tally (Preview)") ??
+    posthogKeyDev ??
+    posthogKeyDefault
+  : undefined;
+
+const posthogKeyProd = isProd
+  ? config.getSecret("posthogKeyProd") ?? ensurePosthogProjectApiKey("Tally (Prod)") ?? posthogKeyDefault
+  : undefined;
+
 const posthogHost = config.get("posthogHost") ?? "https://eu.i.posthog.com";
 
 const anyPosthogKey = posthogKeyProd ?? posthogKeyPreview ?? posthogKeyDev;
@@ -502,9 +569,17 @@ if (posthogKeyDev) {
 }
 
 if (anyPosthogKey) {
-  upsertVercelEnvVar("posthog-host-prod", "NEXT_PUBLIC_POSTHOG_HOST", posthogHost, "production");
-  upsertVercelEnvVar("posthog-host-preview", "NEXT_PUBLIC_POSTHOG_HOST", posthogHost, "preview");
-  upsertVercelEnvVar("posthog-host-dev", "NEXT_PUBLIC_POSTHOG_HOST", posthogHost, "development");
+  if (isProd) {
+    upsertVercelEnvVar("posthog-host-prod", "NEXT_PUBLIC_POSTHOG_HOST", posthogHost, "production");
+    upsertVercelEnvVar("posthog-host-preview", "NEXT_PUBLIC_POSTHOG_HOST", posthogHost, "preview");
+  }
+
+  upsertVercelEnvVar(
+    `posthog-host-dev${isProd ? "" : "-stack"}`,
+    "NEXT_PUBLIC_POSTHOG_HOST",
+    posthogHost,
+    "development"
+  );
 }
 
 // =============================================================================

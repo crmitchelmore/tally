@@ -9,7 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     env:
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      # Use dev Clerk instance key for PR screenshot runs
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
     defaults:
       run:
         working-directory: tally-web

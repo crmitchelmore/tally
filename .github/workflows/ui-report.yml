@@ -58,7 +58,9 @@ jobs:
           bun --version
 
       - name: Install deps
-        run: bun install --frozen-lockfile
+        run: |
+          cd ..
+          bun install --frozen-lockfile
 
       - name: Install Playwright browsers
         run: |

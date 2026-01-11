@@ -60,6 +60,11 @@ Tally is a multi-platform challenge tracking app:
 - App Router only (no pages router patterns)
 - Never hardcode keys - use `.env`
 
+### Deploy/auth guardrails
+- Never commit app secrets or local env files (e.g. `tally-web/.env.local`).
+- When Clerk shows "Development mode" in prod, verify `pk_live_*` in `/sign-in` HTML and absence of `clerk.accounts.dev`.
+- Vercel project `rootDirectory` is `tally-web`; workflows should run from repo root to avoid `tally-web/tally-web`.
+
 ### Convex Authorization Pattern
 - **Never trust client-provided `userId`** in mutations - always derive from `ctx.auth.getUserIdentity()`
 - Use centralized auth helpers from `convex/lib/auth.ts`:
@@ -152,8 +157,8 @@ All secrets are in the root `.env` file (gitignored):
 
 ```
 # Clerk
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<clerk_publishable_key>
+CLERK_SECRET_KEY=<clerk_secret_key>
 
 # Convex
 CONVEX_DEPLOYMENT=dev:...

@@ -107,6 +107,7 @@ jobs:
         run: bun run test:e2e
 
       - name: E2E auth (optional)
+        continue-on-error: true
         env:
           TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
           TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}

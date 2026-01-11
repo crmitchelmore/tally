@@ -44,8 +44,9 @@ jobs:
 
       - name: Reset adb
         run: |
-          adb kill-server || true
-          adb start-server
+          ADB="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/platform-tools/adb"
+          "$ADB" kill-server || true
+          "$ADB" start-server
 
       - name: Run instrumented tests (emulator)
         uses: reactivecircus/android-emulator-runner@v2

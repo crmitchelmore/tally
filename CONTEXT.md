@@ -143,7 +143,7 @@ pulumi up
 
 **Prod stack (`tally-tracker-org/prod`):**
 - Cloudflare DNS: `@` (A), `www` (CNAME), `_vercel` (TXT)
-- Vercel domains: `tally-tracker.app`, `www.tally-tracker.app`
+- Vercel domains: `tally-tracker.app`, `www.tally-tracker.app`, `tally-tracker.com` (redirect), `www.tally-tracker.com` (redirect)
 - Vercel env vars: Prod Clerk keys, Convex prod, Sentry, OTel
 - Clerk redirect URLs for prod domain
 - Sentry projects and DSNs

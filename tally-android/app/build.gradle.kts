@@ -54,6 +54,12 @@ android {
       "SENTRY_DSN",
       "\"${System.getenv("SENTRY_DSN") ?: ""}\""
     )
+
+    buildConfigField(
+      "String",
+      "POSTHOG_API_KEY",
+      "\"${System.getenv("POSTHOG_API_KEY") ?: ""}\""
+    )
   }
 
   buildFeatures {
@@ -129,6 +135,9 @@ dependencies {
 
   // LaunchDarkly
   implementation("com.launchdarkly:launchdarkly-android-client-sdk:5.4.0")
+
+  // PostHog Analytics
+  implementation("com.posthog:posthog-android:3.4.2")
 
   debugImplementation("androidx.compose.ui:ui-tooling")
 

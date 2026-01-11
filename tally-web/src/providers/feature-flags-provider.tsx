@@ -20,11 +20,54 @@ interface FeatureFlagsProviderProps {
  * - env: derived from deployment URL
  */
 export function FeatureFlagsProvider({ children }: FeatureFlagsProviderProps) {
-  const { user, isLoaded } = useUser();
+  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-  // Build context for LaunchDarkly
+  return clerkPublishableKey ? (
+    <FeatureFlagsProviderWithClerk>{children}</FeatureFlagsProviderWithClerk>
+  ) : (
+    <FeatureFlagsProviderWithoutClerk>{children}</FeatureFlagsProviderWithoutClerk>
+  );
+}
+
+function FeatureFlagsProviderWithoutClerk({ children }: FeatureFlagsProviderProps) {
   const ldContext = useMemo(() => {
-    // Determine environment from URL
+    const env =
+      typeof window !== "undefined"
+        ? window.location.hostname.includes("localhost")
+          ? "dev"
+          : window.location.hostname.includes("vercel.app")
+            ? "preview"
+            : "prod"
+        : "dev";
+
+    return {
+      kind: "user" as const,
+      key: "anonymous",
+      anonymous: true,
+      platform: "web",
+      env,
+    };
+  }, []);
+
+  if (!clientSideId) return <>{children}</>;
+
+  return (
+    <LDProvider
+      clientSideID={clientSideId}
+      context={ldContext}
+      options={{
+        bootstrap: "localStorage",
+      }}
+    >
+      {children}
+    </LDProvider>
+  );
+}
+
+function FeatureFlagsProviderWithClerk({ children }: FeatureFlagsProviderProps) {
+  const { user } = useUser();
+
+  const ldContext = useMemo(() => {
     const env =
       typeof window !== "undefined"
         ? window.location.hostname.includes("localhost")
@@ -37,7 +80,7 @@ export function FeatureFlagsProvider({ children }: FeatureFlagsProviderProps) {
     if (user) {
       return {
         kind: "user" as const,
-        key: user.id, // clerkId
+        key: user.id,
         name: user.fullName ?? undefined,
         email: user.primaryEmailAddress?.emailAddress,
         anonymous: false,
@@ -46,7 +89,6 @@ export function FeatureFlagsProvider({ children }: FeatureFlagsProviderProps) {
       };
     }
 
-    // Anonymous user
     return {
       kind: "user" as const,
       key: "anonymous",
@@ -56,12 +98,7 @@ export function FeatureFlagsProvider({ children }: FeatureFlagsProviderProps) {
     };
   }, [user]);
 
-  // Don't render LD provider until we know if user is loaded
-  // and we have a valid client-side ID
-  if (!clientSideId) {
-    // LaunchDarkly not configured - render children without flags
-    return <>{children}</>;
-  }
+  if (!clientSideId) return <>{children}</>;
 
   return (
     <LDProvider

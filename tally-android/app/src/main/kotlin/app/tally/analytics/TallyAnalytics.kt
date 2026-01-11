@@ -136,11 +136,11 @@ object TallyAnalytics {
      * Add a breadcrumb for debugging
      */
     fun addBreadcrumb(message: String, category: String? = null) {
-        if (category != null) {
-            Sentry.addBreadcrumb(message, category)
-        } else {
-            Sentry.addBreadcrumb(message)
+        val breadcrumb = io.sentry.Breadcrumb().apply {
+            this.message = message
+            this.category = category ?: "app"
         }
+        Sentry.addBreadcrumb(breadcrumb)
     }
 
     // MARK: - Private

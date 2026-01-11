@@ -22,17 +22,7 @@ class TallyApp : Application() {
         
         // ANR detection
         options.isAnrEnabled = true
-        options.anrTimeoutIntervalMillis = 5000
-        
-        // Enable breadcrumbs
-        options.isEnableActivityLifecycleBreadcrumbs = true
-        options.isEnableAppComponentBreadcrumbs = true
-        options.isEnableSystemEventBreadcrumbs = true
-        options.isEnableNetworkEventBreadcrumbs = true
-        
-        // Privacy: don't attach screenshots by default
-        options.isAttachScreenshot = false
-        options.isAttachViewHierarchy = false
+        options.anrTimeoutInterval = 5000
         
         // Release tracking
         options.release = "app.tally@${BuildConfig.VERSION_NAME}+${BuildConfig.VERSION_CODE}"

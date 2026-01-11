@@ -81,17 +81,17 @@ jobs:
               --title "⚠️ Infrastructure drift detected (${{ matrix.stack }} stack)" \
               --body "Pulumi refresh detected drift in the **${{ matrix.stack }}** stack.
 
-              This means resources have been modified outside of Pulumi (e.g., manual dashboard changes).
+This means resources have been modified outside of Pulumi (e.g., manual dashboard changes).
 
-              **Action required:**
-              1. Review the drift in the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-              2. Either:
-                 - Run \`pulumi refresh --yes\` to accept the changes into state
-                 - Run \`pulumi up\` to revert to the desired state
-              3. Close this issue once resolved
+**Action required:**
+1. Review the drift in the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+2. Either:
+   - Run \`pulumi refresh --yes\` to accept the changes into state
+   - Run \`pulumi up\` to revert to the desired state
+3. Close this issue once resolved
 
-              **Stack:** \`tally-tracker-org/${{ matrix.stack }}\`
-              **Detected:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+**Stack:** \`tally-tracker-org/${{ matrix.stack }}\`
+**Detected:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
               --label "infra-drift" \
               --label "${{ matrix.stack }}" \
               --label "automated"

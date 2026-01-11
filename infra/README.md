@@ -12,6 +12,7 @@ Infrastructure as Code using [Pulumi](https://www.pulumi.com/) with TypeScript.
 - **Vercel Domains**
   - tally-tracker.app (primary)
   - www.tally-tracker.app (redirects to root)
+  - tally-tracker.com + www.tally-tracker.com (redirect to tally-tracker.app)
 
 - **Vercel Environment Variables**
   - Clerk keys

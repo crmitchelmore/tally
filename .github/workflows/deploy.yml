@@ -22,12 +22,58 @@ env:
 
 jobs:
   # ===========================================================================
+  # Repo Hygiene - Lockfile Guards
+  # ===========================================================================
+  
+  lockfile-guards:
+    name: Lockfile Guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check for wrong lockfiles
+        run: |
+          ERRORS=0
+          
+          # tally-web should NOT have package-lock.json (uses bun)
+          if [ -f "tally-web/package-lock.json" ]; then
+            echo "::error::tally-web/package-lock.json should not exist (use bun)"
+            ERRORS=$((ERRORS + 1))
+          fi
+          
+          # infra should NOT have bun.lockb (uses npm)
+          if [ -f "infra/bun.lockb" ]; then
+            echo "::error::infra/bun.lockb should not exist (use npm)"
+            ERRORS=$((ERRORS + 1))
+          fi
+          
+          # packages should NOT have lockfiles (workspace packages)
+          for dir in packages/*/; do
+            if [ -f "${dir}package-lock.json" ] || [ -f "${dir}bun.lockb" ]; then
+              echo "::error::${dir} should not have its own lockfile (workspace package)"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+          
+          if [ $ERRORS -gt 0 ]; then
+            echo ""
+            echo "Lockfile policy:"
+            echo "  - tally-web/: bun only (bun.lockb)"
+            echo "  - infra/: npm only (package-lock.json)"
+            echo "  - packages/*/: no lockfiles (workspace packages)"
+            exit 1
+          fi
+          
+          echo "✓ All lockfiles in correct locations"
+
+  # ===========================================================================
   # CI Checks - Always Run
   # ===========================================================================
   
   lint-build-test:
     name: CI (lint/build/test)
     runs-on: ubuntu-latest
+    needs: [lockfile-guards]
     environment: development
     defaults:
       run:
@@ -66,6 +112,7 @@ jobs:
   infra-typecheck:
     name: Infra (typecheck)
     runs-on: ubuntu-latest
+    needs: [lockfile-guards]
     defaults:
       run:
         working-directory: infra
@@ -214,15 +261,12 @@ jobs:
         id: deploy
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           npm i -g vercel@latest
           DEPLOYMENT_URL=$(vercel deploy --yes --token "$VERCEL_TOKEN" \
-            --build-env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
             --build-env SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
             --build-env SENTRY_ENVIRONMENT="development" \
-            --env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
             --env SENTRY_ENVIRONMENT="development")
           
           echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
@@ -365,15 +409,12 @@ jobs:
       - name: Deploy to Vercel (prod)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           npm i -g vercel@latest
           vercel deploy --prod --yes --token "$VERCEL_TOKEN" \
-            --build-env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
             --build-env SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
             --build-env SENTRY_ENVIRONMENT="production" \
-            --env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
             --env SENTRY_ENVIRONMENT="production"
 
   # ===========================================================================

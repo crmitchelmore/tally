@@ -356,18 +356,18 @@ function ensureLdEnvClientSideId(envKey: string, envName: string, color: string)
 TOKEN=${ldAccessToken}
 
 # Ensure project exists
-curl -sf "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}" -H "Authorization: $TOKEN" >/dev/null || \
-  curl -sf -X POST "https://app.launchdarkly.com/api/v2/projects" \
+curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30 "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}" -H "Authorization: $TOKEN" >/dev/null || \
+  curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30 -X POST "https://app.launchdarkly.com/api/v2/projects" \
     -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
     -d '{"key":"${ldProjectKey}","name":"Tally"}' >/dev/null
 
 # Ensure environment exists
-curl -sf "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}/environments/${envKey}" -H "Authorization: $TOKEN" >/dev/null || \
-  curl -sf -X POST "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}/environments" \
+curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30 "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}/environments/${envKey}" -H "Authorization: $TOKEN" >/dev/null || \
+  curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30 -X POST "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}/environments" \
     -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
     -d '{"key":"${envKey}","name":"${envName}","color":"${color}"}' >/dev/null
 
-curl -sf "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}/environments/${envKey}" -H "Authorization: $TOKEN" | jq -r '.apiKey'`,
+curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30 "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}/environments/${envKey}" -H "Authorization: $TOKEN" | jq -r '.apiKey'`,
     environment: {},
   }).stdout;
 }
@@ -377,73 +377,99 @@ const ldClientSideIdDev =
   ensureLdEnvClientSideId("dev", "Development", "7B68EE") ??
   ldClientSideIdDefault;
 
-const ldClientSideIdPreview =
-  config.getSecret("launchDarklyClientSideIdPreview") ??
-  ensureLdEnvClientSideId("preview", "Preview", "FFA500") ??
-  ldClientSideIdDev ??
-  ldClientSideIdDefault;
+// Only the prod stack needs preview/prod LaunchDarkly environments.
+const ldClientSideIdPreview: pulumi.Output<string> | undefined = isProd
+  ? config.getSecret("launchDarklyClientSideIdPreview") ?? ldClientSideIdDev ?? ldClientSideIdDefault
+  : undefined;
 
-const ldClientSideIdProd =
-  config.getSecret("launchDarklyClientSideIdProd") ??
-  ensureLdEnvClientSideId("prod", "Production", "32CD32") ??
-  ldClientSideIdDefault;
+const ldClientSideIdProd: pulumi.Output<string> | undefined = isProd
+  ? config.getSecret("launchDarklyClientSideIdProd") ??
+    ensureLdEnvClientSideId("prod", "Production", "32CD32") ??
+    ldClientSideIdDefault
+  : undefined;
 
-if (isProd) {
-  if (ldClientSideIdProd) {
-    new vercel.ProjectEnvironmentVariable(
-      "ld-client-side-id-prod",
-      {
-        projectId: vercelProjectId,
-        teamId: vercelTeamId,
-        key: "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
-        value: ldClientSideIdProd,
-        targets: ["production"],
-      },
-      { deleteBeforeReplace: true }
-    );
-  }
+const vercelApiToken = new pulumi.Config("vercel").getSecret("apiToken");
 
-  if (ldClientSideIdPreview) {
-    new vercel.ProjectEnvironmentVariable(
-      "ld-client-side-id-preview",
-      {
-        projectId: vercelProjectId,
-        teamId: vercelTeamId,
-        key: "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
-        value: ldClientSideIdPreview,
-        targets: ["preview"],
-      },
-      { deleteBeforeReplace: true }
-    );
-  }
+function upsertVercelEnvVar(
+  name: string,
+  key: string,
+  value: pulumi.Input<string>,
+  target: "production" | "preview" | "development"
+) {
+  if (!vercelApiToken) return undefined;
 
-  if (ldClientSideIdDev) {
-    new vercel.ProjectEnvironmentVariable(
-      "ld-client-side-id-dev",
-      {
-        projectId: vercelProjectId,
-        teamId: vercelTeamId,
-        key: "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
-        value: ldClientSideIdDev,
-        targets: ["development"],
-      },
-      { deleteBeforeReplace: true }
-    );
-  }
-} else {
-  if (ldClientSideIdDev) {
-    new vercel.ProjectEnvironmentVariable(
-      "ld-client-side-id-dev-stack",
-      {
-        projectId: vercelProjectId,
-        teamId: vercelTeamId,
-        key: "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
-        value: ldClientSideIdDev,
-        targets: ["development"],
-      },
-      { deleteBeforeReplace: true }
-    );
-  }
+  return new command.local.Command(`vercel-env-${name}-${stack}`, {
+    create: pulumi.interpolate`set -euo pipefail
+TOKEN=${vercelApiToken}
+TEAM=${vercelTeamId}
+PROJ=${vercelProjectId}
+KEY="${key}"
+TARGET="${target}"
+CURL='curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30'
+
+EXISTING_ID=$($CURL "https://api.vercel.com/v9/projects/$PROJ/env?teamId=$TEAM" \
+  -H "Authorization: Bearer $TOKEN" | jq -r --arg key "$KEY" --arg target "$TARGET" \
+  '.envs[]? | select(.key==$key and (.target|length==1) and .target[0]==$target and (.gitBranch==null)) | .id' | head -n 1)
+
+if [ -n "$EXISTING_ID" ] && [ "$EXISTING_ID" != "null" ]; then
+  $CURL -X PATCH "https://api.vercel.com/v9/projects/$PROJ/env/$EXISTING_ID?teamId=$TEAM" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "$(jq -cn --arg value "$VALUE" '{value:$value}')" >/dev/null
+  echo "$EXISTING_ID"
+else
+  $CURL -X POST "https://api.vercel.com/v9/projects/$PROJ/env?teamId=$TEAM" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "$(jq -cn --arg key "$KEY" --arg value "$VALUE" --arg target "$TARGET" '{key:$key,value:$value,type:\"encrypted\",target:[$target]}')" \
+    | jq -r '.id'
+fi`,
+    delete: pulumi.interpolate`set -euo pipefail
+TOKEN=${vercelApiToken}
+TEAM=${vercelTeamId}
+PROJ=${vercelProjectId}
+KEY="${key}"
+TARGET="${target}"
+CURL='curl -sf --retry 5 --retry-all-errors --retry-delay 1 --connect-timeout 10 --max-time 30'
+
+EXISTING_ID=$($CURL "https://api.vercel.com/v9/projects/$PROJ/env?teamId=$TEAM" \
+  -H "Authorization: Bearer $TOKEN" | jq -r --arg key "$KEY" --arg target "$TARGET" \
+  '.envs[]? | select(.key==$key and (.target|length==1) and .target[0]==$target and (.gitBranch==null)) | .id' | head -n 1)
+
+[ -n "$EXISTING_ID" ] && [ "$EXISTING_ID" != "null" ] && \
+  $CURL -X DELETE "https://api.vercel.com/v9/projects/$PROJ/env/$EXISTING_ID?teamId=$TEAM" \
+    -H "Authorization: Bearer $TOKEN" >/dev/null || true`,
+    environment: {
+      VALUE: value,
+    },
+  });
+}
+
+if (ldClientSideIdProd) {
+  upsertVercelEnvVar(
+    "ld-client-side-id-prod",
+    "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
+    ldClientSideIdProd,
+    "production"
+  );
+}
+
+if (ldClientSideIdPreview) {
+  upsertVercelEnvVar(
+    "ld-client-side-id-preview",
+    "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
+    ldClientSideIdPreview,
+    "preview"
+  );
+}
+
+if (ldClientSideIdDev) {
+  upsertVercelEnvVar(
+    `ld-client-side-id-dev${isProd ? "" : "-stack"}`,
+    "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
+    ldClientSideIdDev,
+    "development"
+  );
 }
 
 // =============================================================================
@@ -458,88 +484,27 @@ const posthogHost = config.get("posthogHost") ?? "https://eu.i.posthog.com";
 
 const anyPosthogKey = posthogKeyProd ?? posthogKeyPreview ?? posthogKeyDev;
 
-if (isProd) {
-  if (posthogKeyProd) {
-    new vercel.ProjectEnvironmentVariable(
-      "posthog-key-prod",
-      {
-        projectId: vercelProjectId,
-        teamId: vercelTeamId,
-        key: "NEXT_PUBLIC_POSTHOG_KEY",
-        value: posthogKeyProd,
-        targets: ["production"],
-      },
-      { deleteBeforeReplace: true }
-    );
-  }
+if (posthogKeyProd) {
+  upsertVercelEnvVar("posthog-key-prod", "NEXT_PUBLIC_POSTHOG_KEY", posthogKeyProd, "production");
+}
 
-  if (posthogKeyPreview) {
-    new vercel.ProjectEnvironmentVariable(
-      "posthog-key-preview",
-      {
-        projectId: vercelProjectId,
-        teamId: vercelTeamId,
-        key: "NEXT_PUBLIC_POSTHOG_KEY",
-        value: posthogKeyPreview,
-        targets: ["preview"],
-      },
-      { deleteBeforeReplace: true }
-    );
-  }
+if (posthogKeyPreview) {
+  upsertVercelEnvVar("posthog-key-preview", "NEXT_PUBLIC_POSTHOG_KEY", posthogKeyPreview, "preview");
+}
 
-  if (posthogKeyDev) {
-    new vercel.ProjectEnvironmentVariable(
-      "posthog-key-dev",
-      {
-        projectId: vercelProjectId,
-        teamId: vercelTeamId,
-        key: "NEXT_PUBLIC_POSTHOG_KEY",
-        value: posthogKeyDev,
-        targets: ["development"],
-      },
-      { deleteBeforeReplace: true }
-    );
-  }
+if (posthogKeyDev) {
+  upsertVercelEnvVar(
+    `posthog-key-dev${isProd ? "" : "-stack"}`,
+    "NEXT_PUBLIC_POSTHOG_KEY",
+    posthogKeyDev,
+    "development"
+  );
+}
 
-  if (anyPosthogKey) {
-    new vercel.ProjectEnvironmentVariable(
-      "posthog-host",
-      {
-        projectId: vercelProjectId,
-        teamId: vercelTeamId,
-        key: "NEXT_PUBLIC_POSTHOG_HOST",
-        value: posthogHost,
-        targets: ["production", "preview", "development"],
-      },
-      { deleteBeforeReplace: true }
-    );
-  }
-} else {
-  if (posthogKeyDev) {
-    new vercel.ProjectEnvironmentVariable(
-      "posthog-key-dev-stack",
-      {
-        projectId: vercelProjectId,
-        teamId: vercelTeamId,
-        key: "NEXT_PUBLIC_POSTHOG_KEY",
-        value: posthogKeyDev,
-        targets: ["development"],
-      },
-      { deleteBeforeReplace: true }
-    );
-
-    new vercel.ProjectEnvironmentVariable(
-      "posthog-host-dev-stack",
-      {
-        projectId: vercelProjectId,
-        teamId: vercelTeamId,
-        key: "NEXT_PUBLIC_POSTHOG_HOST",
-        value: posthogHost,
-        targets: ["development"],
-      },
-      { deleteBeforeReplace: true }
-    );
-  }
+if (anyPosthogKey) {
+  upsertVercelEnvVar("posthog-host-prod", "NEXT_PUBLIC_POSTHOG_HOST", posthogHost, "production");
+  upsertVercelEnvVar("posthog-host-preview", "NEXT_PUBLIC_POSTHOG_HOST", posthogHost, "preview");
+  upsertVercelEnvVar("posthog-host-dev", "NEXT_PUBLIC_POSTHOG_HOST", posthogHost, "development");
 }
 
 // =============================================================================

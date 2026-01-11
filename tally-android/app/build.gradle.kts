@@ -170,7 +170,7 @@ dependencies {
   implementation("androidx.security:security-crypto:1.0.0")
 
   // LaunchDarkly
-  implementation("com.launchdarkly:launchdarkly-android-client-sdk:5.4.0")
+  implementation("com.launchdarkly:launchdarkly-android-client-sdk:5.10.0")
 
   // PostHog Analytics
   implementation("com.posthog:posthog-android:3.4.2")

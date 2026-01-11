@@ -5,7 +5,6 @@ import com.launchdarkly.sdk.ContextKind
 import com.launchdarkly.sdk.LDContext
 import com.launchdarkly.sdk.android.LDClient
 import com.launchdarkly.sdk.android.LDConfig
-import com.launchdarkly.sdk.android.env.AutoEnvAttributes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,7 +34,7 @@ object FeatureFlags {
   fun initialize(application: Application, mobileKey: String) {
     if (mobileKey.isBlank() || isInitialized) return
 
-    val config = LDConfig.Builder(AutoEnvAttributes.Enabled)
+    val config = LDConfig.Builder(LDConfig.Builder.AutoEnvAttributes.Enabled)
       .mobileKey(mobileKey)
       .build()
 

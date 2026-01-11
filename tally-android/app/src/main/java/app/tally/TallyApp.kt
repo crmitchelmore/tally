@@ -20,9 +20,8 @@ class TallyApp : Application() {
         // Performance monitoring
         options.tracesSampleRate = 0.1
         
-        // ANR detection
+        // ANR detection (configured via Sentry auto-init defaults)
         options.isAnrEnabled = true
-        options.anrTimeoutInterval = 5000
         
         // Release tracking
         options.release = "app.tally@${BuildConfig.VERSION_NAME}+${BuildConfig.VERSION_CODE}"

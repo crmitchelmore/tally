@@ -14,10 +14,6 @@ const config = new pulumi.Config();
 // Base domain and stack-specific subdomain
 const baseDomain = "tally-tracker.app";
 
-// Legacy/vanity domain: ensure this never accidentally points at a preview deployment.
-// We manage it as a redirect to the canonical .app domain.
-const legacyDomain = "tally-tracker.com";
-
 const domain = isProd ? baseDomain : `dev.${baseDomain}`;
 const zoneId = "816559836db3c2e80112bd6aeefd6d27";
 const vercelProjectId = "prj_tXdIJDmRB1qKZyo5Ngat62XoaMgw";
@@ -211,8 +207,6 @@ if (isProd) {
 
 let vercelDomain: vercel.ProjectDomain | undefined;
 let vercelWwwDomain: vercel.ProjectDomain | undefined;
-let vercelLegacyDomain: vercel.ProjectDomain | undefined;
-let vercelLegacyWwwDomain: vercel.ProjectDomain | undefined;
 let vercelDevDomain: vercel.ProjectDomain | undefined;
 
 if (isProd) {
@@ -227,23 +221,6 @@ if (isProd) {
     projectId: vercelProjectId,
     teamId: vercelTeamId,
     domain: `www.${baseDomain}`,
-    redirect: baseDomain,
-    redirectStatusCode: 308,
-  });
-
-  // Legacy .com domain: force redirect to canonical .app to avoid accidental preview/dev env vars.
-  vercelLegacyDomain = new vercel.ProjectDomain("tally-legacy-domain", {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    domain: legacyDomain,
-    redirect: baseDomain,
-    redirectStatusCode: 308,
-  });
-
-  vercelLegacyWwwDomain = new vercel.ProjectDomain("tally-legacy-www-domain", {
-    projectId: vercelProjectId,
-    teamId: vercelTeamId,
-    domain: `www.${legacyDomain}`,
     redirect: baseDomain,
     redirectStatusCode: 308,
   });
@@ -361,24 +338,208 @@ const streaksEnabledFlag = { key: "streaks-enabled" };
 // Vercel Environment Variables for LaunchDarkly
 // =============================================================================
 
-// We'll use Pulumi outputs from the LD project to set Vercel env vars
-// The client-side ID is needed for browser-side SDK initialization
-const ldClientSideId = config.getSecret("launchDarklyClientSideId");
+// The LaunchDarkly client-side ID is environment-specific.
+// Vercel target mapping:
+// - production -> prod env
+// - preview -> preview env (fallback to dev)
+// - development -> dev env
+const ldClientSideIdDefault = config.getSecret("launchDarklyClientSideId");
 
-if (ldClientSideId) {
-  new vercel.ProjectEnvironmentVariable(
-    "ld-client-side-id",
-    {
-      projectId: vercelProjectId,
-      teamId: vercelTeamId,
-      key: "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
-      value: ldClientSideId,
-      targets: ["production", "preview", "development"],
-    },
-    {
-      deleteBeforeReplace: true,
-    }
-  );
+const ldAccessToken = new pulumi.Config("launchdarkly").getSecret("accessToken");
+const ldProjectKey = config.get("launchDarklyProjectKey") ?? "tally";
+
+function ensureLdEnvClientSideId(envKey: string, envName: string, color: string) {
+  if (!ldAccessToken) return undefined;
+
+  return new command.local.Command(`ld-client-side-id-${envKey}-${stack}`, {
+    create: pulumi.interpolate`set -euo pipefail
+TOKEN=${ldAccessToken}
+
+# Ensure project exists
+curl -sf "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}" -H "Authorization: $TOKEN" >/dev/null || \
+  curl -sf -X POST "https://app.launchdarkly.com/api/v2/projects" \
+    -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+    -d '{"key":"${ldProjectKey}","name":"Tally"}' >/dev/null
+
+# Ensure environment exists
+curl -sf "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}/environments/${envKey}" -H "Authorization: $TOKEN" >/dev/null || \
+  curl -sf -X POST "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}/environments" \
+    -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
+    -d '{"key":"${envKey}","name":"${envName}","color":"${color}"}' >/dev/null
+
+curl -sf "https://app.launchdarkly.com/api/v2/projects/${ldProjectKey}/environments/${envKey}" -H "Authorization: $TOKEN" | jq -r '.apiKey'`,
+    environment: {},
+  }).stdout;
+}
+
+const ldClientSideIdDev =
+  config.getSecret("launchDarklyClientSideIdDev") ??
+  ensureLdEnvClientSideId("dev", "Development", "7B68EE") ??
+  ldClientSideIdDefault;
+
+const ldClientSideIdPreview =
+  config.getSecret("launchDarklyClientSideIdPreview") ??
+  ensureLdEnvClientSideId("preview", "Preview", "FFA500") ??
+  ldClientSideIdDev ??
+  ldClientSideIdDefault;
+
+const ldClientSideIdProd =
+  config.getSecret("launchDarklyClientSideIdProd") ??
+  ensureLdEnvClientSideId("prod", "Production", "32CD32") ??
+  ldClientSideIdDefault;
+
+if (isProd) {
+  if (ldClientSideIdProd) {
+    new vercel.ProjectEnvironmentVariable(
+      "ld-client-side-id-prod",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
+        value: ldClientSideIdProd,
+        targets: ["production"],
+      },
+      { deleteBeforeReplace: true }
+    );
+  }
+
+  if (ldClientSideIdPreview) {
+    new vercel.ProjectEnvironmentVariable(
+      "ld-client-side-id-preview",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
+        value: ldClientSideIdPreview,
+        targets: ["preview"],
+      },
+      { deleteBeforeReplace: true }
+    );
+  }
+
+  if (ldClientSideIdDev) {
+    new vercel.ProjectEnvironmentVariable(
+      "ld-client-side-id-dev",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
+        value: ldClientSideIdDev,
+        targets: ["development"],
+      },
+      { deleteBeforeReplace: true }
+    );
+  }
+} else {
+  if (ldClientSideIdDev) {
+    new vercel.ProjectEnvironmentVariable(
+      "ld-client-side-id-dev-stack",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID",
+        value: ldClientSideIdDev,
+        targets: ["development"],
+      },
+      { deleteBeforeReplace: true }
+    );
+  }
+}
+
+// =============================================================================
+// Vercel Environment Variables for PostHog
+// =============================================================================
+
+const posthogKeyDefault = config.getSecret("posthogKey");
+const posthogKeyDev = config.getSecret("posthogKeyDev") ?? posthogKeyDefault;
+const posthogKeyPreview = config.getSecret("posthogKeyPreview") ?? posthogKeyDev ?? posthogKeyDefault;
+const posthogKeyProd = config.getSecret("posthogKeyProd") ?? posthogKeyDefault;
+const posthogHost = config.get("posthogHost") ?? "https://eu.i.posthog.com";
+
+const anyPosthogKey = posthogKeyProd ?? posthogKeyPreview ?? posthogKeyDev;
+
+if (isProd) {
+  if (posthogKeyProd) {
+    new vercel.ProjectEnvironmentVariable(
+      "posthog-key-prod",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_POSTHOG_KEY",
+        value: posthogKeyProd,
+        targets: ["production"],
+      },
+      { deleteBeforeReplace: true }
+    );
+  }
+
+  if (posthogKeyPreview) {
+    new vercel.ProjectEnvironmentVariable(
+      "posthog-key-preview",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_POSTHOG_KEY",
+        value: posthogKeyPreview,
+        targets: ["preview"],
+      },
+      { deleteBeforeReplace: true }
+    );
+  }
+
+  if (posthogKeyDev) {
+    new vercel.ProjectEnvironmentVariable(
+      "posthog-key-dev",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_POSTHOG_KEY",
+        value: posthogKeyDev,
+        targets: ["development"],
+      },
+      { deleteBeforeReplace: true }
+    );
+  }
+
+  if (anyPosthogKey) {
+    new vercel.ProjectEnvironmentVariable(
+      "posthog-host",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_POSTHOG_HOST",
+        value: posthogHost,
+        targets: ["production", "preview", "development"],
+      },
+      { deleteBeforeReplace: true }
+    );
+  }
+} else {
+  if (posthogKeyDev) {
+    new vercel.ProjectEnvironmentVariable(
+      "posthog-key-dev-stack",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_POSTHOG_KEY",
+        value: posthogKeyDev,
+        targets: ["development"],
+      },
+      { deleteBeforeReplace: true }
+    );
+
+    new vercel.ProjectEnvironmentVariable(
+      "posthog-host-dev-stack",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_POSTHOG_HOST",
+        value: posthogHost,
+        targets: ["development"],
+      },
+      { deleteBeforeReplace: true }
+    );
+  }
 }
 
 // =============================================================================

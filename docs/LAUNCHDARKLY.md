@@ -182,11 +182,14 @@ Configure at: **LaunchDarkly Dashboard → Settings → Integrations → Convex*
 
 ## Infrastructure as Code
 
-LaunchDarkly resources are managed via Pulumi in `infra/index.ts`:
+LaunchDarkly is wired into the app via Pulumi-managed Vercel env vars in `infra/index.ts`.
 
-- Project with dev/preview/prod environments
-- Feature flags (created via IaC)
-- Vercel env vars for SDK keys
+- `NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID` is set **per Vercel target**:
+  - `production` → `launchDarklyClientSideIdProd`
+  - `preview` → `launchDarklyClientSideIdPreview` (fallback to dev)
+  - `development` → `launchDarklyClientSideIdDev`
+
+Note: LaunchDarkly project/env/flag provisioning is currently not fully automated in Pulumi (provider diff instability); manage flags/rules in LaunchDarkly UI.
 
 ```bash
 cd infra && pulumi up

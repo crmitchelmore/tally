@@ -70,8 +70,9 @@ describe("stats", () => {
   });
 
   it("heatmap color returns a valid string for out-of-range levels", () => {
-    expect(getHeatmapColor(-1)).toContain("oklch");
-    expect(getHeatmapColor(999)).toContain("oklch");
+    // Function now returns CSS variables; default to level 0 for out-of-range
+    expect(getHeatmapColor(-1)).toBe("var(--heatmap-0)");
+    expect(getHeatmapColor(999)).toBe("var(--heatmap-0)");
   });
 });
 

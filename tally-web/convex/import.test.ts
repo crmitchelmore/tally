@@ -11,6 +11,7 @@ import * as usersModule from "./users";
 import * as followedChallengesModule from "./followedChallenges";
 import * as generatedApi from "./_generated/api";
 import * as generatedServer from "./_generated/server";
+import * as authLib from "./lib/auth";
 
 // Build the modules map that convex-test expects
 // The library strips extensions and uses prefix from _generated path
@@ -22,6 +23,7 @@ const modules: Record<string, () => Promise<unknown>> = {
   "./entries.ts": async () => entriesModule,
   "./users.ts": async () => usersModule,
   "./followedChallenges.ts": async () => followedChallengesModule,
+  "./lib/auth.ts": async () => authLib,
   "./_generated/api.ts": async () => generatedApi,
   "./_generated/server.ts": async () => generatedServer,
 };
@@ -40,9 +42,8 @@ describe("import mutations", () => {
         });
       });
 
-      // Import challenges and entries
-      const result = await t.mutation(api.import.bulkImport, {
-        userId,
+      // Import challenges and entries (using withIdentity to simulate auth)
+      const result = await t.withIdentity({ subject: "test-clerk-id" }).mutation(api.import.bulkImport, {
         challenges: [
           {
             id: "original-c1",
@@ -140,9 +141,8 @@ describe("import mutations", () => {
         return id;
       });
 
-      // Import new data
-      await t.mutation(api.import.bulkImport, {
-        userId,
+      // Import new data (with auth context)
+      await t.withIdentity({ subject: "test-clerk-id" }).mutation(api.import.bulkImport, {
         challenges: [
           {
             id: "new-c1",
@@ -174,15 +174,14 @@ describe("import mutations", () => {
     it("skips entries for missing challenges", async () => {
       const t = convexTest(schema, modules);
 
-      const userId = await t.run(async (ctx) => {
+      await t.run(async (ctx) => {
         return await ctx.db.insert("users", {
           clerkId: "test-clerk-id",
           createdAt: Date.now(),
         });
       });
 
-      const result = await t.mutation(api.import.bulkImport, {
-        userId,
+      const result = await t.withIdentity({ subject: "test-clerk-id" }).mutation(api.import.bulkImport, {
         challenges: [
           {
             id: "c1",
@@ -247,7 +246,8 @@ describe("import mutations", () => {
         return id;
       });
 
-      const result = await t.mutation(api.import.clearAllData, { userId });
+      // clearAllData now uses auth context instead of userId argument
+      const result = await t.withIdentity({ subject: "test-clerk-id" }).mutation(api.import.clearAllData, {});
 
       expect(result.challengesDeleted).toBe(1);
       expect(result.entriesDeleted).toBe(1);
@@ -266,14 +266,15 @@ describe("import mutations", () => {
     it("returns zeros when no data exists", async () => {
       const t = convexTest(schema, modules);
 
-      const userId = await t.run(async (ctx) => {
+      await t.run(async (ctx) => {
         return await ctx.db.insert("users", {
           clerkId: "empty-user",
           createdAt: Date.now(),
         });
       });
 
-      const result = await t.mutation(api.import.clearAllData, { userId });
+      // clearAllData now uses auth context
+      const result = await t.withIdentity({ subject: "empty-user" }).mutation(api.import.clearAllData, {});
 
       expect(result.challengesDeleted).toBe(0);
       expect(result.entriesDeleted).toBe(0);

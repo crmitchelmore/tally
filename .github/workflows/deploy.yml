@@ -141,18 +141,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify required secrets
+      - name: Check E2E auth secrets
+        id: check_auth_secrets
         env:
           TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
           TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
         run: |
-          missing=""
-          [ -z "$TEST_USER_EMAIL" ] && missing="$missing TEST_USER_EMAIL"
-          [ -z "$TEST_USER_PASSWORD" ] && missing="$missing TEST_USER_PASSWORD"
-          if [ -n "$missing" ]; then
-            echo "::warning::Missing secrets:$missing - skipping authenticated E2E tests"
+          if [ -n "$TEST_USER_EMAIL" ] && [ -n "$TEST_USER_PASSWORD" ]; then
+            echo "has_auth_secrets=true" >> $GITHUB_OUTPUT
+            echo "✓ E2E auth secrets available"
+          else
+            echo "has_auth_secrets=false" >> $GITHUB_OUTPUT
+            echo "::warning::Missing TEST_USER_EMAIL or TEST_USER_PASSWORD - skipping authenticated E2E tests"
           fi
-          echo "✓ E2E secrets check complete"
 
       - name: Install Bun
         run: |
@@ -173,7 +174,7 @@ jobs:
           NEXT_PUBLIC_CONVEX_URL: https://bright-jackal-396.convex.cloud
 
       - name: Run E2E auth tests
-        if: ${{ secrets.TEST_USER_EMAIL != '' && secrets.TEST_USER_PASSWORD != '' }}
+        if: steps.check_auth_secrets.outputs.has_auth_secrets == 'true'
         run: bun run test:e2e:auth
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}

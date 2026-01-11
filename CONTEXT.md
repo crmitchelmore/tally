@@ -240,3 +240,31 @@ Run `pulumi refresh` to sync state with actual cloud resources.
 2. Add API routes for mobile apps
 3. Document API endpoints
 4. Create shared types package
+
+## Consultant Project Workflow
+
+When implementing improvement recommendations from `consultant/`:
+
+1. **Check for existing PRs first**
+   ```bash
+   gh pr list --state all | grep -i <topic>
+   ```
+
+2. **Create one branch/PR per project** (or logical grouping)
+   ```bash
+   git checkout -b consultant/<project-number>-<short-name>
+   ```
+
+3. **Reference-only docs** (like risk registers) can be deleted rather than implemented
+
+4. **Update tracking** in `consultant/README.md` with completion status
+
+5. **Validate before committing**
+   ```bash
+   cd tally-web && bun run lint && bun run build && bun run test
+   ```
+
+6. **PR description** should include:
+   - Summary of changes
+   - Which consultant project(s) addressed
+   - Any trade-offs or future work

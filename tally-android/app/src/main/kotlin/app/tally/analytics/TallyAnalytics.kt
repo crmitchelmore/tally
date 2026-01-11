@@ -88,7 +88,7 @@ object TallyAnalytics {
             props,
             emptyMap<String, Any>(),
             emptyMap<String, Any>(),
-            emptyMap<String, String>(),
+            emptyMap<String, String>()
         )
     }
 

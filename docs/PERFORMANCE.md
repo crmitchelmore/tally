@@ -89,6 +89,8 @@ Keep chunks under 200 KB:
 - Check bundle impact before adding dependencies
 
 ```tsx
+import dynamic from 'next/dynamic';
+
 // ❌ Loads entire library
 import _ from 'lodash';
 

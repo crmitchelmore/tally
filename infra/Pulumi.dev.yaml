@@ -1,0 +1,14 @@
+config:
+  cloudflare:apiToken:
+    secure: AAABAK2GupYPQVZVyb40FQcntCj1UZ8BeqsrYP9A2f6VnsfqawZMebHftGEklvi0h9254hrDLdgRp6bA1XEBzoqR+oGzdDre
+  vercel:apiToken:
+    secure: AAABAKGucm/KZYqyxNdf8R8ed8Z4Wq1URx9IuX1chVxzmJpoVyu7vWOiRcLDBEPr7othgjs4GUM=
+  tally-infra:clerkPublishableKey:
+    secure: AAABAJU5aE/tBwjWIG9EmRnV5hotzfXhXmI9cXM4qdCprhKCB2CEZtAnLVyufcVmQpmDp8JR/XjC6cTIoJXf5Yu0XZzB0XJBHecHTQFf0kyeob0b/mAI/w==
+  tally-infra:clerkSecretKey:
+    secure: AAABAO5EO+gPwKG2U3wgos03J5zOzi+gorWizwBopUxfwhvsHMHIes0lCboahKa6hl06eaHg/EMJgWv6Yqf4G+3y6nnGjEOLHAEANI6kYNusZw==
+  tally-infra:convexDeployment: dev:bright-jackal-396
+  tally-infra:sentryAdminToken:
+    secure: AAABAL9gKZMbZwbhykUMz/RyXQ3ybCoBCXI6pfui3xu09tTEXlUreiuAEYddaCU0nWH/KCYOydF5WmP9OzGDkARrUG7C5oDIlbInd56VrqXsO/YN+fdW0Jn1SagqD2ykfoiz4tdUcw==
+  launchdarkly:accessToken:
+    secure: AAABAKsMJXt+LxXOaUmNI/fKVdJqd7xZ7wP53IRoriguiy49Xu/ffzKI02jtHNz7WWtZtOc0POUiQsfDwCv+Gqut+8q9lu3j

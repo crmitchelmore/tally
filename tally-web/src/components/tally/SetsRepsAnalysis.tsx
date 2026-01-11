@@ -135,7 +135,7 @@ export function SetsRepsAnalysis({ entries, color }: SetsRepsAnalysisProps) {
                   border: '2px solid oklch(0.85 0.01 50)',
                   borderRadius: '8px',
                 }}
-                formatter={(value: number) => [`${value} reps`]}
+                formatter={(value) => (value == null ? '—' : `${value} reps`)}
                 labelFormatter={(label) => `Date: ${label}`}
               />
               <Scatter 

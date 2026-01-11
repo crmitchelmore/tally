@@ -38,13 +38,15 @@ jobs:
     env:
       # Use dev Clerk instance key for PR screenshot runs
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
-      # Use Vercel preview URL if available, otherwise localhost
-      E2E_BASE_URL: ${{ needs.wait-for-preview.outputs.preview_url || '' }}
     defaults:
       run:
         working-directory: tally-web
     steps:
       - uses: actions/checkout@v6
+
+      - name: Set E2E base URL (preview)
+        if: ${{ needs.wait-for-preview.outputs.preview_url != '' }}
+        run: echo "E2E_BASE_URL=${{ needs.wait-for-preview.outputs.preview_url }}" >> $GITHUB_ENV
 
       - name: Install Bun
         run: |

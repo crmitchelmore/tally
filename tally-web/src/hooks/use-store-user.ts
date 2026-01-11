@@ -1,13 +1,26 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
+
 import { api } from "../../convex/_generated/api";
-import { useEffect, useState } from "react";
-import { Id } from "../../convex/_generated/dataModel";
+import type { Id } from "../../convex/_generated/dataModel";
+
+function useSafeUser() {
+  try {
+    return useUser();
+  } catch {
+    return {
+      user: null,
+      isLoaded: true,
+      isSignedIn: false,
+    } as unknown as ReturnType<typeof useUser>;
+  }
+}
 
 export function useStoreUser() {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded } = useSafeUser();
   const storeUser = useMutation(api.users.getOrCreate);
   const [convexUserId, setConvexUserId] = useState<Id<"users"> | null>(null);
 
@@ -31,7 +44,7 @@ export function useStoreUser() {
 }
 
 export function useCurrentUser() {
-  const { user, isLoaded: isClerkLoaded } = useUser();
+  const { user, isLoaded: isClerkLoaded } = useSafeUser();
   const convexUser = useQuery(
     api.users.getByClerkId,
     user ? { clerkId: user.id } : "skip"

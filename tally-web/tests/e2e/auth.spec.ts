@@ -9,12 +9,12 @@ test("@auth sign-in shows signed-in UI", async ({ page, request }) => {
 
   await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
 
-  // Clerk's UI can vary slightly; stick to accessible labels.
+  // Clerk's UI can vary slightly; use specific locators
   await page.getByLabel(/email address|email/i).fill(email!);
-  await page.getByRole("button", { name: /continue|sign in/i }).click();
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
 
-  await page.getByLabel(/password/i).fill(password!);
-  await page.getByRole("button", { name: /continue|sign in/i }).click();
+  await page.locator('input[name="password"]').fill(password!);
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
 
   // After successful sign-in, the home header shows SignedIn actions.
   await page.goto("/", { waitUntil: "domcontentloaded" });

@@ -19,7 +19,8 @@ async function signIn(page: Page): Promise<void> {
   await page.getByLabel(/email address|email/i).fill(email);
   // Use exact match for primary "Continue" button (not social login buttons)
   await page.getByRole("button", { name: "Continue", exact: true }).click();
-  await page.getByLabel(/password/i).fill(password);
+  // Use the password input specifically by role and placeholder
+  await page.locator('input[name="password"]').fill(password);
   await page.getByRole("button", { name: "Continue", exact: true }).click();
 
   // Wait for redirect and auth to complete

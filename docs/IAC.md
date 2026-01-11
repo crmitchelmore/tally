@@ -265,6 +265,60 @@ pulumi preview
 pulumi up
 ```
 
+## Drift Detection
+
+Infrastructure drift is automatically detected weekly via GitHub Actions (`.github/workflows/infra-drift.yml`).
+
+### How It Works
+
+1. **Schedule**: Runs every Monday at 9am UTC
+2. **Process**: Runs `pulumi refresh --diff` on both dev and prod stacks
+3. **Alerts**: Creates a GitHub issue if drift is detected
+
+### Manual Drift Check
+
+```bash
+cd infra
+pulumi refresh --diff --stack tally-tracker-org/prod
+```
+
+### Handling Drift
+
+When drift is detected:
+
+1. **Review the diff** - Understand what changed
+2. **Decide on action**:
+   - Accept drift: `pulumi refresh --yes` (updates state to match reality)
+   - Revert drift: `pulumi up` (reverts resources to match desired state)
+3. **Document** - If intentional, update IaC code; if accidental, investigate
+
+## Shell-Based Resources (command.local)
+
+Some resources use `command.local.Command` with curl/jq because stable Pulumi providers don't exist:
+
+| Resource | Why command.local | Alternative Considered |
+|----------|-------------------|----------------------|
+| Clerk redirect URLs | No official Pulumi provider | Dynamic provider (too complex) |
+| Sentry projects | Official provider exists but limited | May migrate when provider matures |
+
+### Trade-offs
+
+**Pros:**
+- Works today without custom provider development
+- Idempotent (checks before create, deletes on destroy)
+- Fully visible in Pulumi state
+
+**Cons:**
+- Depends on external tools (`curl`, `jq`)
+- Fragile if APIs change
+- Harder to diff/review than native resources
+
+### Future Migration Path
+
+1. Monitor for official providers (Clerk, improved Sentry)
+2. Consider `pulumi.dynamic.Resource` if patterns stabilize
+3. Document any API changes that break existing resources
+
 ## Troubleshooting
 
 ### State Drift

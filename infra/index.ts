@@ -60,7 +60,7 @@ const convexDeployment = config.get("convexDeployment");
 
 if (isProd) {
   // Production stack manages both prod and dev/preview Vercel targets
-  
+
   // Production Clerk keys
   if (clerkPublishableKey) {
     new vercel.ProjectEnvironmentVariable(

@@ -41,3 +41,6 @@ pids
 .nx/workspace-data
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
+
+# Local automation artifacts
+PR-MANAGEMENT-REPORT.md

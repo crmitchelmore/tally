@@ -5,3 +5,20 @@
 **/build/
 local.properties
 *.iml
+
+# Signing
+keystore/
+*.keystore
+*.jks
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+fastlane/play-store-service-account.json
+vendor/
+
+# Ruby
+.bundle/
+Gemfile.lock

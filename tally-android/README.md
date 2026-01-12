@@ -9,6 +9,23 @@ cd tally-android
 ./gradlew :app:assembleDebug
 ```
 
+## Test
+
+```bash
+./gradlew :app:test              # Unit tests
+./gradlew :app:connectedAndroidTest  # Instrumented tests (requires emulator/device)
+```
+
+## Deploy
+
+See [DEPLOY.md](./DEPLOY.md) for Play Store deployment setup.
+
+Quick reference:
+```bash
+bundle install
+bundle exec fastlane internal    # Deploy to internal testing
+```
+
 ## API base URL
 
 Convex HTTP routes are served from:

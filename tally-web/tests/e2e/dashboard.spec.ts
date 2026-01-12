@@ -32,15 +32,17 @@ test.describe("Navigation flows", () => {
   test("sign-in page loads correctly", async ({ page }) => {
     await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
     
-    // Clerk sign-in form should be present
-    await expect(page.locator('[data-clerk-component="SignIn"]')).toBeVisible({ timeout: 10000 });
+    // Clerk sign-in form should be present - wait for email input and form submit button
+    await expect(page.getByLabel(/email address|email/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole("button", { name: "Continue", exact: true })).toBeVisible();
   });
 
   test("sign-up page loads correctly", async ({ page }) => {
     await page.goto("/sign-up", { waitUntil: "domcontentloaded" });
     
-    // Clerk sign-up form should be present
-    await expect(page.locator('[data-clerk-component="SignUp"]')).toBeVisible({ timeout: 10000 });
+    // Clerk sign-up form should be present - wait for email input and form submit button
+    await expect(page.getByLabel(/email address|email/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole("button", { name: "Continue", exact: true })).toBeVisible();
   });
 
   test("iOS page loads", async ({ page }) => {

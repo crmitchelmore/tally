@@ -87,6 +87,7 @@ jobs:
           name: playwright-ui-report
           path: tally-web/playwright-report
           retention-days: 14
+          if-no-files-found: ignore
 
       - name: Upload screenshots
         if: always()
@@ -95,6 +96,7 @@ jobs:
           name: screenshots
           path: tally-web/tests/e2e/__screenshots__
           retention-days: 14
+          if-no-files-found: ignore
 
       - name: Post screenshot comment
         if: always()

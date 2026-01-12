@@ -36,8 +36,8 @@ jobs:
         run: bun run build
         env:
           # Minimal env vars for static build
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
-          CLERK_SECRET_KEY_DEV: ${{ secrets.CLERK_SECRET_KEY_DEV }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY_DEV }}
           SKIP_ENV_VALIDATION: true
 
       - name: Start server
@@ -52,8 +52,8 @@ jobs:
           done
           curl -fsSL http://localhost:3000 >/dev/null
         env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
-          CLERK_SECRET_KEY_DEV: ${{ secrets.CLERK_SECRET_KEY_DEV }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY_DEV }}
           SKIP_ENV_VALIDATION: true
 
       - name: Run Lighthouse
@@ -141,7 +141,7 @@ jobs:
           # Build with bundle analyzer
           ANALYZE=true bun run build 2>/dev/null || bun run build
         env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
           SKIP_ENV_VALIDATION: true
 
       - name: Report sizes

@@ -38,8 +38,8 @@ object TallyAnalytics {
                 captureDeepLinks = false
             }
 
-            PostHogAndroid.Companion.setup(context, config)
-            posthog = PostHogAndroid.Companion
+            PostHogAndroid.setup(context, config)
+            posthog = PostHogAndroid.shared()
 
             posthog?.register("platform", "android")
             posthog?.register("app_version", appVersion)

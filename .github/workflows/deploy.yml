@@ -425,12 +425,12 @@ jobs:
       - name: E2E smoke tests
         run: bun run test:e2e
         env:
-          BASE_URL: https://dev.tally-tracker.app
+          E2E_BASE_URL: https://dev.tally-tracker.app
 
       - name: E2E auth tests
         run: bun run test:e2e:auth
         env:
-          BASE_URL: https://dev.tally-tracker.app
+          E2E_BASE_URL: https://dev.tally-tracker.app
           TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
           TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
 
@@ -628,7 +628,7 @@ jobs:
       - name: E2E smoke tests (prod)
         run: bun run test:e2e
         env:
-          BASE_URL: https://tally-tracker.app
+          E2E_BASE_URL: https://tally-tracker.app
 
       - name: Upload test results
         if: failure()

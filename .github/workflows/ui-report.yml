@@ -76,7 +76,8 @@ jobs:
             # No webServer needed when testing against preview
             bunx playwright test --grep @ui --reporter=html --update-snapshots --config=playwright.config.ts
           else
-            echo "No preview URL available; skipping UI screenshots (requires auth secrets for local server)."
+            echo "No preview URL; skipping UI screenshots"
+            exit 0
           fi
 
       - name: Upload Playwright report

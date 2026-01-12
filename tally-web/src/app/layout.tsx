@@ -24,12 +24,6 @@ export const metadata: Metadata = {
   description: "Track challenges and achievements with tally marks",
 };
 
-// Use proxy URL to bypass Cloudflare for SaaS DNS conflict
-// The clerk.tally-tracker.app CNAME points to Clerk's Cloudflare, but until
-// Clerk registers our domain as a custom hostname, we get Error 1000.
-// This proxy forwards requests to Clerk's API directly from our server.
-const clerkProxyUrl = process.env.NEXT_PUBLIC_CLERK_PROXY_URL || "/__clerk";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -54,12 +48,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {clerkPublishableKey ? (
-          <ClerkProvider 
-            publishableKey={clerkPublishableKey}
-            proxyUrl={clerkProxyUrl}
-          >
-            {app}
-          </ClerkProvider>
+          <ClerkProvider publishableKey={clerkPublishableKey}>{app}</ClerkProvider>
         ) : (
           app
         )}

@@ -1,3 +1,5 @@
+import { getClerkPublishableKey } from "./clerk-public";
+
 /**
  * Returns the appropriate Clerk secret key based on the deployment environment.
  *
@@ -18,5 +20,16 @@ export function getClerkSecretKey(): string | undefined {
 export function ensureClerkSecretKeyEnv(): string | undefined {
   const key = getClerkSecretKey();
   if (key) process.env.CLERK_SECRET_KEY = key;
+  return key;
+}
+
+/**
+ * Ensures NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is set in process.env for libraries
+ * that read it directly (like @clerk/nextjs middleware).
+ * Must be called server-side before Clerk middleware initializes.
+ */
+export function ensureClerkPublishableKeyEnv(): string | undefined {
+  const key = getClerkPublishableKey();
+  if (key) process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = key;
   return key;
 }

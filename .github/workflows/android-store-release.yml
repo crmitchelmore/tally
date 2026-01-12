@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       lane:
-        description: "fastlane lane (internal|production)"
+        description: "fastlane lane"
         required: true
         default: "internal"
         type: choice

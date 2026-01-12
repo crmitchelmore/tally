@@ -16,7 +16,7 @@ end
 
 def gradle_bundle_release
   require_android_signing_env!
-  gradle(task: "clean bundle", build_type: "Release")
+  gradle(tasks: ["clean", "bundleRelease"])
 end
 
 def upload_to_play(track:)

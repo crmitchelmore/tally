@@ -53,12 +53,20 @@ android {
   }
 
   if (!keystorePath.isNullOrBlank()) {
+    val storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+    val keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+    val keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+    
+    require(!storePassword.isNullOrBlank()) { "ANDROID_KEYSTORE_PASSWORD required when keystore is provided" }
+    require(!keyAlias.isNullOrBlank()) { "ANDROID_KEY_ALIAS required when keystore is provided" }
+    require(!keyPassword.isNullOrBlank()) { "ANDROID_KEY_PASSWORD required when keystore is provided" }
+    
     signingConfigs {
       create("release") {
         storeFile = file(keystorePath)
-        storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
-        keyAlias = System.getenv("ANDROID_KEY_ALIAS")
-        keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+        this.storePassword = storePassword
+        this.keyAlias = keyAlias
+        this.keyPassword = keyPassword
       }
     }
   }

@@ -76,24 +76,30 @@ Only add/manage domains in Pulumi if we verifiably own/control them (registrar +
 If ownership is unclear, do not provision the domain—confirm first.
 
 #### Dev environment domain
-We host the dev environment at `https://dev.tally-tracker.app` (managed via the Pulumi dev stack).
+We currently do **not** run a dedicated web "dev" deployment (e.g. `dev.tally-tracker.app`) because our current Vercel plan does not support the environment setup we want.
 
-- Environment variables (managed by Pulumi):
-  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV`
-  - `CLERK_SECRET_KEY_DEV`
-  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD`
-  - `CLERK_SECRET_KEY_PROD`
-  - `CONVEX_DEPLOYMENT`
-  - `NEXT_PUBLIC_CONVEX_URL`
-  - `NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID`
-  - `NEXT_PUBLIC_POSTHOG_KEY`
-  - `NEXT_PUBLIC_POSTHOG_HOST`
-  - `NEXT_PUBLIC_SENTRY_DSN`
-  - `SENTRY_DSN`
-  - `SENTRY_ORG`
-  - `SENTRY_PROJECT`
-  - `SENTRY_AUTH_TOKEN`
-  - `SENTRY_ENVIRONMENT`
+For now we rely on:
+- Local development (`bun run dev`)
+- PR preview deployments (Vercel preview URLs)
+
+**Re-enable later**: turn on LaunchDarkly flag `enable-web-dev-deploy` (project `tally`, env `prod`) and provide a GitHub Secret `LAUNCHDARKLY_ACCESS_TOKEN` (read-only), or set repo variable `ENABLE_DEV_WEB_DEPLOY=true` as a fallback.
+
+#### Environment variables (managed by Pulumi)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV`
+- `CLERK_SECRET_KEY_DEV`
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD`
+- `CLERK_SECRET_KEY_PROD`
+- `CONVEX_DEPLOYMENT`
+- `NEXT_PUBLIC_CONVEX_URL`
+- `NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID`
+- `NEXT_PUBLIC_POSTHOG_KEY`
+- `NEXT_PUBLIC_POSTHOG_HOST`
+- `NEXT_PUBLIC_SENTRY_DSN`
+- `SENTRY_DSN`
+- `SENTRY_ORG`
+- `SENTRY_PROJECT`
+- `SENTRY_AUTH_TOKEN`
+- `SENTRY_ENVIRONMENT`
 
 ### Authentication (Clerk)
 - Redirect URLs for OAuth flows
@@ -102,7 +108,7 @@ We host the dev environment at `https://dev.tally-tracker.app` (managed via the 
 ### Feature Flags (LaunchDarkly)
 - Project: `tally`
 - Environments: `dev`, `preview`, `prod`
-- Flags defined in Pulumi
+- Flags are intended to be managed via IaC (currently managed manually due to LaunchDarkly Pulumi provider instability)
 
 ### Error Monitoring (Sentry)
 - Organization: `tally-lz`

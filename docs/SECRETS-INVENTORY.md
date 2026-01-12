@@ -45,6 +45,7 @@ Each secret has exactly ONE source of truth. Other systems that need the secret 
 | Secret | Source of Truth | Used By | Rotation |
 |--------|-----------------|---------|----------|
 | `launchDarklyClientSideId` | Pulumi config | Vercel | N/A (project-specific) |
+| `LAUNCHDARKLY_ACCESS_TOKEN` (read-only) | GitHub Secrets | CI (workflow gating) | Manual |
 
 ### Vercel (Hosting)
 

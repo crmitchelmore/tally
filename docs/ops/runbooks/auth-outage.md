@@ -20,8 +20,8 @@ If Clerk has an incident:
 Check if keys are correct for the environment:
 
 ```bash
-# Dev
-curl -s "https://dev.tally-tracker.app/api/health" | jq
+# Web "dev" deployment is currently disabled (see docs/IAC.md).
+# Use a PR preview URL or local dev server instead.
 
 # Prod
 curl -s "https://tally-tracker.app/api/health" | jq

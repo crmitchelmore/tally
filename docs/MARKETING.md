@@ -1,11 +1,11 @@
 # Marketing + App Store Assets
 
-This folder contains **source assets** and ready-to-use copy for Tally marketing.
+The docs/ folder contains **source assets** and ready-to-use copy for Tally marketing.
 
 ## Icons
 
-- `docs/brand-app-icon.svg` — **App icon source** (1024×1024), suitable as the master file for exporting iOS/Android icon sets.
-- `docs/brand-glyph.svg` — **Monochrome glyph** (24×24) for tab bars, nav, and small UI.
+- `brand-app-icon.svg` — **App icon source** (1024×1024), suitable as the master file for exporting iOS/Android icon sets.
+- `brand-glyph.svg` — **Monochrome glyph** (24×24) for tab bars, nav, and small UI.
 
 ### Export specs (quick)
 
@@ -19,8 +19,10 @@ Recommended outputs:
 - `ic_launcher.png` 512×512 (Play Console)
 - `mipmap-*` sizes via Android Studio asset generator
 
-**Web:** Next.js will use `tally-web/src/app/icon.svg` automatically.
+### Web
+
+Next.js will use `tally-web/src/app/icon.svg` automatically.
 
 ## App store listing copy
 
-See `docs/app-store-copy.md`.
+See `app-store-copy.md`.

@@ -60,7 +60,7 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
           script: |
-            set -euxo pipefail
+            set -eux
             cd tally-android
             ./gradlew :app:connectedDebugAndroidTest --stacktrace || {
               SERIAL=$(adb devices | awk 'NR>1 && $2=="device" {print $1; exit}')

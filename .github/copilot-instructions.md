@@ -41,6 +41,7 @@ Practical rules:
 - Keep domain logic shared where possible (contracts/types) so web/iOS/Android stay consistent.
 - Prefer small, surgical changes; avoid unrelated refactors.
 - **Never discard unrelated local edits.** If a clean working tree is needed, use `git stash push -u -m "wip: <desc>"` and restore later; only discard changes with explicit user approval.
+- If the Copilot CLI `bash` tool errors with `posix_spawnp failed`, retry via the `task` agent as a fallback.
 - Add lightweight regression checks when touching critical flows (auth, API, data integrity).
 
 ## Project Overview
@@ -73,6 +74,11 @@ Tally is a multi-platform challenge tracking app:
 - When Clerk shows "Development mode" in prod, verify `pk_live_*` in `/sign-in` HTML and absence of `clerk.accounts.dev`.
 - Vercel project `rootDirectory` is `tally-web`; workflows should run from repo root to avoid `tally-web/tally-web`.
 - **Web dev deploy is intentionally disabled** (no dedicated `dev.tally-tracker.app`) due to current Vercel plan constraints; use PR previews or local dev. Re-enable via LaunchDarkly flag `enable-web-dev-deploy` or repo variable `ENABLE_DEV_WEB_DEPLOY=true`.
+
+### CI gotchas (mobile)
+- `reactivecircus/android-emulator-runner@v2` does **not** support `adb-timeout`; avoid adding unsupported inputs.
+- GitHub Actions job logs may be unavailable until completion (`gh run view --log` and MCP job logs can fail/404 while in progress).
+- Prefer a single retry for emulator-based instrumented tests rather than only widening timeouts.
 
 ### Convex Authorization Pattern
 - **Never trust client-provided `userId`** in mutations - always derive from `ctx.auth.getUserIdentity()`

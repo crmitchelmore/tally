@@ -19,11 +19,25 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "xcodebuild -project Tally.xcodeproj -scheme TallyTests -destination 'platform=iOS Simulator,name=iPhone 16' CODE_SIGNING_ALLOWED=NO test"
+          "xcodegen generate",
+          "UDID=$(python3 - <<'PY'\nimport json, subprocess\ndata = subprocess.check_output([\"xcrun\", \"simctl\", \"list\", \"devices\", \"available\", \"-j\"])\nobj = json.loads(data)\nfor runtime, devices in obj.get(\"devices\", {}).items():\n  for d in devices:\n    if d.get(\"isAvailable\") and d.get(\"name\", \"\").startswith(\"iPhone\"):\n      print(d[\"udid\"])\n      raise SystemExit(0)\nraise SystemExit(\"No available iPhone simulator found\")\nPY\n) && xcodebuild -project Tally.xcodeproj -scheme TallyTests -destination \"platform=iOS Simulator,id=$UDID\" CODE_SIGNING_ALLOWED=NO test"
         ],
-        "cwd": "tally-ios"
+        "cwd": "tally-ios",
+        "parallel": false
       },
       "cache": true
+    },
+    "e2e": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "xcodegen generate",
+          "UDID=$(python3 - <<'PY'\nimport json, subprocess\ndata = subprocess.check_output([\"xcrun\", \"simctl\", \"list\", \"devices\", \"available\", \"-j\"])\nobj = json.loads(data)\nfor runtime, devices in obj.get(\"devices\", {}).items():\n  for d in devices:\n    if d.get(\"isAvailable\") and d.get(\"name\", \"\").startswith(\"iPhone\"):\n      print(d[\"udid\"])\n      raise SystemExit(0)\nraise SystemExit(\"No available iPhone simulator found\")\nPY\n) && xcodebuild -project Tally.xcodeproj -scheme TallyUITests -destination \"platform=iOS Simulator,id=$UDID\" CODE_SIGNING_ALLOWED=NO test"
+        ],
+        "cwd": "tally-ios",
+        "parallel": false
+      },
+      "cache": false
     },
     "generate": {
       "executor": "nx:run-commands",

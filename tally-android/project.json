@@ -27,6 +27,14 @@
       },
       "cache": true
     },
+    "e2e": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["./gradlew :app:connectedDebugAndroidTest"],
+        "cwd": "tally-android"
+      },
+      "cache": false
+    },
     "lint": {
       "executor": "nx:run-commands",
       "options": {

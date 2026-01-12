@@ -42,6 +42,68 @@ jobs:
       - name: Run unit tests
         run: ./gradlew :app:test
 
+      - name: Reset adb
+        run: |
+          ADB="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/platform-tools/adb"
+          "$ADB" kill-server || true
+          "$ADB" start-server
+
+      - name: Run instrumented tests (emulator)
+        id: emu1
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          profile: medium_phone
+          disable-animations: true
+          force-avd-creation: true
+          emulator-boot-timeout: 1200
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          script: |
+            set -eux
+            cd tally-android
+            ./gradlew :app:connectedDebugAndroidTest --stacktrace || {
+              SERIAL=$(adb devices | awk 'NR>1 && $2=="device" {print $1; exit}')
+              adb devices || true
+              if [ -n "${SERIAL:-}" ]; then adb -s "$SERIAL" logcat -d | tail -n 500 || true; fi
+              exit 1
+            }
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN_ANDROID }}
+
+      - name: Reset adb (after failure)
+        if: steps.emu1.outcome == 'failure'
+        run: |
+          ADB="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/platform-tools/adb"
+          "$ADB" kill-server || true
+          "$ADB" start-server
+
+      - name: Retry instrumented tests (emulator)
+        if: steps.emu1.outcome == 'failure'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          profile: medium_phone
+          disable-animations: true
+          force-avd-creation: true
+          emulator-boot-timeout: 1200
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          script: |
+            set -eux
+            cd tally-android
+            ./gradlew :app:connectedDebugAndroidTest --stacktrace || {
+              SERIAL=$(adb devices | awk 'NR>1 && $2=="device" {print $1; exit}')
+              adb devices || true
+              if [ -n "${SERIAL:-}" ]; then adb -s "$SERIAL" logcat -d | tail -n 500 || true; fi
+              exit 1
+            }
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN_ANDROID }}
+
       - name: Build release (with Sentry mapping upload)
         if: github.ref == 'refs/heads/main'
         run: ./gradlew :app:assembleRelease

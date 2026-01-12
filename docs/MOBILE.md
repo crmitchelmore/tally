@@ -300,21 +300,20 @@ val okHttpClient = OkHttpClient.Builder()
 
 ## Testing
 
+Use Nx targets from the repo root:
+
 ### iOS
 
 ```bash
-cd tally-ios
-xcodebuild test \
-  -scheme Tally \
-  -destination 'platform=iOS Simulator,name=iPhone 16'
+nx run tally-ios:test
+nx run tally-ios:e2e
 ```
 
 ### Android
 
 ```bash
-cd tally-android
-./gradlew test                    # Unit tests
-./gradlew connectedAndroidTest    # Instrumented tests
+nx run tally-android:test
+nx run tally-android:e2e
 ```
 
 ## CI/CD

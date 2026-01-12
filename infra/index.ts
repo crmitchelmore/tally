@@ -189,7 +189,60 @@ if (isProd) {
     content: "vc-domain-verify=tally-tracker.app,90cf862f53bce1742529,dc",
     ttl: 1,
   });
-} else {
+}
+
+// =============================================================================
+// Clerk DNS Records (for production Clerk proxy subdomain)
+// =============================================================================
+// The production Clerk publishable key is configured for clerk.tally-tracker.app
+// These CNAMEs allow Clerk to serve its frontend API from our subdomains
+// All targets are from Clerk dashboard cname_targets configuration
+const clerkProxyRecord = new cloudflare.DnsRecord("clerk-proxy-record", {
+  zoneId: zoneId,
+  name: "clerk",
+  type: "CNAME",
+  content: "frontend-api.clerk.services",
+  proxied: false,
+  ttl: 1,
+});
+
+const clerkAccountsRecord = new cloudflare.DnsRecord("clerk-accounts-record", {
+  zoneId: zoneId,
+  name: "accounts",
+  type: "CNAME",
+  content: "accounts.clerk.services",
+  proxied: false,
+  ttl: 1,
+});
+
+const clerkMailRecord = new cloudflare.DnsRecord("clerk-mail-record", {
+  zoneId: zoneId,
+  name: "clkmail",
+  type: "CNAME",
+  content: "mail.qal05p4y4yto.clerk.services",
+  proxied: false,
+  ttl: 1,
+});
+
+const clerkDkim1Record = new cloudflare.DnsRecord("clerk-dkim1-record", {
+  zoneId: zoneId,
+  name: "clk._domainkey",
+  type: "CNAME",
+  content: "dkim1.qal05p4y4yto.clerk.services",
+  proxied: false,
+  ttl: 1,
+});
+
+const clerkDkim2Record = new cloudflare.DnsRecord("clerk-dkim2-record", {
+  zoneId: zoneId,
+  name: "clk2._domainkey",
+  type: "CNAME",
+  content: "dkim2.qal05p4y4yto.clerk.services",
+  proxied: false,
+  ttl: 1,
+});
+
+if (!isProd) {
   // Dev stack: dev subdomain
   devRecord = new cloudflare.DnsRecord("dev-record", {
     zoneId: zoneId,
@@ -945,9 +998,11 @@ export const dnsRecords = isProd
       root: rootRecord?.name,
       www: wwwRecord?.name,
       vercelTxt: vercelTxtRecord?.name,
+      clerkProxy: clerkProxyRecord?.name,
     }
   : {
       dev: devRecord?.name,
+      clerkProxy: clerkProxyRecord?.name,
     };
 export const clerkRedirects = clerkRedirectUrls;
 

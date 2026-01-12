@@ -75,6 +75,11 @@ Tally is a multi-platform challenge tracking app:
 - Vercel project `rootDirectory` is `tally-web`; workflows should run from repo root to avoid `tally-web/tally-web`.
 - **Web dev deploy is intentionally disabled** (no dedicated `dev.tally-tracker.app`) due to current Vercel plan constraints; use PR previews or local dev. Re-enable via LaunchDarkly flag `enable-web-dev-deploy` or repo variable `ENABLE_DEV_WEB_DEPLOY=true`.
 
+### CI gotchas (mobile)
+- `reactivecircus/android-emulator-runner@v2` does **not** support `adb-timeout`; avoid adding unsupported inputs.
+- GitHub Actions job logs may be unavailable until completion (`gh run view --log` and MCP job logs can fail/404 while in progress).
+- Prefer a single retry for emulator-based instrumented tests rather than only widening timeouts.
+
 ### Convex Authorization Pattern
 - **Never trust client-provided `userId`** in mutations - always derive from `ctx.auth.getUserIdentity()`
 - Use centralized auth helpers from `convex/lib/auth.ts`:

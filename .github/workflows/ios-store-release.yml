@@ -20,7 +20,7 @@ jobs:
       run:
         working-directory: tally-ios
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install tools
         run: brew install xcodegen sentry-cli

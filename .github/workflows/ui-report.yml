@@ -43,7 +43,7 @@ jobs:
       run:
         working-directory: tally-web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set E2E base URL (preview)
         if: ${{ needs.wait-for-preview.outputs.preview_url != '' }}

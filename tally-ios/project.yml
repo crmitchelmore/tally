@@ -44,7 +44,7 @@ targets:
           if [ -n "${SENTRY_AUTH_TOKEN}" ]; then
             export SENTRY_ORG="tally-lz"
             export SENTRY_PROJECT="ios"
-            /usr/local/bin/sentry-cli upload-dif "${DWARF_DSYM_FOLDER_PATH}" --include-sources || true
+            sentry-cli upload-dif "${DWARF_DSYM_FOLDER_PATH}" --include-sources || true
           fi
         runOnlyWhenInstalling: false
   TallyTests:

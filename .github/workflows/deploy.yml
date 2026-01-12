@@ -236,11 +236,49 @@ jobs:
   # Deploy to Development (main push only)
   # ===========================================================================
   
+  # NOTE: We currently keep web "dev" deploys disabled by default.
+  # This can be re-enabled later via LaunchDarkly (preferred) or a repo variable.
+  dev-web-deploy-flag:
+    name: Dev web deploy enabled?
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    outputs:
+      enabled: ${{ steps.flag.outputs.enabled }}
+      source: ${{ steps.flag.outputs.source }}
+    steps:
+      - name: Resolve dev web deploy toggle
+        id: flag
+        env:
+          LD_TOKEN: ${{ secrets.LAUNCHDARKLY_ACCESS_TOKEN }}
+          REPO_VAR: ${{ vars.ENABLE_DEV_WEB_DEPLOY }}
+        run: |
+          enabled="false"
+          source="default_off"
+
+          if [ "${REPO_VAR:-}" = "true" ]; then
+            enabled="true"
+            source="repo_var"
+          fi
+
+          if [ -n "${LD_TOKEN:-}" ]; then
+            resp=$(curl -fsSL -H "Authorization: ${LD_TOKEN}" \
+              "https://app.launchdarkly.com/api/v2/flags/tally/enable-web-dev-deploy" 2>/dev/null || true)
+            if [ -n "$resp" ]; then
+              on=$(echo "$resp" | jq -r '.environments.prod.on // false')
+              enabled="$on"
+              source="launchdarkly"
+            fi
+          fi
+
+          echo "enabled=$enabled" >> "$GITHUB_OUTPUT"
+          echo "source=$source" >> "$GITHUB_OUTPUT"
+          echo "Dev web deploy enabled=$enabled (source=$source)"
+
   deploy-dev-infra:
     name: Deploy Infra (dev)
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [lint-build-test, infra-typecheck]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.dev-web-deploy-flag.outputs.enabled == 'true'
+    needs: [dev-web-deploy-flag, lint-build-test, infra-typecheck]
     environment: development
     defaults:
       run:
@@ -280,8 +318,8 @@ jobs:
   deploy-dev-convex:
     name: Deploy Convex (dev)
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [lint-build-test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.dev-web-deploy-flag.outputs.enabled == 'true'
+    needs: [dev-web-deploy-flag, lint-build-test]
     environment: development
     outputs:
       convex_version: ${{ github.sha }}
@@ -319,8 +357,8 @@ jobs:
   deploy-dev-vercel:
     name: Deploy Vercel (dev)
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [deploy-dev-infra, deploy-dev-convex]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.dev-web-deploy-flag.outputs.enabled == 'true'
+    needs: [dev-web-deploy-flag, deploy-dev-infra, deploy-dev-convex]
     environment: development
     outputs:
       deployment_url: ${{ steps.deploy.outputs.url }}
@@ -380,8 +418,8 @@ jobs:
   e2e-dev:
     name: E2E Tests (dev)
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [deploy-dev-vercel]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.dev-web-deploy-flag.outputs.enabled == 'true'
+    needs: [dev-web-deploy-flag, deploy-dev-vercel]
     environment: development
     defaults:
       run:
@@ -444,7 +482,7 @@ jobs:
     name: Deploy Infra (prod)
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [e2e-dev]
+    needs: [lint-build-test, infra-typecheck]
     environment: production
     defaults:
       run:
@@ -485,7 +523,7 @@ jobs:
     name: Deploy Convex (prod)
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [e2e-dev]
+    needs: [lint-build-test]
     environment: production
     outputs:
       convex_version: ${{ github.sha }}

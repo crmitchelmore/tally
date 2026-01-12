@@ -22,6 +22,8 @@ android {
   namespace = "app.tally"
   compileSdk = 35
 
+  val keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+
   defaultConfig {
     applicationId = "app.tally"
     minSdk = 26
@@ -50,6 +52,25 @@ android {
     )
   }
 
+  if (!keystorePath.isNullOrBlank()) {
+    val storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+    val keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+    val keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+    
+    require(!storePassword.isNullOrBlank()) { "ANDROID_KEYSTORE_PASSWORD required when keystore is provided" }
+    require(!keyAlias.isNullOrBlank()) { "ANDROID_KEY_ALIAS required when keystore is provided" }
+    require(!keyPassword.isNullOrBlank()) { "ANDROID_KEY_PASSWORD required when keystore is provided" }
+    
+    signingConfigs {
+      create("release") {
+        storeFile = file(keystorePath)
+        this.storePassword = storePassword
+        this.keyAlias = keyAlias
+        this.keyPassword = keyPassword
+      }
+    }
+  }
+
   buildTypes {
     getByName("debug") {
       buildConfigField(
@@ -65,6 +86,11 @@ android {
     }
 
     getByName("release") {
+      isMinifyEnabled = false
+      // Only wire signing when CI provides a keystore path.
+      if (!keystorePath.isNullOrBlank()) {
+        signingConfig = signingConfigs.getByName("release")
+      }
       buildConfigField(
         "String",
         "CLERK_PUBLISHABLE_KEY",
@@ -137,6 +163,7 @@ dependencies {
 
   implementation("androidx.compose.ui:ui")
   implementation("androidx.compose.material3:material3")
+  implementation("androidx.compose.material:material-icons-core")
   implementation("androidx.compose.material:material-icons-extended")
   implementation("androidx.compose.ui:ui-tooling-preview")
 
@@ -151,7 +178,7 @@ dependencies {
   implementation("androidx.security:security-crypto:1.0.0")
 
   // LaunchDarkly
-  implementation("com.launchdarkly:launchdarkly-android-client-sdk:5.4.0")
+  implementation("com.launchdarkly:launchdarkly-android-client-sdk:5.10.0")
 
   // PostHog Analytics
   implementation("com.posthog:posthog-android:3.4.2")

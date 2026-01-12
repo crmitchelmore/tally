@@ -8,6 +8,14 @@
 - **Design Philosophy**: Read `docs/DESIGN-PHILOSOPHY.md`
 - **Domain**: https://tally-tracker.app
 
+## Marketing assets convention
+
+When adding marketing/app store materials:
+- Put source art + listing copy in `docs/` (use a single index file that links out).
+- Prefer vector sources (SVG) + export instructions over committing large binary icon sets.
+- Add a link from the root `README.md` under “Docs”.
+- If asked to “document then reflect”, update repo docs first, then provide the reflection.
+
 ## Product principles (apply to all changes)
 
 Tally should feel **friendly, fun, and fast**.
@@ -64,6 +72,7 @@ Tally is a multi-platform challenge tracking app:
 - Never commit app secrets or local env files (e.g. `tally-web/.env.local`).
 - When Clerk shows "Development mode" in prod, verify `pk_live_*` in `/sign-in` HTML and absence of `clerk.accounts.dev`.
 - Vercel project `rootDirectory` is `tally-web`; workflows should run from repo root to avoid `tally-web/tally-web`.
+- **Web dev deploy is intentionally disabled** (no dedicated `dev.tally-tracker.app`) due to current Vercel plan constraints; use PR previews or local dev. Re-enable via LaunchDarkly flag `enable-web-dev-deploy` or repo variable `ENABLE_DEV_WEB_DEPLOY=true`.
 
 ### Convex Authorization Pattern
 - **Never trust client-provided `userId`** in mutations - always derive from `ctx.auth.getUserIdentity()`

@@ -159,7 +159,7 @@ class ModelSerializationTest {
         "_id": "fc_1",
         "userId": "u_follower",
         "challengeId": "ch_target",
-        "createdAt": 1234567890.0
+        "followedAt": 1234567890.0
       }
     """.trimIndent()
 

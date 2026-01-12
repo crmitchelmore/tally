@@ -20,19 +20,8 @@ class TallyApp : Application() {
         // Performance monitoring
         options.tracesSampleRate = 0.1
         
-        // ANR detection
+        // ANR detection (configured via Sentry auto-init defaults)
         options.isAnrEnabled = true
-        options.anrTimeoutIntervalMillis = 5000
-        
-        // Enable breadcrumbs
-        options.isEnableActivityLifecycleBreadcrumbs = true
-        options.isEnableAppComponentBreadcrumbs = true
-        options.isEnableSystemEventBreadcrumbs = true
-        options.isEnableNetworkEventBreadcrumbs = true
-        
-        // Privacy: don't attach screenshots by default
-        options.isAttachScreenshot = false
-        options.isAttachViewHierarchy = false
         
         // Release tracking
         options.release = "app.tally@${BuildConfig.VERSION_NAME}+${BuildConfig.VERSION_CODE}"

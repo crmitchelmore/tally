@@ -44,6 +44,15 @@ Practical rules:
 - If the Copilot CLI `bash` tool errors with `posix_spawnp failed`, retry via the `task` agent as a fallback.
 - Add lightweight regression checks when touching critical flows (auth, API, data integrity).
 
+## PR Review Workflow
+
+When reviewing multiple PRs systematically:
+- **Check `mergeable` state first** - skip PRs with conflicts, leave a comment explaining the situation
+- **Dependabot PRs**: Approve with note that admin merge is required (Dependabot doesn't have access to repo secrets, so CI checks like lint/build will fail)
+- **Android CI failures**: Often pre-existing on main (e.g., `FollowedChallenge deserialization`) - verify failure is in PR diff before blocking
+- **Label PRs** with `reviewing` when starting work to signal in-progress status
+- **Batch fixes**: Address all review comments in a single commit when possible
+
 ## Project Overview
 
 Tally is a multi-platform challenge tracking app:

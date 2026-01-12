@@ -1,21 +1,12 @@
 package app.tally
 
+/**
+ * Environment configuration helper.
+ * Values are baked into BuildConfig at compile time based on build type (debug/release).
+ * See app/build.gradle.kts for the source of these values.
+ */
 object Env {
-  private fun isDebug(): Boolean = BuildConfig.DEBUG
+  fun clerkPublishableKey(): String = BuildConfig.CLERK_PUBLISHABLE_KEY
 
-  fun clerkPublishableKey(): String {
-    return if (isDebug()) {
-      System.getenv("CLERK_PUBLISHABLE_KEY_DEV") ?: System.getenv("CLERK_PUBLISHABLE_KEY") ?: ""
-    } else {
-      System.getenv("CLERK_PUBLISHABLE_KEY_PROD") ?: System.getenv("CLERK_PUBLISHABLE_KEY") ?: ""
-    }
-  }
-
-  fun launchDarklyMobileKey(): String {
-    return if (isDebug()) {
-      System.getenv("LAUNCHDARKLY_MOBILE_KEY_DEV") ?: System.getenv("LAUNCHDARKLY_MOBILE_KEY") ?: ""
-    } else {
-      System.getenv("LAUNCHDARKLY_MOBILE_KEY_PROD") ?: System.getenv("LAUNCHDARKLY_MOBILE_KEY") ?: ""
-    }
-  }
+  fun launchDarklyMobileKey(): String = BuildConfig.LAUNCHDARKLY_MOBILE_KEY
 }

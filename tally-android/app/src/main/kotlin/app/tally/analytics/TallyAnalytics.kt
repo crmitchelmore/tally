@@ -14,6 +14,7 @@ import io.sentry.protocol.User
  * See docs/ANALYTICS.md for the event taxonomy.
  */
 object TallyAnalytics {
+    @Volatile
     private var isInitialized = false
     private var posthog: PostHogInterface? = null
 
@@ -38,7 +39,7 @@ object TallyAnalytics {
             }
 
             PostHogAndroid.Companion.setup(context, config)
-            posthog = PostHogAndroid.Companion.with(context, config)
+            posthog = PostHogAndroid.Companion
 
             posthog?.register("platform", "android")
             posthog?.register("app_version", appVersion)
@@ -81,7 +82,7 @@ object TallyAnalytics {
         val props = (properties ?: emptyMap()).toMutableMap()
         props["platform"] = "android"
 
-        posthog?.capture(event, props)
+        posthog?.capture(event, null, props)
     }
 
     // MARK: - Convenience Methods

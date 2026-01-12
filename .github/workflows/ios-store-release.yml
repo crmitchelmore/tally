@@ -7,6 +7,10 @@ on:
         description: "fastlane lane (beta|release)"
         required: true
         default: "beta"
+        type: choice
+        options:
+          - beta
+          - release
 
 jobs:
   deploy:
@@ -46,14 +50,16 @@ jobs:
           security set-keychain-settings -lut 21600 "$KEYCHAIN"
           security unlock-keychain -p "$IOS_KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security list-keychains -d user -s "$KEYCHAIN"
+          security default-keychain -s "$KEYCHAIN"
 
-          echo "$IOS_SIGNING_CERT_P12_BASE64" | base64 --decode > signing.p12
+          printf '%s' "$IOS_SIGNING_CERT_P12_BASE64" | base64 -D > signing.p12
           security import signing.p12 -k "$KEYCHAIN" -P "$IOS_SIGNING_CERT_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$IOS_KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          rm -f signing.p12
 
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           uuid=$(uuidgen)
-          echo "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/$uuid.mobileprovision
+          printf '%s' "$IOS_PROVISIONING_PROFILE_BASE64" | base64 -D > ~/Library/MobileDevice/Provisioning\ Profiles/$uuid.mobileprovision
 
       - name: Deploy
         env:

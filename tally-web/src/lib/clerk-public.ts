@@ -14,11 +14,16 @@ export function isVercelProduction(): boolean {
 }
 
 /**
- * Get the Clerk publishable key based on environment.
- * Works in both server and client contexts.
+ * Returns the appropriate Clerk publishable key based on the deployment environment.
  *
- * Server: Uses VERCEL_ENV to pick _PROD or _DEV key
- * Client: Checks for keys in order: _PROD, _DEV, legacy
+ * Server-side: Uses VERCEL_ENV to pick _PROD or _DEV key, falls back to base key.
+ * Client-side: Returns whichever key is available (baked in at build time).
+ *
+ * In production:  Prefers PROD key → base key (never falls back to DEV)
+ * In development: Prefers DEV key → base key (never falls back to PROD)
+ *
+ * The base key (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) acts as a universal fallback
+ * during migration while explicit *_DEV/*_PROD keys are being adopted.
  */
 export function getClerkPublishableKey(): string | undefined {
   // Server-side: use VERCEL_ENV to determine environment

@@ -89,7 +89,7 @@ tally/
 
 ## Environment Variables
 
-If iOS shows “Set CLERK_PUBLISHABLE_KEY…”, ensure `.env` has `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV` set; iOS Info.plist reads `CLERK_PUBLISHABLE_KEY` from build settings (Debug maps to `*_DEV`).
+If iOS shows “Set CLERK_PUBLISHABLE_KEY…”, ensure `.env` has `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV` set; iOS Info.plist reads `CLERK_PUBLISHABLE_KEY` from build settings (Debug maps to `*_DEV`, Release maps to `*_PROD`).
 
 All secrets in root `.env` (gitignored):
 
@@ -104,8 +104,8 @@ CLERK_SECRET_KEY_PROD=sk_live_...
 
 # Convex
 # NOTE: deploy keys embed the deployment slug, so we don't need CONVEX_DEPLOYMENT locally.
-CONVEX_DEPLOY_KEY=dev:bright-jackal-396|...  # Dev deploy key
-CONVEX_DEPLOYMENT_KEY_PROD=prod:bright-jackal-396|...  # Prod deploy key
+CONVEX_DEPLOY_KEY_DEV=dev:bright-jackal-396|...  # Dev deploy key
+CONVEX_DEPLOY_KEY_PROD=prod:bright-jackal-396|...  # Prod deploy key
 
 # Infrastructure (Pulumi)
 CLOUDFLARE_API_TOKEN=...

@@ -112,14 +112,18 @@ set_env_secret() {
   echo ""
   echo "Migrating: $old_name → $new_name (environment: $env)"
   
-  # Check if secret exists at repo level
-  if ! gh secret list -R "$REPO" | grep -q "^$old_name"; then
+  # Check if secret exists at repo level (exact match via JSON to avoid prefix matching)
+  local existing_secrets
+  existing_secrets=$(gh secret list -R "$REPO" --json name -q '.[].name' 2>/dev/null || echo "")
+  if ! echo "$existing_secrets" | grep -qx "$old_name"; then
     warn "Source secret '$old_name' not found at repo level. Skipping."
     return
   fi
   
-  # Check if already exists in environment
-  if gh secret list -R "$REPO" --env "$env" 2>/dev/null | grep -q "^$new_name"; then
+  # Check if already exists in environment (exact match)
+  local env_secrets
+  env_secrets=$(gh secret list -R "$REPO" --env "$env" --json name -q '.[].name' 2>/dev/null || echo "")
+  if echo "$env_secrets" | grep -qx "$new_name"; then
     info "Secret '$new_name' already exists in '$env' environment"
     return
   fi

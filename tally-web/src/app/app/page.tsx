@@ -39,6 +39,7 @@ import type { Challenge, SetData, FeelingType } from "@/types";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useMotionPreference } from "@/hooks/use-reduced-motion";
+import { getClerkPublishableKey } from "@/lib/clerk-public";
 
 type ViewMode = "dashboard" | "leaderboard" | "community";
 

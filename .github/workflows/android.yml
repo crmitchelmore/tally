@@ -60,7 +60,6 @@ jobs:
           disable-animations: true
           force-avd-creation: true
           emulator-boot-timeout: 1200
-          adb-timeout: 300
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
           script: |
             set -eux
@@ -92,7 +91,6 @@ jobs:
           disable-animations: true
           force-avd-creation: true
           emulator-boot-timeout: 1200
-          adb-timeout: 300
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
           script: |
             set -eux

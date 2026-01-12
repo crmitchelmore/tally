@@ -12,10 +12,10 @@ Each secret has exactly ONE source of truth. Other systems that need the secret 
 
 | Secret | Source of Truth | Used By | Rotation |
 |--------|-----------------|---------|----------|
-| `CLERK_SECRET_KEY` (prod) | Pulumi config (encrypted) | Vercel, CI | Manual |
-| `CLERK_SECRET_KEY` (dev) | Pulumi config (encrypted) | Vercel, CI | Manual |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (prod) | Pulumi config | Vercel | N/A (public) |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (dev) | Pulumi config | Vercel | N/A (public) |
+| `CLERK_SECRET_KEY_PROD` | Pulumi config (encrypted) | Vercel, CI | Manual |
+| `CLERK_SECRET_KEY_DEV` | Pulumi config (encrypted) | Vercel, CI | Manual |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD` | Pulumi config | Vercel | N/A (public) |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV` | Pulumi config | Vercel | N/A (public) |
 
 ### Convex (Database)
 

@@ -33,20 +33,8 @@ android {
 
     buildConfigField(
       "String",
-      "CLERK_PUBLISHABLE_KEY",
-      "\"${System.getenv("CLERK_PUBLISHABLE_KEY") ?: ""}\""
-    )
-
-    buildConfigField(
-      "String",
       "TALLY_API_BASE_URL",
       "\"${System.getenv("TALLY_API_BASE_URL") ?: "https://bright-jackal-396.convex.site"}\""
-    )
-
-    buildConfigField(
-      "String",
-      "LAUNCHDARKLY_MOBILE_KEY",
-      "\"${System.getenv("LAUNCHDARKLY_MOBILE_KEY") ?: ""}\""
     )
 
     buildConfigField(
@@ -60,6 +48,34 @@ android {
       "POSTHOG_API_KEY",
       "\"${System.getenv("POSTHOG_API_KEY") ?: ""}\""
     )
+  }
+
+  buildTypes {
+    getByName("debug") {
+      buildConfigField(
+        "String",
+        "CLERK_PUBLISHABLE_KEY",
+        "\"${System.getenv("CLERK_PUBLISHABLE_KEY_DEV") ?: System.getenv("CLERK_PUBLISHABLE_KEY") ?: ""}\""
+      )
+      buildConfigField(
+        "String",
+        "LAUNCHDARKLY_MOBILE_KEY",
+        "\"${System.getenv("LAUNCHDARKLY_MOBILE_KEY_DEV") ?: System.getenv("LAUNCHDARKLY_MOBILE_KEY") ?: ""}\""
+      )
+    }
+
+    getByName("release") {
+      buildConfigField(
+        "String",
+        "CLERK_PUBLISHABLE_KEY",
+        "\"${System.getenv("CLERK_PUBLISHABLE_KEY_PROD") ?: System.getenv("CLERK_PUBLISHABLE_KEY") ?: ""}\""
+      )
+      buildConfigField(
+        "String",
+        "LAUNCHDARKLY_MOBILE_KEY",
+        "\"${System.getenv("LAUNCHDARKLY_MOBILE_KEY_PROD") ?: System.getenv("LAUNCHDARKLY_MOBILE_KEY") ?: ""}\""
+      )
+    }
   }
 
   buildFeatures {
@@ -121,6 +137,7 @@ dependencies {
 
   implementation("androidx.compose.ui:ui")
   implementation("androidx.compose.material3:material3")
+  implementation("androidx.compose.material:material-icons-extended")
   implementation("androidx.compose.ui:ui-tooling-preview")
 
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")

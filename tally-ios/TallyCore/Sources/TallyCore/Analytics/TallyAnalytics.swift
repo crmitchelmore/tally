@@ -149,7 +149,7 @@ public final class TallyAnalytics: @unchecked Sendable {
   public func addBreadcrumb(message: String, category: String? = nil) {
     let crumb = Breadcrumb()
     crumb.message = message
-    crumb.category = category
+    if let category { crumb.category = category }
     crumb.level = .info
     SentrySDK.addBreadcrumb(crumb)
   }

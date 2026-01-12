@@ -364,8 +364,8 @@ Cmd+U  # Test
 ### Environment Variables Needed
 ```env
 # Web (.env.local)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
-CLERK_SECRET_KEY=
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV=
+CLERK_SECRET_KEY_DEV=
 NEXT_PUBLIC_CONVEX_URL=
 
 # iOS (Info.plist or Config)

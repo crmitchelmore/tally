@@ -22,7 +22,7 @@ public final class FeatureFlags: ObservableObject, Sendable {
   public func initialize(mobileKey: String) {
     guard !mobileKey.isEmpty, !isInitialized else { return }
     
-    let config = LDConfig(mobileKey: mobileKey)
+    let config = LDConfig(mobileKey: mobileKey, autoEnvAttributes: .enabled)
     
     // Start with anonymous context
     var builder = LDContextBuilder(key: "anonymous")

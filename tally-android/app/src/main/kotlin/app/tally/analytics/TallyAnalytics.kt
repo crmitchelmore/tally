@@ -1,8 +1,9 @@
 package app.tally.analytics
 
 import android.content.Context
-import com.posthog.android.PostHog
-import com.posthog.android.PostHogConfig
+import com.posthog.PostHog
+import com.posthog.android.PostHogAndroid
+import com.posthog.android.PostHogAndroidConfig
 import io.sentry.Sentry
 import io.sentry.protocol.User
 
@@ -13,6 +14,7 @@ import io.sentry.protocol.User
  * See docs/ANALYTICS.md for the event taxonomy.
  */
 object TallyAnalytics {
+    @Volatile
     private var isInitialized = false
 
     /**
@@ -27,18 +29,18 @@ object TallyAnalytics {
 
         // Initialize PostHog
         if (!posthogApiKey.isNullOrBlank()) {
-            val config = PostHogConfig(
+            val config = PostHogAndroidConfig(
                 apiKey = posthogApiKey,
-                host = "https://app.posthog.com"
+                host = "https://app.posthog.com",
             ).apply {
                 captureScreenViews = false
                 captureDeepLinks = false
             }
-            PostHog.setup(context, config)
-            PostHog.register(mapOf(
-                "platform" to "android",
-                "app_version" to appVersion
-            ))
+
+            PostHogAndroid.setup(context, config)
+
+            PostHog.register("platform", "android")
+            PostHog.register("app_version", appVersion)
         }
 
         // Note: Sentry is auto-initialized by the Gradle plugin
@@ -55,7 +57,7 @@ object TallyAnalytics {
      */
     fun identify(userId: String, traits: Map<String, Any>? = null) {
         val hashedId = hashUserId(userId)
-        PostHog.identify(hashedId, traits)
+        PostHog.identify(hashedId, traits ?: emptyMap(), emptyMap())
 
         val sentryUser = User().apply {
             id = hashedId
@@ -77,7 +79,8 @@ object TallyAnalytics {
     fun track(event: String, properties: Map<String, Any>? = null) {
         val props = (properties ?: emptyMap()).toMutableMap()
         props["platform"] = "android"
-        PostHog.capture(event, props)
+
+        PostHog.capture(event, null, props)
     }
 
     // MARK: - Convenience Methods
@@ -122,7 +125,7 @@ object TallyAnalytics {
         if (context != null) {
             Sentry.configureScope { scope ->
                 context.forEach { (key, value) ->
-                    scope.setExtra(key, value)
+                    scope.setExtra(key, value.toString())
                 }
             }
         }
@@ -133,7 +136,11 @@ object TallyAnalytics {
      * Add a breadcrumb for debugging
      */
     fun addBreadcrumb(message: String, category: String? = null) {
-        Sentry.addBreadcrumb(message, category)
+        if (category != null) {
+            Sentry.addBreadcrumb(message, category)
+        } else {
+            Sentry.addBreadcrumb(message)
+        }
     }
 
     // MARK: - Private

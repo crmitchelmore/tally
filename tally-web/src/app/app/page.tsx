@@ -34,6 +34,7 @@ import {
 import { Plus, Target, Calendar, Database, Trophy, Users, LayoutDashboard, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { toChallenges, toEntries, toFollowedChallenges } from "@/lib/adapters";
+import { getClerkPublishableKey } from "@/lib/clerk-public";
 import type { Challenge, SetData, FeelingType } from "@/types";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -42,7 +43,7 @@ import { useMotionPreference } from "@/hooks/use-reduced-motion";
 type ViewMode = "dashboard" | "leaderboard" | "community";
 
 export default function Home() {
-  const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  const clerkEnabled = Boolean(getClerkPublishableKey());
 
   useStoreUser();
   const { user: convexUser, isLoaded: isUserLoaded } = useCurrentUser();

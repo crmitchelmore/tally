@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { getClerkPublishableKey } from "@/lib/clerk-public";
 import { ConvexClientProvider } from "@/providers/convex-provider";
 import { FeatureFlagsProvider } from "@/providers/feature-flags-provider";
 import { PostHogProvider } from "@/providers/posthog-provider";
@@ -28,7 +29,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const clerkPublishableKey = getClerkPublishableKey();
 
   const app = (
     <SentryProvider>

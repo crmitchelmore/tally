@@ -3,6 +3,7 @@
 import { ReactNode, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import { LDProvider, useLDClient, useFlags } from "launchdarkly-react-client-sdk";
+import { getClerkPublishableKey } from "@/lib/clerk-public";
 
 const clientSideId = process.env.NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID;
 
@@ -20,7 +21,7 @@ interface FeatureFlagsProviderProps {
  * - env: derived from deployment URL
  */
 export function FeatureFlagsProvider({ children }: FeatureFlagsProviderProps) {
-  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const clerkPublishableKey = getClerkPublishableKey();
 
   return clerkPublishableKey ? (
     <FeatureFlagsProviderWithClerk>{children}</FeatureFlagsProviderWithClerk>

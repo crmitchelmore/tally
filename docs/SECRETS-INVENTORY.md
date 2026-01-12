@@ -55,7 +55,7 @@ Each secret has exactly ONE source of truth. Other systems that need the secret 
 | `ANDROID_KEYSTORE_PASSWORD` | GitHub Secrets | CI | Manual |
 | `ANDROID_KEY_ALIAS` | GitHub Secrets | CI | N/A |
 | `ANDROID_KEY_PASSWORD` | GitHub Secrets | CI | Manual |
-| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | GitHub Secrets | CI | Annual |
+| `PLAY_SERVICE_ACCOUNT_JSON_BASE64` | GitHub Secrets | CI | Annual |
 
 ### Vercel (Hosting)
 

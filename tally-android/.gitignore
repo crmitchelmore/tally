@@ -10,6 +10,11 @@ local.properties
 keystore/
 *.keystore
 *.jks
+keystore.properties
+signing.properties
+
+# Environment
+.env*
 
 # Fastlane
 fastlane/report.xml

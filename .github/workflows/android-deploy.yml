@@ -14,7 +14,7 @@
 # - ANDROID_KEYSTORE_PASSWORD: Keystore password
 # - ANDROID_KEY_ALIAS: Key alias (default: tally)
 # - ANDROID_KEY_PASSWORD: Key password
-# - GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: Service account JSON for Play Store API
+# - PLAY_SERVICE_ACCOUNT_JSON_BASE64: Base64-encoded service account JSON for Play Store API
 
 name: Android (deploy)
 
@@ -44,7 +44,6 @@ on:
     branches: [main]
     paths:
       - 'tally-android/**'
-  create:
     tags:
       - 'v*'
 
@@ -69,7 +68,7 @@ jobs:
           [ -z "$ANDROID_KEYSTORE_BASE64" ] && missing="$missing ANDROID_KEYSTORE_BASE64"
           [ -z "$ANDROID_KEYSTORE_PASSWORD" ] && missing="$missing ANDROID_KEYSTORE_PASSWORD"
           [ -z "$ANDROID_KEY_PASSWORD" ] && missing="$missing ANDROID_KEY_PASSWORD"
-          [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ] && missing="$missing GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"
+          [ -z "$PLAY_SERVICE_ACCOUNT_JSON_BASE64" ] && missing="$missing PLAY_SERVICE_ACCOUNT_JSON_BASE64"
           if [ -n "$missing" ]; then
             echo "::error::Missing required secrets:$missing"
             exit 1
@@ -79,7 +78,7 @@ jobs:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          PLAY_SERVICE_ACCOUNT_JSON_BASE64: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON_BASE64 }}
 
       - name: Set up Java
         uses: actions/setup-java@v5
@@ -99,10 +98,9 @@ jobs:
         run: mkdir -p keystore
 
       - name: Decode keystore
-        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > keystore/release.keystore
-
-      - name: Create service account file
-        run: echo '${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}' > fastlane/play-store-service-account.json
+        run: echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > keystore/release.keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
       - name: Determine deployment action
         id: action
@@ -123,11 +121,11 @@ jobs:
         if: steps.action.outputs.action == 'deploy'
         run: bundle exec fastlane ${{ steps.action.outputs.track }}
         env:
-          KEYSTORE_FILE: keystore/release.keystore
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS || 'tally' }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          GOOGLE_PLAY_JSON_KEY_FILE: fastlane/play-store-service-account.json
+          ANDROID_KEYSTORE_PATH: keystore/release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS || 'tally' }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          PLAY_SERVICE_ACCOUNT_JSON_BASE64: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON_BASE64 }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN_ANDROID }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
@@ -136,18 +134,13 @@ jobs:
 
       - name: Promote release
         if: steps.action.outputs.action == 'promote'
-        run: |
-          bundle exec fastlane upload_to_play_store \
-            track:${{ steps.action.outputs.from_track }} \
-            track_promote_to:${{ steps.action.outputs.to_track }}
+        run: bundle exec fastlane ${{ steps.action.outputs.to_track }}
         env:
-          GOOGLE_PLAY_JSON_KEY_FILE: fastlane/play-store-service-account.json
+          PLAY_SERVICE_ACCOUNT_JSON_BASE64: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON_BASE64 }}
 
       - name: Clean up secrets
         if: always()
-        run: |
-          rm -f keystore/release.keystore
-          rm -f fastlane/play-store-service-account.json
+        run: rm -f keystore/release.keystore
 
       - name: Upload APK artifact
         if: steps.action.outputs.action == 'deploy'

@@ -30,11 +30,14 @@ This guide covers setting up automated deployment to Google Play Store using Fas
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select existing
 3. Enable the **Google Play Android Developer API**:
-   ```
+
+   ```text
    APIs & Services → Enable APIs → Search "Google Play Android Developer API" → Enable
    ```
+
 4. Create a Service Account:
-   ```
+
+   ```text
    IAM & Admin → Service Accounts → Create Service Account
    ```
    - Name: `play-store-deploy`
@@ -85,7 +88,7 @@ Add these secrets:
 | `ANDROID_KEYSTORE_PASSWORD` | Keystore password | From keytool command |
 | `ANDROID_KEY_ALIAS` | Key alias | `tally` (or your alias) |
 | `ANDROID_KEY_PASSWORD` | Key password | From keytool command |
-| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Full JSON content | Contents of service account JSON file |
+| `PLAY_SERVICE_ACCOUNT_JSON_BASE64` | Base64-encoded JSON | `base64 -i service-account.json` |
 
 Also ensure these existing secrets are set:
 - `SENTRY_AUTH_TOKEN`
@@ -107,10 +110,10 @@ bundle install
 # Configure signing credentials securely via environment variables
 # (avoid passing passwords via -P flags on the command line as they
 # appear in shell history and process listings)
-export KEYSTORE_FILE=path/to/release.keystore
-export KEYSTORE_PASSWORD=your_store_password
-export KEY_ALIAS=tally
-export KEY_PASSWORD=your_key_password
+export ANDROID_KEYSTORE_PATH=path/to/release.keystore
+export ANDROID_KEYSTORE_PASSWORD=your_store_password
+export ANDROID_KEY_ALIAS=tally
+export ANDROID_KEY_PASSWORD=your_key_password
 
 ./gradlew bundleRelease
 ```
@@ -144,7 +147,7 @@ Trigger from GitHub Actions → Android (deploy) → Run workflow:
 
 The recommended release flow:
 
-```
+```text
 internal → alpha → beta → production
 ```
 
@@ -200,11 +203,11 @@ bundle exec fastlane bump_version version_name:1.2.0
 ### Environment Variables for Local Deploy
 
 ```bash
-export KEYSTORE_FILE=path/to/release.keystore
-export KEYSTORE_PASSWORD=your_store_password
-export KEY_ALIAS=tally
-export KEY_PASSWORD=your_key_password
-export GOOGLE_PLAY_JSON_KEY_FILE=path/to/service-account.json
+export ANDROID_KEYSTORE_PATH=path/to/release.keystore
+export ANDROID_KEYSTORE_PASSWORD=your_store_password
+export ANDROID_KEY_ALIAS=tally
+export ANDROID_KEY_PASSWORD=your_key_password
+export PLAY_SERVICE_ACCOUNT_JSON_BASE64=$(base64 -i service-account.json)
 ```
 
 ---

@@ -2,7 +2,8 @@
 #
 # Triggers:
 # - Manual dispatch (workflow_dispatch) for on-demand releases
-# - Push to main with version tag (v*) for automated releases
+# - Push to main affecting tally-android/** for automatic internal builds
+# - Push of version tag (v*) for tagged releases (triggers independently of branch/path)
 #
 # Tracks:
 # - internal: Every push to main (automatic)
@@ -43,6 +44,7 @@ on:
     branches: [main]
     paths:
       - 'tally-android/**'
+  create:
     tags:
       - 'v*'
 
@@ -61,6 +63,24 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Validate required secrets
+        run: |
+          missing=""
+          [ -z "$ANDROID_KEYSTORE_BASE64" ] && missing="$missing ANDROID_KEYSTORE_BASE64"
+          [ -z "$ANDROID_KEYSTORE_PASSWORD" ] && missing="$missing ANDROID_KEYSTORE_PASSWORD"
+          [ -z "$ANDROID_KEY_PASSWORD" ] && missing="$missing ANDROID_KEY_PASSWORD"
+          [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ] && missing="$missing GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing required secrets:$missing"
+            exit 1
+          fi
+          echo "✓ All required secrets present"
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
@@ -74,12 +94,6 @@ jobs:
           ruby-version: ${{ env.RUBY_VERSION }}
           bundler-cache: true
           working-directory: tally-android
-
-      - name: Decode keystore
-        run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > keystore/release.keystore
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
       - name: Create keystore directory
         run: mkdir -p keystore
@@ -140,5 +154,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-release
+          # actions/upload-artifact runs from repo root (ignores job working-directory)
           path: tally-android/app/build/outputs/bundle/release/*.aab
           retention-days: 30

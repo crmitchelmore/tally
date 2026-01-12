@@ -21,4 +21,3 @@ vendor/
 
 # Ruby
 .bundle/
-Gemfile.lock

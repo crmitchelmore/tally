@@ -56,17 +56,17 @@ This guide covers setting up automated deployment to Google Play Store using Fas
 
 ```bash
 # Generate a new keystore (run once, store securely!)
+# Note: Do NOT pass passwords on the command line; keytool will prompt you securely.
 keytool -genkey -v \
   -keystore release.keystore \
   -alias tally \
   -keyalg RSA \
   -keysize 2048 \
   -validity 10000 \
-  -storepass YOUR_STORE_PASSWORD \
-  -keypass YOUR_KEY_PASSWORD \
   -dname "CN=Tally, OU=Mobile, O=Tally, L=London, ST=London, C=GB"
 
 # Convert to base64 for GitHub secret
+# Add -w 0 on Linux or -b 0 on macOS to disable line wrapping
 base64 -i release.keystore -o release.keystore.base64
 cat release.keystore.base64
 ```
@@ -104,17 +104,15 @@ cd tally-android
 # Install Fastlane dependencies
 bundle install
 
-# Build release AAB (with signing)
+# Configure signing credentials securely via environment variables
+# (avoid passing passwords via -P flags on the command line as they
+# appear in shell history and process listings)
 export KEYSTORE_FILE=path/to/release.keystore
 export KEYSTORE_PASSWORD=your_store_password
 export KEY_ALIAS=tally
 export KEY_PASSWORD=your_key_password
 
-./gradlew bundleRelease \
-  -Pandroid.injected.signing.store.file=$KEYSTORE_FILE \
-  -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
-  -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
-  -Pandroid.injected.signing.key.password=$KEY_PASSWORD
+./gradlew bundleRelease
 ```
 
 Then upload `app/build/outputs/bundle/release/app-release.aab` to Play Console:
@@ -129,7 +127,7 @@ Then upload `app/build/outputs/bundle/release/app-release.aab` to Play Console:
 
 ### Deploy to Internal Testing (automatic)
 
-Every push to `main` that changes `tally-android/` files automatically deploys to the **internal** testing track.
+Pushes to `main` that modify files under `tally-android/` automatically deploy to the **internal** testing track. Tagged releases (v*) also trigger deployments independently.
 
 ### Manual Deployment
 

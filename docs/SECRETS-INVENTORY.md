@@ -47,6 +47,16 @@ Each secret has exactly ONE source of truth. Other systems that need the secret 
 | `launchDarklyClientSideId` | Pulumi config | Vercel | N/A (project-specific) |
 | `LAUNCHDARKLY_ACCESS_TOKEN` (read-only) | GitHub Secrets | CI (workflow gating) | Manual |
 
+### Google Play Store (Android)
+
+| Secret | Source of Truth | Used By | Rotation |
+|--------|-----------------|---------|----------|
+| `ANDROID_KEYSTORE_BASE64` | GitHub Secrets | CI | Manual (⚠️ backup!) |
+| `ANDROID_KEYSTORE_PASSWORD` | GitHub Secrets | CI | Manual |
+| `ANDROID_KEY_ALIAS` | GitHub Secrets | CI | N/A |
+| `ANDROID_KEY_PASSWORD` | GitHub Secrets | CI | Manual |
+| `PLAY_SERVICE_ACCOUNT_JSON_BASE64` | GitHub Secrets | CI | Annual |
+
 ### Vercel (Hosting)
 
 | Secret | Source of Truth | Used By | Rotation |

@@ -1,3 +1,6 @@
+# Fastlane Fastfile for Tally Android
+# https://docs.fastlane.tools/actions
+
 require "base64"
 
 def play_json_key
@@ -35,15 +38,116 @@ end
 default_platform(:android)
 
 platform :android do
-  desc "Upload to internal track"
+  desc "Run unit tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Build debug APK"
+  lane :build_debug do
+    gradle(
+      task: "assembleDebug",
+      print_command: false
+    )
+  end
+
+  desc "Build release bundle (AAB) for Play Store"
+  lane :build_release do
+    require_android_signing_env!
+    gradle(
+      task: "bundleRelease",
+      print_command: false,
+      properties: {
+        "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
+        "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]
+      }
+    )
+  end
+
+  desc "Deploy to internal testing track"
   lane :internal do
     gradle_bundle_release
     upload_to_play(track: "internal")
   end
 
-  desc "Upload to production track"
+  desc "Promote internal to alpha (closed testing)"
+  lane :alpha do
+    require_play_env!
+    supply(
+      track: "internal",
+      track_promote_to: "alpha",
+      package_name: "app.tally",
+      json_key_data: play_json_key,
+      skip_upload_changelogs: false
+    )
+  end
+
+  desc "Promote alpha to beta (open testing)"
+  lane :beta do
+    require_play_env!
+    supply(
+      track: "alpha",
+      track_promote_to: "beta",
+      package_name: "app.tally",
+      json_key_data: play_json_key,
+      skip_upload_changelogs: false
+    )
+  end
+
+  desc "Promote beta to production"
   lane :production do
+    require_play_env!
+    supply(
+      track: "beta",
+      track_promote_to: "production",
+      package_name: "app.tally",
+      json_key_data: play_json_key,
+      skip_upload_changelogs: false
+    )
+  end
+
+  desc "Deploy directly to production (defaults to draft for safety)"
+  lane :deploy_production do |options|
+    status = options[:release_status] || "draft"
     gradle_bundle_release
-    upload_to_play(track: "production")
+    require_play_env!
+    supply(
+      track: "production",
+      package_name: "app.tally",
+      aab: lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
+      json_key_data: play_json_key,
+      release_status: status
+    )
+  end
+
+  desc "Increment version code"
+  lane :bump_version do |options|
+    # Read current version code from build.gradle.kts
+    build_gradle = File.read("../app/build.gradle.kts")
+    match = build_gradle.match(/versionCode\s*=\s*(\d+)/)
+    UI.user_error!("Could not find 'versionCode' in build.gradle.kts") unless match && match[1]
+    current_version_code = match[1].to_i
+    new_version_code = current_version_code + 1
+    
+    # Update version code
+    updated_gradle = build_gradle.gsub(
+      /versionCode\s*=\s*\d+/,
+      "versionCode = #{new_version_code}"
+    )
+    
+    # Optionally update version name
+    if options[:version_name]
+      updated_gradle = updated_gradle.gsub(
+        /versionName\s*=\s*"[^"]+"/,
+        "versionName = \"#{options[:version_name]}\""
+      )
+    end
+    
+    File.write("../app/build.gradle.kts", updated_gradle)
+    
+    UI.success("Bumped version code to #{new_version_code}")
+    new_version_code
   end
 end

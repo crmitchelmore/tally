@@ -1,0 +1,6 @@
+# Fastlane Pluginfile for Tally Android
+# https://docs.fastlane.tools/plugins/using-plugins/
+
+# No additional plugins needed for basic Play Store deployment.
+# Add plugins here as needed:
+# gem 'fastlane-plugin-firebase_app_distribution'

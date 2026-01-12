@@ -9,6 +9,25 @@ test.describe("Dashboard (signed-out)", () => {
     await expect(page.getByRole("link", { name: /get started/i })).toBeVisible();
   });
 
+  test("@regression Clerk env var resolution does not break page", async ({ page }) => {
+    // Regression test for blank screen when NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+    // is missing but _DEV/_PROD variants exist (see clerk-public.ts).
+    await page.goto("/app", { waitUntil: "domcontentloaded" });
+    
+    // Page must show either:
+    // 1. SignedOut content ("Track Your Progress" + "Get Started")
+    // 2. SignedIn content (challenges or empty state)
+    // NOT a blank page with only header visible
+    const signedOutContent = page.getByRole("heading", { name: /track your progress/i });
+    const signedInContent = page.locator('[data-testid="challenges-section"], [data-testid="empty-state"]');
+    
+    // At least one of these should be visible within 10s
+    await expect(signedOutContent.or(signedInContent.first())).toBeVisible({ timeout: 10000 });
+    
+    // Ensure header is present (basic page structure working)
+    await expect(page.getByRole("heading", { name: "Tally" })).toBeVisible();
+  });
+
   test("landing page has proper navigation", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     

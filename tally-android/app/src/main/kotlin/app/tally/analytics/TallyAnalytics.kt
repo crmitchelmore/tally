@@ -1,7 +1,7 @@
 package app.tally.analytics
 
 import android.content.Context
-import com.posthog.PostHogInterface
+import com.posthog.PostHog
 import com.posthog.android.PostHogAndroid
 import com.posthog.android.PostHogAndroidConfig
 import io.sentry.Sentry
@@ -16,7 +16,6 @@ import io.sentry.protocol.User
 object TallyAnalytics {
     @Volatile
     private var isInitialized = false
-    private var posthog: PostHogInterface? = null
 
     /**
      * Initialize analytics (call once from Application.onCreate)
@@ -39,10 +38,9 @@ object TallyAnalytics {
             }
 
             PostHogAndroid.setup(context, config)
-            posthog = PostHogAndroid.shared()
 
-            posthog?.register("platform", "android")
-            posthog?.register("app_version", appVersion)
+            PostHog.register("platform", "android")
+            PostHog.register("app_version", appVersion)
         }
 
         // Note: Sentry is auto-initialized by the Gradle plugin
@@ -59,7 +57,7 @@ object TallyAnalytics {
      */
     fun identify(userId: String, traits: Map<String, Any>? = null) {
         val hashedId = hashUserId(userId)
-        posthog?.identify(hashedId, traits ?: emptyMap(), emptyMap())
+        PostHog.identify(hashedId, traits ?: emptyMap(), emptyMap())
 
         val sentryUser = User().apply {
             id = hashedId
@@ -71,7 +69,7 @@ object TallyAnalytics {
      * Clear user identity on sign out
      */
     fun reset() {
-        posthog?.reset()
+        PostHog.reset()
         Sentry.setUser(null)
     }
 
@@ -82,7 +80,7 @@ object TallyAnalytics {
         val props = (properties ?: emptyMap()).toMutableMap()
         props["platform"] = "android"
 
-        posthog?.capture(event, null, props)
+        PostHog.capture(event, null, props)
     }
 
     // MARK: - Convenience Methods

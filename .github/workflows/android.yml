@@ -51,13 +51,14 @@ jobs:
       - name: Run instrumented tests (emulator)
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 34
+          api-level: 33
           target: google_apis
           arch: x86_64
           profile: medium_phone
           disable-animations: true
           force-avd-creation: true
-          emulator-boot-timeout: 600
+          emulator-boot-timeout: 1200
+          adb-timeout: 300
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
           script: |
             set -eux

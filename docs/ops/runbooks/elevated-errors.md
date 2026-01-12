@@ -6,6 +6,49 @@
 - Error rate spike in dashboards
 - Slow response times
 
+## Querying Observability Tools (CLI)
+
+Get tokens from `.env` at repo root:
+```bash
+# Load tokens
+export SENTRY_ADMIN_TOKEN=$(grep SENTRY_ADMIN_TOKEN .env | cut -d= -f2)
+export POSTHOG_ADMIN_TOKEN=$(grep POSTHOG_ADMIN_TOKEN .env | cut -d= -f2)
+```
+
+### Sentry API
+```bash
+# Check auth
+curl -s -H "Authorization: Bearer $SENTRY_ADMIN_TOKEN" \
+  "https://sentry.io/api/0/auth/" | jq '{email, isActive}'
+
+# List recent issues (last 24h)
+curl -s -H "Authorization: Bearer $SENTRY_ADMIN_TOKEN" \
+  "https://sentry.io/api/0/projects/tally-lz/javascript-nextjs/issues/?query=is:unresolved&statsPeriod=24h&limit=10" | \
+  jq '.[] | {id, title, count, firstSeen, lastSeen}'
+
+# Get issue details
+curl -s -H "Authorization: Bearer $SENTRY_ADMIN_TOKEN" \
+  "https://sentry.io/api/0/issues/{ISSUE_ID}/" | jq '.'
+
+# Get latest events for an issue
+curl -s -H "Authorization: Bearer $SENTRY_ADMIN_TOKEN" \
+  "https://sentry.io/api/0/issues/{ISSUE_ID}/events/?limit=5" | \
+  jq '.[] | {id, message, timestamp, contexts}'
+```
+
+### PostHog API
+```bash
+# Recent events (EU region)
+curl -s -H "Authorization: Bearer $POSTHOG_ADMIN_TOKEN" \
+  "https://eu.posthog.com/api/projects/@current/events?limit=10" | \
+  jq '.results[] | {event, timestamp, distinct_id}'
+
+# Query by event type
+curl -s -H "Authorization: Bearer $POSTHOG_ADMIN_TOKEN" \
+  "https://eu.posthog.com/api/projects/@current/events?event=\$pageview&limit=10" | \
+  jq '.results[] | {event, timestamp}'
+```
+
 ## First Response (5 min)
 
 ### 1. Open Sentry

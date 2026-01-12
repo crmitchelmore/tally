@@ -47,6 +47,26 @@ test.describe("Authenticated Dashboard", () => {
     });
   });
 
+  test("@auth dashboard does not show blank screen (convex auth regression)", async ({ page }) => {
+    await signIn(page);
+    await page.goto("/app", { waitUntil: "domcontentloaded" });
+
+    // Wait for either skeletons or final content to appear, ensuring the page isn't blank.
+    // If Convex isn't authenticated with Clerk, queries hang forever and content never loads.
+    const nonBlankIndicator = page.locator(
+      '[data-testid="challenges-section"], [data-testid="empty-state"], [data-slot="skeleton"]'
+    );
+    await expect(nonBlankIndicator.first()).toBeVisible({ timeout: 20000 });
+
+    // Wait for all loading skeletons to disappear (using web-first assertion, not timeout).
+    const skeletons = page.locator('[data-slot="skeleton"]');
+    await expect(skeletons).toHaveCount(0, { timeout: 20000 });
+
+    // Verify that the final content (challenges or empty state) is now visible.
+    const finalContent = page.locator('[data-testid="challenges-section"], [data-testid="empty-state"]');
+    await expect(finalContent.first()).toBeVisible({ timeout: 5000 });
+  });
+
   test("@auth can open new challenge dialog", async ({ page }) => {
     await signIn(page);
     await page.goto("/app", { waitUntil: "networkidle" });

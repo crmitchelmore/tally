@@ -7,6 +7,10 @@ on:
         description: "fastlane lane (internal|production)"
         required: true
         default: "internal"
+        type: choice
+        options:
+          - internal
+          - production
 
 jobs:
   deploy:
@@ -38,7 +42,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p .ci
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > .ci/release.keystore
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > .ci/release.keystore
+          chmod 600 .ci/release.keystore
 
       - name: Deploy
         env:

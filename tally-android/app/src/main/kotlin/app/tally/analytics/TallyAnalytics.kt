@@ -81,16 +81,7 @@ object TallyAnalytics {
         val props = (properties ?: emptyMap()).toMutableMap()
         props["platform"] = "android"
 
-        val distinctId = posthog?.distinctId() ?: ""
-        posthog?.capture(
-            event,
-            distinctId,
-            props,
-            emptyMap(),
-            emptyMap(),
-            emptyMap(),
-            emptyMap()
-        )
+        posthog?.capture(event, props)
     }
 
     // MARK: - Convenience Methods

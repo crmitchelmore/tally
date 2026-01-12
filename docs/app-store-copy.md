@@ -1,6 +1,7 @@
 # Tally — App Store Listing Copy
 
 ## Positioning
+
 A friendly, fast challenge tracker that makes progress feel effortless.
 
 ---
@@ -19,13 +20,15 @@ Tally helps you track challenges, habits, and goals with the simplest possible a
 
 Whether you’re building a streak, training for something big, or just trying to show up consistently, Tally keeps you focused on momentum—not spreadsheets.
 
-**Why you’ll like it**
+### Why you'll like it
+
 - Start in seconds: create a challenge, set a target, and go
 - One-tap progress: add a tally whenever you do the thing
 - Clear totals and trends: see how you’re doing at a glance
 - Calm, friendly UI: fast feedback without noise
 
-**Great for**
+### Great for
+
 Workouts • reading • sobriety milestones • practice sessions • “no spend” days • daily walks
 
 **Keywords (idea list):**
@@ -43,7 +46,8 @@ Track habits and challenges with quick tally marks, totals, and calm stats.
 **Full description:**
 Tally is a lightweight tracker for challenges and habits. Add a mark when you do the thing, and watch your progress build.
 
-**Features**
+### Features
+
 - Quick setup and effortless daily use
 - Fast add/remove with instant feedback
 - Simple stats that keep you motivated
@@ -55,6 +59,7 @@ Habits, Productivity, Health & Fitness
 ---
 
 ## Screenshot captions (works for both stores)
+
 1. Track anything with a simple tally
 2. One tap to add progress
 3. See totals and trends at a glance

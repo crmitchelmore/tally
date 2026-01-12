@@ -157,6 +157,7 @@ This repo now includes GitHub Actions workflows for **iOS (TestFlight/App Store)
 Required GitHub Actions secrets (recommended in an environment named `mobile-release`):
 
 ### iOS (App Store Connect)
+
 - `IOS_TEAM_ID`
 - `IOS_PROFILE_NAME` (the provisioning profile name in Apple Developer)
 - `IOS_KEYCHAIN_PASSWORD`
@@ -168,6 +169,7 @@ Required GitHub Actions secrets (recommended in an environment named `mobile-rel
 - `ASC_KEY_CONTENT_BASE64` (base64 of the `.p8` file)
 
 ### Android (Google Play)
+
 - `PLAY_SERVICE_ACCOUNT_JSON_BASE64` (base64 of the service-account JSON)
 - `ANDROID_KEYSTORE_BASE64` (base64 of your upload keystore)
 - `ANDROID_KEYSTORE_PASSWORD`

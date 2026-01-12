@@ -36,8 +36,9 @@ jobs:
     needs: wait-for-preview
     continue-on-error: true
     env:
-      # Use dev Clerk instance key for PR screenshot runs
+      # Use dev Clerk instance keys for PR screenshot runs
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY_DEV }}
     defaults:
       run:
         working-directory: tally-web

@@ -15,7 +15,7 @@ class TallyApp : Application() {
     if (sentryDsn.isNotBlank()) {
       SentryAndroid.init(this) { options: SentryAndroidOptions ->
         options.dsn = sentryDsn
-        options.environment = "production"
+        options.environment = if (BuildConfig.DEBUG) "development" else "production"
         
         // Performance monitoring
         options.tracesSampleRate = 0.1

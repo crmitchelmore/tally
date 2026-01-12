@@ -29,7 +29,7 @@ jobs:
     name: Lockfile Guards
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Check for wrong lockfiles
         run: |
@@ -81,7 +81,7 @@ jobs:
       run:
         working-directory: tally-web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Verify required secrets
         env:
@@ -139,7 +139,7 @@ jobs:
       run:
         working-directory: tally-web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install Bun
         run: |
@@ -164,7 +164,7 @@ jobs:
 
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-report-pr
           path: tally-web/playwright-report/
@@ -177,9 +177,9 @@ jobs:
       run:
         working-directory: infra
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
@@ -204,9 +204,9 @@ jobs:
       run:
         working-directory: infra
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
@@ -246,7 +246,7 @@ jobs:
       run:
         working-directory: infra
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Verify required secrets
         env:
@@ -258,7 +258,7 @@ jobs:
           fi
           echo "✓ PULUMI_ACCESS_TOKEN present"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
@@ -289,7 +289,7 @@ jobs:
       run:
         working-directory: tally-web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Check Convex deploy key
         id: convex_key
@@ -327,7 +327,7 @@ jobs:
       web_version: ${{ github.sha }}
     # Run from repo root; Vercel project Root Directory is already set to "tally-web"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Verify required secrets
         env:
@@ -345,7 +345,7 @@ jobs:
           fi
           echo "✓ All Vercel secrets present"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
 
@@ -387,7 +387,7 @@ jobs:
       run:
         working-directory: tally-web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Verify required secrets
         env:
@@ -431,7 +431,7 @@ jobs:
 
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-report-dev
           path: tally-web/playwright-report/
@@ -450,7 +450,7 @@ jobs:
       run:
         working-directory: infra
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Verify required secrets
         env:
@@ -462,7 +462,7 @@ jobs:
           fi
           echo "✓ PULUMI_ACCESS_TOKEN present"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
@@ -493,7 +493,7 @@ jobs:
       run:
         working-directory: tally-web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Check Convex deploy key
         id: convex_key
@@ -530,7 +530,7 @@ jobs:
       web_version: ${{ github.sha }}
     # Run from repo root; Vercel project Root Directory is already set to "tally-web"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Verify required secrets
         env:
@@ -548,7 +548,7 @@ jobs:
           fi
           echo "✓ All Vercel secrets present"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
 
@@ -585,7 +585,7 @@ jobs:
       run:
         working-directory: tally-web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Verify required secrets
         env:
@@ -622,7 +622,7 @@ jobs:
 
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-report-prod
           path: tally-web/playwright-report/

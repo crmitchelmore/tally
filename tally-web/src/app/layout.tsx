@@ -30,6 +30,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const clerkPublishableKey = getClerkPublishableKey();
+  
+  // Use proxy URL in production to bypass Cloudflare for SaaS conflict.
+  // The clerk.tally-tracker.app CNAME triggers Cloudflare Error 1000 because both
+  // our DNS and Clerk's infrastructure use Cloudflare.
+  const isProduction = process.env.NODE_ENV === "production" && 
+                       clerkPublishableKey?.startsWith("pk_live_");
+  const proxyUrl = isProduction ? "/__clerk" : undefined;
 
   const app = (
     <SentryProvider>
@@ -48,7 +55,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {clerkPublishableKey ? (
-          <ClerkProvider publishableKey={clerkPublishableKey}>{app}</ClerkProvider>
+          <ClerkProvider publishableKey={clerkPublishableKey} proxyUrl={proxyUrl}>{app}</ClerkProvider>
         ) : (
           app
         )}

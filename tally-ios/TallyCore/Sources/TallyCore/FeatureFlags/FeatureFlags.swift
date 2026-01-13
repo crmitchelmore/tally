@@ -18,11 +18,13 @@ public final class FeatureFlags: ObservableObject, Sendable {
   private init() {}
   
   /// Initialize LaunchDarkly with the mobile key.
-  /// Call this early in app startup.
+  /// Call this early in app startup. Fire-and-forget, does not block.
   public func initialize(mobileKey: String) {
     guard !mobileKey.isEmpty, !isInitialized else { return }
     
-    let config = LDConfig(mobileKey: mobileKey, autoEnvAttributes: .enabled)
+    var config = LDConfig(mobileKey: mobileKey, autoEnvAttributes: .enabled)
+    // Set a short connection timeout to avoid blocking app launch
+    config.connectionTimeout = 5.0
     
     // Start with anonymous context
     var builder = LDContextBuilder(key: "anonymous")
@@ -33,7 +35,8 @@ public final class FeatureFlags: ObservableObject, Sendable {
     
     guard case .success(let context) = builder.build() else { return }
     
-    LDClient.start(config: config, context: context) { [weak self] in
+    // Fire-and-forget: don't block on LaunchDarkly initialization
+    LDClient.start(config: config, context: context, startWaitSeconds: 0) { [weak self] _ in
       Task { @MainActor in
         self?.isInitialized = true
         self?.refreshFlagValues()

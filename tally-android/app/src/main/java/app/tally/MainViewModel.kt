@@ -35,6 +35,11 @@ class MainViewModel : ViewModel() {
   fun signOut() {
     viewModelScope.launch { Clerk.signOut() }
   }
+
+  fun onAuthSuccess() {
+    // Clerk state will update automatically via the flow above
+    // This is called after successful auth to trigger any additional actions if needed
+  }
 }
 
 sealed interface MainUiState {

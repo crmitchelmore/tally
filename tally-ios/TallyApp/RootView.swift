@@ -52,10 +52,19 @@ final class AppState: ObservableObject {
 struct RootView: View {
   @Environment(\.clerk) private var clerk
   @StateObject private var state = AppState()
+  let isClerkLoaded: Bool
 
   var body: some View {
     Group {
-      if clerk.user != nil {
+      if !isClerkLoaded {
+        // Show loading while Clerk initializes
+        VStack(spacing: 16) {
+          ProgressView()
+          Text("Loading...")
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+        }
+      } else if clerk.user != nil {
         TabView {
           ChallengesView()
             .environmentObject(state)

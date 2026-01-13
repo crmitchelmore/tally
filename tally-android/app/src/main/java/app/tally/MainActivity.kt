@@ -35,7 +35,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tally.auth.SignInOrUpView
+import app.tally.auth.AuthScreen
 import app.tally.featureflags.FeatureFlags
 import app.tally.model.Challenge
 import app.tally.ui.theme.TallyCard
@@ -100,7 +100,9 @@ class MainActivity : ComponentActivity() {
             }
 
             MainUiState.SignedOut -> {
-              SignInOrUpView()
+              AuthScreen(
+                onAuthSuccess = { authViewModel.onAuthSuccess() }
+              )
             }
 
             MainUiState.SignedIn -> {

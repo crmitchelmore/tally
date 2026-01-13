@@ -16,6 +16,9 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/api/webhooks(.*)",
   "/test-components",
+  // Static assets - middleware matcher should exclude these but adding as fallback
+  "/_next/static(.*)",
+  "/_next/image(.*)",
 ]);
 
 // Match /__clerk/* proxy routes

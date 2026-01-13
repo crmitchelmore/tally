@@ -7,7 +7,7 @@ Last Updated: 2026-01-09
 - ✅ **Project 1 (Next.js Web)**: complete and deployed.
 - ⏳ **Project 6 (Marketing + /app relocation)**: live in production; remaining is manual end-to-end auth verification in prod.
 - ⏳ **Project 2 (Shared API)**: implemented; completion checklist still pending (needs authenticated curl verification).
-- ⏳ **CI/CD**: GitHub Actions runs checks on push; Vercel deploy via GH Actions is configured; Convex deploy via GH Actions is configured but currently **skips** until `CONVEX_DEPLOY_KEY` is set.
+- ✅ **CI/CD**: GitHub Actions runs checks on push; Vercel deploy via GH Actions is configured; Convex deploy via GH Actions is configured with `CONVEX_DEPLOY_KEY_DEV` and `CONVEX_DEPLOY_KEY_PROD` secrets.
 
 > Note: sections below may include historical “blocked/not started” notes that are now superseded by the summary above.
 

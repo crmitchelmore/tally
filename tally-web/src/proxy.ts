@@ -149,10 +149,22 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
       duplex: "half",
     });
     
-    // Create response with Clerk's response
-    const responseHeaders = new Headers(response.headers);
+    // Read the response body as ArrayBuffer to avoid encoding issues
+    const body = await response.arrayBuffer();
     
-    return new NextResponse(response.body, {
+    // Create response headers, removing problematic encoding headers
+    // that could cause "cannot decode raw data" errors
+    const responseHeaders = new Headers();
+    response.headers.forEach((value, key) => {
+      // Skip content-encoding since we've already decoded the body
+      // and transfer-encoding since we're not streaming
+      const lowerKey = key.toLowerCase();
+      if (lowerKey !== "content-encoding" && lowerKey !== "transfer-encoding") {
+        responseHeaders.set(key, value);
+      }
+    });
+    
+    return new NextResponse(body, {
       status: response.status,
       statusText: response.statusText,
       headers: responseHeaders,

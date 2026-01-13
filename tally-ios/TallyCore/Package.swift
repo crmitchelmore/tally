@@ -16,7 +16,7 @@ let package = Package(
     .package(url: "https://github.com/getsentry/sentry-cocoa", from: "8.0.0"),
     .package(url: "https://github.com/PostHog/posthog-ios", from: "3.0.0"),
     // Use opentelemetry-swift-core which has minimal dependencies and no DataCompression conflict
-    .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", from: "1.14.0"),
+    .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", from: "1.0.0"),
   ],
   targets: [
     .target(

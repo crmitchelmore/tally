@@ -1,19 +1,159 @@
 import Foundation
 import OpenTelemetryApi
 import OpenTelemetrySdk
-import OpenTelemetryProtocolExporterHTTP
-import URLSessionInstrumentation
-import ResourceExtension
+
+#if os(iOS)
+import UIKit
+#endif
 
 /// Grafana Cloud instance ID for OTLP auth
 private let grafanaCloudInstanceId = "1491410"
+
+/// Simple OTLP JSON span exporter for Grafana Cloud
+/// Uses JSON format over HTTP since we can't use the full OTLP protobuf exporter due to dependency conflicts
+private final class GrafanaOtlpSpanExporter: SpanExporter {
+  private let endpoint: URL
+  private let authHeader: String
+  private let session: URLSession
+  
+  init(endpoint: URL, authHeader: String) {
+    self.endpoint = endpoint
+    self.authHeader = authHeader
+    
+    let config = URLSessionConfiguration.default
+    config.timeoutIntervalForRequest = 30
+    self.session = URLSession(configuration: config)
+  }
+  
+  func export(spans: [SpanData], explicitTimeout: TimeInterval?) -> SpanExporterResultCode {
+    guard !spans.isEmpty else { return .success }
+    
+    // Build OTLP JSON payload
+    let payload = buildOtlpPayload(spans: spans)
+    
+    guard let jsonData = try? JSONSerialization.data(withJSONObject: payload) else {
+      return .failure
+    }
+    
+    var request = URLRequest(url: endpoint)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Basic \(authHeader)", forHTTPHeaderField: "Authorization")
+    request.httpBody = jsonData
+    
+    // Fire and forget for efficiency - don't block on response
+    let task = session.dataTask(with: request) { data, response, error in
+      if let error = error {
+        print("[TallyTelemetry] Export error: \(error.localizedDescription)")
+      } else if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode >= 400 {
+        print("[TallyTelemetry] Export failed with status: \(httpResponse.statusCode)")
+      }
+    }
+    task.resume()
+    
+    return .success
+  }
+  
+  func flush(explicitTimeout: TimeInterval?) -> SpanExporterResultCode {
+    return .success
+  }
+  
+  func shutdown(explicitTimeout: TimeInterval?) {
+    session.invalidateAndCancel()
+  }
+  
+  private func buildOtlpPayload(spans: [SpanData]) -> [String: Any] {
+    // Group spans by resource
+    var resourceSpans: [[String: Any]] = []
+    
+    // For simplicity, treat all spans as having same resource
+    let scopeSpans: [[String: Any]] = [
+      [
+        "scope": ["name": "tally-ios", "version": "1.0.0"],
+        "spans": spans.map { spanToJson($0) }
+      ]
+    ]
+    
+    if let firstSpan = spans.first {
+      resourceSpans.append([
+        "resource": [
+          "attributes": firstSpan.resource.attributes.map { attributeToJson(key: $0.key, value: $0.value) }
+        ],
+        "scopeSpans": scopeSpans
+      ])
+    }
+    
+    return ["resourceSpans": resourceSpans]
+  }
+  
+  private func spanToJson(_ span: SpanData) -> [String: Any] {
+    var json: [String: Any] = [
+      "traceId": span.traceId.hexString,
+      "spanId": span.spanId.hexString,
+      "name": span.name,
+      "kind": spanKindToInt(span.kind),
+      "startTimeUnixNano": String(span.startTime.timeIntervalSince1970.nanoseconds),
+      "endTimeUnixNano": String(span.endTime.timeIntervalSince1970.nanoseconds),
+      "attributes": span.attributes.map { attributeToJson(key: $0.key, value: $0.value) },
+      "status": statusToJson(span.status)
+    ]
+    
+    if span.parentSpanId != nil && span.parentSpanId!.isValid {
+      json["parentSpanId"] = span.parentSpanId!.hexString
+    }
+    
+    return json
+  }
+  
+  private func attributeToJson(key: String, value: AttributeValue) -> [String: Any] {
+    switch value {
+    case .string(let s):
+      return ["key": key, "value": ["stringValue": s]]
+    case .int(let i):
+      return ["key": key, "value": ["intValue": String(i)]]
+    case .double(let d):
+      return ["key": key, "value": ["doubleValue": d]]
+    case .bool(let b):
+      return ["key": key, "value": ["boolValue": b]]
+    default:
+      return ["key": key, "value": ["stringValue": String(describing: value)]]
+    }
+  }
+  
+  private func spanKindToInt(_ kind: SpanKind) -> Int {
+    switch kind {
+    case .internal: return 1
+    case .server: return 2
+    case .client: return 3
+    case .producer: return 4
+    case .consumer: return 5
+    @unknown default: return 0
+    }
+  }
+  
+  private func statusToJson(_ status: Status) -> [String: Any] {
+    switch status {
+    case .ok:
+      return ["code": 1]
+    case .error(let description):
+      return ["code": 2, "message": description]
+    case .unset:
+      return ["code": 0]
+    }
+  }
+}
+
+extension TimeInterval {
+  var nanoseconds: UInt64 {
+    UInt64(self * 1_000_000_000)
+  }
+}
 
 /// OpenTelemetry setup for exporting traces/metrics to Grafana Cloud
 public final class TallyTelemetry {
   public static let shared = TallyTelemetry()
   
   private var isInitialized = false
-  private var urlSessionInstrumentation: URLSessionInstrumentation?
   
   private init() {}
   
@@ -66,22 +206,15 @@ public final class TallyTelemetry {
     let resource = Resource(attributes: resourceAttrs)
     
     // Configure OTLP HTTP exporter with Grafana Cloud auth
-    guard let endpointUrl = URL(string: endpoint) else {
+    guard let endpointUrl = URL(string: endpoint)?.appendingPathComponent("v1/traces") else {
       print("[TallyTelemetry] Invalid endpoint URL: \(endpoint)")
       return
     }
     
-    let headers: [(String, String)] = [
-      ("Authorization", "Basic \(authHeader)")
-    ]
-    
-    let otlpTraceExporter = OtlpHttpTraceExporter(
-      endpoint: endpointUrl.appendingPathComponent("v1/traces"),
-      config: OtlpConfiguration(headers: headers)
-    )
+    let exporter = GrafanaOtlpSpanExporter(endpoint: endpointUrl, authHeader: authHeader)
     
     // Build tracer provider with batch processor for efficient export
-    let spanProcessor = BatchSpanProcessor(spanExporter: otlpTraceExporter)
+    let spanProcessor = BatchSpanProcessor(spanExporter: exporter)
     
     let tracerProvider = TracerProviderBuilder()
       .add(spanProcessor: spanProcessor)
@@ -89,9 +222,6 @@ public final class TallyTelemetry {
       .build()
     
     OpenTelemetry.registerTracerProvider(tracerProvider: tracerProvider)
-    
-    // Set up URLSession auto-instrumentation
-    setupURLSessionInstrumentation()
     
     isInitialized = true
     print("[TallyTelemetry] Initialized with endpoint: \(endpoint)")
@@ -139,16 +269,6 @@ public final class TallyTelemetry {
   
   // MARK: - Private
   
-  private func setupURLSessionInstrumentation() {
-    urlSessionInstrumentation = URLSessionInstrumentation(configuration: .init(
-      shouldInstrument: { request in
-        // Instrument all outbound requests except to OTLP endpoint
-        guard let host = request.url?.host else { return true }
-        return !host.contains("grafana.net")
-      }
-    ))
-  }
-  
   private func deviceModel() -> String {
     var systemInfo = utsname()
     uname(&systemInfo)
@@ -160,7 +280,3 @@ public final class TallyTelemetry {
     return machine ?? "unknown"
   }
 }
-
-#if os(iOS)
-import UIKit
-#endif

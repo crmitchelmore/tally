@@ -23,9 +23,10 @@ export function ClerkProviderWrapper({ children, publishableKey }: ClerkProvider
   // Check if this is a production key (works both server and client side)
   const isProductionKey = publishableKey?.startsWith("pk_live_");
 
-  // Determine proxy URL on client side only (server-side sets it to undefined)
-  const isClientSide = typeof window !== "undefined";
-  const proxyUrl = isClientSide && isProductionKey ? "/__clerk" : undefined;
+  // proxyUrl must be set for both SSR and client-side so Clerk uses /__clerk 
+  // instead of the custom domain (clerk.tally-tracker.app) which has CORS issues
+  // due to Cloudflare for SaaS conflict
+  const proxyUrl = isProductionKey ? "/__clerk" : undefined;
 
   // Load Clerk JS from CDN instead of custom domain to avoid Cloudflare conflicts
   // This must be set for SSR as well so the script tag uses the CDN URL

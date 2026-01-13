@@ -105,6 +105,13 @@ Tally is a multi-platform challenge tracking app:
 - Always take simulator/emulator screenshots to understand UI state
 - iOS logs: `xcrun simctl spawn <device-id> log show --predicate 'processImagePath CONTAINS "Tally"' --last 1m`
 - Android logs: `adb logcat -d | grep -E "(AndroidRuntime|FATAL|app.tally)"`
+- If iOS Simulator stops responding to clicks, restart it: `xcrun simctl shutdown <device-id> && xcrun simctl boot <device-id>`
+
+**App icon generation:**
+- Source: `docs/brand-app-icon.svg` (see `docs/MARKETING.md` for specs)
+- Use `qlmanage -t -s <size> -o /tmp <svg>` for SVG→PNG (ImageMagick struggles with gradients)
+- iOS: single 1024x1024 PNG in `Assets.xcassets/AppIcon.appiconset/`
+- Android: mipmap-mdpi (48), hdpi (72), xhdpi (96), xxhdpi (144), xxxhdpi (192)
 
 ### CI gotchas (mobile)
 - `reactivecircus/android-emulator-runner@v2` does **not** support `adb-timeout`; avoid adding unsupported inputs.
@@ -115,6 +122,15 @@ Tally is a multi-platform challenge tracking app:
 - **Sentry (Android)**: Add `<meta-data android:name="io.sentry.auto-init" android:value="false" />` to AndroidManifest.xml to prevent crash when DSN is not configured
 - **Clerk (iOS)**: Check `clerk.isLoaded` before rendering `AuthView` - Clerk SDK shows blank screen while loading
 - **Info.plist (iOS)**: Use explicit `Info.plist` file with `$(BUILD_SETTING)` placeholders instead of `INFOPLIST_KEY_` prefix for build settings that need to be readable at runtime
+- **Clerk prod key on mobile**: Production Clerk keys (`pk_live_*`) may fail with error code 1000 on mobile apps due to domain restrictions. Use dev keys (`pk_test_*`) for local development; prod requires Clerk dashboard configuration for mobile origins.
+
+### GitHub Actions Clerk secrets
+Workflows may reference secrets with or without environment suffixes. Ensure both exist:
+- `CLERK_SECRET_KEY` / `CLERK_SECRET_KEY_PROD` / `CLERK_SECRET_KEY_DEV`
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD` / `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV`
+- `CLERK_PUBLISHABLE_KEY` (Android deploy)
+
+Verify with: `gh secret list --repo <owner>/<repo> | grep -i clerk`
 
 ### Convex Authorization Pattern
 - **Never trust client-provided `userId`** in mutations - always derive from `ctx.auth.getUserIdentity()`

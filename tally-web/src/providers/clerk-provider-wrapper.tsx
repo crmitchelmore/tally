@@ -46,8 +46,8 @@ export function ClerkProviderWrapper({ children, publishableKey }: ClerkProvider
       clerkJSUrl={clerkJSUrl}
       signInUrl={signInUrl}
       signUpUrl={signUpUrl}
-      signInFallbackRedirectUrl="/"
-      signUpFallbackRedirectUrl="/"
+      signInFallbackRedirectUrl="/app"
+      signUpFallbackRedirectUrl="/app"
     >
       {children}
     </ClerkProvider>

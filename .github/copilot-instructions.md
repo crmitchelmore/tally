@@ -231,7 +231,12 @@ pulumi import vercel:index/projectDomain:ProjectDomain my-domain team_id/project
 
 ## Environment Variables
 
-All secrets are in the root `.env` file (gitignored):
+All secrets are in the root `.env` file (gitignored).
+
+**Local worktrees:** After updating `.env`, sync to other local clones:
+```bash
+cp -p .env ~/work/t2/.env && cp -p .env ~/work/t3/.env && cp -p .env ~/work/t4/.env
+```
 
 ```
 # Clerk

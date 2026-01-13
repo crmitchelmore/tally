@@ -165,6 +165,18 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
         return;
       }
       
+      // Rewrite Location headers so redirects stay within the /__clerk proxy.
+      if (lowerKey === "location") {
+        let location = value;
+        if (location.startsWith("https://frontend-api.clerk.dev")) {
+          location = `${url.protocol}//${url.host}/__clerk${location.replace("https://frontend-api.clerk.dev", "")}`;
+        } else if (location.startsWith("/v1")) {
+          location = `/__clerk${location}`;
+        }
+        responseHeaders.set(key, location);
+        return;
+      }
+
       // Rewrite Set-Cookie headers to use our domain instead of Clerk's
       if (lowerKey === "set-cookie") {
         // Replace Clerk's domain with our domain for session cookies
@@ -178,7 +190,7 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
         responseHeaders.append(key, cookie);
         return;
       }
-      
+
       responseHeaders.set(key, value);
     });
     

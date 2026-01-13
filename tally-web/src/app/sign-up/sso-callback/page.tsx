@@ -7,7 +7,7 @@ export default function SignUpSSOCallbackPage() {
   if (!publishableKey) return null;
   return (
     <ClerkProviderWrapper publishableKey={publishableKey}>
-      <AuthenticateWithRedirectCallback />
+      <AuthenticateWithRedirectCallback redirectUrl="/app" />
     </ClerkProviderWrapper>
   );
 }

@@ -267,7 +267,39 @@ Two parallel tracks:
   - `.xcconfig` / build settings for endpoint
   - Secrets injected via CI for production
 
-### 5.4 Privacy
+### 5.4 Implementation (DONE)
+
+**Dependencies** (in `TallyCore/Package.swift`):
+```swift
+.package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.10.0"),
+// Products: OpenTelemetryApi, OpenTelemetrySdk, StdoutExporter,
+// URLSessionInstrumentation, ResourceExtension, OpenTelemetryProtocolExporterHTTP
+```
+
+**Core module**: `TallyCore/Sources/TallyCore/Observability/TallyTelemetry.swift`
+- Singleton `TallyTelemetry.shared`
+- Exports traces to Grafana Cloud via OTLP/HTTP
+- Sets semantic resource attributes (`service.name`, `deployment.environment`, device info)
+- Auto-instruments URLSession requests
+- Provides `trace()` convenience for async operations
+
+**Build config** (in `Debug.xcconfig` / `Info.plist`):
+```
+OTEL_EXPORTER_OTLP_ENDPOINT = https://otlp-gateway-prod-gb-south-1.grafana.net/otlp
+GRAFANA_CLOUD_OTLP_TOKEN = <raw token from Grafana Cloud>
+```
+
+**App init** (in `TallyApp.swift`):
+```swift
+TallyTelemetry.shared.initialize(
+  endpoint: otelEndpoint,
+  token: otelToken,
+  environment: "production",
+  version: version
+)
+```
+
+### 5.5 Privacy
 - Never attach request/response bodies.
 - Avoid user-entered note content.
 
@@ -286,6 +318,48 @@ Two parallel tracks:
 ### 6.3 Configuration
 - Use Gradle buildConfigFields or resources for endpoint.
 - Secrets injected via CI for production.
+
+### 6.4 Implementation (DONE)
+
+**Dependencies** (in `app/build.gradle.kts`):
+```kotlin
+implementation("io.opentelemetry:opentelemetry-api:1.45.0")
+implementation("io.opentelemetry:opentelemetry-sdk:1.45.0")
+implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.45.0")
+implementation("io.opentelemetry:opentelemetry-semconv:1.30.1-alpha")
+implementation("io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0:2.11.0-alpha")
+```
+
+**Core module**: `app/src/main/kotlin/app/tally/observability/TallyTelemetry.kt`
+- Kotlin object `TallyTelemetry`
+- Exports traces to Grafana Cloud via OTLP/HTTP
+- Sets semantic resource attributes (`service.name`, `deployment.environment`, device info)
+- Provides `okHttpInterceptor()` for automatic HTTP tracing
+- Provides `trace()` convenience for suspend operations
+
+**Build config** (in `app/build.gradle.kts`):
+```kotlin
+buildConfigField("String", "OTEL_EXPORTER_OTLP_ENDPOINT", "\"${System.getenv("OTEL_EXPORTER_OTLP_ENDPOINT") ?: ""}\"")
+buildConfigField("String", "GRAFANA_CLOUD_OTLP_TOKEN", "\"${System.getenv("GRAFANA_CLOUD_OTLP_TOKEN") ?: ""}\"")
+```
+
+**App init** (in `TallyApp.kt`):
+```kotlin
+TallyTelemetry.initialize(
+  context = this,
+  endpoint = otelEndpoint,
+  token = otelToken,
+  environment = if (BuildConfig.DEBUG) "development" else "production",
+  version = "${BuildConfig.VERSION_NAME}+${BuildConfig.VERSION_CODE}"
+)
+```
+
+**OkHttp integration** (add to your OkHttpClient):
+```kotlin
+OkHttpClient.Builder()
+  .addInterceptor(TallyTelemetry.okHttpInterceptor())
+  .build()
+```
 
 ---
 

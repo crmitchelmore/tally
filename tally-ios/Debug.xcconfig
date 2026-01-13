@@ -8,5 +8,11 @@ CLERK_PUBLISHABLE_KEY_DEV =
 // LaunchDarkly mobile key - set via environment or Debug.local.xcconfig
 LAUNCHDARKLY_MOBILE_KEY_DEV = 
 
+// OpenTelemetry / Grafana Cloud - set via environment or Debug.local.xcconfig
+// The endpoint URL for OTLP traces (e.g., https://otlp-gateway-prod-gb-south-1.grafana.net/otlp)
+OTEL_EXPORTER_OTLP_ENDPOINT = 
+// The raw Grafana Cloud OTLP token (will be combined with instance ID for Basic auth)
+GRAFANA_CLOUD_OTLP_TOKEN = 
+
 // Include local overrides if they exist (gitignored)
 #include? "Debug.local.xcconfig"

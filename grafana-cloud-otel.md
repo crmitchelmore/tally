@@ -163,12 +163,36 @@ pulumi config set --secret grafanaCloudOtlpToken "$GRAFANA_CLOUD_OTLP_TOKEN"
 ### 3.3 Provision Grafana resources via IaC
 Two viable approaches:
 
-**A) Pulumi + Grafana provider (preferred when possible)**
-- Manage:
-  - Service accounts / access policies
-  - Dashboards
-  - Alert rules
-  - Data source config (usually already present in Cloud stack)
+**A) Pulumi + Grafana provider (now implemented)**
+
+The `infra/index.ts` now uses the `@pulumiverse/grafana` provider to manage:
+- **Folders**: "Tally Application" and "Tally Alerts" folders
+- **Dashboards**:
+  - "Tally Web - Overview": Request rate, error rate, P95 latency, traces, and recent logs
+  - "Tally - Logs Explorer": Log volume by level, error logs, and all logs
+
+The provider requires `grafanaCloudAdminToken` to be set:
+
+```bash
+cd infra
+export PULUMI_ACCESS_TOKEN=$(grep PULUMI_ACCESS_TOKEN ../.env | cut -d= -f2)
+
+# Set admin token for prod stack
+pulumi config set --secret --stack prod tally-infra:grafanaCloudAdminToken \
+  $(grep GRAFANA_CLOUD_ADMIN_TOKEN ../.env | cut -d= -f2)
+
+# Preview changes
+pulumi preview --stack prod
+
+# Apply changes
+pulumi up --stack prod
+```
+
+**Grafana Cloud URL**: https://tallytracker.grafana.net
+
+The dashboards use:
+- `grafanacloud-prom` datasource for metrics (Prometheus/Mimir)
+- `grafanacloud-logs` datasource for logs (Loki)
 
 **B) Pulumi + `@pulumi/command` calling Grafana Cloud APIs (fallback)**
 - Mirrors the existing pattern used for Clerk redirect URLs.

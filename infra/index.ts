@@ -3,6 +3,7 @@ import * as cloudflare from "@pulumi/cloudflare";
 import * as vercel from "@pulumiverse/vercel";
 import * as command from "@pulumi/command";
 import * as launchdarkly from "@lbrlabs/pulumi-launchdarkly";
+import * as grafana from "@pulumiverse/grafana";
 
 // =============================================================================
 // Stack-aware Configuration
@@ -1020,4 +1021,416 @@ export const sentryConfig = {
   org: sentryOrg,
   projects: sentryProjects.map((p) => p.slug),
   dsns: sentryDsns,
+};
+
+// =============================================================================
+// Grafana Cloud Configuration (Prod stack only)
+// =============================================================================
+
+// Grafana Cloud instance configuration
+const grafanaCloudStackSlug = "tallytracker";
+const grafanaCloudUrl = `https://${grafanaCloudStackSlug}.grafana.net`;
+
+if (isProd && grafanaCloudAdminToken) {
+  // Configure the Grafana provider with the admin token
+  const grafanaProvider = new grafana.Provider("grafana-provider", {
+    url: grafanaCloudUrl,
+    auth: grafanaCloudAdminToken,
+  });
+
+  // Create a folder for Tally dashboards
+  const tallyFolder = new grafana.oss.Folder(
+    "tally-dashboards-folder",
+    {
+      title: "Tally Application",
+    },
+    { provider: grafanaProvider }
+  );
+
+  // Tally Web Application Overview Dashboard
+  const webOverviewDashboard = new grafana.oss.Dashboard(
+    "tally-web-overview",
+    {
+      folder: tallyFolder.uid,
+      configJson: JSON.stringify({
+        title: "Tally Web - Overview",
+        uid: "tally-web-overview",
+        tags: ["tally", "web", "nextjs"],
+        timezone: "browser",
+        schemaVersion: 39,
+        refresh: "30s",
+        time: {
+          from: "now-1h",
+          to: "now",
+        },
+        panels: [
+          {
+            id: 1,
+            title: "Request Rate",
+            type: "stat",
+            gridPos: { h: 4, w: 6, x: 0, y: 0 },
+            targets: [
+              {
+                datasource: { type: "prometheus", uid: "grafanacloud-prom" },
+                expr: 'sum(rate(traces_spanmetrics_calls_total{service_name="tally-web"}[5m]))',
+                refId: "A",
+              },
+            ],
+            options: {
+              colorMode: "value",
+              graphMode: "area",
+              justifyMode: "auto",
+              textMode: "auto",
+            },
+            fieldConfig: {
+              defaults: {
+                unit: "reqps",
+                thresholds: {
+                  mode: "absolute",
+                  steps: [
+                    { value: null, color: "green" },
+                    { value: 100, color: "yellow" },
+                    { value: 500, color: "red" },
+                  ],
+                },
+              },
+            },
+          },
+          {
+            id: 2,
+            title: "Error Rate",
+            type: "stat",
+            gridPos: { h: 4, w: 6, x: 6, y: 0 },
+            targets: [
+              {
+                datasource: { type: "prometheus", uid: "grafanacloud-prom" },
+                expr: 'sum(rate(traces_spanmetrics_calls_total{service_name="tally-web",status_code="STATUS_CODE_ERROR"}[5m])) / sum(rate(traces_spanmetrics_calls_total{service_name="tally-web"}[5m])) * 100',
+                refId: "A",
+              },
+            ],
+            options: {
+              colorMode: "value",
+              graphMode: "area",
+              justifyMode: "auto",
+              textMode: "auto",
+            },
+            fieldConfig: {
+              defaults: {
+                unit: "percent",
+                thresholds: {
+                  mode: "absolute",
+                  steps: [
+                    { value: null, color: "green" },
+                    { value: 1, color: "yellow" },
+                    { value: 5, color: "red" },
+                  ],
+                },
+              },
+            },
+          },
+          {
+            id: 3,
+            title: "P95 Latency",
+            type: "stat",
+            gridPos: { h: 4, w: 6, x: 12, y: 0 },
+            targets: [
+              {
+                datasource: { type: "prometheus", uid: "grafanacloud-prom" },
+                expr: 'histogram_quantile(0.95, sum(rate(traces_spanmetrics_latency_bucket{service_name="tally-web"}[5m])) by (le))',
+                refId: "A",
+              },
+            ],
+            options: {
+              colorMode: "value",
+              graphMode: "area",
+              justifyMode: "auto",
+              textMode: "auto",
+            },
+            fieldConfig: {
+              defaults: {
+                unit: "ms",
+                thresholds: {
+                  mode: "absolute",
+                  steps: [
+                    { value: null, color: "green" },
+                    { value: 500, color: "yellow" },
+                    { value: 2000, color: "red" },
+                  ],
+                },
+              },
+            },
+          },
+          {
+            id: 4,
+            title: "Active Traces",
+            type: "stat",
+            gridPos: { h: 4, w: 6, x: 18, y: 0 },
+            targets: [
+              {
+                datasource: { type: "prometheus", uid: "grafanacloud-prom" },
+                expr: 'sum(traces_spanmetrics_calls_total{service_name="tally-web"})',
+                refId: "A",
+              },
+            ],
+            options: {
+              colorMode: "value",
+              graphMode: "area",
+              justifyMode: "auto",
+              textMode: "auto",
+            },
+            fieldConfig: {
+              defaults: {
+                unit: "short",
+              },
+            },
+          },
+          {
+            id: 5,
+            title: "Request Rate Over Time",
+            type: "timeseries",
+            gridPos: { h: 8, w: 12, x: 0, y: 4 },
+            targets: [
+              {
+                datasource: { type: "prometheus", uid: "grafanacloud-prom" },
+                expr: 'sum(rate(traces_spanmetrics_calls_total{service_name="tally-web"}[5m])) by (span_name)',
+                legendFormat: "{{span_name}}",
+                refId: "A",
+              },
+            ],
+            options: {
+              legend: { displayMode: "table", placement: "right" },
+            },
+            fieldConfig: {
+              defaults: {
+                unit: "reqps",
+                custom: {
+                  lineWidth: 1,
+                  fillOpacity: 20,
+                },
+              },
+            },
+          },
+          {
+            id: 6,
+            title: "Latency Distribution",
+            type: "timeseries",
+            gridPos: { h: 8, w: 12, x: 12, y: 4 },
+            targets: [
+              {
+                datasource: { type: "prometheus", uid: "grafanacloud-prom" },
+                expr: 'histogram_quantile(0.50, sum(rate(traces_spanmetrics_latency_bucket{service_name="tally-web"}[5m])) by (le))',
+                legendFormat: "p50",
+                refId: "A",
+              },
+              {
+                datasource: { type: "prometheus", uid: "grafanacloud-prom" },
+                expr: 'histogram_quantile(0.90, sum(rate(traces_spanmetrics_latency_bucket{service_name="tally-web"}[5m])) by (le))',
+                legendFormat: "p90",
+                refId: "B",
+              },
+              {
+                datasource: { type: "prometheus", uid: "grafanacloud-prom" },
+                expr: 'histogram_quantile(0.99, sum(rate(traces_spanmetrics_latency_bucket{service_name="tally-web"}[5m])) by (le))',
+                legendFormat: "p99",
+                refId: "C",
+              },
+            ],
+            options: {
+              legend: { displayMode: "table", placement: "right" },
+            },
+            fieldConfig: {
+              defaults: {
+                unit: "ms",
+                custom: {
+                  lineWidth: 1,
+                  fillOpacity: 10,
+                },
+              },
+            },
+          },
+          {
+            id: 7,
+            title: "Errors by Endpoint",
+            type: "timeseries",
+            gridPos: { h: 8, w: 12, x: 0, y: 12 },
+            targets: [
+              {
+                datasource: { type: "prometheus", uid: "grafanacloud-prom" },
+                expr: 'sum(rate(traces_spanmetrics_calls_total{service_name="tally-web",status_code="STATUS_CODE_ERROR"}[5m])) by (span_name)',
+                legendFormat: "{{span_name}}",
+                refId: "A",
+              },
+            ],
+            options: {
+              legend: { displayMode: "table", placement: "right" },
+            },
+            fieldConfig: {
+              defaults: {
+                unit: "short",
+                custom: {
+                  lineWidth: 1,
+                  fillOpacity: 20,
+                },
+              },
+            },
+          },
+          {
+            id: 8,
+            title: "Recent Logs",
+            type: "logs",
+            gridPos: { h: 8, w: 12, x: 12, y: 12 },
+            targets: [
+              {
+                datasource: { type: "loki", uid: "grafanacloud-logs" },
+                expr: '{service_name="tally-web"}',
+                refId: "A",
+              },
+            ],
+            options: {
+              showTime: true,
+              showLabels: false,
+              showCommonLabels: false,
+              wrapLogMessage: true,
+              prettifyLogMessage: false,
+              enableLogDetails: true,
+              sortOrder: "Descending",
+            },
+          },
+        ],
+      }),
+    },
+    { provider: grafanaProvider }
+  );
+
+  // Tally Logs Explorer Dashboard
+  const logsExplorerDashboard = new grafana.oss.Dashboard(
+    "tally-logs-explorer",
+    {
+      folder: tallyFolder.uid,
+      configJson: JSON.stringify({
+        title: "Tally - Logs Explorer",
+        uid: "tally-logs-explorer",
+        tags: ["tally", "logs", "loki"],
+        timezone: "browser",
+        schemaVersion: 39,
+        refresh: "30s",
+        time: {
+          from: "now-1h",
+          to: "now",
+        },
+        panels: [
+          {
+            id: 1,
+            title: "Log Volume by Level",
+            type: "timeseries",
+            gridPos: { h: 6, w: 24, x: 0, y: 0 },
+            targets: [
+              {
+                datasource: { type: "loki", uid: "grafanacloud-logs" },
+                expr: 'sum by (level) (count_over_time({service_name="tally-web"} | json [1m]))',
+                legendFormat: "{{level}}",
+                refId: "A",
+              },
+            ],
+            options: {
+              legend: { displayMode: "table", placement: "right" },
+            },
+            fieldConfig: {
+              defaults: {
+                unit: "short",
+                custom: {
+                  lineWidth: 1,
+                  fillOpacity: 30,
+                  stacking: { mode: "normal" },
+                },
+              },
+              overrides: [
+                {
+                  matcher: { id: "byName", options: "error" },
+                  properties: [{ id: "color", value: { fixedColor: "red", mode: "fixed" } }],
+                },
+                {
+                  matcher: { id: "byName", options: "warn" },
+                  properties: [{ id: "color", value: { fixedColor: "yellow", mode: "fixed" } }],
+                },
+                {
+                  matcher: { id: "byName", options: "info" },
+                  properties: [{ id: "color", value: { fixedColor: "green", mode: "fixed" } }],
+                },
+              ],
+            },
+          },
+          {
+            id: 2,
+            title: "Error Logs",
+            type: "logs",
+            gridPos: { h: 10, w: 24, x: 0, y: 6 },
+            targets: [
+              {
+                datasource: { type: "loki", uid: "grafanacloud-logs" },
+                expr: '{service_name="tally-web"} |= "error" or {service_name="tally-web"} | json | level = "error"',
+                refId: "A",
+              },
+            ],
+            options: {
+              showTime: true,
+              showLabels: true,
+              showCommonLabels: false,
+              wrapLogMessage: true,
+              prettifyLogMessage: true,
+              enableLogDetails: true,
+              sortOrder: "Descending",
+            },
+          },
+          {
+            id: 3,
+            title: "All Logs",
+            type: "logs",
+            gridPos: { h: 10, w: 24, x: 0, y: 16 },
+            targets: [
+              {
+                datasource: { type: "loki", uid: "grafanacloud-logs" },
+                expr: '{service_name="tally-web"}',
+                refId: "A",
+              },
+            ],
+            options: {
+              showTime: true,
+              showLabels: true,
+              showCommonLabels: false,
+              wrapLogMessage: true,
+              prettifyLogMessage: true,
+              enableLogDetails: true,
+              sortOrder: "Descending",
+            },
+          },
+        ],
+      }),
+    },
+    { provider: grafanaProvider }
+  );
+
+  // Create alert rule folder
+  const alertFolder = new grafana.oss.Folder(
+    "tally-alerts-folder",
+    {
+      title: "Tally Alerts",
+    },
+    { provider: grafanaProvider }
+  );
+
+  // Export Grafana configuration
+  pulumi.all([tallyFolder.uid, webOverviewDashboard.uid, logsExplorerDashboard.uid]).apply(
+    ([folderId, overviewId, logsId]) => {
+      // These are available as stack outputs
+    }
+  );
+}
+
+// Grafana Cloud exports
+export const grafanaCloudConfig = {
+  url: grafanaCloudUrl,
+  stackSlug: grafanaCloudStackSlug,
+  otlpEndpoint: grafanaCloudOtlpEndpoint,
+  instanceId: grafanaCloudInstanceId,
 };

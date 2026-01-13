@@ -17,3 +17,5 @@ config:
   tally-infra:clerkSecretKeyDev:
     secure: AAABANyt8kmUb+OhymMzX1cmLWG/xdgtj9XeBXfXIoPLoNvgXrxs3o1UYhYtVAY3yXttslfepmTN40Vq8JghapeH2MosITQrrvw2piZSnRuvDw==
   tally-infra:posthogHost: https://eu.i.posthog.com
+  tally-infra:grafanaCloudAdminToken:
+    secure: AAABACDeTnDH+o2XeBUyJMZzCDX/1sJrpeBB8Yz40ZSvaSUoylVOxiXk7i03VwND1FFMzQu0SkbYNcXeVPreTbMbIA5ZNYGuIKAaHxYO

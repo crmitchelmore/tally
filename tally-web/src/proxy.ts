@@ -52,6 +52,7 @@ const cspDirectives = {
     "https://*.clerk.accounts.dev",
     "https://*.clerk.dev",
     "https://clerk.tally-tracker.app",
+    "https://cdn.jsdelivr.net", // Clerk JS CDN fallback
     "https://challenges.cloudflare.com",
     "https://app.posthog.com",
     "https://app.launchdarkly.com",

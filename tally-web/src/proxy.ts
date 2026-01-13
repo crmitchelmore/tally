@@ -1,7 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextFetchEvent } from "next/server";
 import type { NextRequest } from "next/server";
-import { ensureClerkSecretKeyEnv, ensureClerkPublishableKeyEnv } from "@/lib/clerk-server";
+import { ensureClerkSecretKeyEnv, ensureClerkPublishableKeyEnv, getClerkSecretKey } from "@/lib/clerk-server";
 
 // Ensure Clerk keys are set from _DEV/_PROD variants before middleware initializes
 ensureClerkPublishableKeyEnv();
@@ -123,8 +123,9 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
   const proxyUrl = `${url.protocol}//${url.host}/__clerk`;
   headers.set("Clerk-Proxy-Url", proxyUrl);
   
-  // Add the secret key for authentication
-  const secretKey = process.env.CLERK_SECRET_KEY;
+  // Add the secret key for authentication - use getClerkSecretKey() to get
+  // the correct environment-specific key (CLERK_SECRET_KEY_PROD in production)
+  const secretKey = getClerkSecretKey();
   if (secretKey) {
     headers.set("Clerk-Secret-Key", secretKey);
   }

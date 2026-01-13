@@ -303,6 +303,21 @@ pulumi up
 - This tells Clerk SDK to use the proxy for ALL operations including handshake redirects
 - Managed via Pulumi in `infra/index.ts` as `clerk-proxy-url-prod`
 
+### Clerk accounts.* Subdomain (OAuth Error 1000)
+
+- Do NOT create an `accounts.tally-tracker.app` CNAME - Clerk's Cloudflare for SaaS handles it automatically
+- If you add the CNAME, it causes Error 1000 (DNS points to prohibited IP) during OAuth flows
+- **Workaround**: Set `signInUrl="/sign-in"` and `signUpUrl="/sign-up"` in ClerkProvider to redirect OAuth callbacks to your own pages instead of `accounts.*`
+- This is configured in `tally-web/src/providers/clerk-provider-wrapper.tsx`
+
+### Convex + Clerk Auth Setup
+
+- Clerk requires a JWT template named **"convex"** (create via Clerk API or dashboard)
+- Convex `auth.config.ts` reads `process.env.CLERK_JWT_ISSUER_DOMAIN` at **deploy time**, not runtime
+- `convex env set` sets runtime vars, but auth config needs the env var present during deploy
+- **Deploy command**: `CLERK_JWT_ISSUER_DOMAIN="https://tally-tracker.app/__clerk" npx convex deploy`
+- Verify issuer: `curl -s "https://tally-tracker.app/__clerk/.well-known/openid-configuration" | jq '.issuer'`
+
 ### iOS Credentials
 
 - **Team ID**: `8X4ZN58TYH` (in `.env` as `IOS_TEAM_ID`, also in GitHub secrets)

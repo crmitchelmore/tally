@@ -9,6 +9,7 @@ interface StatsItem {
   label: string;
 }
 
+// TODO: Replace with real data from API or environment config before launch
 const stats: StatsItem[] = [
   { value: 50, suffix: "K+", label: "Tallies logged" },
   { value: 2, suffix: "K+", label: "Active users" },

@@ -38,7 +38,7 @@ export function HowItWorksSection() {
     <section className="relative overflow-hidden py-16 md:py-24">
       {/* Background gradient */}
       <div
-        aria-hidden
+        aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-[color:var(--tally-cross)]/5 to-transparent"
       />
 

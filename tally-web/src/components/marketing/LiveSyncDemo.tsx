@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Smartphone, Monitor, Cloud, Check } from "lucide-react";
 
@@ -13,6 +13,7 @@ export function LiveSyncDemo() {
   const [count, setCount] = useState(12);
   const [syncingFrom, setSyncingFrom] = useState<"phone" | "web" | null>(null);
   const [lastSynced, setLastSynced] = useState<"phone" | "web" | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Auto-increment demo (simulates real-time updates)
   useEffect(() => {
@@ -23,19 +24,23 @@ export function LiveSyncDemo() {
       setSyncingFrom(source);
 
       // Sync animation
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         setCount((c) => Math.min(99, c + 1));
         setLastSynced(source);
         setSyncingFrom(null);
       }, 400);
     }, 3000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, [prefersReducedMotion]);
 
   const handleManualIncrement = useCallback((source: "phone" | "web") => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setSyncingFrom(source);
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setCount((c) => Math.min(99, c + 1));
       setLastSynced(source);
       setSyncingFrom(null);

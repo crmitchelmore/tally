@@ -58,9 +58,11 @@ export function TestimonialsSection() {
   }, [prefersReducedMotion]);
 
   const goTo = useCallback((index: number) => {
-    setDirection(index > activeIndex ? 1 : -1);
-    setActiveIndex(index);
-  }, [activeIndex]);
+    setActiveIndex((current) => {
+      setDirection(index > current ? 1 : -1);
+      return index;
+    });
+  }, []);
 
   const goPrev = useCallback(() => {
     setDirection(-1);
@@ -136,18 +138,18 @@ export function TestimonialsSection() {
           <div className="relative min-h-[240px] overflow-hidden rounded-2xl border bg-card p-8 shadow-sm md:p-12">
             <Quote
               className="absolute right-6 top-6 h-12 w-12 text-[color:var(--tally-cross)]/10 md:h-16 md:w-16"
-              aria-hidden
+              aria-hidden="true"
             />
 
-            <AnimatePresence custom={direction} mode="wait">
+            <AnimatePresence custom={direction} mode="wait" initial={!prefersReducedMotion}>
               <motion.div
                 key={current.id}
                 custom={direction}
-                variants={prefersReducedMotion ? {} : variants}
-                initial="enter"
+                variants={variants}
+                initial={prefersReducedMotion ? "center" : "enter"}
                 animate="center"
                 exit="exit"
-                transition={{ duration: 0.3, ease: "easeInOut" }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.3, ease: "easeInOut" }}
               >
                 <blockquote className="relative text-lg font-medium md:text-xl">
                   &quot;{current.quote}&quot;

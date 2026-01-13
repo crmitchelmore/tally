@@ -103,7 +103,7 @@ export function AnimatedGradientBg({ children }: { children: React.ReactNode }) 
       {/* Static fallback gradient for reduced motion */}
       {prefersReducedMotion && (
         <div
-          aria-hidden
+          aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(80%_60%_at_50%_0%,oklch(0.55_0.22_25_/_0.12),transparent_60%)]"
         />
       )}

@@ -153,15 +153,32 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
     const body = await response.arrayBuffer();
     
     // Create response headers, removing problematic encoding headers
-    // that could cause "cannot decode raw data" errors
+    // and rewriting cookie domains for the proxy
     const responseHeaders = new Headers();
     response.headers.forEach((value, key) => {
+      const lowerKey = key.toLowerCase();
+      
       // Skip content-encoding since we've already decoded the body
       // and transfer-encoding since we're not streaming
-      const lowerKey = key.toLowerCase();
-      if (lowerKey !== "content-encoding" && lowerKey !== "transfer-encoding") {
-        responseHeaders.set(key, value);
+      if (lowerKey === "content-encoding" || lowerKey === "transfer-encoding") {
+        return;
       }
+      
+      // Rewrite Set-Cookie headers to use our domain instead of Clerk's
+      if (lowerKey === "set-cookie") {
+        // Replace Clerk's domain with our domain for session cookies
+        let cookie = value;
+        // Remove domain restriction so cookie works on our domain
+        cookie = cookie.replace(/;\s*domain=[^;]+/gi, "");
+        // Ensure path is set
+        if (!cookie.toLowerCase().includes("path=")) {
+          cookie = cookie + "; Path=/";
+        }
+        responseHeaders.append(key, cookie);
+        return;
+      }
+      
+      responseHeaders.set(key, value);
     });
     
     return new NextResponse(body, {

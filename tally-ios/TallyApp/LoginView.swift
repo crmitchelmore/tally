@@ -17,18 +17,21 @@ struct LoginView: View {
             Text("Set CLERK_PUBLISHABLE_KEY in the iOS build settings to enable native sign-in.")
               .font(.footnote)
               .foregroundStyle(.secondary)
+              .accessibilityIdentifier("clerk-setup-hint")
           }
 
           Section("API") {
             TextField("Convex HTTP base", text: $state.apiBase)
               .textInputAutocapitalization(.never)
               .autocorrectionDisabled()
+              .accessibilityIdentifier("api-base-field")
           }
         }
         .navigationTitle("Welcome")
       } else if !clerk.isLoaded {
         VStack(spacing: 16) {
           ProgressView()
+            .accessibilityIdentifier("loading-indicator")
           Text("Loading...")
             .foregroundStyle(.secondary)
         }
@@ -36,6 +39,7 @@ struct LoginView: View {
       } else {
         AuthView(mode: .signInOrUp, isDismissable: false)
           .navigationTitle("Sign in")
+          .accessibilityIdentifier("clerk-auth-view")
       }
     }
   }

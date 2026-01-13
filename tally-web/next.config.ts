@@ -38,34 +38,8 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
           },
-          // CSP in report-only mode first to avoid breaking things
-          // Move to Content-Security-Policy after validation
-          {
-            key: "Content-Security-Policy-Report-Only",
-            value: [
-              "default-src 'self'",
-              // Scripts: self + Clerk (including custom domain + CDN fallback) + analytics
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.dev https://clerk.tally-tracker.app https://cdn.jsdelivr.net https://challenges.cloudflare.com https://app.posthog.com https://app.launchdarkly.com",
-              // Styles: self + inline (Tailwind/shadcn)
-              "style-src 'self' 'unsafe-inline'",
-              // Images: self + data URIs + Clerk avatars + common CDNs
-              "img-src 'self' data: blob: https://*.clerk.com https://*.clerk.dev https://img.clerk.com https://images.clerk.dev",
-              // Fonts: self + common font CDNs
-              "font-src 'self' data:",
-              // Connect: APIs + Clerk + Convex + analytics + LaunchDarkly SDK
-              "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.dev https://*.clerk.com https://clerk.tally-tracker.app https://*.convex.cloud https://*.convex.site https://app.posthog.com https://*.launchdarkly.com https://*.sentry.io https://otlp-gateway-prod-gb-south-1.grafana.net wss://*.convex.cloud",
-              // Frames: Clerk popups + Cloudflare turnstile
-              "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.dev https://challenges.cloudflare.com",
-              // Workers for service workers
-              "worker-src 'self' blob:",
-              // Object/base/form
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              // Upgrade insecure requests in production
-              process.env.NODE_ENV === "production" ? "upgrade-insecure-requests" : "",
-            ].filter(Boolean).join("; "),
-          },
+          // Note: CSP is enforced via middleware in proxy.ts
+          // Report-only was removed as it caused console warnings without a report-to endpoint
         ],
       },
     ];

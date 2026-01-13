@@ -113,6 +113,20 @@ if (isProd) {
       { deleteBeforeReplace: true }
     );
   }
+
+  // Clerk Proxy URL for production (bypasses Cloudflare for SaaS conflict)
+  // This tells Clerk SDK to use /__clerk proxy instead of clerk.tally-tracker.app
+  new vercel.ProjectEnvironmentVariable(
+    "clerk-proxy-url-prod",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "NEXT_PUBLIC_CLERK_PROXY_URL",
+      value: "https://tally-tracker.app/__clerk",
+      targets: ["production"],
+    },
+    { deleteBeforeReplace: true }
+  );
 }
 
 // =============================================================================

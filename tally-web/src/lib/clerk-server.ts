@@ -14,22 +14,23 @@ export function getClerkSecretKey(): string | undefined {
 }
 
 /**
- * Ensures CLERK_SECRET_KEY is set in process.env for libraries that read it directly.
- * Always overrides to ensure the environment-appropriate key is used.
+ * Returns the environment-appropriate Clerk secret key.
+ * Use getClerkSecretKey() directly instead of relying on process.env.CLERK_SECRET_KEY.
+ * 
+ * Note: We cannot safely assign to process.env in edge middleware due to webpack
+ * compilation issues with secret redaction.
  */
 export function ensureClerkSecretKeyEnv(): string | undefined {
-  const key = getClerkSecretKey();
-  if (key) process.env.CLERK_SECRET_KEY = key;
-  return key;
+  return getClerkSecretKey();
 }
 
 /**
- * Ensures NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is set in process.env for libraries
- * that read it directly (like @clerk/nextjs middleware).
- * Must be called server-side before Clerk middleware initializes.
+ * Returns the environment-appropriate Clerk publishable key.
+ * Use getClerkPublishableKey() directly instead of relying on process.env.
+ * 
+ * Note: We cannot safely assign to process.env in edge middleware due to webpack
+ * compilation issues with secret redaction.
  */
 export function ensureClerkPublishableKeyEnv(): string | undefined {
-  const key = getClerkPublishableKey();
-  if (key) process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = key;
-  return key;
+  return getClerkPublishableKey();
 }

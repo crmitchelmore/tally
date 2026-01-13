@@ -1,0 +1,12 @@
+// CI-safe Debug configuration
+// This file is checked into git with placeholder/empty values.
+// For local development, override via environment or Debug.local.xcconfig (gitignored)
+
+// Clerk publishable key - set via environment variable or Debug.local.xcconfig
+CLERK_PUBLISHABLE_KEY_DEV = 
+
+// LaunchDarkly mobile key - set via environment or Debug.local.xcconfig
+LAUNCHDARKLY_MOBILE_KEY_DEV = 
+
+// Include local overrides if they exist (gitignored)
+#include? "Debug.local.xcconfig"

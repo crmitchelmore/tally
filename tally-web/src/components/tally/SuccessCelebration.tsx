@@ -103,8 +103,8 @@ export function SuccessCelebration({
     }
   }, [trigger, type, duration, fireConfetti, fireTallyConfetti, onComplete]);
 
-  // Sparkle animation overlay (for reduced motion or as alternative)
-  if (type === "sparkle" && trigger) {
+  // Sparkle animation overlay (skip if reduced motion preferred)
+  if (type === "sparkle" && trigger && !prefersReducedMotion) {
     return (
       <AnimatePresence>
         <motion.div
@@ -141,8 +141,8 @@ export function SuccessCelebration({
     );
   }
 
-  // Pulse animation (minimal, good for reduced motion)
-  if (type === "pulse" && trigger) {
+  // Pulse animation (minimal, still skip if reduced motion preferred)
+  if (type === "pulse" && trigger && !prefersReducedMotion) {
     return (
       <motion.div
         className="pointer-events-none fixed inset-0 z-50 bg-[color:var(--tally-cross)]/5"

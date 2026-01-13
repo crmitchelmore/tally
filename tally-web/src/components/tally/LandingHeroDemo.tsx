@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import { Plus, RotateCcw } from "lucide-react";
 import confetti from "canvas-confetti";
@@ -13,6 +13,16 @@ export function LandingHeroDemo() {
   const prefersReducedMotion = useReducedMotion();
   const [count, setCount] = useState(7);
   const [showCelebration, setShowCelebration] = useState(false);
+  const celebrationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup celebration timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (celebrationTimeoutRef.current) {
+        clearTimeout(celebrationTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Fire confetti on milestones (5, 10, 15)
   const fireCelebration = useCallback(() => {
@@ -36,7 +46,14 @@ export function LandingHeroDemo() {
       if (next === 5 || next === 10 || next === 15) {
         setShowCelebration(true);
         fireCelebration();
-        setTimeout(() => setShowCelebration(false), 1000);
+        // Clear any existing timeout and set a new one
+        if (celebrationTimeoutRef.current) {
+          clearTimeout(celebrationTimeoutRef.current);
+        }
+        celebrationTimeoutRef.current = setTimeout(
+          () => setShowCelebration(false),
+          1000
+        );
       }
       return next;
     });

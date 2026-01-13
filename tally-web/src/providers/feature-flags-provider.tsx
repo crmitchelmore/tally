@@ -1,8 +1,7 @@
 "use client";
 
-import { ReactNode, useCallback, useMemo } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { LDProvider, useLDClient, useFlags } from "launchdarkly-react-client-sdk";
 import { getClerkPublishableKey } from "@/lib/clerk-public";
 
 const clientSideId = process.env.NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID;
@@ -10,6 +9,11 @@ const clientSideId = process.env.NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID;
 interface FeatureFlagsProviderProps {
   children: ReactNode;
 }
+
+// Dynamically import LaunchDarkly only on client side to avoid SSR window errors
+let LDProviderComponent: typeof import("launchdarkly-react-client-sdk").LDProvider | null = null;
+let useFlagsHook: typeof import("launchdarkly-react-client-sdk").useFlags | null = null;
+let useLDClientHook: typeof import("launchdarkly-react-client-sdk").useLDClient | null = null;
 
 /**
  * FeatureFlagsProvider wraps the LaunchDarkly React SDK.
@@ -21,16 +25,39 @@ interface FeatureFlagsProviderProps {
  * - env: derived from deployment URL
  */
 export function FeatureFlagsProvider({ children }: FeatureFlagsProviderProps) {
+  // Defer LaunchDarkly initialization to client-side only
+  // This prevents SSR errors from the LDProvider accessing window
+  const [LDProvider, setLDProvider] = useState<typeof LDProviderComponent>(null);
+  
+  useEffect(() => {
+    // Dynamically import LaunchDarkly SDK only on the client
+    import("launchdarkly-react-client-sdk").then((mod) => {
+      LDProviderComponent = mod.LDProvider;
+      useFlagsHook = mod.useFlags;
+      useLDClientHook = mod.useLDClient;
+      setLDProvider(() => mod.LDProvider);
+    });
+  }, []);
+  
+  if (!LDProvider) {
+    // Render children without feature flags during SSR and initial load
+    return <>{children}</>;
+  }
+
   const clerkPublishableKey = getClerkPublishableKey();
 
   return clerkPublishableKey ? (
-    <FeatureFlagsProviderWithClerk>{children}</FeatureFlagsProviderWithClerk>
+    <FeatureFlagsProviderWithClerk LDProvider={LDProvider}>{children}</FeatureFlagsProviderWithClerk>
   ) : (
-    <FeatureFlagsProviderWithoutClerk>{children}</FeatureFlagsProviderWithoutClerk>
+    <FeatureFlagsProviderWithoutClerk LDProvider={LDProvider}>{children}</FeatureFlagsProviderWithoutClerk>
   );
 }
 
-function FeatureFlagsProviderWithoutClerk({ children }: FeatureFlagsProviderProps) {
+interface ProviderWithLDProps extends FeatureFlagsProviderProps {
+  LDProvider: typeof import("launchdarkly-react-client-sdk").LDProvider;
+}
+
+function FeatureFlagsProviderWithoutClerk({ children, LDProvider }: ProviderWithLDProps) {
   const ldContext = useMemo(() => {
     const env =
       typeof window !== "undefined"
@@ -65,7 +92,7 @@ function FeatureFlagsProviderWithoutClerk({ children }: FeatureFlagsProviderProp
   );
 }
 
-function FeatureFlagsProviderWithClerk({ children }: FeatureFlagsProviderProps) {
+function FeatureFlagsProviderWithClerk({ children, LDProvider }: ProviderWithLDProps) {
   const { user } = useUser();
 
   const ldContext = useMemo(() => {
@@ -119,7 +146,11 @@ function FeatureFlagsProviderWithClerk({ children }: FeatureFlagsProviderProps) 
  * Returns the flag value or the provided default if not available.
  */
 export function useFlag<T>(flagKey: string, defaultValue: T): T {
-  const flags = useFlags();
+  // Use the dynamically imported hook if available
+  if (!useFlagsHook) {
+    return defaultValue;
+  }
+  const flags = useFlagsHook();
   return (flags[flagKey] as T) ?? defaultValue;
 }
 
@@ -127,5 +158,9 @@ export function useFlag<T>(flagKey: string, defaultValue: T): T {
  * Hook to get the LaunchDarkly client for advanced operations.
  */
 export function useFeatureFlagsClient() {
-  return useLDClient();
+  // Use the dynamically imported hook if available
+  if (!useLDClientHook) {
+    return null;
+  }
+  return useLDClientHook();
 }

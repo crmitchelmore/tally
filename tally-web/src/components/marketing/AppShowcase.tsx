@@ -18,20 +18,17 @@ interface AppShowcaseProps {
 export function AppShowcase({ className = "" }: AppShowcaseProps) {
   const prefersReducedMotion = useReducedMotion();
 
-  const fadeInUp = prefersReducedMotion
-    ? {}
-    : {
-        initial: { opacity: 0, y: 20 },
-        whileInView: { opacity: 1, y: 0 },
-        viewport: { once: true },
-        transition: { duration: 0.5 },
-      };
-
   return (
     <section className={`py-16 md:py-24 ${className}`}>
       <div className="container mx-auto px-4">
         {/* Section header */}
-        <motion.div className="mx-auto max-w-2xl text-center" {...fadeInUp}>
+        <motion.div
+          className="mx-auto max-w-2xl text-center"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
             Available everywhere you are
           </h2>
@@ -45,14 +42,10 @@ export function AppShowcase({ className = "" }: AppShowcaseProps) {
           {/* iOS Phone */}
           <motion.div
             className="text-center"
-            {...(prefersReducedMotion
-              ? {}
-              : {
-                  initial: { opacity: 0, x: -30 },
-                  whileInView: { opacity: 1, x: 0 },
-                  viewport: { once: true },
-                  transition: { duration: 0.6, delay: 0.1 },
-                })}
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
           >
             <PhoneFrame platform="ios">
               {/* Placeholder for iOS app screenshot/video */}
@@ -84,14 +77,10 @@ export function AppShowcase({ className = "" }: AppShowcaseProps) {
           {/* Android Phone */}
           <motion.div
             className="text-center"
-            {...(prefersReducedMotion
-              ? {}
-              : {
-                  initial: { opacity: 0, x: 30 },
-                  whileInView: { opacity: 1, x: 0 },
-                  viewport: { once: true },
-                  transition: { duration: 0.6, delay: 0.2 },
-                })}
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
             <PhoneFrame platform="android">
               {/* Placeholder for Android app screenshot/video */}
@@ -178,20 +167,15 @@ export function FeatureShowcase({
   badge,
   className = "",
 }: FeatureShowcaseProps) {
-  const prefersReducedMotion = useReducedMotion();
   const isLeft = mediaPosition === "left";
 
   return (
     <motion.div
       className={`grid items-center gap-8 py-12 md:grid-cols-2 md:gap-12 ${className}`}
-      {...(prefersReducedMotion
-        ? {}
-        : {
-            initial: { opacity: 0, y: 30 },
-            whileInView: { opacity: 1, y: 0 },
-            viewport: { once: true, margin: "-100px" },
-            transition: { duration: 0.6 },
-          })}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.6 }}
     >
       {/* Media */}
       <div className={isLeft ? "md:order-1" : "md:order-2"}>
@@ -199,11 +183,10 @@ export function FeatureShowcase({
           {videoSrc ? (
             <video
               src={videoSrc}
-              autoPlay={!prefersReducedMotion}
+              autoPlay
               muted
               loop
               playsInline
-              aria-label={title}
               className="aspect-video w-full object-cover"
             />
           ) : imageSrc ? (

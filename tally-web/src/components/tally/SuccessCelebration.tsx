@@ -1,15 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import confetti from "canvas-confetti";
-
-// Pre-computed sparkle positions - generated at module load time to satisfy React purity rules
-const SPARKLE_POSITIONS = Array.from({ length: 12 }).map((_, i) => ({
-  // Use deterministic but visually varied positions based on index
-  x: 20 + ((i * 17 + 7) % 60),
-  y: 20 + ((i * 23 + 11) % 60),
-}));
 
 interface SuccessCelebrationProps {
   /** Whether to trigger the celebration */
@@ -103,8 +96,8 @@ export function SuccessCelebration({
     }
   }, [trigger, type, duration, fireConfetti, fireTallyConfetti, onComplete]);
 
-  // Sparkle animation overlay (skip if reduced motion preferred)
-  if (type === "sparkle" && trigger && !prefersReducedMotion) {
+  // Sparkle animation overlay (for reduced motion or as alternative)
+  if (type === "sparkle" && trigger) {
     return (
       <AnimatePresence>
         <motion.div
@@ -113,7 +106,7 @@ export function SuccessCelebration({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          {SPARKLE_POSITIONS.map((pos, i) => (
+          {Array.from({ length: 12 }).map((_, i) => (
             <motion.div
               key={i}
               className="absolute h-2 w-2 rounded-full bg-[color:var(--tally-cross)]"
@@ -124,8 +117,8 @@ export function SuccessCelebration({
                 opacity: 1,
               }}
               animate={{
-                x: `${pos.x}vw`,
-                y: `${pos.y}vh`,
+                x: `${20 + Math.random() * 60}vw`,
+                y: `${20 + Math.random() * 60}vh`,
                 scale: [0, 1.5, 0],
                 opacity: [1, 1, 0],
               }}
@@ -141,8 +134,8 @@ export function SuccessCelebration({
     );
   }
 
-  // Pulse animation (minimal, still skip if reduced motion preferred)
-  if (type === "pulse" && trigger && !prefersReducedMotion) {
+  // Pulse animation (minimal, good for reduced motion)
+  if (type === "pulse" && trigger) {
     return (
       <motion.div
         className="pointer-events-none fixed inset-0 z-50 bg-[color:var(--tally-cross)]/5"

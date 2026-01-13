@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface PhoneFrameProps {
   children: ReactNode;
@@ -14,19 +14,13 @@ interface PhoneFrameProps {
  * Styled to match modern marketing pages (Linear, Vercel, Stripe style).
  */
 export function PhoneFrame({ children, platform = "ios", className = "" }: PhoneFrameProps) {
-  const prefersReducedMotion = useReducedMotion();
-
   return (
     <motion.div
       className={`relative ${className}`}
-      {...(prefersReducedMotion
-        ? {}
-        : {
-            initial: { opacity: 0, y: 20 },
-            whileInView: { opacity: 1, y: 0 },
-            viewport: { once: true, margin: "-50px" },
-            transition: { duration: 0.5, ease: "easeOut" },
-          })}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
     >
       {/* Phone frame */}
       <div className="relative mx-auto w-[280px] rounded-[40px] border-[8px] border-gray-900 bg-gray-900 p-1 shadow-2xl dark:border-gray-700">

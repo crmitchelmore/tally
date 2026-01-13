@@ -63,14 +63,10 @@ export function VideoShowcase({
       ref={containerRef}
       className={`relative overflow-hidden rounded-xl bg-muted ${className}`}
       style={{ aspectRatio }}
-      {...(prefersReducedMotion
-        ? {}
-        : {
-            initial: { opacity: 0, scale: 0.95 },
-            whileInView: { opacity: 1, scale: 1 },
-            viewport: { once: true, margin: "-50px" },
-            transition: { duration: 0.5, ease: "easeOut" },
-          })}
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
     >
       {isGif ? (
         // Render animated gif
@@ -142,20 +138,15 @@ export function FeatureVideoCard({
   videoPosition = "left",
   className = "",
 }: FeatureVideoCardProps) {
-  const prefersReducedMotion = useReducedMotion();
   const isLeft = videoPosition === "left";
 
   return (
     <motion.div
       className={`grid items-center gap-8 md:grid-cols-2 ${className}`}
-      {...(prefersReducedMotion
-        ? {}
-        : {
-            initial: { opacity: 0, y: 30 },
-            whileInView: { opacity: 1, y: 0 },
-            viewport: { once: true, margin: "-100px" },
-            transition: { duration: 0.6, ease: "easeOut" },
-          })}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
     >
       {/* Video */}
       <div className={isLeft ? "md:order-1" : "md:order-2"}>

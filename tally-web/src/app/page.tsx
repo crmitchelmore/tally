@@ -8,6 +8,8 @@ import {
   Sparkles,
   Target,
   Zap,
+  Users,
+  Trophy,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";

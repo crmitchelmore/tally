@@ -13,7 +13,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LandingHeroDemo } from "@/components/tally/LandingHeroDemo";
-import { AppShowcase, FeatureShowcase } from "@/components/marketing";
+import {
+  AppShowcase,
+  FeatureShowcase,
+  HowItWorksSection,
+  TestimonialsSection,
+  StatsBar,
+  LiveSyncDemo,
+} from "@/components/marketing";
 
 export default function LandingPage() {
   return (
@@ -211,8 +218,34 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* How it works */}
+        <HowItWorksSection />
+
+        {/* Live sync demo - Convex-inspired */}
+        <section className="border-t bg-muted/30 py-16 md:py-24">
+          <div className="container mx-auto px-4">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+                Real-time sync, everywhere
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                Powered by Convex. Your tallies sync instantly across all devices.
+              </p>
+            </div>
+            <div className="mx-auto mt-12 max-w-md">
+              <LiveSyncDemo />
+            </div>
+          </div>
+        </section>
+
+        {/* Stats bar */}
+        <StatsBar />
+
         {/* App showcase section */}
         <AppShowcase className="border-t" />
+
+        {/* Testimonials */}
+        <TestimonialsSection />
 
         <section className="border-t">
           <div className="container mx-auto flex flex-col items-start justify-between gap-6 px-4 py-10 md:flex-row md:items-center">

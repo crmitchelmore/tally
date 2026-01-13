@@ -7,11 +7,11 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
+     * - _next (all Next.js internal paths: static, image, etc.)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
-     * - public folder files
+     * - public folder files (svg, png, jpg, etc.)
+     * - css and js files (but not json)
      */
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot)).*)",
+    "/((?!_next|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot|css|js(?!on))).*)",
   ],
 };

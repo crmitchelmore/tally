@@ -21,8 +21,8 @@ Each secret has exactly ONE source of truth. Other systems that need the secret 
 
 | Secret | Source of Truth | Used By | Rotation |
 |--------|-----------------|---------|----------|
-| `CONVEX_DEPLOY_KEY_PROD` | GitHub Secrets (repository) | CI | Manual |
-| `CONVEX_DEPLOY_KEY_DEV` | GitHub Secrets (repository) | CI | Manual |
+| `CONVEX_DEPLOY_KEY_PROD` | GitHub Secrets (production env) | CI | Manual |
+| `CONVEX_DEPLOY_KEY_DEV` | GitHub Secrets (development env) | CI | Manual |
 | `NEXT_PUBLIC_CONVEX_URL` | Pulumi config | Vercel | N/A (public) |
 
 ### Sentry (Error Tracking)

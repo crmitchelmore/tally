@@ -71,8 +71,7 @@ test.describe("FLOW-001: First Launch", () => {
     // Should show sign-in option in the header navigation
     const signInLink = page
       .getByRole("banner")
-      .getByRole("link", { name: /sign in/i })
-      .or(page.getByRole("banner").getByRole("button", { name: /sign in/i }));
+      .getByRole("link", { name: /sign in/i });
 
     await expect(signInLink.first()).toBeVisible({ timeout: 10000 });
   });

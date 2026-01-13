@@ -160,6 +160,13 @@ public final class TallyTelemetry: @unchecked Sendable {
     set { lock.withLock { _isInitialized = newValue } }
   }
   
+  // Store tracer provider to avoid accessing OpenTelemetry.instance repeatedly
+  private var _tracerProvider: TracerProvider?
+  private var tracerProvider: TracerProvider {
+    get { lock.withLock { _tracerProvider ?? DefaultTracerProvider.instance } }
+    set { lock.withLock { _tracerProvider = newValue } }
+  }
+  
   private init() {}
   
   /// Initialize OpenTelemetry with OTLP exporter to Grafana Cloud.
@@ -225,12 +232,13 @@ public final class TallyTelemetry: @unchecked Sendable {
     // Build tracer provider with batch processor for efficient export
     let spanProcessor = BatchSpanProcessor(spanExporter: exporter)
     
-    let tracerProvider = TracerProviderBuilder()
+    let provider = TracerProviderBuilder()
       .add(spanProcessor: spanProcessor)
       .with(resource: resource)
       .build()
     
-    OpenTelemetry.registerTracerProvider(tracerProvider: tracerProvider)
+    OpenTelemetry.registerTracerProvider(tracerProvider: provider)
+    tracerProvider = provider
     
     isInitialized = true
     print("[TallyTelemetry] Initialized with endpoint: \(endpoint)")
@@ -238,8 +246,7 @@ public final class TallyTelemetry: @unchecked Sendable {
   
   /// Get a tracer for creating spans
   public func tracer(name: String = "tally-ios") -> Tracer {
-    nonisolated(unsafe) let provider = OpenTelemetry.instance.tracerProvider
-    return provider.get(
+    tracerProvider.get(
       instrumentationName: name,
       instrumentationVersion: "1.0.0"
     )

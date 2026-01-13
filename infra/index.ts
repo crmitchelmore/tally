@@ -221,14 +221,8 @@ const clerkProxyRecord = new cloudflare.DnsRecord("clerk-proxy-record", {
   ttl: 1,
 });
 
-const clerkAccountsRecord = new cloudflare.DnsRecord("clerk-accounts-record", {
-  zoneId: zoneId,
-  name: "accounts",
-  type: "CNAME",
-  content: "accounts.clerk.services",
-  proxied: false,
-  ttl: 1,
-});
+// NOTE: accounts.tally-tracker.app CNAME removed - Clerk's Cloudflare for SaaS
+// handles this subdomain automatically. Having a CNAME in our zone causes Error 1000.
 
 const clerkMailRecord = new cloudflare.DnsRecord("clerk-mail-record", {
   zoneId: zoneId,

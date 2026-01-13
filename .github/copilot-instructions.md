@@ -84,10 +84,37 @@ Tally is a multi-platform challenge tracking app:
 - Vercel project `rootDirectory` is `tally-web`; workflows should run from repo root to avoid `tally-web/tally-web`.
 - **Web dev deploy is intentionally disabled** (no dedicated `dev.tally-tracker.app`) due to current Vercel plan constraints; use PR previews or local dev. Re-enable via LaunchDarkly flag `enable-web-dev-deploy` or repo variable `ENABLE_DEV_WEB_DEPLOY=true`.
 
+### Mobile Development Setup
+
+**iOS (`tally-ios/`):**
+- Generate project: `cd tally-ios && xcodegen generate`
+- Create `Debug.xcconfig` (gitignored) with:
+  ```
+  CLERK_PUBLISHABLE_KEY_DEV = pk_test_...
+  ```
+- Build: `xcodebuild -project Tally.xcodeproj -scheme Tally -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -configuration Debug build`
+- Screenshot: `xcrun simctl io <device-id> screenshot /tmp/screenshot.png`
+
+**Android (`tally-android/`):**
+- Create `local.properties` with: `sdk.dir=/Users/<user>/Library/Android/sdk`
+- Build with Clerk key: `CLERK_PUBLISHABLE_KEY_DEV=pk_test_... ./gradlew :app:assembleDebug`
+- Start emulator: `$ANDROID_HOME/emulator/emulator -avd tally_api35 -no-snapshot-load &`
+- Screenshot: `adb exec-out screencap -p > /tmp/screenshot.png`
+
+**Debugging mobile apps:**
+- Always take simulator/emulator screenshots to understand UI state
+- iOS logs: `xcrun simctl spawn <device-id> log show --predicate 'processImagePath CONTAINS "Tally"' --last 1m`
+- Android logs: `adb logcat -d | grep -E "(AndroidRuntime|FATAL|app.tally)"`
+
 ### CI gotchas (mobile)
 - `reactivecircus/android-emulator-runner@v2` does **not** support `adb-timeout`; avoid adding unsupported inputs.
 - GitHub Actions job logs may be unavailable until completion (`gh run view --log` and MCP job logs can fail/404 while in progress).
 - Prefer a single retry for emulator-based instrumented tests rather than only widening timeouts.
+
+### Mobile SDK initialization gotchas
+- **Sentry (Android)**: Add `<meta-data android:name="io.sentry.auto-init" android:value="false" />` to AndroidManifest.xml to prevent crash when DSN is not configured
+- **Clerk (iOS)**: Check `clerk.isLoaded` before rendering `AuthView` - Clerk SDK shows blank screen while loading
+- **Info.plist (iOS)**: Use explicit `Info.plist` file with `$(BUILD_SETTING)` placeholders instead of `INFOPLIST_KEY_` prefix for build settings that need to be readable at runtime
 
 ### Convex Authorization Pattern
 - **Never trust client-provided `userId`** in mutations - always derive from `ctx.auth.getUserIdentity()`

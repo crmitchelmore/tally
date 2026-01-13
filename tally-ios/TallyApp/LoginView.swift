@@ -2,6 +2,7 @@ import SwiftUI
 import Clerk
 
 struct LoginView: View {
+  @Environment(\.clerk) private var clerk
   @EnvironmentObject private var state: AppState
 
   private var publishableKey: String {
@@ -25,6 +26,13 @@ struct LoginView: View {
           }
         }
         .navigationTitle("Welcome")
+      } else if !clerk.isLoaded {
+        VStack(spacing: 16) {
+          ProgressView()
+          Text("Loading...")
+            .foregroundStyle(.secondary)
+        }
+        .navigationTitle("Sign in")
       } else {
         AuthView(mode: .signInOrUp, isDismissable: false)
           .navigationTitle("Sign in")

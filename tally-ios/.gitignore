@@ -4,3 +4,4 @@ Tally.xcodeproj/
 *.xcworkspace/
 DerivedData/
 *.xcresult
+Debug.xcconfig

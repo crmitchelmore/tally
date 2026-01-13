@@ -3,6 +3,8 @@ options:
   bundleIdPrefix: app.tally
   deploymentTarget:
     iOS: 17.0
+configFiles:
+  Debug: Debug.xcconfig
 packages:
   TallyCore:
     path: TallyCore
@@ -27,10 +29,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.tally.ios
         DEVELOPMENT_TEAM: ""
-        GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CLERK_PUBLISHABLE_KEY: "$(CLERK_PUBLISHABLE_KEY)"
-        INFOPLIST_KEY_LAUNCHDARKLY_MOBILE_KEY: "$(LAUNCHDARKLY_MOBILE_KEY)"
-        INFOPLIST_KEY_SENTRY_DSN: "$(SENTRY_DSN)"
+        INFOPLIST_FILE: TallyApp/Info.plist
       configs:
         Debug:
           CLERK_PUBLISHABLE_KEY: "$(CLERK_PUBLISHABLE_KEY_DEV)"

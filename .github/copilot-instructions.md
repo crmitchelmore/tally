@@ -231,7 +231,12 @@ pulumi import vercel:index/projectDomain:ProjectDomain my-domain team_id/project
 
 ## Environment Variables
 
-All secrets are in the root `.env` file (gitignored):
+All secrets are in the root `.env` file (gitignored).
+
+**Local worktrees:** After updating `.env`, sync to other local clones:
+```bash
+cp -p .env ~/work/t2/.env && cp -p .env ~/work/t3/.env && cp -p .env ~/work/t4/.env
+```
 
 ```
 # Clerk
@@ -290,6 +295,19 @@ pulumi up
 - `auth.protect()` in Clerk middleware can surface as a **404** for signed-out users.
 - If relocating the app to `/app`, ensure middleware routing doesn’t unintentionally 404 the route (e.g. treat `/app(.*)` as public and handle signed-out UI in the page).
 
+
+### Clerk Handshake Proxy URL
+
+- If Clerk session handshake redirects to `clerk.tally-tracker.app` causing Error 1000, ensure `NEXT_PUBLIC_CLERK_PROXY_URL` is set
+- Value: `https://tally-tracker.app/__clerk`
+- This tells Clerk SDK to use the proxy for ALL operations including handshake redirects
+- Managed via Pulumi in `infra/index.ts` as `clerk-proxy-url-prod`
+
+### iOS Credentials
+
+- **Team ID**: `8X4ZN58TYH` (in `.env` as `IOS_TEAM_ID`, also in GitHub secrets)
+- **Bundle ID**: `app.tally.ios`
+- **Google OAuth**: Use Clerk built-in Google provider (iOS OAuth clients don't have secrets)
 ## Migration Plan
 
 See `docs/migration/README.md` for the full migration roadmap.

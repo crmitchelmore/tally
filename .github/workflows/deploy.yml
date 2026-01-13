@@ -358,12 +358,15 @@ jobs:
     name: Deploy Vercel (dev)
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.dev-web-deploy-flag.outputs.enabled == 'true'
-    needs: [dev-web-deploy-flag, deploy-dev-infra, deploy-dev-convex]
+    # Deploy Vercel even if Convex deploy fails (Convex can be deployed separately)
+    needs: [dev-web-deploy-flag, deploy-dev-infra]
     environment: development
     outputs:
       deployment_url: ${{ steps.deploy.outputs.url }}
       web_version: ${{ github.sha }}
-    # Run from repo root; Vercel project Root Directory is already set to "tally-web"
+    defaults:
+      run:
+        working-directory: tally-web
     steps:
       - uses: actions/checkout@v6
 
@@ -562,11 +565,14 @@ jobs:
     name: Deploy Vercel (prod)
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [deploy-prod-infra, deploy-prod-convex]
+    # Deploy Vercel even if Convex deploy fails (Convex can be deployed separately)
+    needs: [deploy-prod-infra]
     environment: production
     outputs:
       web_version: ${{ github.sha }}
-    # Run from repo root; Vercel project Root Directory is already set to "tally-web"
+    defaults:
+      run:
+        working-directory: tally-web
     steps:
       - uses: actions/checkout@v6
 

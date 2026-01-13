@@ -19,19 +19,15 @@ jobs:
         with:
           node-version: 20
 
-      - name: Write Vercel project.json
-        run: |
-          mkdir -p .vercel
-          cat > .vercel/project.json <<JSON
-          {"projectId":"prj_tXdIJDmRB1qKZyo5Ngat62XoaMgw","orgId":"team_ifle7fkp7usKufCL8MUCY1As"}
-          JSON
-
       - name: Redeploy to Vercel (prod)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        working-directory: tally-web
         run: |
           npm i -g vercel@latest
+          mkdir -p .vercel
+          echo '{"projectId":"prj_tXdIJDmRB1qKZyo5Ngat62XoaMgw","orgId":"team_ifle7fkp7usKufCL8MUCY1As"}' > .vercel/project.json
           vercel deploy --prod --yes --token "$VERCEL_TOKEN" \
             --build-env SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
             --build-env SENTRY_ENVIRONMENT="production" \

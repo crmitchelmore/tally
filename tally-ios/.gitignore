@@ -4,4 +4,6 @@ Tally.xcodeproj/
 *.xcworkspace/
 DerivedData/
 *.xcresult
-Debug.xcconfig
+# Local xcconfig overrides with secrets
+Debug.local.xcconfig
+Release.local.xcconfig

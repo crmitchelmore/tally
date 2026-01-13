@@ -1,0 +1,19 @@
+# Gitleaks configuration
+# https://github.com/gitleaks/gitleaks
+
+[allowlist]
+  description = "Global allowlist for false positives"
+
+  # Example API key patterns in documentation
+  paths = [
+    '''\.github/copilot-instructions\.md''',
+    '''docs/.*\.md''',
+    '''key-journeys\.md''',
+    '''CONTEXT\.md''',
+  ]
+
+  # Allowlist patterns that are clearly examples/placeholders
+  regexes = [
+    '''pk_test_\.\.\.''',
+    '''CLERK_PUBLISHABLE_KEY_DEV=pk_test_\.\.\.''',
+  ]

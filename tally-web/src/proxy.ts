@@ -116,11 +116,13 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
     headers.set("Clerk-Secret-Key", secretKey);
   }
   
-  // Forward the client IP
-  const clientIp = req.headers.get("x-forwarded-for") || 
-                   req.headers.get("x-real-ip") || 
-                   "unknown";
-  headers.set("X-Forwarded-For", clientIp);
+  // Forward the client IP - append to existing chain if present
+  const existingForwardedFor = req.headers.get("x-forwarded-for");
+  const clientIp = req.headers.get("x-real-ip") || "unknown";
+  const forwardedFor = existingForwardedFor 
+    ? `${existingForwardedFor}, ${clientIp}` 
+    : clientIp;
+  headers.set("X-Forwarded-For", forwardedFor);
   
   // Remove host header to avoid conflicts
   headers.delete("host");
@@ -171,14 +173,3 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
   // For all other routes, use clerkMiddleware
   return clerkMiddlewareHandler(req, event);
 }
-
-export const config = {
-  matcher: [
-    // Skip Next.js internals and all static files
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
-    "/(api|trpc)(.*)",
-    // Clerk proxy route
-    "/__clerk/:path*",
-  ],
-};

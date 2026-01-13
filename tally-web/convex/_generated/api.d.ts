@@ -13,6 +13,7 @@ import type * as entries from "../entries.js";
 import type * as followedChallenges from "../followedChallenges.js";
 import type * as http from "../http.js";
 import type * as import_ from "../import.js";
+import type * as lib_auth from "../lib/auth.js";
 import type * as lib_launchdarkly from "../lib/launchdarkly.js";
 import type * as lib_sentry from "../lib/sentry.js";
 import type * as users from "../users.js";
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   followedChallenges: typeof followedChallenges;
   http: typeof http;
   import: typeof import_;
+  "lib/auth": typeof lib_auth;
   "lib/launchdarkly": typeof lib_launchdarkly;
   "lib/sentry": typeof lib_sentry;
   users: typeof users;

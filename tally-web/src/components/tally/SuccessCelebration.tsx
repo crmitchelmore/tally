@@ -1,8 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import confetti from "canvas-confetti";
+
+// Pre-computed sparkle positions - generated at module load time to satisfy React purity rules
+const SPARKLE_POSITIONS = Array.from({ length: 12 }).map((_, i) => ({
+  // Use deterministic but visually varied positions based on index
+  x: 20 + ((i * 17 + 7) % 60),
+  y: 20 + ((i * 23 + 11) % 60),
+}));
 
 interface SuccessCelebrationProps {
   /** Whether to trigger the celebration */
@@ -106,7 +113,7 @@ export function SuccessCelebration({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          {Array.from({ length: 12 }).map((_, i) => (
+          {SPARKLE_POSITIONS.map((pos, i) => (
             <motion.div
               key={i}
               className="absolute h-2 w-2 rounded-full bg-[color:var(--tally-cross)]"
@@ -117,8 +124,8 @@ export function SuccessCelebration({
                 opacity: 1,
               }}
               animate={{
-                x: `${20 + Math.random() * 60}vw`,
-                y: `${20 + Math.random() * 60}vh`,
+                x: `${pos.x}vw`,
+                y: `${pos.y}vh`,
                 scale: [0, 1.5, 0],
                 opacity: [1, 1, 0],
               }}

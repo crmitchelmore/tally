@@ -150,10 +150,15 @@ extension TimeInterval {
 }
 
 /// OpenTelemetry setup for exporting traces/metrics to Grafana Cloud
-public final class TallyTelemetry {
+public final class TallyTelemetry: @unchecked Sendable {
   public static let shared = TallyTelemetry()
   
-  private var isInitialized = false
+  private let lock = NSLock()
+  private var _isInitialized = false
+  private var isInitialized: Bool {
+    get { lock.withLock { _isInitialized } }
+    set { lock.withLock { _isInitialized = newValue } }
+  }
   
   private init() {}
   

@@ -132,6 +132,17 @@ Workflows may reference secrets with or without environment suffixes. Ensure bot
 
 Verify with: `gh secret list --repo <owner>/<repo> | grep -i clerk`
 
+### PR merge blockers & resolution
+- **Review thread resolution:** Branch protection requires all review threads resolved. After force-pushing a cleaned branch, outdated threads still block merge. Resolve via GraphQL:
+  ```bash
+  gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "PRRT_..."}) { thread { isResolved } } }'
+  ```
+- **Stale bot reviews:** CodeRabbit/Copilot CHANGES_REQUESTED reviews don't auto-update after force-push. Dismiss stale reviews:
+  ```bash
+  gh api -X PUT "repos/OWNER/REPO/pulls/PR/reviews/REVIEW_ID/dismissals" -f message="Addressed in commit X"
+  ```
+- **Branch protection:** This repo uses GitHub Rulesets (not legacy branch protection). Check via `/rulesets` API, not `/branches/.../protection`.
+
 ### Convex Authorization Pattern
 - **Never trust client-provided `userId`** in mutations - always derive from `ctx.auth.getUserIdentity()`
 - Use centralized auth helpers from `convex/lib/auth.ts`:
@@ -234,6 +245,23 @@ CONVEX_DEPLOYMENT=dev:...
 CLOUDFLARE_API_TOKEN=...
 VERCEL_API_TOKEN=...
 PULUMI_ACCESS_TOKEN=...
+```
+
+### GitHub Secrets naming convention
+
+GitHub secrets use environment suffixes (`_DEV`, `_PROD`) but **must be mapped to the standard env var names** that the app expects at runtime:
+
+| Secret Name | Maps to Env Var |
+|-------------|-----------------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV` | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` |
+| `CLERK_SECRET_KEY_DEV` | `CLERK_SECRET_KEY` |
+
+Workflows using GitHub Environments (`development`, `production`) handle this mapping automatically. Other workflows (like `performance.yml`) must explicitly map:
+
+```yaml
+env:
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
+  CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY_DEV }}
 ```
 
 ## Development

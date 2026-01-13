@@ -51,12 +51,14 @@ struct TallyApp: App {
         }
         return nil
       }()
+      let osVersion = UIDevice.current.systemVersion
       
       TallyTelemetry.shared.initialize(
         endpoint: otelEndpoint,
         token: otelToken,
         environment: "production",
-        version: version
+        version: version,
+        osVersion: osVersion
       )
     }
   }

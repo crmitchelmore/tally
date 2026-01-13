@@ -168,11 +168,13 @@ public final class TallyTelemetry: @unchecked Sendable {
   ///   - token: Raw Grafana Cloud OTLP token (will be combined with instance ID for Basic auth)
   ///   - environment: deployment environment (development/staging/production)
   ///   - version: app version for service.version attribute
+  ///   - osVersion: OS version string (pass from MainActor context)
   public func initialize(
     endpoint: String,
     token: String,
     environment: String = "production",
-    version: String? = nil
+    version: String? = nil,
+    osVersion: String? = nil
   ) {
     guard !isInitialized else { return }
     guard !endpoint.isEmpty, !token.isEmpty else {
@@ -204,7 +206,9 @@ public final class TallyTelemetry: @unchecked Sendable {
     #if os(iOS)
     resourceAttrs["os.type"] = .string("darwin")
     resourceAttrs["os.name"] = .string("iOS")
-    resourceAttrs["os.version"] = .string(UIDevice.current.systemVersion)
+    if let osVersion = osVersion {
+      resourceAttrs["os.version"] = .string(osVersion)
+    }
     resourceAttrs["device.model.identifier"] = .string(deviceModel())
     #endif
     
@@ -234,7 +238,8 @@ public final class TallyTelemetry: @unchecked Sendable {
   
   /// Get a tracer for creating spans
   public func tracer(name: String = "tally-ios") -> Tracer {
-    OpenTelemetry.instance.tracerProvider.get(
+    nonisolated(unsafe) let provider = OpenTelemetry.instance.tracerProvider
+    return provider.get(
       instrumentationName: name,
       instrumentationVersion: "1.0.0"
     )

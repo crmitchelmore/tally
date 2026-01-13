@@ -3,7 +3,7 @@ import { SignIn } from "@clerk/nextjs";
 export default function SignInPage() {
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <SignIn redirectUrl="/sign-in/sso-callback" afterSignInUrl="/app" />
+      <SignIn forceRedirectUrl="/sign-in/sso-callback" fallbackRedirectUrl="/app" />
     </div>
   );
 }

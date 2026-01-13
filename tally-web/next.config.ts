@@ -44,8 +44,8 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy-Report-Only",
             value: [
               "default-src 'self'",
-              // Scripts: self + Clerk (including custom domain) + analytics
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.dev https://clerk.tally-tracker.app https://challenges.cloudflare.com https://app.posthog.com https://app.launchdarkly.com",
+              // Scripts: self + Clerk (including custom domain + CDN fallback) + analytics
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.dev https://clerk.tally-tracker.app https://cdn.jsdelivr.net https://challenges.cloudflare.com https://app.posthog.com https://app.launchdarkly.com",
               // Styles: self + inline (Tailwind/shadcn)
               "style-src 'self' 'unsafe-inline'",
               // Images: self + data URIs + Clerk avatars + common CDNs

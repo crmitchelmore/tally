@@ -19,3 +19,11 @@ config:
   tally-infra:posthogHost: https://eu.i.posthog.com
   tally-infra:grafanaCloudAdminToken:
     secure: AAABACDeTnDH+o2XeBUyJMZzCDX/1sJrpeBB8Yz40ZSvaSUoylVOxiXk7i03VwND1FFMzQu0SkbYNcXeVPreTbMbIA5ZNYGuIKAaHxYO
+  tally-infra:launchDarklyClientSideId:
+    secure: AAABAAWfS2fPX89atm1jU6RsXYbqqZdL9E9VcpbM3GuLCKFtZ0LXI56IOduZcFaeclKIz+S0TD4=
+  tally-infra:launchDarklyClientSideIdProd:
+    secure: AAABABdYZLUaTG3R3zF0X130vuAwOu6C7vTy3U5UjNc0ssfy8ptbAvmK9Cbc23hIgXy578TjBYk=
+  tally-infra:launchDarklyClientSideIdPreview:
+    secure: AAABAJbSZjNa5WENyIRET/C3YPNr3H6BNGrppDtkV4jtsAlrb6rtJAATlQkpo6W/lAa2s9HkZbY=
+  tally-infra:launchDarklyClientSideIdDev:
+    secure: AAABAJUyExEbdwJV0OK92PxYiceF+IZSNedpeCuFypm89/jhAA8TvXhK4dgwu8HhgKcj/rIsQD0=

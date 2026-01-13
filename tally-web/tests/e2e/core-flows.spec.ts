@@ -68,12 +68,12 @@ test.describe("FLOW-001: First Launch", () => {
   test("signed out user sees landing page with sign-in CTA", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    // Should show sign-in option
-    const signInLink = page.getByRole("link", { name: /sign in/i }).or(
-      page.getByRole("button", { name: /sign in/i })
-    );
+    // Should show sign-in option in the header navigation
+    const signInLink = page
+      .getByRole("banner")
+      .getByRole("link", { name: /sign in/i });
 
-    await expect(signInLink).toBeVisible({ timeout: 10000 });
+    await expect(signInLink.first()).toBeVisible({ timeout: 10000 });
   });
 });
 

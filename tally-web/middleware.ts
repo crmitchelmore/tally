@@ -5,11 +5,13 @@ export { default } from "./src/proxy";
 // Config must be defined here directly, not re-exported
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
-    "/(api|trpc)(.*)",
-    // Clerk proxy route
-    "/__clerk/:path*",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next (all Next.js internal paths: static, image, etc.)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     * - public folder files (svg, png, jpg, etc.)
+     * - css and js files (but not json)
+     */
+    "/((?!_next|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot|css|js(?!on))).*)",
   ],
 };

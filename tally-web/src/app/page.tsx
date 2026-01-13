@@ -8,11 +8,14 @@ import {
   Sparkles,
   Target,
   Zap,
+  Users,
+  Trophy,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LandingHeroDemo } from "@/components/tally/LandingHeroDemo";
+import { AppShowcase, FeatureShowcase } from "@/components/marketing";
 
 export default function LandingPage() {
   return (
@@ -183,6 +186,35 @@ export default function LandingPage() {
             </Card>
           </div>
         </section>
+
+        {/* Feature showcases with video placeholders */}
+        <section className="border-t bg-muted/30">
+          <div className="container mx-auto px-4">
+            <FeatureShowcase
+              title="One tap to track progress"
+              description="No friction, no fuss. Just tap +1 whenever you complete a rep, read a page, or tick off a habit. Your progress updates instantly."
+              mediaPosition="left"
+              badge="Core feature"
+            />
+
+            <FeatureShowcase
+              title="Watch momentum build"
+              description="Beautiful charts and streak counters show your consistency over time. Small wins compound into something you can be proud of."
+              mediaPosition="right"
+              badge="Visual progress"
+            />
+
+            <FeatureShowcase
+              title="Join challenges together"
+              description="Follow public challenges, compete on leaderboards, and stay motivated with a community of people working toward similar goals."
+              mediaPosition="left"
+              badge="Community"
+            />
+          </div>
+        </section>
+
+        {/* App showcase section */}
+        <AppShowcase className="border-t" />
 
         <section className="border-t">
           <div className="container mx-auto flex flex-col items-start justify-between gap-6 px-4 py-10 md:flex-row md:items-center">

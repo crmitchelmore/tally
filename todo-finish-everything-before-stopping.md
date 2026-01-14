@@ -156,6 +156,29 @@
   - [x] `bun run build` passes
   - [x] No TypeScript errors
 
+### 1.8 E2E Testing ✅
+
+- [x] **1.8.1 Create Playwright E2E tests**
+  - [x] Created `tally-web/tests/e2e/local-only.spec.ts`
+  - [x] 15 test cases covering full user journey
+  - [x] All tests pass
+
+- [x] **1.8.2 Test coverage**
+  - [x] FLOW-LOCAL-001: Enter local mode from landing page
+  - [x] FLOW-LOCAL-002: Create challenge in local mode
+  - [x] FLOW-LOCAL-003: Add entry in local mode
+  - [x] FLOW-LOCAL-004: Data persistence after reload
+  - [x] FLOW-LOCAL-005: Community feature gating
+  - [x] FLOW-LOCAL-006: Export/import in local mode
+  - [x] FLOW-LOCAL-007: Full end-to-end workflow
+
+### 1.9 Landing Page Feature Info ✅
+
+- [x] **1.9.1 Added feature card**
+  - [x] Added "No account needed" card to landing page features
+  - [x] Uses HardDrive icon to indicate local storage
+  - [x] Describes benefit: data stored locally without account
+
 ---
 
 ## Phase 2: iOS Local-Only MVP (FUTURE)

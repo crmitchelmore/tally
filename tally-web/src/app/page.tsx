@@ -4,6 +4,7 @@ import {
   BarChart3,
   CheckCircle2,
   Cloud,
+  HardDrive,
   Lock,
   Sparkles,
   Target,
@@ -162,6 +163,18 @@ export default function LandingPage() {
               </CardHeader>
               <CardContent className="text-muted-foreground">
                 Updates show up quickly across devices so your progress feels trustworthy.
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl md:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <HardDrive className="h-5 w-5 text-[color:var(--tally-cross)]" />
+                  No account needed
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-muted-foreground">
+                Start tracking instantly — your data stays on your device until you choose to sync.
               </CardContent>
             </Card>
 

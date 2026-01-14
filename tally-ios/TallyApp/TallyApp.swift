@@ -7,6 +7,7 @@ import Sentry
 struct TallyApp: App {
   @State private var clerk = Clerk.shared
   @StateObject private var featureFlags = FeatureFlags.shared
+  @State private var isClerkLoaded = false
 
   init() {
     // Initialize Sentry
@@ -42,7 +43,7 @@ struct TallyApp: App {
 
   var body: some Scene {
     WindowGroup {
-      RootView()
+      RootView(isClerkLoaded: isClerkLoaded)
         .environment(\.clerk, clerk)
         .environmentObject(featureFlags)
         .task {
@@ -52,11 +53,13 @@ struct TallyApp: App {
             clerk.configure(publishableKey: clerkKey)
             try? await clerk.load()
           }
+          // Mark Clerk as loaded (even if key was empty)
+          isClerkLoaded = true
           
-          // Initialize LaunchDarkly
+          // Initialize LaunchDarkly (fire-and-forget, does not block)
           let ldKey = (Bundle.main.object(forInfoDictionaryKey: "LAUNCHDARKLY_MOBILE_KEY") as? String) ?? ""
           if !ldKey.isEmpty {
-            await featureFlags.initialize(mobileKey: ldKey)
+            featureFlags.initialize(mobileKey: ldKey)
           }
         }
     }

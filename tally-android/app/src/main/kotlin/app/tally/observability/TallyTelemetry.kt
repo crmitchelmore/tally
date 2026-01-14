@@ -38,10 +38,13 @@ private const val GRAFANA_CLOUD_INSTANCE_ID = "1491410"
  */
 object TallyTelemetry {
   private var openTelemetry: OpenTelemetry? = null
+  @Volatile
   private var isInitialized = false
+  private val initLock = Any()
 
   /**
    * Initialize OpenTelemetry with OTLP HTTP exporter to Grafana Cloud.
+   * Thread-safe - can be called from any thread.
    * 
    * @param context Android application context
    * @param endpoint OTLP HTTP endpoint (e.g., "https://otlp-gateway-prod-gb-south-1.grafana.net/otlp")
@@ -58,56 +61,59 @@ object TallyTelemetry {
     version: String? = null
   ) {
     if (isInitialized) return
-    if (endpoint.isBlank() || token.isBlank()) {
-      android.util.Log.w("TallyTelemetry", "Missing endpoint or token, skipping initialization")
-      return
+    synchronized(initLock) {
+      if (isInitialized) return // Double-check after acquiring lock
+      if (endpoint.isBlank() || token.isBlank()) {
+        android.util.Log.w("TallyTelemetry", "Missing endpoint or token, skipping initialization")
+        return
+      }
+
+      // Build Basic auth header: base64(instanceId:token)
+      val credentials = "$GRAFANA_CLOUD_INSTANCE_ID:$token"
+      val authHeader = Base64.encodeToString(credentials.toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
+
+      // Build resource attributes per Grafana Cloud semantic conventions
+      val resourceBuilder = Resource.builder()
+        .put(AttributeKey.stringKey("service.name"), "tally-android")
+        .put(AttributeKey.stringKey("service.namespace"), "tally")
+        .put(AttributeKey.stringKey("deployment.environment"), environment)
+        .put(AttributeKey.stringKey("telemetry.sdk.language"), "kotlin")
+        .put(AttributeKey.stringKey("os.type"), "linux")
+        .put(AttributeKey.stringKey("os.name"), "Android")
+        .put(AttributeKey.stringKey("os.version"), Build.VERSION.RELEASE)
+        .put(AttributeKey.stringKey("device.model.identifier"), Build.MODEL)
+        .put(AttributeKey.stringKey("device.manufacturer"), Build.MANUFACTURER)
+
+      if (version != null) {
+        resourceBuilder.put(AttributeKey.stringKey("service.version"), version)
+      }
+
+      val resource = resourceBuilder.build()
+
+      // Configure OTLP HTTP exporter with Grafana Cloud auth
+      val tracesEndpoint = if (endpoint.endsWith("/")) {
+        "${endpoint}v1/traces"
+      } else {
+        "$endpoint/v1/traces"
+      }
+
+      val spanExporter = OtlpHttpSpanExporter.builder()
+        .setEndpoint(tracesEndpoint)
+        .addHeader("Authorization", "Basic $authHeader")
+        .build()
+
+      val tracerProvider = SdkTracerProvider.builder()
+        .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
+        .setResource(resource)
+        .build()
+
+      openTelemetry = OpenTelemetrySdk.builder()
+        .setTracerProvider(tracerProvider)
+        .build()
+
+      isInitialized = true
+      android.util.Log.i("TallyTelemetry", "Initialized with endpoint: $endpoint")
     }
-
-    // Build Basic auth header: base64(instanceId:token)
-    val credentials = "$GRAFANA_CLOUD_INSTANCE_ID:$token"
-    val authHeader = Base64.encodeToString(credentials.toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
-
-    // Build resource attributes per Grafana Cloud semantic conventions
-    val resourceBuilder = Resource.builder()
-      .put(AttributeKey.stringKey("service.name"), "tally-android")
-      .put(AttributeKey.stringKey("service.namespace"), "tally")
-      .put(AttributeKey.stringKey("deployment.environment"), environment)
-      .put(AttributeKey.stringKey("telemetry.sdk.language"), "kotlin")
-      .put(AttributeKey.stringKey("os.type"), "linux")
-      .put(AttributeKey.stringKey("os.name"), "Android")
-      .put(AttributeKey.stringKey("os.version"), Build.VERSION.RELEASE)
-      .put(AttributeKey.stringKey("device.model.identifier"), Build.MODEL)
-      .put(AttributeKey.stringKey("device.manufacturer"), Build.MANUFACTURER)
-
-    if (version != null) {
-      resourceBuilder.put(AttributeKey.stringKey("service.version"), version)
-    }
-
-    val resource = resourceBuilder.build()
-
-    // Configure OTLP HTTP exporter with Grafana Cloud auth
-    val tracesEndpoint = if (endpoint.endsWith("/")) {
-      "${endpoint}v1/traces"
-    } else {
-      "$endpoint/v1/traces"
-    }
-
-    val spanExporter = OtlpHttpSpanExporter.builder()
-      .setEndpoint(tracesEndpoint)
-      .addHeader("Authorization", "Basic $authHeader")
-      .build()
-
-    val tracerProvider = SdkTracerProvider.builder()
-      .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
-      .setResource(resource)
-      .build()
-
-    openTelemetry = OpenTelemetrySdk.builder()
-      .setTracerProvider(tracerProvider)
-      .build()
-
-    isInitialized = true
-    android.util.Log.i("TallyTelemetry", "Initialized with endpoint: $endpoint")
   }
 
   /**
@@ -184,8 +190,9 @@ object TallyTelemetry {
     val span = tracer().spanBuilder("HTTP ${request.method}")
       .setSpanKind(SpanKind.CLIENT)
       .setAttribute("http.method", request.method)
-      .setAttribute("http.url", request.url.toString())
+      .setAttribute("http.target", request.url.encodedPath)
       .setAttribute("http.host", request.url.host)
+      .setAttribute("http.scheme", request.url.scheme)
       .startSpan()
 
     val scope = span.makeCurrent()

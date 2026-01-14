@@ -42,7 +42,7 @@ private final class GrafanaOtlpSpanExporter: SpanExporter {
     request.httpBody = jsonData
     
     // Fire and forget for efficiency - don't block on response
-    let task = session.dataTask(with: request) { data, response, error in
+    let task = session.dataTask(with: request) { _, response, error in
       if let error = error {
         print("[TallyTelemetry] Export error: \(error.localizedDescription)")
       } else if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode >= 400 {
@@ -98,8 +98,8 @@ private final class GrafanaOtlpSpanExporter: SpanExporter {
       "status": statusToJson(span.status)
     ]
     
-    if span.parentSpanId != nil && span.parentSpanId!.isValid {
-      json["parentSpanId"] = span.parentSpanId!.hexString
+    if let parent = span.parentSpanId, parent.isValid {
+      json["parentSpanId"] = parent.hexString
     }
     
     return json
@@ -259,7 +259,9 @@ public final class TallyTelemetry: @unchecked Sendable {
       .startSpan()
   }
   
-  /// Convenience wrapper to trace an async operation
+  /// Convenience wrapper to trace an async operation.
+  /// Note: Context propagation in async Swift requires explicit parent span passing.
+  /// For nested traces, use `traceChild` or explicitly pass parent span context.
   public func trace<T>(
     name: String,
     kind: SpanKind = .internal,
@@ -268,6 +270,33 @@ public final class TallyTelemetry: @unchecked Sendable {
   ) async rethrows -> T {
     let span = tracer().spanBuilder(spanName: name)
       .setSpanKind(spanKind: kind)
+      .startSpan()
+    
+    for (key, value) in attributes {
+      span.setAttribute(key: key, value: value)
+    }
+    
+    defer { span.end() }
+    
+    do {
+      return try await operation()
+    } catch {
+      span.status = .error(description: error.localizedDescription)
+      throw error
+    }
+  }
+  
+  /// Trace an operation as a child of an existing span
+  public func traceChild<T>(
+    name: String,
+    parent: Span,
+    kind: SpanKind = .internal,
+    attributes: [String: AttributeValue] = [:],
+    operation: () async throws -> T
+  ) async rethrows -> T {
+    let span = tracer().spanBuilder(spanName: name)
+      .setSpanKind(spanKind: kind)
+      .setParent(parent)
       .startSpan()
     
     for (key, value) in attributes {

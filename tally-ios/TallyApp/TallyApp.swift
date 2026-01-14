@@ -15,7 +15,11 @@ struct TallyApp: App {
     if !sentryDsn.isEmpty {
       SentrySDK.start { options in
         options.dsn = sentryDsn
+        #if DEBUG
+        options.environment = "development"
+        #else
         options.environment = "production"
+        #endif
         
         // Performance monitoring
         options.tracesSampleRate = 0.1
@@ -53,10 +57,16 @@ struct TallyApp: App {
       }()
       let osVersion = UIDevice.current.systemVersion
       
+      #if DEBUG
+      let environment = "development"
+      #else
+      let environment = "production"
+      #endif
+      
       TallyTelemetry.shared.initialize(
         endpoint: otelEndpoint,
         token: otelToken,
-        environment: "production",
+        environment: environment,
         version: version,
         osVersion: osVersion
       )

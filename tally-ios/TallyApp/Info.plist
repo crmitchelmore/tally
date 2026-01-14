@@ -46,5 +46,9 @@
     <string>$(LAUNCHDARKLY_MOBILE_KEY)</string>
     <key>SENTRY_DSN</key>
     <string>$(SENTRY_DSN)</string>
+    <key>OTEL_EXPORTER_OTLP_ENDPOINT</key>
+    <string>$(OTEL_EXPORTER_OTLP_ENDPOINT)</string>
+    <key>GRAFANA_CLOUD_OTLP_TOKEN</key>
+    <string>$(GRAFANA_CLOUD_OTLP_TOKEN)</string>
 </dict>
 </plist>

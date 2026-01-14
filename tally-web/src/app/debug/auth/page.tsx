@@ -109,13 +109,13 @@ export default function AuthDebugPage() {
         clerkLoaded: clerk ? Boolean(clerk.loaded) : null,
         clerkVersion: clerk?.version ?? null,
         resourceUrls,
-        // @ts-ignore debug-only
+        // @ts-expect-error debug-only
         clerkGlobals,
-        // @ts-ignore debug-only
+        // @ts-expect-error debug-only
         clerkScriptUrl,
-        // @ts-ignore debug-only
+        // @ts-expect-error debug-only
         clerkScriptFetch: scriptFetch,
-        // @ts-ignore debug-only
+        // @ts-expect-error debug-only
         errors: errors.slice(-20),
         health: {
           status: health.status,

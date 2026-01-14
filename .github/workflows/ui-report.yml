@@ -49,18 +49,25 @@ jobs:
         if: ${{ needs.wait-for-preview.outputs.preview_url != '' }}
         run: echo "E2E_BASE_URL=${{ needs.wait-for-preview.outputs.preview_url }}" >> $GITHUB_ENV
 
-      - name: Install Bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
-          export BUN_INSTALL="$HOME/.bun"
-          export PATH="$BUN_INSTALL/bin:$PATH"
-          echo "$BUN_INSTALL/bin" >> $GITHUB_PATH
-          bun --version
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.1.36"
+          cache: true
+          cache-dependency-path: bun.lockb
 
       - name: Install deps
         run: |
           cd ..
           bun install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ hashFiles('bun.lockb') }}
+          restore-keys: |
+            ms-playwright-${{ runner.os }}-
 
       - name: Install Playwright browsers
         run: |

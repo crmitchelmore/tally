@@ -127,6 +127,31 @@ if (isProd) {
     },
     { deleteBeforeReplace: true }
   );
+
+  // Temporary auth debugging (remove once Google OAuth is stable)
+  new vercel.ProjectEnvironmentVariable(
+    "clerk-proxy-debug-prod",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "CLERK_PROXY_DEBUG",
+      value: "true",
+      targets: ["production"],
+    },
+    { deleteBeforeReplace: true }
+  );
+
+  new vercel.ProjectEnvironmentVariable(
+    "auth-debug-prod",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "NEXT_PUBLIC_AUTH_DEBUG",
+      value: "true",
+      targets: ["production"],
+    },
+    { deleteBeforeReplace: true }
+  );
 }
 
 // =============================================================================

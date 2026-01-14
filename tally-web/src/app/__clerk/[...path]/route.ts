@@ -30,6 +30,11 @@ async function proxyClerk(req: NextRequest, params: Promise<{ path: string[] }>)
   clerkUrl.search = url.search;
 
   const headers = new Headers(req.headers);
+
+  // Safari can request Range for large scripts; Clerk assets must be served as a full file.
+  // If we proxy Range through the edge runtime, the response can be truncated/corrupted.
+  headers.delete("range");
+
   const proxyUrl = `${url.origin}/__clerk`;
   headers.set("Clerk-Proxy-Url", proxyUrl);
 
@@ -67,7 +72,15 @@ async function proxyClerk(req: NextRequest, params: Promise<{ path: string[] }>)
     const lowerKey = key.toLowerCase();
     // Avoid truncation: edge fetch may transparently decode compression but keep upstream
     // content-length/content-encoding. Strip these and let the runtime stream.
-    if (lowerKey === "content-length" || lowerKey === "content-encoding" || lowerKey === "transfer-encoding") return;
+    if (
+      lowerKey === "content-length" ||
+      lowerKey === "content-encoding" ||
+      lowerKey === "transfer-encoding" ||
+      lowerKey === "accept-ranges" ||
+      lowerKey === "content-range"
+    ) {
+      return;
+    }
     if (lowerKey === "set-cookie") return;
 
     if (lowerKey === "location") {

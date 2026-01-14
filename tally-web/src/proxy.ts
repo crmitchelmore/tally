@@ -51,6 +51,8 @@ const cspDirectives = {
     "'unsafe-eval'", // Required for development; remove in production if possible
     "https://*.clerk.accounts.dev",
     "https://*.clerk.dev",
+    "https://*.clerk.com",
+    "https://js.clerk.com",
     "https://clerk.tally-tracker.app",
     "https://cdn.jsdelivr.net", // Clerk JS CDN fallback
     "https://challenges.cloudflare.com",
@@ -76,7 +78,7 @@ const cspDirectives = {
     "https://*.launchdarkly.com",
     "https://otlp-gateway-prod-gb-south-1.grafana.net",
   ],
-  "frame-src": ["'self'", "https://*.clerk.accounts.dev", "https://*.clerk.dev", "https://challenges.cloudflare.com"],
+  "frame-src": ["'self'", "https://*.clerk.accounts.dev", "https://*.clerk.dev", "https://*.clerk.com", "https://challenges.cloudflare.com"],
   "frame-ancestors": ["'none'"],
   "form-action": ["'self'"],
   "base-uri": ["'self'"],

@@ -36,6 +36,10 @@ async function proxyClerk(req: NextRequest, params: Promise<{ path: string[] }>)
   const secretKey = getClerkSecretKey();
   if (secretKey) headers.set("Clerk-Secret-Key", secretKey);
 
+  const existingForwardedFor = req.headers.get("x-forwarded-for");
+  const clientIp = req.headers.get("x-real-ip") || "unknown";
+  headers.set("X-Forwarded-For", existingForwardedFor ? `${existingForwardedFor}, ${clientIp}` : clientIp);
+
   headers.delete("host");
 
   if (debug && clerkUrl.pathname.includes("/oauth_callback")) {

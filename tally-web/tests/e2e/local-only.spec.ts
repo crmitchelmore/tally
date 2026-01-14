@@ -36,7 +36,9 @@ async function enterLocalMode(page: Page): Promise<void> {
   // Wait for navigation to /app and React hydration
   await page.waitForURL("**/app", { timeout: 15000 });
   await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(2000);
+  
+  // Wait for the local dashboard to render by looking for the "Local Mode" badge
+  await expect(page.getByText("Local Mode")).toBeVisible({ timeout: 30000 });
 }
 
 async function createChallenge(
@@ -139,11 +141,9 @@ test.describe("FLOW-LOCAL-001: Enter Local Mode", () => {
   test("local mode shows local mode indicator", async ({ page }) => {
     await enterLocalMode(page);
 
-    // Should show local mode indicators - use longer timeout for CI
-    await expect(page.getByText(/local mode/i)).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText(/local-only mode/i)).toBeVisible({
-      timeout: 15000,
-    });
+    // enterLocalMode already waits for "Local Mode" badge
+    // Also check for the LocalOnlyBanner which shows "Local-only mode"
+    await expect(page.getByText("Local-only mode")).toBeVisible({ timeout: 15000 });
   });
 
   test("local mode shows upgrade path to create account", async ({ page }) => {

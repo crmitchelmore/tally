@@ -20,6 +20,7 @@ import {
   TestimonialsSection,
   StatsBar,
   LiveSyncDemo,
+  LandingCTAButtons,
 } from "@/components/marketing";
 
 export default function LandingPage() {
@@ -69,21 +70,7 @@ export default function LandingPage() {
                   Create a challenge, tap +1 in seconds, and watch small wins compound into real progress.
                 </p>
 
-                <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row">
-                  <Link href="/sign-up">
-                    <Button
-                      size="lg"
-                      className="bg-[var(--tally-cross)] text-white hover:opacity-90"
-                    >
-                      Create an account <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Link href="/app">
-                    <Button size="lg" variant="outline">
-                      Open the app
-                    </Button>
-                  </Link>
-                </div>
+                <LandingCTAButtons />
 
                 <div className="mt-6 flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center">
                   <span className="inline-flex items-center gap-2">

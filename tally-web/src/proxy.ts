@@ -184,23 +184,9 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
       duplex: "half",
     });
     
-    const contentType = response.headers.get("content-type") || "";
-
-    // Read the response body as ArrayBuffer to avoid encoding issues
-    let body = await response.arrayBuffer();
-
-    // Clerk can return HTML/JS that hardcodes accounts.<domain> even when we want to stay on the app.
-    // As a last line of defense, rewrite those occurrences inside text responses.
-    if (/^text\/(html|javascript)/i.test(contentType) || /^application\/(javascript|json)/i.test(contentType)) {
-      const decoded = new TextDecoder().decode(body);
-      const origin = `${url.protocol}//${url.host}`;
-      const rewritten = decoded
-        .replaceAll("https://accounts.tally-tracker.app", origin)
-        .replaceAll("https://clerk.tally-tracker.app", `${origin}/__clerk`);
-      if (rewritten !== decoded) {
-        body = new TextEncoder().encode(rewritten).buffer;
-      }
-    }
+    // Important: do NOT read/decode the upstream body for large Clerk assets (e.g. clerk.browser.js).
+    // If we decode but keep upstream Content-Length/Content-Encoding, browsers can receive truncated JS.
+    const body = response.body;
     
     // Create response headers, removing problematic encoding headers.
     // Note: OAuth flows rely on multiple Set-Cookie headers; use getSetCookie() when available.
@@ -208,9 +194,8 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
     response.headers.forEach((value, key) => {
       const lowerKey = key.toLowerCase();
 
-      // Skip content-encoding since we've already decoded the body
-      // and transfer-encoding since we're not streaming
-      if (lowerKey === "content-encoding" || lowerKey === "transfer-encoding") {
+      // Skip transfer-encoding (Next will set this as needed)
+      if (lowerKey === "transfer-encoding") {
         return;
       }
 

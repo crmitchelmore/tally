@@ -58,24 +58,14 @@ async function proxyClerk(req: NextRequest, params: Promise<{ path: string[] }>)
     duplex: "half",
   });
 
-  const contentType = upstream.headers.get("content-type") || "";
-  let body = await upstream.arrayBuffer();
-
-  if (/^text\/(html|javascript)/i.test(contentType) || /^application\/(javascript|json)/i.test(contentType)) {
-    const decoded = new TextDecoder().decode(body);
-    const origin = url.origin;
-    const rewritten = decoded
-      .replaceAll("https://accounts.tally-tracker.app", origin)
-      .replaceAll("https://clerk.tally-tracker.app", `${origin}/__clerk`);
-    if (rewritten !== decoded) {
-      body = new TextEncoder().encode(rewritten).buffer;
-    }
-  }
+  // Important: do NOT read/decode the upstream body for large Clerk assets (e.g. clerk.browser.js).
+  // If we decode but keep upstream Content-Length/Content-Encoding, browsers can receive truncated JS.
+  const body = upstream.body;
 
   const responseHeaders = new Headers();
   upstream.headers.forEach((value, key) => {
     const lowerKey = key.toLowerCase();
-    if (lowerKey === "content-encoding" || lowerKey === "transfer-encoding") return;
+    if (lowerKey === "transfer-encoding") return;
     if (lowerKey === "set-cookie") return;
 
     if (lowerKey === "location") {

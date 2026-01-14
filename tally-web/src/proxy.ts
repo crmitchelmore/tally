@@ -165,13 +165,16 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
         return;
       }
       
-      // Rewrite Location headers so redirects stay within the /__clerk proxy.
+      // Rewrite Location headers so redirects stay within the /__clerk proxy (and never jump to accounts.*).
       if (lowerKey === "location") {
         let location = value;
+        const origin = `${url.protocol}//${url.host}`;
         if (location.startsWith("https://frontend-api.clerk.dev")) {
-          location = `${url.protocol}//${url.host}/__clerk${location.replace("https://frontend-api.clerk.dev", "")}`;
+          location = `${origin}/__clerk${location.replace("https://frontend-api.clerk.dev", "")}`;
         } else if (location.startsWith("/v1")) {
           location = `/__clerk${location}`;
+        } else if (location.startsWith("https://accounts.tally-tracker.app") || location.startsWith("https://clerk.tally-tracker.app")) {
+          location = `${origin}${new URL(location).pathname}${new URL(location).search}${new URL(location).hash}`;
         }
         responseHeaders.set(key, location);
         return;

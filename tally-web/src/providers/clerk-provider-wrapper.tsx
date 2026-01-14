@@ -34,10 +34,9 @@ export function ClerkProviderWrapper({ children, publishableKey }: ClerkProvider
     ? "https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
     : undefined;
 
-  // In production, use our own sign-in/sign-up pages instead of accounts.tally-tracker.app
-  // This avoids Cloudflare for SaaS conflicts with the accounts subdomain
-  const signInUrl = isProductionKey ? "/sign-in" : undefined;
-  const signUpUrl = isProductionKey ? "/sign-up" : undefined;
+  // In production, force sign-in/sign-up onto the canonical domain to avoid redirects to accounts.*
+  const signInUrl = isProductionKey ? "https://tally-tracker.app/sign-in" : undefined;
+  const signUpUrl = isProductionKey ? "https://tally-tracker.app/sign-up" : undefined;
 
   return (
     <ClerkProvider 

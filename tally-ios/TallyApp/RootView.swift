@@ -28,7 +28,9 @@ final class AppState: ObservableObject {
     do {
       let token = try await session.getToken(Session.GetTokenOptions(template: "convex"))
       if let jwt = token?.jwt, !jwt.isEmpty {
-        self.jwt = jwt
+        await MainActor.run {
+          if self.jwt != jwt { self.jwt = jwt }
+        }
       }
     } catch {
       return
@@ -36,6 +38,9 @@ final class AppState: ObservableObject {
   }
 
   func syncUserToConvex() async {
+    let jwt = jwt
+    let apiBase = apiBase
+
     guard !jwt.isEmpty else { return }
     guard let base = URL(string: apiBase) else { return }
 
@@ -51,6 +56,7 @@ final class AppState: ObservableObject {
 
 struct RootView: View {
   @Environment(\.clerk) private var clerk
+  @Environment(\.scenePhase) private var scenePhase
   @StateObject private var state = AppState()
   let isClerkLoaded: Bool
 
@@ -82,19 +88,15 @@ struct RootView: View {
             .environmentObject(state)
             .tabItem { Label("Settings", systemImage: "gear") }
         }
-        .task {
+        .task(id: "\(clerk.user?.id ?? "signed-out")-\(scenePhase == .active)") {
+          guard clerk.user != nil else {
+            state.signOut()
+            return
+          }
+          guard scenePhase == .active else { return }
+
           await state.refreshToken(clerk: clerk)
           await state.syncUserToConvex()
-        }
-        .onChange(of: clerk.user?.id) { _, newValue in
-          if newValue == nil {
-            state.signOut()
-          } else {
-            Task {
-              await state.refreshToken(clerk: clerk)
-              await state.syncUserToConvex()
-            }
-          }
         }
       } else {
         LoginView()

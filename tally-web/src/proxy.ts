@@ -14,6 +14,7 @@ const isPublicRoute = createRouteMatcher([
   "/app(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/debug(.*)",
   "/api/webhooks(.*)",
   "/test-components",
   // Static assets - middleware matcher should exclude these but adding as fallback
@@ -51,6 +52,8 @@ const cspDirectives = {
     "'unsafe-eval'", // Required for development; remove in production if possible
     "https://*.clerk.accounts.dev",
     "https://*.clerk.dev",
+    "https://*.clerk.com",
+    "https://js.clerk.com",
     "https://clerk.tally-tracker.app",
     "https://cdn.jsdelivr.net", // Clerk JS CDN fallback
     "https://challenges.cloudflare.com",
@@ -76,7 +79,7 @@ const cspDirectives = {
     "https://*.launchdarkly.com",
     "https://otlp-gateway-prod-gb-south-1.grafana.net",
   ],
-  "frame-src": ["'self'", "https://*.clerk.accounts.dev", "https://*.clerk.dev", "https://challenges.cloudflare.com"],
+  "frame-src": ["'self'", "https://*.clerk.accounts.dev", "https://*.clerk.dev", "https://*.clerk.com", "https://challenges.cloudflare.com"],
   "frame-ancestors": ["'none'"],
   "form-action": ["'self'"],
   "base-uri": ["'self'"],
@@ -108,20 +111,51 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
  * The clerk.tally-tracker.app CNAME triggers Cloudflare Error 1000 because both our DNS
  * and Clerk's infrastructure use Cloudflare.
  */
+function splitSetCookieHeader(value: string): string[] {
+  // Some runtimes (Edge) collapse multiple Set-Cookie headers into one comma-separated string.
+  // We split on commas that are followed by a new cookie name (`token=`), not commas inside Expires.
+  const parts: string[] = [];
+  let start = 0;
+  for (let i = 0; i < value.length; i++) {
+    if (value[i] !== ",") continue;
+
+    const rest = value.slice(i + 1);
+    const m = rest.match(/^\s*([^=;\s]+)=/);
+    if (m) {
+      parts.push(value.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  parts.push(value.slice(start).trim());
+  return parts.filter(Boolean);
+}
+
 async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
   const url = req.nextUrl.clone();
   const clerkPath = url.pathname.replace(/^\/__clerk/, "");
-  
+
+  const debug = process.env.CLERK_PROXY_DEBUG === "true";
+
   // Build the Clerk API URL
   const clerkUrl = new URL(clerkPath || "/", "https://frontend-api.clerk.dev");
   clerkUrl.search = url.search;
-  
+
   // Clone headers and add required Clerk proxy headers
   const headers = new Headers(req.headers);
-  
+
   // The proxy URL that Clerk should use for callbacks
-  const proxyUrl = `${url.protocol}//${url.host}/__clerk`;
+  const proxyUrl = `${req.nextUrl.origin}/__clerk`;
   headers.set("Clerk-Proxy-Url", proxyUrl);
+
+  if (debug && clerkPath.includes("/oauth_callback")) {
+    console.log("[clerk-proxy] oauth_callback request", {
+      method: req.method,
+      path: url.pathname,
+      search: url.search,
+      clerkUrl: clerkUrl.toString(),
+      proxyUrl,
+    });
+  }
   
   // Add the secret key for authentication - use getClerkSecretKey() to get
   // the correct environment-specific key (CLERK_SECRET_KEY_PROD in production)
@@ -150,37 +184,99 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
       duplex: "half",
     });
     
+    const contentType = response.headers.get("content-type") || "";
+
     // Read the response body as ArrayBuffer to avoid encoding issues
-    const body = await response.arrayBuffer();
+    let body = await response.arrayBuffer();
+
+    // Clerk can return HTML/JS that hardcodes accounts.<domain> even when we want to stay on the app.
+    // As a last line of defense, rewrite those occurrences inside text responses.
+    if (/^text\/(html|javascript)/i.test(contentType) || /^application\/(javascript|json)/i.test(contentType)) {
+      const decoded = new TextDecoder().decode(body);
+      const origin = `${url.protocol}//${url.host}`;
+      const rewritten = decoded
+        .replaceAll("https://accounts.tally-tracker.app", origin)
+        .replaceAll("https://clerk.tally-tracker.app", `${origin}/__clerk`);
+      if (rewritten !== decoded) {
+        body = new TextEncoder().encode(rewritten).buffer;
+      }
+    }
     
-    // Create response headers, removing problematic encoding headers
-    // and rewriting cookie domains for the proxy
+    // Create response headers, removing problematic encoding headers.
+    // Note: OAuth flows rely on multiple Set-Cookie headers; use getSetCookie() when available.
     const responseHeaders = new Headers();
     response.headers.forEach((value, key) => {
       const lowerKey = key.toLowerCase();
-      
+
       // Skip content-encoding since we've already decoded the body
       // and transfer-encoding since we're not streaming
       if (lowerKey === "content-encoding" || lowerKey === "transfer-encoding") {
         return;
       }
-      
-      // Rewrite Set-Cookie headers to use our domain instead of Clerk's
+
+      // We'll append Set-Cookie separately to avoid losing multiple cookies.
       if (lowerKey === "set-cookie") {
-        // Replace Clerk's domain with our domain for session cookies
-        let cookie = value;
-        // Remove domain restriction so cookie works on our domain
-        cookie = cookie.replace(/;\s*domain=[^;]+/gi, "");
-        // Ensure path is set
-        if (!cookie.toLowerCase().includes("path=")) {
-          cookie = cookie + "; Path=/";
-        }
-        responseHeaders.append(key, cookie);
         return;
       }
-      
+
+      // Rewrite Location headers so redirects stay within the /__clerk proxy (and never jump to accounts.*).
+      if (lowerKey === "location") {
+        let location = value;
+        const origin = `${url.protocol}//${url.host}`;
+        if (location.startsWith("https://frontend-api.clerk.dev")) {
+          location = `${origin}/__clerk${location.replace("https://frontend-api.clerk.dev", "")}`;
+        } else if (location.startsWith("/v1")) {
+          location = `/__clerk${location}`;
+        } else if (location.startsWith("https://accounts.tally-tracker.app") || location.startsWith("https://clerk.tally-tracker.app")) {
+          location = `${origin}${new URL(location).pathname}${new URL(location).search}${new URL(location).hash}`;
+        }
+        responseHeaders.set(key, location);
+        return;
+      }
+
       responseHeaders.set(key, value);
     });
+
+    const getSetCookie = (response.headers as unknown as { getSetCookie?: () => string[] }).getSetCookie;
+    const setCookies = getSetCookie?.call(response.headers) ?? [];
+    const fallbackSetCookie = response.headers.get("set-cookie");
+
+    const cookiesToAppend = setCookies.length
+      ? setCookies
+      : (fallbackSetCookie ? splitSetCookieHeader(fallbackSetCookie) : []);
+
+    const upstreamLocation = response.headers.get("location");
+    if (clerkPath.includes("/oauth_callback")) {
+      responseHeaders.set("Cache-Control", "no-store");
+      responseHeaders.set("x-tally-clerk-upstream-status", String(response.status));
+      responseHeaders.set("x-tally-clerk-set-cookie-count", String(cookiesToAppend.length));
+      if (upstreamLocation) responseHeaders.set("x-tally-clerk-upstream-location", upstreamLocation);
+      const cookieNames = cookiesToAppend
+        .map((c) => c.split("=")[0])
+        .filter(Boolean)
+        .slice(0, 10)
+        .join(",");
+      if (cookieNames) responseHeaders.set("x-tally-clerk-cookie-names", cookieNames);
+    }
+
+    if (debug && clerkPath.includes("/oauth_callback")) {
+      console.log("[clerk-proxy] oauth_callback response", {
+        status: response.status,
+        setCookieCount: cookiesToAppend.length,
+        location: upstreamLocation,
+      });
+    }
+
+    for (const value of cookiesToAppend) {
+      let cookie = value;
+      // Remove domain restriction so cookie works on our domain
+      cookie = cookie.replace(/;\s*domain=[^;]+/gi, "");
+      // Ensure cookies are available site-wide (critical when Clerk is proxied under /__clerk)
+      cookie = cookie.toString().match(/;\s*path=/i)
+        ? cookie.replace(/;\s*path=[^;]+/i, "; Path=/")
+        : cookie + "; Path=/";
+      responseHeaders.append("set-cookie", cookie);
+    }
     
     return new NextResponse(body, {
       status: response.status,
@@ -194,17 +290,29 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
 }
 
 // Create the Clerk middleware handler
-const clerkMiddlewareHandler = clerkMiddleware(async (auth, req: NextRequest) => {
-  if (!isPublicRoute(req)) {
-    await auth.protect();
-  }
+// Force auth redirects onto our own /sign-in and /sign-up routes (never accounts.*).
+const clerkMiddlewareHandler = clerkMiddleware(
+  async (auth, req: NextRequest) => {
+    const origin = req.nextUrl.origin;
 
-  // Get the response from the next handler
-  const response = NextResponse.next();
+    if (!isPublicRoute(req)) {
+      await auth.protect(undefined, {
+        unauthenticatedUrl: `${origin}/sign-in`,
+        unauthorizedUrl: `${origin}/sign-in`,
+      });
+    }
 
-  // Add security headers to all responses
-  return addSecurityHeaders(response);
-});
+    // Get the response from the next handler
+    const response = NextResponse.next();
+
+    // Add security headers to all responses
+    return addSecurityHeaders(response);
+  },
+  (req) => ({
+    signInUrl: `${req.nextUrl.origin}/sign-in`,
+    signUpUrl: `${req.nextUrl.origin}/sign-up`,
+  }),
+);
 
 // Main middleware function - handle Clerk proxy before clerkMiddleware
 export default async function middleware(req: NextRequest, event: NextFetchEvent) {

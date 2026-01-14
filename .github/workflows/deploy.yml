@@ -21,6 +21,11 @@ on:
 env:
   NX_DAEMON: false
 
+# Cancel older runs on the same branch to ship the latest commit faster
+concurrency:
+  group: cicd-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ===========================================================================
   # Repo Hygiene - Lockfile Guards
@@ -98,11 +103,10 @@ jobs:
           fi
           echo "✓ All required secrets present"
 
-      - name: Install Bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
-          echo "$HOME/.bun/bin" >> $GITHUB_PATH
-        working-directory: .
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.1.36"
 
       - name: Install deps
         run: bun install --frozen-lockfile
@@ -148,11 +152,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install Bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
-          echo "$HOME/.bun/bin" >> $GITHUB_PATH
-        working-directory: .
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.1.36"
 
       - name: Install deps
         run: bun install --frozen-lockfile
@@ -161,6 +164,14 @@ jobs:
       - name: Build shared packages
         run: bun run build
         working-directory: packages/shared-types
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ hashFiles('tally-web/bun.lockb') }}
+          restore-keys: |
+            ms-playwright-${{ runner.os }}-
 
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
@@ -196,7 +207,6 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: infra/package-lock.json
 
       - name: Install deps
         run: npm ci --workspaces=false --include=dev
@@ -223,7 +233,6 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: infra/package-lock.json
 
       - name: Install deps
         run: npm ci --workspaces=false --include=dev
@@ -313,7 +322,6 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: infra/package-lock.json
 
       - name: Install deps
         run: npm ci --workspaces=false --include=dev
@@ -353,10 +361,11 @@ jobs:
           fi
           echo "✓ CONVEX_DEPLOY_KEY_DEV present"
 
-      - name: Install Bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
-          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.1.36"
+          
 
       - name: Install deps
         run: bun install --frozen-lockfile
@@ -454,11 +463,11 @@ jobs:
           fi
           echo "✓ All E2E secrets present"
 
-      - name: Install Bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
-          echo "$HOME/.bun/bin" >> $GITHUB_PATH
-        working-directory: .
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.1.36"
+          
 
       - name: Install deps
         run: bun install --frozen-lockfile
@@ -467,6 +476,14 @@ jobs:
       - name: Build shared packages
         run: bun run build
         working-directory: packages/shared-types
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ hashFiles('tally-web/bun.lockb') }}
+          restore-keys: |
+            ms-playwright-${{ runner.os }}-
 
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
@@ -523,7 +540,6 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: infra/package-lock.json
 
       - name: Install deps
         run: npm ci --workspaces=false --include=dev
@@ -563,10 +579,11 @@ jobs:
           fi
           echo "✓ CONVEX_DEPLOY_KEY_PROD present"
 
-      - name: Install Bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
-          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.1.36"
+          
 
       - name: Install deps
         run: bun install --frozen-lockfile
@@ -581,7 +598,7 @@ jobs:
     name: Deploy Vercel (prod)
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [deploy-prod-infra, deploy-prod-convex]
+    needs: [deploy-prod-convex]
     environment: production
     outputs:
       web_version: ${{ github.sha }}
@@ -658,11 +675,11 @@ jobs:
           fi
           echo "✓ All E2E secrets present"
 
-      - name: Install Bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
-          echo "$HOME/.bun/bin" >> $GITHUB_PATH
-        working-directory: .
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.1.36"
+          
 
       - name: Install deps
         run: bun install --frozen-lockfile
@@ -671,6 +688,14 @@ jobs:
       - name: Build shared packages
         run: bun run build
         working-directory: packages/shared-types
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ hashFiles('tally-web/bun.lockb') }}
+          restore-keys: |
+            ms-playwright-${{ runner.os }}-
 
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium

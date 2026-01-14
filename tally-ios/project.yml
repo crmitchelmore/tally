@@ -5,6 +5,7 @@ options:
     iOS: 17.0
 configFiles:
   Debug: Debug.xcconfig
+  Release: Release.xcconfig
 packages:
   TallyCore:
     path: TallyCore
@@ -53,6 +54,9 @@ targets:
       - path: TallyAppTests
     dependencies:
       - target: Tally
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
   TallyUITests:
     type: bundle.ui-testing
     platform: iOS
@@ -60,3 +64,6 @@ targets:
       - path: TallyAppUITests
     dependencies:
       - target: Tally
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES

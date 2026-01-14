@@ -88,10 +88,11 @@ Tally is a multi-platform challenge tracking app:
 
 **iOS (`tally-ios/`):**
 - Generate project: `cd tally-ios && xcodegen generate`
-- Create `Debug.xcconfig` (gitignored) with:
-  ```
-  CLERK_PUBLISHABLE_KEY_DEV = pk_test_...
-  ```
+- Local secrets (gitignored; required to run locally):
+  - `tally-ios/Debug.local.xcconfig` (dev key)
+  - `tally-ios/Release.local.xcconfig` (prod key)
+  - These are derived from the root `.env` and should be copied across local clones (e.g. `t3/`, `tally/`) as needed.
+  - Keep permissions tight: `chmod 600 tally-ios/{Debug,Release}.local.xcconfig`
 - Build: `xcodebuild -project Tally.xcodeproj -scheme Tally -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -configuration Debug build`
 - Screenshot: `xcrun simctl io <device-id> screenshot /tmp/screenshot.png`
 

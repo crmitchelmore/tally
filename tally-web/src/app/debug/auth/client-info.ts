@@ -10,7 +10,7 @@ export type ClerkProbe = {
 
   // debug-only extras
   clerkGlobals?: string[];
-  clerkScriptUrl?: string;
+  clerkScriptUrl?: string | null;
   clerkScriptFetch?: { status: number; contentType: string | null; textPrefix: string } | null;
   errors?: string[];
 

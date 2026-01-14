@@ -110,7 +110,7 @@ export default function AuthDebugPage() {
         clerkVersion: clerk?.version ?? null,
         resourceUrls,
         clerkGlobals,
-        clerkScriptUrl,
+        clerkScriptUrl: clerkScriptUrl ?? null,
         clerkScriptFetch: scriptFetch,
         errors: errors.slice(-20),
         health: {

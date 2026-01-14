@@ -71,6 +71,19 @@ if (isProd) {
       },
       { deleteBeforeReplace: true }
     );
+
+    // Also set Clerk's standard env var names (used by Clerk SDK defaults)
+    new vercel.ProjectEnvironmentVariable(
+      "clerk-publishable-key-base-prod",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+        value: clerkPublishableKey,
+        targets: ["production"],
+      },
+      { deleteBeforeReplace: true }
+    );
   }
 
   new vercel.ProjectEnvironmentVariable(
@@ -79,6 +92,18 @@ if (isProd) {
       projectId: vercelProjectId,
       teamId: vercelTeamId,
       key: "CLERK_SECRET_KEY_PROD",
+      value: clerkSecretKey,
+      targets: ["production"],
+    },
+    { deleteBeforeReplace: true }
+  );
+
+  new vercel.ProjectEnvironmentVariable(
+    "clerk-secret-key-base-prod",
+    {
+      projectId: vercelProjectId,
+      teamId: vercelTeamId,
+      key: "CLERK_SECRET_KEY",
       value: clerkSecretKey,
       targets: ["production"],
     },
@@ -98,6 +123,19 @@ if (isProd) {
       },
       { deleteBeforeReplace: true }
     );
+
+    // Also set Clerk's standard env var name for preview/dev targets
+    new vercel.ProjectEnvironmentVariable(
+      "clerk-publishable-key-base-dev",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+        value: clerkPublishableKeyDev,
+        targets: ["preview", "development"],
+      },
+      { deleteBeforeReplace: true }
+    );
   }
 
   if (clerkSecretKeyDev) {
@@ -107,6 +145,18 @@ if (isProd) {
         projectId: vercelProjectId,
         teamId: vercelTeamId,
         key: "CLERK_SECRET_KEY_DEV",
+        value: clerkSecretKeyDev,
+        targets: ["preview", "development"],
+      },
+      { deleteBeforeReplace: true }
+    );
+
+    new vercel.ProjectEnvironmentVariable(
+      "clerk-secret-key-base-dev",
+      {
+        projectId: vercelProjectId,
+        teamId: vercelTeamId,
+        key: "CLERK_SECRET_KEY",
         value: clerkSecretKeyDev,
         targets: ["preview", "development"],
       },

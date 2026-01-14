@@ -41,21 +41,12 @@ function AuthDebug() {
 }
 
 export function ClerkProviderWrapper({ children, publishableKey }: ClerkProviderWrapperProps) {
-  // Check if this is a production key (works both server and client side)
-  const isProductionKey = publishableKey?.startsWith("pk_live_");
-
-  // proxyUrl must be set for both SSR and client-side so Clerk uses /__clerk 
-  // instead of the custom domain (clerk.tally-tracker.app) which has CORS issues
-  // due to Cloudflare for SaaS conflict
-  const proxyUrl = isProductionKey ? "/__clerk" : undefined;
-
-  // Load Clerk JS from CDN instead of custom domain to avoid Cloudflare conflicts
-  // This must be set for SSR as well so the script tag uses the CDN URL
-  const clerkJSUrl = isProductionKey 
-    ? "https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
-    : undefined;
+  // Prefer Clerk's documented proxy env var (full URL). This avoids subtle issues with relative paths
+  // during OAuth redirects and matches Clerk's proxy docs.
+  const proxyUrl = process.env.NEXT_PUBLIC_CLERK_PROXY_URL;
 
   // In production, force sign-in/sign-up onto the canonical domain to avoid redirects to accounts.*
+  const isProductionKey = publishableKey?.startsWith("pk_live_");
   const signInUrl = isProductionKey ? "https://tally-tracker.app/sign-in" : undefined;
   const signUpUrl = isProductionKey ? "https://tally-tracker.app/sign-up" : undefined;
 
@@ -63,7 +54,6 @@ export function ClerkProviderWrapper({ children, publishableKey }: ClerkProvider
     <ClerkProvider 
       publishableKey={publishableKey} 
       proxyUrl={proxyUrl}
-      clerkJSUrl={clerkJSUrl}
       signInUrl={signInUrl}
       signUpUrl={signUpUrl}
       signInFallbackRedirectUrl="/app"

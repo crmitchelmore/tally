@@ -15,7 +15,11 @@ struct TallyApp: App {
     if !sentryDsn.isEmpty {
       SentrySDK.start { options in
         options.dsn = sentryDsn
+        #if DEBUG
+        options.environment = "development"
+        #else
         options.environment = "production"
+        #endif
         
         // Performance monitoring
         options.tracesSampleRate = 0.1
@@ -38,6 +42,34 @@ struct TallyApp: App {
           options.releaseName = "app.tally.ios@\(version)+\(build)"
         }
       }
+    }
+    
+    // Initialize OpenTelemetry for Grafana Cloud
+    let otelEndpoint = (Bundle.main.object(forInfoDictionaryKey: "OTEL_EXPORTER_OTLP_ENDPOINT") as? String) ?? ""
+    let otelToken = (Bundle.main.object(forInfoDictionaryKey: "GRAFANA_CLOUD_OTLP_TOKEN") as? String) ?? ""
+    if !otelEndpoint.isEmpty && !otelToken.isEmpty {
+      let version: String? = {
+        if let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+           let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
+          return "\(v)+\(b)"
+        }
+        return nil
+      }()
+      let osVersion = UIDevice.current.systemVersion
+      
+      #if DEBUG
+      let environment = "development"
+      #else
+      let environment = "production"
+      #endif
+      
+      TallyTelemetry.shared.initialize(
+        endpoint: otelEndpoint,
+        token: otelToken,
+        environment: environment,
+        version: version,
+        osVersion: osVersion
+      )
     }
   }
 

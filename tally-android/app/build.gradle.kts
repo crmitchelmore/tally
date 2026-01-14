@@ -50,6 +50,18 @@ android {
       "POSTHOG_API_KEY",
       "\"${System.getenv("POSTHOG_API_KEY") ?: ""}\""
     )
+
+    buildConfigField(
+      "String",
+      "OTEL_EXPORTER_OTLP_ENDPOINT",
+      "\"${System.getenv("OTEL_EXPORTER_OTLP_ENDPOINT") ?: ""}\""
+    )
+
+    buildConfigField(
+      "String",
+      "GRAFANA_CLOUD_OTLP_TOKEN",
+      "\"${System.getenv("GRAFANA_CLOUD_OTLP_TOKEN") ?: ""}\""
+    )
   }
 
   if (!keystorePath.isNullOrBlank()) {
@@ -182,6 +194,13 @@ dependencies {
 
   // PostHog Analytics
   implementation("com.posthog:posthog-android:3.4.2")
+
+  // OpenTelemetry for Grafana Cloud
+  implementation("io.opentelemetry:opentelemetry-api:1.45.0")
+  implementation("io.opentelemetry:opentelemetry-sdk:1.45.0")
+  implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.45.0")
+  implementation("io.opentelemetry:opentelemetry-semconv:1.30.1-alpha")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-okhttp-3.0:2.11.0-alpha")
 
   debugImplementation("androidx.compose.ui:ui-tooling")
 

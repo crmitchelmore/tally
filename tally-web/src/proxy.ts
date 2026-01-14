@@ -245,11 +245,25 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
       ? setCookies
       : (fallbackSetCookie ? splitSetCookieHeader(fallbackSetCookie) : []);
 
+    const upstreamLocation = response.headers.get("location");
+    if (clerkPath.includes("/oauth_callback")) {
+      responseHeaders.set("Cache-Control", "no-store");
+      responseHeaders.set("x-tally-clerk-upstream-status", String(response.status));
+      responseHeaders.set("x-tally-clerk-set-cookie-count", String(cookiesToAppend.length));
+      if (upstreamLocation) responseHeaders.set("x-tally-clerk-upstream-location", upstreamLocation);
+      const cookieNames = cookiesToAppend
+        .map((c) => c.split("=")[0])
+        .filter(Boolean)
+        .slice(0, 10)
+        .join(",");
+      if (cookieNames) responseHeaders.set("x-tally-clerk-cookie-names", cookieNames);
+    }
+
     if (debug && clerkPath.includes("/oauth_callback")) {
       console.log("[clerk-proxy] oauth_callback response", {
         status: response.status,
         setCookieCount: cookiesToAppend.length,
-        location: response.headers.get("location"),
+        location: upstreamLocation,
       });
     }
 

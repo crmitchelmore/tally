@@ -107,11 +107,25 @@ async function proxyClerk(req: NextRequest, params: Promise<{ path: string[] }>)
     ? setCookies
     : (fallbackSetCookie ? splitSetCookieHeader(fallbackSetCookie) : []);
 
+  const upstreamLocation = upstream.headers.get("location");
+  if (clerkUrl.pathname.includes("/oauth_callback")) {
+    responseHeaders.set("Cache-Control", "no-store");
+    responseHeaders.set("x-tally-clerk-upstream-status", String(upstream.status));
+    responseHeaders.set("x-tally-clerk-set-cookie-count", String(cookiesToAppend.length));
+    if (upstreamLocation) responseHeaders.set("x-tally-clerk-upstream-location", upstreamLocation);
+    const cookieNames = cookiesToAppend
+      .map((c) => c.split("=")[0])
+      .filter(Boolean)
+      .slice(0, 10)
+      .join(",");
+    if (cookieNames) responseHeaders.set("x-tally-clerk-cookie-names", cookieNames);
+  }
+
   if (debug && clerkUrl.pathname.includes("/oauth_callback")) {
     console.log("[clerk-route] oauth_callback response", {
       status: upstream.status,
       setCookieCount: cookiesToAppend.length,
-      location: upstream.headers.get("location"),
+      location: upstreamLocation,
     });
   }
 

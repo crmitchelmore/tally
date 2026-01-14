@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getClerkPublishableKey } from "@/lib/clerk-public";
 import { ClerkProviderWrapper } from "@/providers/clerk-provider-wrapper";
@@ -50,6 +51,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Script id="globalThis-polyfill" strategy="beforeInteractive">
+          {`(function(){if(typeof globalThis==="undefined"){Object.defineProperty(Object.prototype,"__globalThis__",{get:function(){return this;},configurable:true});__globalThis__.globalThis=__globalThis__;delete Object.prototype.__globalThis__;}})();`}
+        </Script>
         {clerkPublishableKey ? (
           <ClerkProviderWrapper publishableKey={clerkPublishableKey}>{app}</ClerkProviderWrapper>
         ) : (

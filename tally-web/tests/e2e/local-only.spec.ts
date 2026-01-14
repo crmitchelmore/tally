@@ -21,23 +21,21 @@ import { test, expect, Page } from "@playwright/test";
  * This is more reliable than clicking the button due to Next.js client navigation timing.
  */
 async function enterLocalMode(page: Page): Promise<void> {
-  // Navigate to landing page
+  // Navigate to landing page first to initialize the page context
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(1000);
-
-  // Click "Continue without an account" button to enter local mode properly
-  const continueLocallyBtn = page.getByRole("button", {
-    name: /continue without an account/i,
+  
+  // Set local mode directly in localStorage (more reliable than button click)
+  await page.evaluate(() => {
+    localStorage.setItem("tally:appMode", "local-only");
   });
-  await expect(continueLocallyBtn).toBeVisible({ timeout: 15000 });
-  await continueLocallyBtn.click();
-
-  // Wait for navigation to /app and React hydration
-  await page.waitForURL("**/app", { timeout: 15000 });
+  
+  // Navigate to /app - the app will read from localStorage on mount
+  await page.goto("/app", { waitUntil: "domcontentloaded" });
   await page.waitForLoadState("networkidle");
   
   // Wait for the local dashboard to render by looking for the "Local Mode" badge
+  // This confirms React has hydrated and read the localStorage value
   await expect(page.getByText("Local Mode")).toBeVisible({ timeout: 30000 });
 }
 

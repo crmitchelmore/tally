@@ -168,18 +168,23 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
       }
     }
     
-    // Create response headers, removing problematic encoding headers
-    // and rewriting cookie domains for the proxy
+    // Create response headers, removing problematic encoding headers.
+    // Note: OAuth flows rely on multiple Set-Cookie headers; use getSetCookie() when available.
     const responseHeaders = new Headers();
     response.headers.forEach((value, key) => {
       const lowerKey = key.toLowerCase();
-      
+
       // Skip content-encoding since we've already decoded the body
       // and transfer-encoding since we're not streaming
       if (lowerKey === "content-encoding" || lowerKey === "transfer-encoding") {
         return;
       }
-      
+
+      // We'll append Set-Cookie separately to avoid losing multiple cookies.
+      if (lowerKey === "set-cookie") {
+        return;
+      }
+
       // Rewrite Location headers so redirects stay within the /__clerk proxy (and never jump to accounts.*).
       if (lowerKey === "location") {
         let location = value;
@@ -195,22 +200,24 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
         return;
       }
 
-      // Rewrite Set-Cookie headers to use our domain instead of Clerk's
-      if (lowerKey === "set-cookie") {
-        // Replace Clerk's domain with our domain for session cookies
-        let cookie = value;
-        // Remove domain restriction so cookie works on our domain
-        cookie = cookie.replace(/;\s*domain=[^;]+/gi, "");
-        // Ensure path is set
-        if (!cookie.toLowerCase().includes("path=")) {
-          cookie = cookie + "; Path=/";
-        }
-        responseHeaders.append(key, cookie);
-        return;
-      }
-
       responseHeaders.set(key, value);
     });
+
+    const getSetCookie = (response.headers as unknown as { getSetCookie?: () => string[] }).getSetCookie;
+    const setCookies = getSetCookie?.call(response.headers) ?? [];
+    const fallbackSetCookie = response.headers.get("set-cookie");
+
+    const cookiesToAppend = setCookies.length ? setCookies : (fallbackSetCookie ? [fallbackSetCookie] : []);
+    for (const value of cookiesToAppend) {
+      let cookie = value;
+      // Remove domain restriction so cookie works on our domain
+      cookie = cookie.replace(/;\s*domain=[^;]+/gi, "");
+      // Ensure path is set
+      if (!cookie.toLowerCase().includes("path=")) {
+        cookie = cookie + "; Path=/";
+      }
+      responseHeaders.append("set-cookie", cookie);
+    }
     
     return new NextResponse(body, {
       status: response.status,

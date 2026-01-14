@@ -114,7 +114,10 @@ async function proxyClerk(req: NextRequest, params: Promise<{ path: string[] }>)
   for (const value of cookiesToAppend) {
     let cookie = value;
     cookie = cookie.replace(/;\s*domain=[^;]+/gi, "");
-    if (!cookie.toLowerCase().includes("path=")) cookie = cookie + "; Path=/";
+    // Ensure cookies are available site-wide (critical when Clerk is proxied under /__clerk)
+    cookie = cookie.toString().match(/;\s*path=/i)
+      ? cookie.replace(/;\s*path=[^;]+/i, "; Path=/")
+      : cookie + "; Path=/";
     responseHeaders.append("set-cookie", cookie);
   }
 

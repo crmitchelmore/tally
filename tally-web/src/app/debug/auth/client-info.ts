@@ -7,6 +7,10 @@ export type ClerkProbe = {
   clerkLoaded?: boolean | null;
   clerkVersion?: string | null;
   resourceUrls?: string[];
+  clerkGlobals?: unknown;
+  clerkScriptUrl?: string | null;
+  clerkScriptFetch?: { status: number; contentType?: string | null; textPrefix?: string; ok?: boolean; text?: string } | null;
+  errors?: string[];
   health?: { status: number; body?: unknown };
   client?: { status: number; body?: unknown };
   environment?: { status: number; body?: unknown };

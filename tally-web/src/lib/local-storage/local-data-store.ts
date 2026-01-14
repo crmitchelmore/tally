@@ -13,7 +13,6 @@ import type {
   ExportedEntry,
   TallyExportPayload,
   ImportResult,
-  EXPORT_SCHEMA_VERSION,
 } from "@tally/shared-types";
 
 // Re-export for convenience

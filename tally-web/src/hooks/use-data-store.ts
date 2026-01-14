@@ -10,7 +10,7 @@
  * In synced mode: Uses Convex via existing hooks/mutations
  */
 
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useEffect, useReducer } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useAppMode } from "@/providers/app-mode-provider";
@@ -71,53 +71,80 @@ interface DataStoreHook {
 // Local-Only Implementation
 // =============================================================================
 
+// Reducer for local data state (avoids setState directly in useEffect)
+type LocalDataState = {
+  challenges: ExportedChallenge[] | undefined;
+  entries: ExportedEntry[];
+  isLoading: boolean;
+  loadId: number;
+};
+
+type LocalDataAction =
+  | { type: "START_LOAD"; loadId: number }
+  | { type: "LOAD_SUCCESS"; challenges: ExportedChallenge[]; entries: ExportedEntry[]; loadId: number }
+  | { type: "LOAD_ERROR"; loadId: number }
+  | { type: "REFRESH" };
+
+function localDataReducer(state: LocalDataState, action: LocalDataAction): LocalDataState {
+  switch (action.type) {
+    case "START_LOAD":
+      return { ...state, isLoading: true, loadId: action.loadId };
+    case "LOAD_SUCCESS":
+      // Only update if this is the current load
+      if (action.loadId !== state.loadId) return state;
+      return { ...state, challenges: action.challenges, entries: action.entries, isLoading: false };
+    case "LOAD_ERROR":
+      if (action.loadId !== state.loadId) return state;
+      return { ...state, challenges: [], entries: [], isLoading: false };
+    case "REFRESH":
+      return { ...state, loadId: state.loadId + 1 };
+    default:
+      return state;
+  }
+}
+
 function useLocalDataStore(): DataStoreHook {
   const { isReady } = useAppMode();
   const localStore = useMemo(() => getLocalDataStore(), []);
 
-  // Local state for reactive updates
-  const [challenges, setChallenges] = useState<ExportedChallenge[] | undefined>(
-    undefined
-  );
-  const [entries, setEntries] = useState<ExportedEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [refreshCounter, setRefreshCounter] = useState(0);
+  const [state, dispatch] = useReducer(localDataReducer, {
+    challenges: undefined,
+    entries: [],
+    isLoading: true,
+    loadId: 0,
+  });
 
-  // Load challenges from IndexedDB on mount and when refreshCounter changes
+  // Load challenges from IndexedDB on mount and when loadId changes
   useEffect(() => {
     if (!isReady) return;
 
-    let mounted = true;
-    setIsLoading(true);
+    const currentLoadId = state.loadId;
+    dispatch({ type: "START_LOAD", loadId: currentLoadId });
 
-    (async () => {
-      try {
-        const allChallenges = await localStore.getAllChallenges();
-        // Also load all entries for convenience
+    let cancelled = false;
+    
+    localStore.getAllChallenges()
+      .then(async (allChallenges) => {
         const allEntries = await localStore.getAllEntries();
-        if (mounted) {
-          setChallenges(allChallenges);
-          setEntries(allEntries);
-          setIsLoading(false);
+        if (!cancelled) {
+          dispatch({ type: "LOAD_SUCCESS", challenges: allChallenges, entries: allEntries, loadId: currentLoadId });
         }
-      } catch (e) {
+      })
+      .catch((e) => {
         console.error("Failed to load local data:", e);
-        if (mounted) {
-          setChallenges([]);
-          setEntries([]);
-          setIsLoading(false);
+        if (!cancelled) {
+          dispatch({ type: "LOAD_ERROR", loadId: currentLoadId });
         }
-      }
-    })();
+      });
 
     return () => {
-      mounted = false;
+      cancelled = true;
     };
-  }, [isReady, localStore, refreshCounter]);
+  }, [isReady, localStore, state.loadId]);
 
   // Trigger a refresh of local data
   const refreshData = useCallback(() => {
-    setRefreshCounter((c) => c + 1);
+    dispatch({ type: "REFRESH" });
   }, []);
 
   const createChallenge = useCallback(
@@ -167,9 +194,9 @@ function useLocalDataStore(): DataStoreHook {
   // Get entries for a challenge from cached state (sync)
   const getEntriesSync = useCallback(
     (challengeId: string): ExportedEntry[] => {
-      return entries.filter((e) => e.challengeId === challengeId);
+      return state.entries.filter((e) => e.challengeId === challengeId);
     },
-    [entries]
+    [state.entries]
   );
 
   const createEntry = useCallback(
@@ -233,9 +260,9 @@ function useLocalDataStore(): DataStoreHook {
   return {
     isReady,
     mode: "local-only",
-    challenges,
-    entries,
-    isLoadingChallenges: isLoading,
+    challenges: state.challenges,
+    entries: state.entries,
+    isLoadingChallenges: state.isLoading,
     createChallenge,
     updateChallenge,
     deleteChallenge,
@@ -334,9 +361,10 @@ function useSyncedDataStore(): DataStoreHook {
   );
 
   const getEntries = useCallback(
-    async (_challengeId: string): Promise<ExportedEntry[]> => {
+    async (challengeId: string): Promise<ExportedEntry[]> => {
       // For synced mode, entries are typically fetched via useQuery in components
       // This is a placeholder - real implementation would need to be async query
+      void challengeId;
       console.warn(
         "getEntries in synced mode should use useQuery(api.entries.listByChallenge)"
       );
@@ -403,8 +431,9 @@ function useSyncedDataStore(): DataStoreHook {
   const importAll = useCallback(
     async (
       payload: TallyExportPayload,
-      _options?: { clearExisting?: boolean }
+      options?: { clearExisting?: boolean }
     ): Promise<ImportResult> => {
+      void options; // Options handled differently in synced mode
       try {
         const result = await bulkImportMutation({
           challenges: payload.challenges.map((c) => ({
@@ -452,7 +481,8 @@ function useSyncedDataStore(): DataStoreHook {
 
   // Synced mode doesn't have local entries array
   const getEntriesSync = useCallback(
-    (_challengeId: string): ExportedEntry[] => {
+    (challengeId: string): ExportedEntry[] => {
+      void challengeId;
       console.warn(
         "getEntriesSync in synced mode should use useQuery(api.entries.listByChallenge)"
       );

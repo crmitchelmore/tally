@@ -206,7 +206,7 @@ export function MigrationDialog({
             <DialogHeader>
               <DialogTitle>Migrating your data...</DialogTitle>
               <DialogDescription>
-                Please don't close this window.
+                Please don&apos;t close this window.
               </DialogDescription>
             </DialogHeader>
             <div className="flex items-center justify-center py-8">

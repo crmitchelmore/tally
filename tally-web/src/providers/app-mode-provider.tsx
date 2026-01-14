@@ -13,6 +13,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import type { AppMode } from "@tally/shared-types";
@@ -50,6 +51,39 @@ interface AppModeContextValue {
 const AppModeContext = createContext<AppModeContextValue | null>(null);
 
 // =============================================================================
+// External Store for Mode (avoids setState in useEffect)
+// =============================================================================
+
+let modeListeners: Array<() => void> = [];
+let currentModeSnapshot: AppMode | null = null;
+
+function subscribeToMode(callback: () => void) {
+  modeListeners.push(callback);
+  return () => {
+    modeListeners = modeListeners.filter((l) => l !== callback);
+  };
+}
+
+function getModeSnapshot(): AppMode | null {
+  if (typeof window === "undefined") return null;
+  if (currentModeSnapshot === null) {
+    currentModeSnapshot = getAppModeStore().getMode();
+  }
+  return currentModeSnapshot;
+}
+
+function getServerModeSnapshot(): AppMode | null {
+  return null;
+}
+
+function updateMode(newMode: AppMode) {
+  const store = getAppModeStore();
+  store.setMode(newMode);
+  currentModeSnapshot = newMode;
+  modeListeners.forEach((l) => l());
+}
+
+// =============================================================================
 // Provider Component
 // =============================================================================
 
@@ -58,21 +92,24 @@ interface AppModeProviderProps {
 }
 
 export function AppModeProvider({ children }: AppModeProviderProps) {
-  const [mode, setModeState] = useState<AppMode | null>(null);
+  const mode = useSyncExternalStore(
+    subscribeToMode,
+    getModeSnapshot,
+    getServerModeSnapshot
+  );
+  
+  // Track readiness - we're ready once we've had a chance to read localStorage
   const [isReady, setIsReady] = useState(false);
 
-  // Load mode from localStorage on mount
+  // Mark as ready after first client render
   useEffect(() => {
-    const store = getAppModeStore();
-    const savedMode = store.getMode();
-    setModeState(savedMode);
-    setIsReady(true);
+    // Defer to next tick so snapshot has been read
+    const timer = setTimeout(() => setIsReady(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const setMode = useCallback((newMode: AppMode) => {
-    const store = getAppModeStore();
-    store.setMode(newMode);
-    setModeState(newMode);
+    updateMode(newMode);
   }, []);
 
   const hasLocalData = useCallback(async (): Promise<boolean> => {

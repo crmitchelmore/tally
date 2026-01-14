@@ -43,12 +43,14 @@ jobs:
         run: ./gradlew :app:test
 
       - name: Reset adb
+        if: github.event_name == 'push'
         run: |
           ADB="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/platform-tools/adb"
           "$ADB" kill-server || true
           "$ADB" start-server
 
       - name: Run instrumented tests (emulator)
+        if: github.event_name == 'push'
         id: emu1
         continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
@@ -74,14 +76,15 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN_ANDROID }}
 
       - name: Reset adb (after failure)
-        if: steps.emu1.outcome == 'failure'
+        if: github.event_name == 'push' && steps.emu1.outcome == 'failure'
         run: |
           ADB="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/platform-tools/adb"
           "$ADB" kill-server || true
           "$ADB" start-server
 
       - name: Retry instrumented tests (emulator)
-        if: steps.emu1.outcome == 'failure'
+        if: github.event_name == 'push' && steps.emu1.outcome == 'failure'
+        continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 33

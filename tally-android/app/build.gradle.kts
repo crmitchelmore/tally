@@ -22,6 +22,18 @@ android {
   namespace = "app.tally"
   compileSdk = 35
 
+  // Local dev convenience: if present, read keys from repo-root .env (gitignored).
+  fun dotenv(key: String): String? {
+    val f = rootProject.projectDir.parentFile.resolve(".env")
+    if (!f.exists()) return null
+    return f.readLines()
+      .asSequence()
+      .map { it.trim() }
+      .firstOrNull { it.isNotEmpty() && !it.startsWith("#") && it.startsWith("$key=") }
+      ?.substringAfter("=")
+      ?.trim()
+  }
+
   val keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
 
   defaultConfig {
@@ -85,15 +97,24 @@ android {
 
   buildTypes {
     getByName("debug") {
+      val clerkKey = System.getenv("CLERK_PUBLISHABLE_KEY_DEV")
+        ?: dotenv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV")
+        ?: dotenv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD")
+        ?: System.getenv("CLERK_PUBLISHABLE_KEY")
+        ?: ""
       buildConfigField(
         "String",
         "CLERK_PUBLISHABLE_KEY",
-        "\"${System.getenv("CLERK_PUBLISHABLE_KEY_DEV") ?: System.getenv("CLERK_PUBLISHABLE_KEY") ?: ""}\""
+        "\"$clerkKey\""
       )
+
+      val ldKey = System.getenv("LAUNCHDARKLY_MOBILE_KEY_DEV")
+        ?: System.getenv("LAUNCHDARKLY_MOBILE_KEY")
+        ?: ""
       buildConfigField(
         "String",
         "LAUNCHDARKLY_MOBILE_KEY",
-        "\"${System.getenv("LAUNCHDARKLY_MOBILE_KEY_DEV") ?: System.getenv("LAUNCHDARKLY_MOBILE_KEY") ?: ""}\""
+        "\"$ldKey\""
       )
     }
 
@@ -103,15 +124,25 @@ android {
       if (!keystorePath.isNullOrBlank()) {
         signingConfig = signingConfigs.getByName("release")
       }
+
+      val clerkKey = System.getenv("CLERK_PUBLISHABLE_KEY_PROD")
+        ?: dotenv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD")
+        ?: dotenv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV")
+        ?: System.getenv("CLERK_PUBLISHABLE_KEY")
+        ?: ""
       buildConfigField(
         "String",
         "CLERK_PUBLISHABLE_KEY",
-        "\"${System.getenv("CLERK_PUBLISHABLE_KEY_PROD") ?: System.getenv("CLERK_PUBLISHABLE_KEY") ?: ""}\""
+        "\"$clerkKey\""
       )
+
+      val ldKey = System.getenv("LAUNCHDARKLY_MOBILE_KEY_PROD")
+        ?: System.getenv("LAUNCHDARKLY_MOBILE_KEY")
+        ?: ""
       buildConfigField(
         "String",
         "LAUNCHDARKLY_MOBILE_KEY",
-        "\"${System.getenv("LAUNCHDARKLY_MOBILE_KEY_PROD") ?: System.getenv("LAUNCHDARKLY_MOBILE_KEY") ?: ""}\""
+        "\"$ldKey\""
       )
     }
   }

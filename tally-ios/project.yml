@@ -31,6 +31,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: app.tally.ios
         DEVELOPMENT_TEAM: ""
         INFOPLIST_FILE: TallyApp/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       configs:
         Debug:
           CLERK_PUBLISHABLE_KEY: "$(CLERK_PUBLISHABLE_KEY_DEV)"

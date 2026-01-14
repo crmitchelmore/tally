@@ -78,8 +78,8 @@ export default function Home() {
     ? challenges?.find((c) => c.id === selectedChallengeId)
     : undefined;
 
-  // Loading state depends on mode
-  const isLoading = !isModeReady || (isLocalOnly ? false : (!isUserLoaded || challenges === undefined || entries === undefined));
+  // Loading state for synced mode (local mode handles its own loading)
+  const isLoading = isLocalOnly ? false : (!isUserLoaded || challenges === undefined || entries === undefined);
 
   const createChallenge = useMutation(api.challenges.create);
   const updateChallenge = useMutation(api.challenges.update);
@@ -125,6 +125,15 @@ export default function Home() {
       description: `Removed ${challengeName} from your dashboard`,
     });
   };
+
+  // Wait for mode to be determined before making any mode-dependent decisions
+  if (!isModeReady) {
+    return (
+      <div className="min-h-screen bg-background tally-marks-bg flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   // In local-only mode, render the local dashboard
   if (isLocalOnly && viewMode === "dashboard") {

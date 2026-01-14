@@ -254,10 +254,10 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
       let cookie = value;
       // Remove domain restriction so cookie works on our domain
       cookie = cookie.replace(/;\s*domain=[^;]+/gi, "");
-      // Ensure path is set
-      if (!cookie.toLowerCase().includes("path=")) {
-        cookie = cookie + "; Path=/";
-      }
+      // Ensure cookies are available site-wide (critical when Clerk is proxied under /__clerk)
+      cookie = cookie.toString().match(/;\s*path=/i)
+        ? cookie.replace(/;\s*path=[^;]+/i, "; Path=/")
+        : cookie + "; Path=/";
       responseHeaders.append("set-cookie", cookie);
     }
     

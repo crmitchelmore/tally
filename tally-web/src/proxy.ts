@@ -108,20 +108,51 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
  * The clerk.tally-tracker.app CNAME triggers Cloudflare Error 1000 because both our DNS
  * and Clerk's infrastructure use Cloudflare.
  */
+function splitSetCookieHeader(value: string): string[] {
+  // Some runtimes (Edge) collapse multiple Set-Cookie headers into one comma-separated string.
+  // We split on commas that are followed by a new cookie name (`token=`), not commas inside Expires.
+  const parts: string[] = [];
+  let start = 0;
+  for (let i = 0; i < value.length; i++) {
+    if (value[i] !== ",") continue;
+
+    const rest = value.slice(i + 1);
+    const m = rest.match(/^\s*([^=;\s]+)=/);
+    if (m) {
+      parts.push(value.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  parts.push(value.slice(start).trim());
+  return parts.filter(Boolean);
+}
+
 async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
   const url = req.nextUrl.clone();
   const clerkPath = url.pathname.replace(/^\/__clerk/, "");
-  
+
+  const debug = process.env.CLERK_PROXY_DEBUG === "true";
+
   // Build the Clerk API URL
   const clerkUrl = new URL(clerkPath || "/", "https://frontend-api.clerk.dev");
   clerkUrl.search = url.search;
-  
+
   // Clone headers and add required Clerk proxy headers
   const headers = new Headers(req.headers);
-  
+
   // The proxy URL that Clerk should use for callbacks
-  const proxyUrl = `${url.protocol}//${url.host}/__clerk`;
+  const proxyUrl = `${req.nextUrl.origin}/__clerk`;
   headers.set("Clerk-Proxy-Url", proxyUrl);
+
+  if (debug && clerkPath.includes("/oauth_callback")) {
+    console.log("[clerk-proxy] oauth_callback request", {
+      method: req.method,
+      path: url.pathname,
+      search: url.search,
+      clerkUrl: clerkUrl.toString(),
+      proxyUrl,
+    });
+  }
   
   // Add the secret key for authentication - use getClerkSecretKey() to get
   // the correct environment-specific key (CLERK_SECRET_KEY_PROD in production)
@@ -207,7 +238,18 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
     const setCookies = getSetCookie?.call(response.headers) ?? [];
     const fallbackSetCookie = response.headers.get("set-cookie");
 
-    const cookiesToAppend = setCookies.length ? setCookies : (fallbackSetCookie ? [fallbackSetCookie] : []);
+    const cookiesToAppend = setCookies.length
+      ? setCookies
+      : (fallbackSetCookie ? splitSetCookieHeader(fallbackSetCookie) : []);
+
+    if (debug && clerkPath.includes("/oauth_callback")) {
+      console.log("[clerk-proxy] oauth_callback response", {
+        status: response.status,
+        setCookieCount: cookiesToAppend.length,
+        location: response.headers.get("location"),
+      });
+    }
+
     for (const value of cookiesToAppend) {
       let cookie = value;
       // Remove domain restriction so cookie works on our domain

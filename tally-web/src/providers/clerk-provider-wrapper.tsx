@@ -1,7 +1,7 @@
 "use client";
 
-import { ReactNode } from "react";
-import { ClerkProvider } from "@clerk/nextjs";
+import { ReactNode, useEffect } from "react";
+import { ClerkProvider, useAuth, useUser } from "@clerk/nextjs";
 
 interface ClerkProviderWrapperProps {
   children: ReactNode;
@@ -19,6 +19,27 @@ interface ClerkProviderWrapperProps {
  * the custom domain (clerk.tally-tracker.app) which can have DNS/SSL issues
  * due to Cloudflare for SaaS conflicts.
  */
+function AuthDebug() {
+  const { isLoaded: authLoaded, isSignedIn, sessionId, userId } = useAuth();
+  const { isLoaded: userLoaded, user } = useUser();
+
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_AUTH_DEBUG !== "true") return;
+    // eslint-disable-next-line no-console
+    console.log("[auth-debug]", {
+      url: typeof window !== "undefined" ? window.location.href : "(no-window)",
+      authLoaded,
+      userLoaded,
+      isSignedIn,
+      sessionId,
+      userId,
+      clerkUserId: user?.id,
+    });
+  }, [authLoaded, userLoaded, isSignedIn, sessionId, userId, user?.id]);
+
+  return null;
+}
+
 export function ClerkProviderWrapper({ children, publishableKey }: ClerkProviderWrapperProps) {
   // Check if this is a production key (works both server and client side)
   const isProductionKey = publishableKey?.startsWith("pk_live_");
@@ -48,6 +69,7 @@ export function ClerkProviderWrapper({ children, publishableKey }: ClerkProvider
       signInFallbackRedirectUrl="/app"
       signUpFallbackRedirectUrl="/app"
     >
+      {process.env.NEXT_PUBLIC_AUTH_DEBUG === "true" ? <AuthDebug /> : null}
       {children}
     </ClerkProvider>
   );

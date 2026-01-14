@@ -41,7 +41,7 @@ Practical rules:
 - Keep domain logic shared where possible (contracts/types) so web/iOS/Android stay consistent.
 - Prefer small, surgical changes; avoid unrelated refactors.
 - **Never discard unrelated local edits.** If a clean working tree is needed, use `git stash push -u -m "wip: <desc>"` and restore later; only discard changes with explicit user approval.
-- If the Copilot CLI `bash` tool errors with `posix_spawnp failed`, retry via the `task` agent as a fallback.
+- If the Copilot CLI `bash` tool errors with `posix_spawnp failed`, retry via the `task` agent; if commands still won’t run, use GitHub MCP tools for PR/check status and ask a human to run `git`/build commands locally.
 - Add lightweight regression checks when touching critical flows (auth, API, data integrity).
 
 ## PR Review Workflow
@@ -88,6 +88,7 @@ Tally is a multi-platform challenge tracking app:
 
 **iOS (`tally-ios/`):**
 - Generate project: `cd tally-ios && xcodegen generate`
+- Prefer SwiftUI `.task(id:)` ids that don’t change on background/foreground transitions (avoid creating tasks that immediately no-op).
 - Local secrets (gitignored; required to run locally):
   - `tally-ios/Debug.local.xcconfig` (dev key)
   - `tally-ios/Release.local.xcconfig` (prod key)
@@ -99,6 +100,7 @@ Tally is a multi-platform challenge tracking app:
 **Android (`tally-android/`):**
 - Create `local.properties` with: `sdk.dir=/Users/<user>/Library/Android/sdk`
 - Build with Clerk key: `CLERK_PUBLISHABLE_KEY_DEV=pk_test_... ./gradlew :app:assembleDebug`
+- If `CLERK_PUBLISHABLE_KEY_*` isn’t set, the build reads `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_{DEV,PROD}` from the repo-root `.env` (build-time only; never commit `.env`).
 - Start emulator: `$ANDROID_HOME/emulator/emulator -avd tally_api35 -no-snapshot-load &`
 - Screenshot: `adb exec-out screencap -p > /tmp/screenshot.png`
 

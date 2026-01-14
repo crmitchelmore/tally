@@ -88,7 +88,10 @@ struct RootView: View {
             .environmentObject(state)
             .tabItem { Label("Settings", systemImage: "gear") }
         }
-        .task(id: "\(clerk.user?.id ?? "signed-out")-\(scenePhase == .active)") {
+        .task(id: {
+          let userId = clerk.user?.id ?? "signed-out"
+          return scenePhase == .active ? "\(userId)-active" : userId
+        }()) {
           guard clerk.user != nil else {
             state.signOut()
             return

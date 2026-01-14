@@ -1,21 +1,18 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 export default function AuthDebugPage() {
   const auth = useAuth();
-  const [cookieNames, setCookieNames] = useState<string[]>([]);
-
-  useEffect(() => {
+  const cookieNames = useMemo(() => {
     try {
-      const names = document.cookie
+      return document.cookie
         .split(";")
         .map((c) => c.trim().split("=")[0])
         .filter(Boolean);
-      setCookieNames(names);
     } catch {
-      setCookieNames([]);
+      return [];
     }
   }, []);
 

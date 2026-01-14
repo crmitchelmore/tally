@@ -4,6 +4,7 @@ import { ReactNode, useMemo } from "react";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { useAuth } from "@clerk/nextjs";
+import { getClerkPublishableKey } from "@/lib/clerk-public";
 
 /**
  * Convex client provider that uses Clerk authentication when available.
@@ -11,7 +12,7 @@ import { useAuth } from "@clerk/nextjs";
  */
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
   const url = process.env.NEXT_PUBLIC_CONVEX_URL;
-  const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  const clerkEnabled = Boolean(getClerkPublishableKey());
 
   // Keep builds/prerendering from crashing when local env isn't configured.
   const effectiveUrl = url ?? "https://invalid.local";

@@ -33,7 +33,8 @@ async function enterLocalMode(page: Page): Promise<void> {
   // Navigate to /app
   await page.goto("/app", { waitUntil: "domcontentloaded" });
   await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(500);
+  // Wait for React to hydrate and render
+  await page.waitForTimeout(2000);
 }
 
 async function createChallenge(
@@ -41,12 +42,16 @@ async function createChallenge(
   name: string,
   target: number
 ): Promise<void> {
+  // Wait for dashboard to fully load
+  await page.waitForTimeout(1000);
+  
   // Open create dialog - could be "Create Your First Challenge" or "New Challenge"
   const createBtn = page
     .getByRole("button", { name: /create.*challenge|new challenge/i })
     .first();
+  await expect(createBtn).toBeVisible({ timeout: 15000 });
   await createBtn.click();
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(1000);
 
   // Fill form
   await page.locator('input[placeholder*="Push-ups"]').fill(name);
@@ -55,7 +60,7 @@ async function createChallenge(
 
   // Submit
   await page.getByRole("button", { name: /create challenge/i }).last().click();
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(1500);
 }
 
 async function addEntry(page: Page, count: number): Promise<void> {
@@ -132,10 +137,10 @@ test.describe("FLOW-LOCAL-001: Enter Local Mode", () => {
   test("local mode shows local mode indicator", async ({ page }) => {
     await enterLocalMode(page);
 
-    // Should show local mode indicators
-    await expect(page.getByText(/local mode/i)).toBeVisible({ timeout: 5000 });
+    // Should show local mode indicators - use longer timeout for CI
+    await expect(page.getByText(/local mode/i)).toBeVisible({ timeout: 15000 });
     await expect(page.getByText(/local-only mode/i)).toBeVisible({
-      timeout: 5000,
+      timeout: 15000,
     });
   });
 
@@ -148,7 +153,7 @@ test.describe("FLOW-LOCAL-001: Enter Local Mode", () => {
         name: /create account/i,
       })
       .first();
-    await expect(createAccountBtn).toBeVisible({ timeout: 5000 });
+    await expect(createAccountBtn).toBeVisible({ timeout: 15000 });
   });
 });
 

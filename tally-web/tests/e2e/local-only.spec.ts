@@ -21,17 +21,19 @@ import { test, expect, Page } from "@playwright/test";
  * This is more reliable than clicking the button due to Next.js client navigation timing.
  */
 async function enterLocalMode(page: Page): Promise<void> {
-  // Navigate to landing page first to initialize the page context
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  // Navigate directly to /app
+  await page.goto("/app", { waitUntil: "domcontentloaded" });
+  
+  // Wait for initial page load
   await page.waitForLoadState("networkidle");
   
-  // Set local mode directly in localStorage (more reliable than button click)
+  // Set local mode in localStorage
   await page.evaluate(() => {
     localStorage.setItem("tally:appMode", "local-only");
   });
   
-  // Navigate to /app - the app will read from localStorage on mount
-  await page.goto("/app", { waitUntil: "domcontentloaded" });
+  // Reload to pick up the localStorage change
+  await page.reload({ waitUntil: "domcontentloaded" });
   await page.waitForLoadState("networkidle");
   
   // Wait for the local dashboard to render by looking for the "Local Mode" badge

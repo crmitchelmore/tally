@@ -9,7 +9,9 @@ on:
   pull_request:
     paths:
       - 'tally-web/**'
+      - 'packages/**'
       - '!tally-web/**/*.md'
+  workflow_dispatch:
 
 jobs:
   lighthouse:
@@ -17,9 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: development
     continue-on-error: true # Non-blocking until baselines established
-    defaults:
-      run:
-        working-directory: tally-web
     steps:
       - uses: actions/checkout@v6
 
@@ -30,8 +29,13 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Build shared packages
+        run: bun run build
+        working-directory: packages/shared-types
+
       - name: Build
         run: bun run build
+        working-directory: tally-web
         env:
           # Map _DEV key to base key for build-time inlining
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
@@ -51,6 +55,7 @@ jobs:
             sleep 1
           done
           curl -fsSL http://localhost:3000 >/dev/null
+        working-directory: tally-web
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV }}
@@ -79,6 +84,7 @@ jobs:
           artifactName: lighthouse-results-mobile
 
       - name: Check bundle size
+        working-directory: tally-web
         run: |
           # Report bundle sizes
           echo "## Bundle Analysis" >> $GITHUB_STEP_SUMMARY
@@ -123,9 +129,6 @@ jobs:
     name: Bundle Size Check
     runs-on: ubuntu-latest
     environment: development
-    defaults:
-      run:
-        working-directory: tally-web
     steps:
       - uses: actions/checkout@v6
 
@@ -136,7 +139,12 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Build shared packages
+        run: bun run build
+        working-directory: packages/shared-types
+
       - name: Analyze bundle
+        working-directory: tally-web
         run: |
           # Build with bundle analyzer
           ANALYZE=true bun run build 2>/dev/null || bun run build
@@ -146,6 +154,7 @@ jobs:
           SKIP_ENV_VALIDATION: true
 
       - name: Report sizes
+        working-directory: tally-web
         run: |
           echo "## Bundle Size Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

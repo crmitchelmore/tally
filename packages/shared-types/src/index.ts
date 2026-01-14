@@ -11,6 +11,12 @@
 // Re-export Zod schemas for runtime validation
 export * from "./schemas.js";
 
+// Re-export export/import schema for local-only mode and data migration
+export * from "./export-schema.js";
+
+// Re-export DataStore contract for local/synced abstraction
+export * from "./datastore.js";
+
 export type TimeframeUnit = "year" | "month" | "custom";
 export type FeelingType = "very-easy" | "easy" | "moderate" | "hard" | "very-hard";
 

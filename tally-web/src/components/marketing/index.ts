@@ -8,3 +8,4 @@ export { HowItWorksSection } from "./HowItWorksSection";
 export { TestimonialsSection } from "./TestimonialsSection";
 export { StatsBar } from "./StatsBar";
 export { AnimatedGradientBg, FloatingParticles } from "./AnimatedBackground";
+export { LandingCTAButtons } from "./LandingCTAButtons";

@@ -7,6 +7,7 @@ import { ConvexClientProvider } from "@/providers/convex-provider";
 import { FeatureFlagsProvider } from "@/providers/feature-flags-provider";
 import { PostHogProvider } from "@/providers/posthog-provider";
 import { SentryProvider } from "@/providers/sentry-provider";
+import { AppModeProvider } from "@/providers/app-mode-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -37,8 +38,10 @@ export default function RootLayout({
       <PostHogProvider>
         <FeatureFlagsProvider>
           <ConvexClientProvider>
-            {children}
-            <Toaster />
+            <AppModeProvider>
+              {children}
+              <Toaster />
+            </AppModeProvider>
           </ConvexClientProvider>
         </FeatureFlagsProvider>
       </PostHogProvider>

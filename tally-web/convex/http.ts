@@ -394,6 +394,52 @@ http.route({
 });
 
 // =============================================================================
+// Migration Routes (for local-only → synced flow)
+// =============================================================================
+
+http.route({
+  path: "/api/v1/migration/check",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const user = await requireUser(ctx, request);
+    if (!user) return json(401, { error: "Unauthorized" });
+
+    const result = await ctx.runQuery(api.import.checkExistingData, {});
+    return json(200, result);
+  }),
+});
+
+http.route({
+  path: "/api/v1/migration/import",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const user = await requireUser(ctx, request);
+    if (!user) return json(401, { error: "Unauthorized" });
+
+    const data = await request.json().catch(() => null);
+    if (!data) return json(400, { error: "Invalid JSON" });
+
+    // Validate required fields
+    if (!data.schemaVersion) return json(400, { error: "schemaVersion is required" });
+    if (!Array.isArray(data.challenges)) return json(400, { error: "challenges must be an array" });
+    if (!Array.isArray(data.entries)) return json(400, { error: "entries must be an array" });
+
+    const result = await ctx.runMutation(api.import.migrateFromLocal, {
+      schemaVersion: data.schemaVersion,
+      challenges: data.challenges,
+      entries: data.entries,
+      strategy: data.strategy,
+    });
+
+    if (!result.success) {
+      return json(409, { error: result.error, ...result });
+    }
+
+    return json(200, result);
+  }),
+});
+
+// =============================================================================
 // Legacy /api/ Routes (compatibility aliases - deprecated)
 // These routes maintain backwards compatibility but return Convex _id format.
 // New clients should use /api/v1/ routes.

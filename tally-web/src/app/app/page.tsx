@@ -39,11 +39,16 @@ import type { Challenge, SetData, FeelingType } from "@/types";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useMotionPreference } from "@/hooks/use-reduced-motion";
+import { useAppMode } from "@/providers/app-mode-provider";
+import { ModeIndicator } from "@/components/tally/mode-indicator";
+import { RequiresCommunityAccess } from "@/components/tally/requires-account";
+import { LocalDashboard } from "@/components/tally/local-dashboard";
 
 type ViewMode = "dashboard" | "leaderboard" | "community";
 
 export default function Home() {
   const clerkEnabled = Boolean(getClerkPublishableKey());
+  const { mode, isLocalOnly, isReady: isModeReady } = useAppMode();
 
   useStoreUser();
   const { user: convexUser, isLoaded: isUserLoaded } = useCurrentUser();
@@ -56,9 +61,11 @@ export default function Home() {
   const [exportImportOpen, setExportImportOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("dashboard");
 
-  const challengesRaw = useQuery(api.challenges.listActive, convexUser ? { userId: convexUser._id } : "skip");
-  const entriesRaw = useQuery(api.entries.listByUser, convexUser ? { userId: convexUser._id } : "skip");
-  const followedChallengesRaw = useQuery(api.followedChallenges.listByUser, convexUser ? { userId: convexUser._id } : "skip");
+  // In local-only mode, skip Convex queries
+  const shouldSkipConvex = isLocalOnly || !convexUser;
+  const challengesRaw = useQuery(api.challenges.listActive, shouldSkipConvex ? "skip" : { userId: convexUser!._id });
+  const entriesRaw = useQuery(api.entries.listByUser, shouldSkipConvex ? "skip" : { userId: convexUser!._id });
+  const followedChallengesRaw = useQuery(api.followedChallenges.listByUser, shouldSkipConvex ? "skip" : { userId: convexUser!._id });
 
   const challenges = useMemo(() => (challengesRaw ? toChallenges(challengesRaw) : undefined), [challengesRaw]);
   const entries = useMemo(() => (entriesRaw ? toEntries(entriesRaw) : undefined), [entriesRaw]);
@@ -71,7 +78,8 @@ export default function Home() {
     ? challenges?.find((c) => c.id === selectedChallengeId)
     : undefined;
 
-  const isLoading = !isUserLoaded || challenges === undefined || entries === undefined;
+  // Loading state for synced mode (local mode handles its own loading)
+  const isLoading = isLocalOnly ? false : (!isUserLoaded || challenges === undefined || entries === undefined);
 
   const createChallenge = useMutation(api.challenges.create);
   const updateChallenge = useMutation(api.challenges.update);
@@ -118,24 +126,69 @@ export default function Home() {
     });
   };
 
-  // Show leaderboard view
-  if (viewMode === "leaderboard" && convexUser) {
+  // Wait for mode to be determined before making any mode-dependent decisions
+  if (!isModeReady) {
     return (
-      <LeaderboardView
-        userId={convexUser._id}
-        onBack={() => setViewMode("dashboard")}
+      <div className="min-h-screen bg-background tally-marks-bg flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  // In local-only mode, render the local dashboard
+  if (isLocalOnly && viewMode === "dashboard") {
+    return (
+      <LocalDashboard
+        onSwitchToLeaderboard={() => setViewMode("leaderboard")}
+        onSwitchToCommunity={() => setViewMode("community")}
       />
     );
   }
 
-  // Show community/public challenges view
-  if (viewMode === "community" && convexUser) {
-    return (
-      <PublicChallengesView
-        userId={convexUser._id}
-        onBack={() => setViewMode("dashboard")}
-      />
-    );
+  // Show leaderboard view (requires account)
+  if (viewMode === "leaderboard") {
+    if (isLocalOnly) {
+      return (
+        <RequiresCommunityAccess>
+          <LeaderboardView
+            userId={"" as Id<"users">}
+            onBack={() => setViewMode("dashboard")}
+          />
+        </RequiresCommunityAccess>
+      );
+    }
+    if (convexUser) {
+      return (
+        <LeaderboardView
+          userId={convexUser._id}
+          onBack={() => setViewMode("dashboard")}
+        />
+      );
+    }
+  }
+
+  // Show community/public challenges view (requires account)
+  if (viewMode === "community") {
+    if (isLocalOnly) {
+      // In local-only mode, RequiresCommunityAccess will show the gate, not the children
+      // So the userId is never used - we can safely pass a placeholder
+      return (
+        <RequiresCommunityAccess>
+          <PublicChallengesView
+            userId={convexUser?._id ?? ("" as Id<"users">)}
+            onBack={() => setViewMode("dashboard")}
+          />
+        </RequiresCommunityAccess>
+      );
+    }
+    if (convexUser) {
+      return (
+        <PublicChallengesView
+          userId={convexUser._id}
+          onBack={() => setViewMode("dashboard")}
+        />
+      );
+    }
   }
 
   return (
@@ -147,9 +200,50 @@ export default function Home() {
               <Target className="h-6 w-6" />
               <h1 className="text-xl font-bold">Tally</h1>
             </div>
+            {/* Mode indicator in header */}
+            <ModeIndicator compact className="hidden sm:flex" />
           </div>
           <div className="flex items-center gap-2">
-            {clerkEnabled ? (
+            {/* Local-only mode header actions */}
+            {isLocalOnly && (
+              <>
+                {challenges && challenges.length > 0 && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => setAddEntryOpen(true)}
+                    aria-label="Add entry"
+                  >
+                    <Plus className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Add Entry</span>
+                  </Button>
+                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" aria-label="More options">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setCreateOpen(true)}>
+                      <Target className="h-4 w-4 mr-2" />
+                      New Challenge
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setExportImportOpen(true)}>
+                      <Database className="h-4 w-4 mr-2" />
+                      Backup & Restore
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Link href="/sign-up">
+                  <Button variant="outline" size="sm">
+                    Create Account
+                  </Button>
+                </Link>
+              </>
+            )}
+            {/* Synced mode header actions */}
+            {!isLocalOnly && clerkEnabled ? (
               <SignedIn>
               {/* Primary action - Add Entry (always visible when challenges exist) */}
               {challenges && challenges.length > 0 && (

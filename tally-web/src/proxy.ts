@@ -209,17 +209,29 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
 }
 
 // Create the Clerk middleware handler
-const clerkMiddlewareHandler = clerkMiddleware(async (auth, req: NextRequest) => {
-  if (!isPublicRoute(req)) {
-    await auth.protect();
-  }
+// Force auth redirects onto our own /sign-in and /sign-up routes (never accounts.*).
+const clerkMiddlewareHandler = clerkMiddleware(
+  async (auth, req: NextRequest) => {
+    const origin = req.nextUrl.origin;
 
-  // Get the response from the next handler
-  const response = NextResponse.next();
+    if (!isPublicRoute(req)) {
+      await auth.protect(undefined, {
+        unauthenticatedUrl: `${origin}/sign-in`,
+        unauthorizedUrl: `${origin}/sign-in`,
+      });
+    }
 
-  // Add security headers to all responses
-  return addSecurityHeaders(response);
-});
+    // Get the response from the next handler
+    const response = NextResponse.next();
+
+    // Add security headers to all responses
+    return addSecurityHeaders(response);
+  },
+  (req) => ({
+    signInUrl: `${req.nextUrl.origin}/sign-in`,
+    signUpUrl: `${req.nextUrl.origin}/sign-up`,
+  }),
+);
 
 // Main middleware function - handle Clerk proxy before clerkMiddleware
 export default async function middleware(req: NextRequest, event: NextFetchEvent) {

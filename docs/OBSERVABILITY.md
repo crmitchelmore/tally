@@ -139,6 +139,14 @@ All spans include:
 - `service.version`: app version
 - `os.type`, `os.name`, `os.version`
 
+### Guardrails & Learnings
+
+- **Avoid leaking secrets/PII in trace attributes**: prefer `http.target` (path-only) over `http.url` (which may include query params).
+- **Thread-safe init**:
+  - iOS: singleton telemetry objects must be Swift 6 concurrency-safe (e.g. `@unchecked Sendable` + `NSLock`).
+  - Android: telemetry initialization should be protected with double-check locking (`@Volatile` + `synchronized`).
+- **Environment consistency**: ensure both Sentry + OTel use the same environment values (`development` for debug, `production` for release).
+
 ### Usage
 
 **Web:**

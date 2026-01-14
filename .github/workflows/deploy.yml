@@ -106,8 +106,6 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.1.36"
-          cache: true
-          cache-dependency-path: tally-web/bun.lockb
 
       - name: Install deps
         run: bun install --frozen-lockfile
@@ -152,8 +150,6 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.1.36"
-          cache: true
-          cache-dependency-path: tally-web/bun.lockb
 
       - name: Install deps
         run: bun install --frozen-lockfile
@@ -361,8 +357,6 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.1.36"
-          cache: true
-          cache-dependency-path: tally-web/bun.lockb
 
       - name: Install deps
         run: bun install --frozen-lockfile
@@ -464,8 +458,6 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.1.36"
-          cache: true
-          cache-dependency-path: tally-web/bun.lockb
 
       - name: Install deps
         run: bun install --frozen-lockfile
@@ -577,8 +569,6 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.1.36"
-          cache: true
-          cache-dependency-path: tally-web/bun.lockb
 
       - name: Install deps
         run: bun install --frozen-lockfile
@@ -674,8 +664,6 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.1.36"
-          cache: true
-          cache-dependency-path: tally-web/bun.lockb
 
       - name: Install deps
         run: bun install --frozen-lockfile

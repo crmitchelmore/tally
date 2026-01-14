@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TallyExportPayload",
+  "description": "Canonical format for exporting and importing Tally user data across platforms",
+  "type": "object",
+  "required": ["schemaVersion", "exportedAt", "source", "challenges", "entries"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the export schema"
+    },
+    "exportedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of when the export was created"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["web", "ios", "android"],
+      "description": "Platform that created this export"
+    },
+    "challenges": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Challenge" }
+    },
+    "entries": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Entry" }
+    }
+  },
+  "definitions": {
+    "Challenge": {
+      "type": "object",
+      "required": ["id", "name", "targetNumber", "year", "color", "icon", "timeframeUnit", "isPublic", "archived", "createdAt", "updatedAt"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "UUID v4 - stable identifier"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "targetNumber": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 2020,
+          "maximum": 2100
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+        },
+        "icon": {
+          "type": "string",
+          "minLength": 1
+        },
+        "timeframeUnit": {
+          "type": "string",
+          "enum": ["year", "month", "custom"]
+        },
+        "startDate": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "endDate": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Unix timestamp in milliseconds"
+        },
+        "updatedAt": {
+          "type": "number",
+          "description": "Unix timestamp in milliseconds"
+        }
+      }
+    },
+    "Entry": {
+      "type": "object",
+      "required": ["id", "challengeId", "date", "count", "createdAt", "updatedAt"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "challengeId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "References a Challenge.id"
+        },
+        "date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "sets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["reps"],
+            "properties": {
+              "reps": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "feeling": {
+          "type": "string",
+          "enum": ["very-easy", "easy", "moderate", "hard", "very-hard"]
+        },
+        "createdAt": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

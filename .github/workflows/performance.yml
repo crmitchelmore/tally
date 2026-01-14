@@ -11,6 +11,7 @@ on:
       - 'tally-web/**'
       - 'packages/**'
       - '!tally-web/**/*.md'
+  workflow_dispatch:
 
 jobs:
   lighthouse:

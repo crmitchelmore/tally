@@ -10,7 +10,7 @@
  * In synced mode: Uses Convex via existing hooks/mutations
  */
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useAppMode } from "@/providers/app-mode-provider";
@@ -46,7 +46,9 @@ interface DataStoreHook {
   deleteChallenge: (id: string) => Promise<void>;
 
   // Entry operations
+  entries: ExportedEntry[];
   getEntries: (challengeId: string) => Promise<ExportedEntry[]>;
+  getEntriesSync: (challengeId: string) => ExportedEntry[];
   createEntry: (
     data: Omit<ExportedEntry, "id" | "createdAt" | "updatedAt">
   ) => Promise<string>;
@@ -60,6 +62,9 @@ interface DataStoreHook {
     options?: { clearExisting?: boolean }
   ) => Promise<ImportResult>;
   clearAll: () => Promise<void>;
+  
+  // Refresh data
+  refreshData: () => void;
 }
 
 // =============================================================================
@@ -70,9 +75,50 @@ function useLocalDataStore(): DataStoreHook {
   const { isReady } = useAppMode();
   const localStore = useMemo(() => getLocalDataStore(), []);
 
-  // For local mode, we need to manage our own state
-  // We'll use a simple approach: fetch on demand
-  // In a real app, you might want to add React Query or SWR for caching
+  // Local state for reactive updates
+  const [challenges, setChallenges] = useState<ExportedChallenge[] | undefined>(
+    undefined
+  );
+  const [entries, setEntries] = useState<ExportedEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshCounter, setRefreshCounter] = useState(0);
+
+  // Load challenges from IndexedDB on mount and when refreshCounter changes
+  useEffect(() => {
+    if (!isReady) return;
+
+    let mounted = true;
+    setIsLoading(true);
+
+    (async () => {
+      try {
+        const allChallenges = await localStore.getAllChallenges();
+        // Also load all entries for convenience
+        const allEntries = await localStore.getAllEntries();
+        if (mounted) {
+          setChallenges(allChallenges);
+          setEntries(allEntries);
+          setIsLoading(false);
+        }
+      } catch (e) {
+        console.error("Failed to load local data:", e);
+        if (mounted) {
+          setChallenges([]);
+          setEntries([]);
+          setIsLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isReady, localStore, refreshCounter]);
+
+  // Trigger a refresh of local data
+  const refreshData = useCallback(() => {
+    setRefreshCounter((c) => c + 1);
+  }, []);
 
   const createChallenge = useCallback(
     async (
@@ -83,9 +129,10 @@ function useLocalDataStore(): DataStoreHook {
         ...data,
         id,
       });
+      refreshData();
       return id;
     },
-    [localStore]
+    [localStore, refreshData]
   );
 
   const updateChallenge = useCallback(
@@ -97,15 +144,17 @@ function useLocalDataStore(): DataStoreHook {
         ...data,
         id,
       });
+      refreshData();
     },
-    [localStore]
+    [localStore, refreshData]
   );
 
   const deleteChallenge = useCallback(
     async (id: string): Promise<void> => {
       await localStore.deleteChallenge(id);
+      refreshData();
     },
-    [localStore]
+    [localStore, refreshData]
   );
 
   const getEntries = useCallback(
@@ -113,6 +162,14 @@ function useLocalDataStore(): DataStoreHook {
       return localStore.getEntries(challengeId);
     },
     [localStore]
+  );
+
+  // Get entries for a challenge from cached state (sync)
+  const getEntriesSync = useCallback(
+    (challengeId: string): ExportedEntry[] => {
+      return entries.filter((e) => e.challengeId === challengeId);
+    },
+    [entries]
   );
 
   const createEntry = useCallback(
@@ -124,9 +181,10 @@ function useLocalDataStore(): DataStoreHook {
         ...data,
         id,
       });
+      refreshData();
       return id;
     },
-    [localStore]
+    [localStore, refreshData]
   );
 
   const updateEntry = useCallback(
@@ -138,15 +196,17 @@ function useLocalDataStore(): DataStoreHook {
         ...data,
         id,
       });
+      refreshData();
     },
-    [localStore]
+    [localStore, refreshData]
   );
 
   const deleteEntry = useCallback(
     async (id: string): Promise<void> => {
       await localStore.deleteEntry(id);
+      refreshData();
     },
-    [localStore]
+    [localStore, refreshData]
   );
 
   const exportAll = useCallback(async (): Promise<TallyExportPayload> => {
@@ -158,30 +218,36 @@ function useLocalDataStore(): DataStoreHook {
       payload: TallyExportPayload,
       options?: { clearExisting?: boolean }
     ): Promise<ImportResult> => {
-      return localStore.importAll(payload, options);
+      const result = await localStore.importAll(payload, options);
+      refreshData();
+      return result;
     },
-    [localStore]
+    [localStore, refreshData]
   );
 
   const clearAll = useCallback(async (): Promise<void> => {
     await localStore.clearAll();
-  }, [localStore]);
+    refreshData();
+  }, [localStore, refreshData]);
 
   return {
     isReady,
     mode: "local-only",
-    challenges: undefined, // Will be fetched on demand
-    isLoadingChallenges: false,
+    challenges,
+    entries,
+    isLoadingChallenges: isLoading,
     createChallenge,
     updateChallenge,
     deleteChallenge,
     getEntries,
+    getEntriesSync,
     createEntry,
     updateEntry,
     deleteEntry,
     exportAll,
     importAll,
     clearAll,
+    refreshData,
   };
 }
 
@@ -384,21 +450,39 @@ function useSyncedDataStore(): DataStoreHook {
     await clearAllMutation({});
   }, [clearAllMutation]);
 
+  // Synced mode doesn't have local entries array
+  const getEntriesSync = useCallback(
+    (_challengeId: string): ExportedEntry[] => {
+      console.warn(
+        "getEntriesSync in synced mode should use useQuery(api.entries.listByChallenge)"
+      );
+      return [];
+    },
+    []
+  );
+
+  const refreshData = useCallback(() => {
+    // Convex handles reactivity automatically, no-op here
+  }, []);
+
   return {
     isReady,
     mode: "synced",
     challenges: transformedChallenges,
+    entries: [], // Entries are fetched per-component in synced mode
     isLoadingChallenges: challenges === undefined,
     createChallenge,
     updateChallenge,
     deleteChallenge,
     getEntries,
+    getEntriesSync,
     createEntry,
     updateEntry,
     deleteEntry,
     exportAll,
     importAll,
     clearAll,
+    refreshData,
   };
 }
 
@@ -460,6 +544,9 @@ export function useDataStore(): DataStoreHook {
       clearAll: async () => {
         throw new Error("Store not ready");
       },
+      entries: [],
+      getEntriesSync: () => [],
+      refreshData: () => {},
     };
   }
 

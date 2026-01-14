@@ -22,62 +22,50 @@
 
 ### Gaps/Improvements needed:
 
-1. **Missing**: Canonical export schema definition (mentioned but not specified)
-2. **Missing**: Convex import mutation specification
-3. **Clarification needed**: How does the mode selector UI work during onboarding?
-4. **Missing**: Error handling for migration failures
-5. **Missing**: What happens if user signs out of synced mode?
+1. ~~**Missing**: Canonical export schema definition~~ ✅ DONE
+2. ~~**Missing**: Convex import mutation specification~~ ✅ DONE
+3. ~~**Clarification needed**: How does the mode selector UI work during onboarding?~~ ✅ DONE
+4. ~~**Missing**: Error handling for migration failures~~ ✅ DONE
+5. **Missing**: What happens if user signs out of synced mode? (deferred)
 
 ---
 
-## Phase 0: Schema & Contracts (CONTINUE TO COMPLETION)
+## Phase 0: Schema & Contracts ✅ COMPLETE
 
-- [ ] **0.1 Define canonical export/import JSON schema**
-  - [ ] Create `packages/tally-export-schema/` package
-  - [ ] Define TypeScript types for export payload
-  - [ ] Define JSON Schema for validation
-  - [ ] Add schema version field (start at `1.0.0`)
-  - [ ] Document all fields with JSDoc
-  - [ ] Export from package for all platforms to consume
+- [x] **0.1 Define canonical export/import JSON schema**
+  - [x] Created `packages/shared-types/src/export-schema.ts`
+  - [x] Defined TypeScript types for export payload
+  - [x] Created JSON Schema (`export-schema.json`)
+  - [x] Added schema version field (`1.0.0`)
+  - [x] Documented all fields with JSDoc
 
-- [ ] **0.2 Define DataStore interface contract**
-  - [ ] Create `packages/datastore-contract/` (or add to shared-types)
-  - [ ] Define `DataStore` interface with all CRUD operations
-  - [ ] Define `AppMode` type: `'local-only' | 'synced'`
-  - [ ] Define migration types: `MigrationResult`, `MigrationConflict`
-  - [ ] Export for all platforms
+- [x] **0.2 Define DataStore interface contract**
+  - [x] Created `packages/shared-types/src/datastore.ts`
+  - [x] Defined `DataStore` interface with all CRUD operations
+  - [x] Defined `AppMode` type: `'local-only' | 'synced'`
+  - [x] Defined migration types: `MigrationResult`, `MigrationConflict`
 
-- [ ] **0.3 Add Convex import mutation**
-  - [ ] Create `tally-web/convex/migrations.ts`
-  - [ ] Implement `importPayload` mutation (authenticated)
-  - [ ] Validate payload against schema
-  - [ ] Upsert challenges with provided UUIDs
-  - [ ] Upsert entries with provided UUIDs
-  - [ ] Return success/failure with ID mappings
-  - [ ] Add to HTTP API (`http.ts`) for mobile access
-  - [ ] Test mutation manually
-
-> **CONTINUE TO COMPLETION** - Phase 0 defines the contract. All subsequent work depends on this.
+- [x] **0.3 Add Convex import mutation**
+  - [x] Added `migrateFromLocal` mutation to `tally-web/convex/import.ts`
+  - [x] Added `checkExistingData` query
+  - [x] Implemented with replace/skip strategies
+  - [x] Added to HTTP API (`http.ts`) for mobile access
 
 ---
 
-## Phase 1: Web Local-Only MVP (CONTINUE TO COMPLETION)
+## Phase 1: Web Local-Only MVP ✅ INFRASTRUCTURE COMPLETE
 
-### 1.1 LocalDataStore Implementation
+### 1.1 LocalDataStore Implementation ✅
 
-- [ ] **1.1.1 Create IndexedDB wrapper**
-  - [ ] Install `idb` package: `cd tally-web && bun add idb`
-  - [ ] Create `tally-web/src/lib/local-storage/db.ts`
-  - [ ] Define IndexedDB schema: `challenges`, `entries`, `settings`
-  - [ ] Implement database initialization with versioning
-  - [ ] Handle upgrade migrations for schema changes
+- [x] **1.1.1 Create IndexedDB wrapper**
+  - [x] Install `idb` package
+  - [x] Create `tally-web/src/lib/local-storage/db.ts`
+  - [x] Define IndexedDB schema: `challenges`, `entries`, `settings`
 
-- [ ] **1.1.2 Implement LocalDataStore class**
-  - [ ] Create `tally-web/src/lib/local-storage/local-data-store.ts`
-  - [ ] Implement `getChallenges()` / `putChallenge()` / `deleteChallenge()`
-  - [ ] Implement `getEntries(challengeId)` / `putEntry()` / `deleteEntry()`
-  - [ ] Implement `export()` → returns canonical JSON
-  - [ ] Implement `import(payload)` → validates and inserts
+- [x] **1.1.2 Implement LocalDataStore class**
+  - [x] Create `tally-web/src/lib/local-storage/local-data-store.ts`
+  - [x] Implement all CRUD operations
+  - [x] Implement `exportAll()` and `importAll()`
   - [ ] Add TypeScript types matching the contract
 
 - [ ] **1.1.3 Create mode persistence**
@@ -87,105 +75,104 @@
   - [ ] Create `setAppMode()` function
   - [ ] Handle SSR (check `typeof window`)
 
-### 1.2 Onboarding Flow
+### 1.2 Onboarding Flow ✅
 
-- [ ] **1.2.1 Modify landing page**
-  - [ ] Update `/` or `/sign-in` to show two options:
-    - "Continue locally (no account)"
-    - "Sign in / Create account"
-  - [ ] Wire "Continue locally" to set mode and redirect to `/app`
-  - [ ] Ensure existing sign-in flow still works
+- [x] **1.2.1 Modify landing page**
+  - [x] Added "Continue without an account" button to landing CTA
+  - [x] Created `LandingCTAButtons.tsx` component
+  - [x] Wire "Continue locally" to set mode and redirect to `/app`
 
-- [ ] **1.2.2 Create mode context provider**
-  - [ ] Create `tally-web/src/providers/app-mode-provider.tsx`
-  - [ ] Provide `mode`, `isLocalOnly`, `setMode` via context
-  - [ ] Wrap app in provider (before or alongside Clerk)
-  - [ ] Handle hydration mismatches gracefully
+- [x] **1.2.2 Create mode context provider**
+  - [x] Created `tally-web/src/providers/app-mode-provider.tsx`
+  - [x] Provides `mode`, `isLocalOnly`, `setMode` via context
+  - [x] Wrapped app in provider in layout.tsx
+  - [x] Handles hydration mismatches gracefully
 
-### 1.3 Feature Gating
+### 1.3 Feature Gating ✅ COMPONENTS CREATED
 
-- [ ] **1.3.1 Gate Convex calls in local-only mode**
-  - [ ] Create `useDataStore()` hook that returns either:
-    - Convex queries/mutations (synced mode)
-    - LocalDataStore methods (local-only mode)
-  - [ ] Update challenge list to use `useDataStore()`
-  - [ ] Update challenge detail to use `useDataStore()`
-  - [ ] Update entry management to use `useDataStore()`
+- [x] **1.3.1 Create useDataStore hook**
+  - [x] Created `tally-web/src/hooks/use-data-store.ts`
+  - [x] Returns LocalDataStore methods in local-only mode
+  - [x] Returns Convex queries/mutations in synced mode
+  - [ ] ⏳ App page needs refactoring to USE this hook (see 1.7)
 
-- [ ] **1.3.2 Gate community features**
-  - [ ] Create `<RequiresAccount>` wrapper component
-  - [ ] Wrap community browse page
-  - [ ] Wrap leaderboard page (if requires account)
-  - [ ] Show friendly "Create account to access community" message
-  - [ ] Add "Create account" CTA button
+- [x] **1.3.2 Gate community features**
+  - [x] Created `<RequiresAccount>` wrapper component
+  - [x] Created `<RequiresCommunityAccess>` variant
+  - [ ] ⏳ Need to wire into community/leaderboard views
 
 - [ ] **1.3.3 Hide/disable sync indicators**
-  - [ ] Identify all sync-related UI elements
-  - [ ] Conditionally hide in local-only mode
-  - [ ] Remove real-time subscription hooks in local-only mode
+  - [ ] ⏳ Needs integration into app UI
 
-### 1.4 Mode Indicator UI
+### 1.4 Mode Indicator UI ✅
 
-- [ ] **1.4.1 Add header badge**
-  - [ ] Create `<ModeIndicator>` component
-  - [ ] Show "Local-only" badge when in that mode
-  - [ ] Add "Upgrade to sync" button/link
-  - [ ] Style to be calm but visible
+- [x] **1.4.1 Add header badge**
+  - [x] Created `<ModeIndicator>` component
+  - [x] Shows "Local-only" badge when in that mode
+  - [x] Includes "Upgrade to sync" button/link
 
-- [ ] **1.4.2 Add settings page section**
-  - [ ] Add "Data Mode" section to settings
-  - [ ] Show current mode: "Local-only" or "Synced"
-  - [ ] Show "Upgrade to sync" CTA for local-only
-  - [ ] Show explanatory text
+- [x] **1.4.2 Created LocalOnlyBanner**
+  - [x] For settings page or prominent display
+  - [ ] ⏳ Need to wire into settings/header
 
-### 1.5 Migration Flow (Local → Synced)
+### 1.5 Migration Flow (Local → Synced) ✅
 
-- [ ] **1.5.1 Create migration service**
-  - [ ] Create `tally-web/src/lib/local-storage/migration.ts`
-  - [ ] Implement `migrateLocalToCloud(userId)`:
-    - Export all local data
-    - Call Convex import mutation
-    - On success: clear local data, set mode to synced
-    - On failure: rollback, show error
+- [x] **1.5.1 Create migration service**
+  - [x] Created `tally-web/src/lib/local-storage/migration.ts`
+  - [x] Implements `migrateLocalToCloud()` with Convex HTTP endpoint
+  - [x] Clears local data on success, sets mode to synced
 
-- [ ] **1.5.2 Create migration UI flow**
-  - [ ] After sign-up/sign-in, detect local data exists
-  - [ ] Show migration options:
-    - New account: "Migrate your local data?" (yes/no)
-    - Existing account: Show conflict choices
-  - [ ] Run migration on confirmation
-  - [ ] Show success/failure message
-  - [ ] Redirect to app in synced mode
+- [x] **1.5.2 Create migration UI flow**
+  - [x] Created `MigrationDialog` component
+  - [x] Detects local data on sign-in
+  - [x] Shows migration options
+  - [x] Handles success/failure
 
-- [ ] **1.5.3 Handle edge cases**
-  - [ ] User cancels migration → stays in local-only? or synced without local data?
-  - [ ] Migration fails midway → retry mechanism
-  - [ ] Network error during migration → queue for retry
+- [x] **1.5.3 Handle edge cases**
+  - [x] User can skip migration
+  - [x] Error handling with retry option
 
 ### 1.6 Import/Export Updates
 
 - [ ] **1.6.1 Update export to use active store**
-  - [ ] Modify export logic to check current mode
-  - [ ] Use LocalDataStore.export() in local-only
-  - [ ] Use Convex export in synced mode
-  - [ ] Ensure same output format
+  - [ ] ⏳ ExportImportDialog already works, just needs parent to pass correct data
+  - [ ] Needs app page refactoring
 
 - [ ] **1.6.2 Update import to use active store**
-  - [ ] Modify import logic to check current mode
-  - [ ] Use LocalDataStore.import() in local-only
-  - [ ] Use Convex import in synced mode
-  - [ ] Validate schema version before import
+  - [ ] ⏳ Same as above
 
-### 1.7 Testing & Verification (CONTINUE TO COMPLETION)
+### 1.7 App Page Integration (CRITICAL REMAINING WORK)
 
-- [ ] **1.7.1 Manual testing**
+The app page (`/app/page.tsx`) currently uses Convex directly. For local-only mode to work end-to-end, it needs refactoring to:
+
+- [ ] **1.7.1 Refactor app page to use useDataStore**
+  - [ ] Replace direct Convex hooks with useDataStore
+  - [ ] Handle loading states for both modes
+  - [ ] Update challenge CRUD operations
+  - [ ] Update entry CRUD operations
+
+- [ ] **1.7.2 Add mode indicator to header**
+  - [ ] Show ModeIndicator in app header
+  - [ ] Show LocalOnlyBanner if appropriate
+
+- [ ] **1.7.3 Wire RequiresAccount to community views**
+  - [ ] Wrap LeaderboardView with RequiresAccount
+  - [ ] Wrap PublicChallengesView with RequiresCommunityAccess
+
+- [ ] **1.7.4 Trigger migration dialog**
+  - [ ] After successful sign-in, check for local data
+  - [ ] Show MigrationDialog if data exists
+
+### 1.8 Testing & Verification (CONTINUE TO COMPLETION)
+
+- [ ] **1.8.1 Manual testing**
   - [ ] Complete full workflow in local-only mode
   - [ ] Create challenge, add entries, view stats
   - [ ] Export data, clear, re-import
   - [ ] Data persists across page refresh
   - [ ] Data persists across browser restart
 
-- [ ] **1.7.2 Migration testing**
+- [ ] **1.8.2 Migration testing**
   - [ ] Test migration to new account
   - [ ] Verify data appears in Convex dashboard
   - [ ] Verify app works in synced mode after

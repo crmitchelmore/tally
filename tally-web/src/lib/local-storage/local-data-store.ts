@@ -258,6 +258,21 @@ export class LocalDataStore implements DataStore {
   // -------------------------------------------------------------------------
 
   /**
+   * Get all challenges (alias for getChallenges with includeArchived=true)
+   */
+  async getAllChallenges(): Promise<ExportedChallenge[]> {
+    return this.getChallenges(true);
+  }
+
+  /**
+   * Get all entries across all challenges
+   */
+  async getAllEntries(): Promise<ExportedEntry[]> {
+    const db = await getDB();
+    return db.getAll("entries");
+  }
+
+  /**
    * Get count of challenges and entries
    */
   async getDataCounts(): Promise<{

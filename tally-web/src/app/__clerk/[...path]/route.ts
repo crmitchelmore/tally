@@ -65,7 +65,9 @@ async function proxyClerk(req: NextRequest, params: Promise<{ path: string[] }>)
   const responseHeaders = new Headers();
   upstream.headers.forEach((value, key) => {
     const lowerKey = key.toLowerCase();
-    if (lowerKey === "transfer-encoding") return;
+    // Avoid truncation: edge fetch may transparently decode compression but keep upstream
+    // content-length/content-encoding. Strip these and let the runtime stream.
+    if (lowerKey === "content-length" || lowerKey === "content-encoding" || lowerKey === "transfer-encoding") return;
     if (lowerKey === "set-cookie") return;
 
     if (lowerKey === "location") {

@@ -194,8 +194,9 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
     response.headers.forEach((value, key) => {
       const lowerKey = key.toLowerCase();
 
-      // Skip transfer-encoding (Next will set this as needed)
-      if (lowerKey === "transfer-encoding") {
+      // Avoid truncation: edge fetch may transparently decode compression but keep upstream
+      // content-length/content-encoding. Strip these and let the runtime stream.
+      if (lowerKey === "content-length" || lowerKey === "content-encoding" || lowerKey === "transfer-encoding") {
         return;
       }
 

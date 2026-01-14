@@ -150,8 +150,23 @@ async function handleClerkProxy(req: NextRequest): Promise<NextResponse> {
       duplex: "half",
     });
     
+    const contentType = response.headers.get("content-type") || "";
+
     // Read the response body as ArrayBuffer to avoid encoding issues
-    const body = await response.arrayBuffer();
+    let body = await response.arrayBuffer();
+
+    // Clerk can return HTML/JS that hardcodes accounts.<domain> even when we want to stay on the app.
+    // As a last line of defense, rewrite those occurrences inside text responses.
+    if (/^text\/(html|javascript)/i.test(contentType) || /^application\/(javascript|json)/i.test(contentType)) {
+      const decoded = new TextDecoder().decode(body);
+      const origin = `${url.protocol}//${url.host}`;
+      const rewritten = decoded
+        .replaceAll("https://accounts.tally-tracker.app", origin)
+        .replaceAll("https://clerk.tally-tracker.app", `${origin}/__clerk`);
+      if (rewritten !== decoded) {
+        body = new TextEncoder().encode(rewritten).buffer;
+      }
+    }
     
     // Create response headers, removing problematic encoding headers
     // and rewriting cookie domains for the proxy

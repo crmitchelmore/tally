@@ -36,9 +36,21 @@ async function enterLocalMode(page: Page): Promise<void> {
   await page.reload({ waitUntil: "domcontentloaded" });
   await page.waitForLoadState("networkidle");
   
-  // Wait for the local dashboard to render by looking for the "Local Mode" badge
-  // This confirms React has hydrated and read the localStorage value
-  await expect(page.getByText("Local Mode")).toBeVisible({ timeout: 30000 });
+  // Debug: Log what mode is set and what's visible
+  const mode = await page.evaluate(() => localStorage.getItem("tally:appMode"));
+  console.log(`[enterLocalMode] localStorage mode: ${mode}`);
+  console.log(`[enterLocalMode] URL: ${page.url()}`);
+  
+  // Wait for either "Local Mode" badge or capture screenshot on timeout
+  try {
+    await expect(page.getByText("Local Mode")).toBeVisible({ timeout: 30000 });
+  } catch (error) {
+    // Capture screenshot for debugging
+    await page.screenshot({ path: `test-results/local-mode-failure-${Date.now()}.png`, fullPage: true });
+    const html = await page.content();
+    console.log(`[enterLocalMode] Page HTML preview: ${html.substring(0, 2000)}`);
+    throw error;
+  }
 }
 
 async function createChallenge(

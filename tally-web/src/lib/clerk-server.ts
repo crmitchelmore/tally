@@ -7,10 +7,12 @@ import { getClerkPublishableKey } from "./clerk-public";
  * In development: Prefers DEV key → base key (never falls back to PROD)
  */
 export function getClerkSecretKey(): string | undefined {
-  const isProd = process.env.VERCEL_ENV === "production";
-  return isProd
-    ? process.env.CLERK_SECRET_KEY_PROD ?? process.env.CLERK_SECRET_KEY
-    : process.env.CLERK_SECRET_KEY_DEV ?? process.env.CLERK_SECRET_KEY;
+  // Don't rely on VERCEL_ENV (can be absent in Edge runtime). Prefer the most specific key available.
+  return (
+    process.env.CLERK_SECRET_KEY_PROD ??
+    process.env.CLERK_SECRET_KEY_DEV ??
+    process.env.CLERK_SECRET_KEY
+  );
 }
 
 /**

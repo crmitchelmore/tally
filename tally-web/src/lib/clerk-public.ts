@@ -26,18 +26,7 @@ export function isVercelProduction(): boolean {
  * during migration while explicit *_DEV/*_PROD keys are being adopted.
  */
 export function getClerkPublishableKey(): string | undefined {
-  // Server-side: use VERCEL_ENV to determine environment
-  if (typeof process.env.VERCEL_ENV === "string") {
-    const isProd = process.env.VERCEL_ENV === "production";
-    return isProd
-      ? process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD ??
-          process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-      : process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV ??
-          process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  }
-
-  // Client-side: return whichever key is available
-  // The correct key will have been baked in at build time based on env
+  // Don't rely on VERCEL_ENV (can be absent in Edge runtime). Prefer the most specific key available.
   return (
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD ??
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_DEV ??

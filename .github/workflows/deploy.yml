@@ -101,9 +101,15 @@ jobs:
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
           echo "$HOME/.bun/bin" >> $GITHUB_PATH
+        working-directory: .
 
       - name: Install deps
         run: bun install --frozen-lockfile
+        working-directory: .
+
+      - name: Build shared packages
+        run: bun run build
+        working-directory: packages/shared-types
 
       - name: Lint
         run: bun run lint
@@ -145,9 +151,15 @@ jobs:
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
           echo "$HOME/.bun/bin" >> $GITHUB_PATH
+        working-directory: .
 
       - name: Install deps
         run: bun install --frozen-lockfile
+        working-directory: .
+
+      - name: Build shared packages
+        run: bun run build
+        working-directory: packages/shared-types
 
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
@@ -445,9 +457,15 @@ jobs:
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
           echo "$HOME/.bun/bin" >> $GITHUB_PATH
+        working-directory: .
 
       - name: Install deps
         run: bun install --frozen-lockfile
+        working-directory: .
+
+      - name: Build shared packages
+        run: bun run build
+        working-directory: packages/shared-types
 
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
@@ -643,9 +661,15 @@ jobs:
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.36"
           echo "$HOME/.bun/bin" >> $GITHUB_PATH
+        working-directory: .
 
       - name: Install deps
         run: bun install --frozen-lockfile
+        working-directory: .
+
+      - name: Build shared packages
+        run: bun run build
+        working-directory: packages/shared-types
 
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium

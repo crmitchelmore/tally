@@ -14,6 +14,7 @@ const isPublicRoute = createRouteMatcher([
   "/app(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/debug(.*)",
   "/api/webhooks(.*)",
   "/test-components",
   // Static assets - middleware matcher should exclude these but adding as fallback

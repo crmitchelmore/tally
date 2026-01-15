@@ -16,6 +16,20 @@
 - Repo setting: disable squash merges; allow rebase-only merges.
 - Require review approval; after approval use pr-resolver to validate checks before merge.
 
+## Execution prompt (copy/paste)
+You are a senior engineer shipping Tally. Your job: execute this plan end-to-end until completed, using the tech stack specified and integrating the Tally design philosophy (tactile, focused, honest; friendly, fast, calm; progressive disclosure; subtle motion with reduced-motion support; accessible and high-contrast; offline-first with clear sync states).
+Use the plan sections and feature files in this folder plus /feature-map.md to ensure full parity. Follow the phase order and each feature's "Implementation order" before moving on; update docs if scope changes.
+
+Process rules:
+- Deliver each feature as its own Git PR; disable squash merges and use rebase-only merges.
+- Make small, incremental commits along the way (clear intent per commit).
+- Wait for reviews; after approval, use pr-resolver to validate checks before merge.
+- Testing must be behavioral: define scenario-based tests for each feature and ensure they pass.
+- Keep a running completion checklist and mark each feature done only when acceptance criteria + behavioral tests pass.
+- Automation/pipelines are a separate project and must be done last.
+
+At the end of each feature, summarize what shipped, what remains, and any risks or blockers. Continue until all completion criteria in this plan are met.
+
 ## Phases
 1. Foundation: app shell, auth, user provisioning, schema, design system.
 2. Core flows: challenges and entries.

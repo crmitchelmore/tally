@@ -1,5 +1,7 @@
 # Master To-Do List
 
+NEVER STOP TO ASK QUESTIONS - MAKE THE BEST DECISION WITHOUT COMPROMISING SECURITY OR OUR DESIGN PHILOSPHY (./design-philosophy.md)
+
 - [ ] Work through this list end-to-end without stopping between items.
 - [ ] After checking any item below, immediately commit.
 

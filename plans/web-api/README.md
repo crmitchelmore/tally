@@ -38,14 +38,15 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 2. Core flows: challenges and entries.
 3. Insights + data management.
 4. Community + leaderboard + API parity.
-5. Quality: performance, accessibility, observability.
+5. Quality: performance, accessibility, and error handling.
 
 ## Phase detail (order)
 1. Foundation: app shell, auth, user provisioning, schema, design system, routing.
 2. Core flows: challenges and entries with optimistic updates and offline states.
 3. Insights + data management: stats, weekly summary, export/import, clear-all.
 4. Community + leaderboard + API parity: public challenges, follow, real aggregation, v1 API completion.
-5. Quality: performance, accessibility, observability, and error handling.
+5. Quality: performance, accessibility, and error handling.
+   - Observability is a separate post-product stage: `plans/observability/`.
 
 ## Testing focus (behavioral)
 - Scenario-based tests for sign-in, challenge lifecycle, and entry logging.
@@ -68,7 +69,7 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 - feature-community.md
 - feature-leaderboard.md
 - feature-api-contract.md
-- feature-analytics-observability.md
+- (post-product) Observability: see `plans/observability/README.md`
 
 ## Separate project: CI (last)
 - CI for lint/test/build and preview deploys.

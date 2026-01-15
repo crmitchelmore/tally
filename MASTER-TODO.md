@@ -55,6 +55,7 @@ gh secret list --repo crmitchelmore/tally
 - ANDROID_KEY_PASSWORD
 - ANDROID_KEYSTORE_BASE64
 - IOS_TEAM_ID
+- HONEYCOMB_API_KEY
 
 ### 2) Verify toolchains are available (local + CI)
 These are the minimum tools we rely on for building/verifying across platforms.
@@ -332,20 +333,6 @@ done
 - [ ] Plan overview (plans/android/README.md)
   - [ ] Verify scope and assumptions.
   - [ ] Update Copilot instructions and cross-platform plans with learnings after feature changes.
-- [ ] Feature: Analytics + observability (plans/android/feature-analytics-observability.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
 - [ ] Feature: API contract (plans/android/feature-api-contract.md)
   - [ ] Design based on design-philosophy.md.
   - [ ] Verify plan against existing implementations on other platforms (review iOS/Web).
@@ -556,6 +543,13 @@ done
   - [ ] Mark tests complete.
   - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
   - [ ] Update other platform feature plans with any changes.
+
+## Observability (after all apps + landing page)
+- [ ] Plan overview (plans/observability/README.md)
+- [ ] Feature: Observability (plans/observability/feature-observability.md)
+  - [ ] Implement OTel tracing + exporters to Honeycomb.
+  - [ ] Implement PostHog events with identical names + properties across platforms.
+  - [ ] Standardize structured wide-event logs (queryable context; trace correlation).
 
 ## Final project: CI (after everything else)
 - [ ] Add CI (lint/build/test and any existing checks).

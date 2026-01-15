@@ -27,7 +27,7 @@
 ## Delivery workflow (repo rules)
 - Each feature plan ships as its own PR.
 - Repo setting: disable squash merges; allow rebase-only merges.
-- Require review approval; after approval use pr-resolver to validate checks before merge.
+- PR reviews are recommended, but not required (no PR-only enforcement).
 
 ## Execution prompt (copy/paste)
 You are a senior engineer shipping Tally. Your job: execute this plan end-to-end until completed, using the tech stack specified and integrating the Tally design philosophy (tactile, focused, honest; friendly, fast, calm; progressive disclosure; subtle motion with reduced-motion support; accessible and high-contrast; offline-first with clear sync states).
@@ -39,9 +39,9 @@ Process rules:
 - Wait for reviews; after approval, use pr-resolver to validate checks before merge.
 - Testing must be behavioral: define scenario-based tests for each feature and ensure they pass.
 - Keep a running completion checklist and mark each feature done only when acceptance criteria + behavioral tests pass.
-- Automation/pipelines are a separate project and must be done last.
+- **CI** is a separate project and must be done last.
 
-At the end of each feature, summarize what shipped, what remains, and any risks or blockers. Continue until all completion criteria in this plan are met.
+At the end of each feature, summarize what shipped, what remains, and any risks or blockers. Before moving on, review the session for anything worth codifying: update the repo Copilot instructions (and any relevant skills) and update any other platform plans impacted by the change. Continue until all completion criteria in this plan are met.
 
 ## Phases
 1. Foundation: app shell, design system, auth, API client, local cache.
@@ -89,7 +89,7 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 - feature-leaderboard.md
 - feature-store-upload.md
 
-## Separate project: Automation + pipelines (last)
+## Separate project: CI (last)
 - CI for build/test, device smoke tests, and signing.
 - TestFlight and App Store release automation.
 - Release gating and rollback procedures.

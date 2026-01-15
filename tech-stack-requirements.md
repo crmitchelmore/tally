@@ -7,6 +7,8 @@
 - **Auth:** Clerk 
 - **Database / backend:** Convex.
 - **Web:** Next.js on Vercel, TypeScript.
+  - **Package manager + task runner (web): Bun** (`bun install`, `bun run ...`) — **do not use npm/yarn/pnpm** for `tally-web/`.
+- **Infrastructure:** Pulumi TypeScript (package manager: **npm**).
 - **Domains/DNS:** Cloudflare.
 
 ## Landing page (Convex.dev-inspired)

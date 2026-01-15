@@ -10,7 +10,7 @@ Show clear pace and progress.
 - Weekly summary view.
 
 ## Acceptance criteria
-- Charts reflect latest data.
+- Charts show latest data.
 - Pace status is accurate and easy to read.
 
 ## Design philosophy integration

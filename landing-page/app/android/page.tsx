@@ -29,6 +29,11 @@ export default function AndroidPage() {
                 Get launch updates →
               </a>
             </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <span className="inline-flex h-11 items-center justify-center rounded-full border border-slate-200/70 bg-white/90 px-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400">
+                Play Store · Coming soon
+              </span>
+            </div>
           </div>
           <div className="rounded-[28px] border border-slate-200/70 bg-white/90 p-6 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)]">
             <div className="h-10 rounded-2xl bg-slate-100" />

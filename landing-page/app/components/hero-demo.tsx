@@ -50,6 +50,7 @@ function TallyMarks({ count }: { count: number }) {
 
 export function HeroDemo() {
   const reducedMotion = useReducedMotion();
+  const isInteractive = !reducedMotion;
   const [count, setCount] = useState(12);
   const [bars, setBars] = useState(INITIAL_BARS);
 
@@ -96,8 +97,9 @@ export function HeroDemo() {
         </div>
         <button
           type="button"
-          onClick={handleAdd}
-          className="flex h-12 w-16 items-center justify-center rounded-full bg-[#d46b4a] text-lg font-semibold text-white shadow-[0_8px_20px_rgba(212,107,74,0.35)] transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d46b4a] motion-reduce:transition-none"
+          onClick={isInteractive ? handleAdd : undefined}
+          disabled={!isInteractive}
+          className="flex h-12 w-16 items-center justify-center rounded-full bg-[#d46b4a] text-lg font-semibold text-white shadow-[0_8px_20px_rgba(212,107,74,0.35)] transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d46b4a] disabled:cursor-not-allowed disabled:opacity-70 motion-reduce:transition-none"
           aria-label="Add one tally mark"
         >
           +1
@@ -134,7 +136,7 @@ export function HeroDemo() {
       </div>
 
       {reducedMotion ? (
-        <p className="mt-4 text-xs text-slate-400">Reduced motion is on — no extra animation.</p>
+        <p className="mt-4 text-xs text-slate-400">Reduced motion is on — demo is paused.</p>
       ) : null}
     </div>
   );

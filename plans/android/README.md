@@ -64,6 +64,7 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 - feature-data-portability.md
 - feature-community.md
 - feature-leaderboard.md
+- feature-store-upload.md
 
 ## Separate project: Automation + pipelines (last)
 - CI for build/test, device smoke tests, and signing.

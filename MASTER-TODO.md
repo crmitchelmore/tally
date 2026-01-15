@@ -238,6 +238,12 @@ NEVER STOP TO ASK QUESTIONS - MAKE THE BEST DECISION WITHOUT COMPROMISING SECURI
   - [ ] Mark tests complete.
   - [ ] Update this plan with reflections for next time.
   - [ ] Update other platform feature plans with any changes.
+- [ ] Feature: Store upload (pre-release) (plans/ios/feature-store-upload.md)
+  - [ ] Prepare App Store Connect metadata and required assets.
+  - [ ] Create and upload a signed build to App Store Connect.
+  - [ ] Configure TestFlight for internal/external beta.
+  - [ ] Submit for (TestFlight/App) review if required.
+  - [ ] Wait for approval / address rejections until beta distribution is unblocked.
 
 ## Android (plans/android)
 - [ ] Plan overview (plans/android/README.md)
@@ -369,6 +375,12 @@ NEVER STOP TO ASK QUESTIONS - MAKE THE BEST DECISION WITHOUT COMPROMISING SECURI
   - [ ] Mark tests complete.
   - [ ] Update this plan with reflections for next time.
   - [ ] Update other platform feature plans with any changes.
+- [ ] Feature: Store upload (pre-release) (plans/android/feature-store-upload.md)
+  - [ ] Prepare Play Console listing metadata, forms, and required assets.
+  - [ ] Create and upload a signed AAB to an internal/closed testing track.
+  - [ ] Configure beta testing groups/link and verify install on device.
+  - [ ] Submit for review if required.
+  - [ ] Wait for approval / address rejections until beta distribution is unblocked.
 
 ## Landing pages (plans/landing-page)
 - [ ] Plan overview (plans/landing-page/README.md)

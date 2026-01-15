@@ -81,3 +81,4 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 - CI for build/test, device smoke tests, and signing.
 - TestFlight and App Store release automation.
 - Release gating and rollback procedures.
+- App Store deploy management reference: /Users/cm/work/mobile-platform-app-store-connect

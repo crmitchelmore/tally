@@ -34,7 +34,9 @@ Prepare final-quality assets per Google requirements:
 
 ### 3) Build + upload
 - Produce a signed AAB (recommended).
-- Upload to an **Internal testing** or **Closed testing** track.
+- **Preferred upload tool:** Gradle Play Publisher (`com.github.triplet.play`).
+  - Auth: `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` (service account with Play Console access).
+  - Upload target: **Internal testing** or **Closed testing** track.
 - Resolve any Play Console warnings that block testing/review.
 
 ### 4) Pre-release distribution

@@ -45,3 +45,6 @@ app/build/
 captures/
 .externalNativeBuild/
 .cxx/
+
+# Copilot automation logs
+.copilot-logs/

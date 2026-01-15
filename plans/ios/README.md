@@ -6,6 +6,9 @@
 - Clerk auth for iOS and JWT for API calls
 - Local persistence for offline-first behavior
 
+## Secrets
+- `.env` contains all secrets required for this plan.
+
 ## Product ethos
 - Tactile, focused, honest; friendly, fast, and calm.
 - Subtle motion, reduced-motion support, and accessibility first.
@@ -54,6 +57,15 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 - Offline-first UX with clear sync state and retries.
 - Accessibility (VoiceOver, Dynamic Type) and performance targets met.
 - Behavioral tests documented and passing for each feature.
+
+## Build references
+- /Applications/Xcode.app/Contents/PlugIns/IDEIntelligenceChat.framework/Versions/A/Resources/AdditionalDocumentation/Swift-Charts-3D-Visualization.md
+- /Applications/Xcode.app/Contents/PlugIns/IDEIntelligenceChat.framework/Versions/A/Resources/AdditionalDocumentation/Swift-Concurrency-Updates.md
+- /Applications/Xcode.app/Contents/PlugIns/IDEIntelligenceChat.framework/Versions/A/Resources/AdditionalDocumentation/Swift-InlineArray-Span.md
+- /Applications/Xcode.app/Contents/PlugIns/IDEIntelligenceChat.framework/Versions/A/Resources/AdditionalDocumentation/SwiftUI-Implementing-Liquid-Glass-Design.md
+- /Applications/Xcode.app/Contents/PlugIns/IDEIntelligenceChat.framework/Versions/A/Resources/AdditionalDocumentation/SwiftUI-New-Toolbar-Features.md
+- /Applications/Xcode.app/Contents/PlugIns/IDEIntelligenceChat.framework/Versions/A/Resources/AdditionalDocumentation/SwiftUI-Styled-Text-Editing.md
+- /Applications/Xcode.app/Contents/PlugIns/IDEIntelligenceChat.framework/Versions/A/Resources/AdditionalDocumentation/SwiftUI-WebKit-Integration.md
 
 ## Feature plans
 - feature-auth.md

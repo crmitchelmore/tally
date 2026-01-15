@@ -9,6 +9,10 @@ Provide Clerk-based sign in/up and secure token handling.
 - Signed-out vs signed-in navigation.
 - Call POST /api/v1/auth/user after auth.
 
+## Key references (canonical docs)
+- Clerk Android quickstart: https://clerk.com/docs/android/getting-started/quickstart
+- Clerk Android SDK overview: https://clerk.com/docs/reference/android/overview
+
 ## Acceptance criteria
 - New users sign up and reach the dashboard.
 - API requests include Bearer token.

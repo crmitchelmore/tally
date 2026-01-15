@@ -7,6 +7,33 @@
 - Clerk authentication
 - Cloudflare DNS
 
+## Key references (canonical docs)
+Web framework (Next.js):
+- Routing (App Router): https://nextjs.org/docs/app/building-your-application/routing
+- Route Handlers (API endpoints): https://nextjs.org/docs/app/building-your-application/routing/route-handlers
+- Middleware: https://nextjs.org/docs/app/building-your-application/routing/middleware
+
+Auth (Clerk):
+- Next.js quickstart: https://clerk.com/docs/quickstarts/nextjs
+- `clerkMiddleware`: https://clerk.com/docs/references/nextjs/clerk-middleware
+- Server auth helpers (`auth()`): https://clerk.com/docs/references/nextjs/auth
+
+Backend (Convex):
+- Next.js quickstart: https://docs.convex.dev/quickstart/nextjs
+- Auth overview: https://docs.convex.dev/auth
+- HTTP actions: https://docs.convex.dev/functions/http-actions
+- HTTP API: https://docs.convex.dev/http-api/
+
+Tooling/hosting:
+- Bun install: https://bun.sh/docs/cli/install
+- Bun run: https://bun.sh/docs/cli/run
+- Vercel env vars: https://vercel.com/docs/projects/environment-variables
+- Vercel deployments: https://vercel.com/docs/deployments/overview
+
+DNS (Cloudflare):
+- API tokens: https://developers.cloudflare.com/fundamentals/api/get-started/create-token/
+- DNS records API: https://developers.cloudflare.com/api/resources/dns/subresources/records/
+
 ## Product ethos
 - Tactile, focused, honest; friendly, fast, and calm.
 - Progressive disclosure with subtle motion.
@@ -75,3 +102,7 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 - CI for lint/test/build and preview deploys.
 - Convex + Vercel release automation and environment promotion.
 - Post-merge monitoring, alerting, and rollback runbooks.
+
+Key references:
+- GitHub Actions quickstart: https://docs.github.com/actions/quickstart
+- Workflow syntax: https://docs.github.com/actions/writing-workflows/workflow-syntax-for-github-actions

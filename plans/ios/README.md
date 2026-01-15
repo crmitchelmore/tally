@@ -9,6 +9,14 @@
 - Clerk auth for iOS and JWT for API calls
 - Local persistence for offline-first behavior
 
+## Key references (canonical docs)
+- SwiftUI: https://developer.apple.com/documentation/swiftui/
+- Swift Package Manager: https://www.swift.org/package-manager/
+- Tuist install: https://docs.tuist.dev/en/guides/quick-start/install-tuist
+- Tuist get started: https://docs.tuist.dev/en/guides/quick-start/get-started
+- Clerk iOS quickstart: https://clerk.com/docs/ios/getting-started/quickstart
+- Clerk iOS SDK overview: https://clerk.com/docs/reference/ios/overview
+
 ## Tooling (install now)
 - Install Tuist:
   - Homebrew: `brew tap tuist/tuist && brew install tuist`
@@ -94,3 +102,7 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 - TestFlight and App Store release automation.
 - Release gating and rollback procedures.
 - App Store deploy management reference: /Users/cm/work/mobile-platform-app-store-connect
+
+Key references:
+- GitHub Actions quickstart: https://docs.github.com/actions/quickstart
+- Workflow syntax: https://docs.github.com/actions/writing-workflows/workflow-syntax-for-github-actions

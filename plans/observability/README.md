@@ -49,3 +49,15 @@ Recommended common properties:
 
 ## Feature plan
 - feature-observability.md
+
+## Key references (canonical docs)
+PostHog:
+- iOS SDK: https://posthog.com/docs/libraries/ios
+- Android SDK: https://posthog.com/docs/libraries/android
+- Capturing events: https://posthog.com/docs/product-analytics/capture-events
+
+Honeycomb + OpenTelemetry:
+- Send iOS data: https://docs.honeycomb.io/send-data/ios/
+- Send Android data: https://docs.honeycomb.io/send-data/android/
+- Send data with OpenTelemetry: https://docs.honeycomb.io/send-data/opentelemetry/
+- OTLP exporter configuration: https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/

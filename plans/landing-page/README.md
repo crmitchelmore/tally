@@ -6,6 +6,13 @@
 - Media loops (WebM/MP4) with lazy loading
 - Progressive enhancement for low-JS environments
 
+## Key references (canonical docs)
+- Next.js routing (App Router): https://nextjs.org/docs/app/building-your-application/routing
+- Vercel deployments: https://vercel.com/docs/deployments/overview
+- Vercel env vars: https://vercel.com/docs/projects/environment-variables
+- Bun install: https://bun.sh/docs/cli/install
+- Bun run: https://bun.sh/docs/cli/run
+
 ## Product ethos
 - Calm momentum with tactile ink cues.
 - Focused, honest messaging with one clear CTA per section.
@@ -72,3 +79,7 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 - CI checks for lint/build, performance budgets, and accessibility audits.
 - Preview deployments for content review.
 - Release gating and rollback procedures.
+
+Key references:
+- GitHub Actions quickstart: https://docs.github.com/actions/quickstart
+- Workflow syntax: https://docs.github.com/actions/writing-workflows/workflow-syntax-for-github-actions

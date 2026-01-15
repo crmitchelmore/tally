@@ -6,6 +6,13 @@
 - Clerk auth for Android and JWT for API calls
 - Local persistence for offline-first behavior (Room)
 
+## Key references (canonical docs)
+- Jetpack Compose: https://developer.android.com/jetpack/compose
+- Kotlin: https://kotlinlang.org/docs/home.html
+- Gradle for Android: https://developer.android.com/build
+- Clerk Android quickstart: https://clerk.com/docs/android/getting-started/quickstart
+- Clerk Android SDK overview: https://clerk.com/docs/reference/android/overview
+
 ## Product ethos
 - Tactile, focused, honest; friendly, fast, and calm.
 - Subtle motion, reduced-motion support, and accessibility first.
@@ -70,3 +77,7 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 - CI for build/test, device smoke tests, and signing.
 - Play Console release automation.
 - Release gating and rollback procedures.
+
+Key references:
+- GitHub Actions quickstart: https://docs.github.com/actions/quickstart
+- Workflow syntax: https://docs.github.com/actions/writing-workflows/workflow-syntax-for-github-actions

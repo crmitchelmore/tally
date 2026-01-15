@@ -9,6 +9,10 @@ Provide Clerk-based sign in/up and secure token handling.
 - Signed-out vs signed-in navigation.
 - Call POST /api/v1/auth/user after auth.
 
+## Key references (canonical docs)
+- Clerk iOS quickstart: https://clerk.com/docs/ios/getting-started/quickstart
+- Clerk iOS SDK overview: https://clerk.com/docs/reference/ios/overview
+
 ## Acceptance criteria
 - New users sign up and reach the dashboard.
 - API requests include Bearer token.

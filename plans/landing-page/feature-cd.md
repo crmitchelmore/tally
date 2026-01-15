@@ -11,6 +11,12 @@ Be able to deploy a "hello world" version of the landing page and the web app to
 - Add a minimal `/` route (or equivalent) that renders a "hello world" landing page shell.
 - Add/confirm a minimal `/app` route (or equivalent) that renders a "hello world" web app shell.
 
+## Key references (canonical docs)
+- Vercel deployments: https://vercel.com/docs/deployments/overview
+- Vercel env vars: https://vercel.com/docs/projects/environment-variables
+- Cloudflare API tokens: https://developers.cloudflare.com/fundamentals/api/get-started/create-token/
+- Cloudflare DNS records API: https://developers.cloudflare.com/api/resources/dns/subresources/records/
+
 ## Non-goals (this is for later)
 - Full CI suite (lint/test/perf/a11y gating)
 - Branch protection / PR gating (we’re explicitly not requiring PRs right now)

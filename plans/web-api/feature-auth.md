@@ -9,6 +9,11 @@ Make sign up/in seamless and ensure backend user records exist.
 - Clerk proxy route (/__clerk/*) to keep auth on domain.
 - POST /api/v1/auth/user for user creation/sync.
 
+## Key references (canonical docs)
+- Clerk Next.js quickstart: https://clerk.com/docs/quickstarts/nextjs
+- `clerkMiddleware`: https://clerk.com/docs/references/nextjs/clerk-middleware
+- Server auth helpers (`auth()`): https://clerk.com/docs/references/nextjs/auth
+
 ## Key implementation notes
 - Store clerkId on users.
 - Enforce per-user access via Convex auth helpers.

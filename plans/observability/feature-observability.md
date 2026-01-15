@@ -21,6 +21,24 @@ Add production-grade observability across web + iOS + Android with consistent:
 - PostHog receives the same event names + property keys from web/iOS/Android for the same user actions.
 - Logs are queryable by `user_id`, `session_id`, `trace_id`, `challenge_id`, and `request_id`.
 
+## Key references (canonical docs)
+Mobile analytics (PostHog):
+- iOS SDK: https://posthog.com/docs/libraries/ios
+- iOS SDK configuration: https://posthog.com/docs/libraries/ios/configuration
+- iOS SDK usage: https://posthog.com/docs/libraries/ios/usage
+- iOS SDK (GitHub usage reference): https://github.com/PostHog/posthog-ios/blob/main/USAGE.md
+- Android SDK: https://posthog.com/docs/libraries/android
+- Android SDK (GitHub usage reference): https://github.com/PostHog/posthog-android/blob/main/USAGE.md
+- Capturing events (naming/properties): https://posthog.com/docs/product-analytics/capture-events
+
+Mobile traces (Honeycomb + OpenTelemetry):
+- iOS (Swift) send data: https://docs.honeycomb.io/send-data/ios/
+- iOS (Swift) attributes: https://docs.honeycomb.io/send-data/ios/attributes/
+- Android send data: https://docs.honeycomb.io/send-data/android/
+- Android attributes: https://docs.honeycomb.io/send-data/android/attributes/
+- Send data with OpenTelemetry (OTLP concepts): https://docs.honeycomb.io/send-data/opentelemetry/
+- OTLP exporter configuration (endpoints/headers): https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/
+
 ## Implementation order
 1. Define the canonical schema (event names, property keys, log fields) and commit it (this folder).
 2. Add OTel baseline setup + exporters for Honeycomb (per platform). Ensure production secrets/config are in GitHub/Vercel.

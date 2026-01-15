@@ -9,6 +9,11 @@ Provide a stable HTTP API for mobile clients.
 - Consistent error model and pagination where needed.
 - Maintain legacy /api aliases until deprecation plan exists.
 
+## Key references (canonical docs)
+- Next.js Route Handlers: https://nextjs.org/docs/app/building-your-application/routing/route-handlers
+- Convex HTTP actions: https://docs.convex.dev/functions/http-actions
+- Convex HTTP API: https://docs.convex.dev/http-api/
+
 ## Acceptance criteria
 - Endpoints match docs/API.md.
 - Auth failures return clear 401/403 errors.

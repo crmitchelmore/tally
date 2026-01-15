@@ -4,7 +4,7 @@
 
 ## Core product choices
 
-- **Auth:** Clerk (same as previous project).
+- **Auth:** Clerk 
 - **Database / backend:** Convex.
 - **Web:** Next.js on Vercel, TypeScript.
 - **Domains/DNS:** Cloudflare.
@@ -50,29 +50,24 @@ What we want to copy for Tally:
 - **iOS:** Native Swift + SwiftUI.
   - Use Swift Packages.
   - Modularize everything.
-- **Android:** TBD.
-  - Prefer something that fits with the rest of our stack and team/domain knowledge.
-  - Candidate direction: Kotlin + Jetpack Compose (native).
+- **Android:** Kotlin + Jetpack Compose (native).
+  - Modularize with Gradle modules.
 
 ## Observability (options to pick from)
 
 Goal: good free tier + supports logs, and ideally OpenTelemetry for traces/spans/metrics.
 
-- **Option A: Sentry-first**
-  - Pros: quick to start, great error reporting, decent tracing; can be “enough” early.
-  - Cons: OTel/logs/metrics story may be more constrained vs a dedicated OTel backend.
-
-- **Option B: Grafana Cloud + OpenTelemetry**
-  - Pros: strong OTel support (traces/metrics/logs), flexible dashboards, good long-term path.
-  - Cons: more setup (collector, pipelines), more knobs early.
-
-- **Option C: Honeycomb + OpenTelemetry**
+- **Honeycomb + OpenTelemetry**
   - Pros: excellent tracing/observability UX for debugging complex flows.
   - Cons: may be less log-centric; pricing/limits to evaluate.
 
+## App/Play store patterns
+
+- Use github actions with native apis 
+
+
 ## Infra philosophy
 
-- Previously used Pulumi for IaC; may not be necessary initially.
 - Prefer simple TypeScript scripts we can run locally + in GitHub Actions.
 
 ## Analytics / user tracking

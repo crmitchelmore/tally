@@ -2,7 +2,41 @@
 
 Tally should feel **friendly, fun, and fast**—a product people enjoy opening every day.
 
+## Motivation (why we’re building Tally)
+
+People want to track what matters, but everyone’s journey is different.
+
+- Some people want to do a **consistent amount every day**.
+- Some people want consistency but **don’t want to feel pressured** to hit it *every* day.
+- Some people prefer to **batch** (do more on one day, rest on others).
+- Some people like to **get ahead of the target** (build a buffer) and then coast.
+
+Tally should support all of these without judgment:
+- Track progress toward a target and show pace **without “punishing” missed days**.
+- Make it easy to see when you’re **ahead / on pace / behind**, and how much is needed to catch up.
+- Celebrate momentum and progress, not perfection.
+
+## Tally — Design Style Notes (raw)
+
+- Lean into **platform-native patterns** for each surface (iOS native, Android native, Web native).
+- Core tenets: **speed** and **responsiveness** — touches/actions should feel immediate.
+- Add **delight** via “cool animations” that feel good, but stay **classy** (not cringey).
+- The **tally mark** (four vertical lines + diagonal cross for five) is the foundation of the visual identity.
+- Need a foundational design for **rolling tallies up** into larger counts so it still makes sense at higher numbers.
+  - Initially: focus on **visual display** of rolled-up tallies.
+  - Later: could become a way of presenting/scaling counts, but prioritize visuals first.
+- Color direction:
+  - White “paper” is the default, but pure white may not work well enough.
+  - Consider a **slightly off-white**, papery background (not yellow).
+  - For the “add” picker: start with tally marks on a white background, but that may evolve.
+
 ## Experience principles
+
+### Experience qualities
+
+1. **Tactile** - Every interaction should feel like making a physical mark on paper - deliberate, satisfying, and permanent with visual feedback inspired by pen strokes and counting marks.
+2. **Focused** - Clean, minimal interface that puts the numbers front and center, avoiding distractions while celebrating the simple act of counting progress.
+3. **Honest** - Raw, authentic progress visualization that shows exactly where you are without gamification gimmicks - just you versus your goal.
 
 ### 1) Friendly & playful (but not noisy)
 - Clear language, simple choices, and small moments of delight.

@@ -1,0 +1,8 @@
+Saved items (flattened to root-safe names):
+FILE PRD.md -> PRD.md
+FILE README.md -> README.md
+FILE docs/DESIGN-PHILOSOPHY.md -> docs__DESIGN-PHILOSOPHY.md
+FILE docs/DESIGN-STYLE-NOTES.md -> docs__DESIGN-STYLE-NOTES.md
+FILE docs/TECH-STACK-NOTES.md -> docs__TECH-STACK-NOTES.md
+FILE feature-map.md -> feature-map.md
+FILE tech-stack-suggestions.md -> tech-stack-suggestions.md

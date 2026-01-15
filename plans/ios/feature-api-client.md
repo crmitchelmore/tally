@@ -21,6 +21,10 @@ Provide reliable API access and offline-friendly sync.
 - Friendly/fast/calm: subtle motion, reduced-motion support, large tap targets.
 - Offline-first: local writes with clear sync state and retry.
 
+## Architecture notes (SPM)
+- Implement as a Swift package (e.g. `TallyFeatureAPIClient`) and keep the app target as composition glue.
+- Shared types/live in shared packages (e.g. `TallyCore`); avoid feature-to-feature dependencies.
+
 ## Implementation order
 1. Define screen states (loading, empty, error, offline).
 2. Build native UI layout and navigation.

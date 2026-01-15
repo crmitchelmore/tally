@@ -2,9 +2,20 @@
 
 ## Stack
 - Swift + SwiftUI
-- Modular Swift Packages (TallyCore for API + models)
+- Swift Package Manager (SPM) for a highly modular architecture:
+  - Shared packages (e.g. `TallyCore` for API + models)
+  - One package per feature (Entries, Challenges, Stats, etc.)
+- Tuist for **generated Xcode projects/workspaces** (define projects in code via `Project.swift`/`Workspace.swift`, don’t hand-edit `.xcodeproj`)
 - Clerk auth for iOS and JWT for API calls
 - Local persistence for offline-first behavior
+
+## Tooling (install now)
+- Install Tuist:
+  - Homebrew: `brew tap tuist/tuist && brew install tuist`
+  - Or (recommended for pinned versions): `mise x tuist@latest -- tuist init`
+- Typical workflow:
+  - `tuist init` (once) to bootstrap
+  - `tuist generate` to generate the workspace
 
 ## Secrets
 - `.env` contains all secrets required for this plan.

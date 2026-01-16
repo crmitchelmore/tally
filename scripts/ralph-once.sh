@@ -13,14 +13,14 @@ Environment:
   COPILOT_CMD  Copilot command to run (default: copilot). Set to "cos" if you use that wrapper.
 
 Notes:
-  - You must pass --allow-profile or at least one --allow-tools.
+  - Defaults to YOLO (dev) tools if you don’t specify --allow-profile/--allow-tools.
   - Always denied: shell(rm), shell(git push)
 USAGE
 }
 
 prompt_file=""
 prd_file=""
-allow_profile=""
+allow_profile="dev"
 declare -a allow_tools deny_tools
 allow_tools=()
 deny_tools=()
@@ -88,11 +88,6 @@ COPILOT_CMD="${COPILOT_CMD:-copilot}"
 progress_file="progress.txt"
 [[ -r "$progress_file" ]] || { echo "Error: progress file not readable: $progress_file" >&2; exit 1; }
 
-if [[ -z "$allow_profile" && ${#allow_tools[@]} -eq 0 ]]; then
-  echo "Error: you must specify --allow-profile or at least one --allow-tools" >&2
-  usage
-  exit 1
-fi
 
 declare -a copilot_tool_args
 copilot_tool_args+=(--deny-tool 'shell(rm)')

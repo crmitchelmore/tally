@@ -1,32 +1,41 @@
 import Link from "next/link";
+import { HeroDemo } from "@/components/landing/HeroDemo";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              Track what matters
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
-              Tally helps you make progress toward your goals with a tactile, 
-              fast, and honest experience. No gimmicks—just you versus your goal.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <Link
-                href="/sign-up"
-                className="rounded-2xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 transition-colors"
-              >
-                Create an account
-              </Link>
-              <Link
-                href="/sign-in"
-                className="text-sm font-semibold leading-6 text-gray-900 hover:text-gray-600 transition-colors"
-              >
-                Sign in <span aria-hidden="true">→</span>
-              </Link>
+        <div className="mx-auto max-w-7xl px-6 py-16 sm:py-24 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Copy */}
+            <div className="text-center lg:text-left">
+              <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+                Track what matters
+              </h1>
+              <p className="mt-6 text-lg leading-8 text-gray-600">
+                Tally helps you make progress toward your goals with a tactile, 
+                fast, and honest experience. No gimmicks—just you versus your goal.
+              </p>
+              <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                <Link
+                  href="/sign-up"
+                  className="w-full sm:w-auto rounded-2xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 transition-colors text-center"
+                >
+                  Create an account
+                </Link>
+                <Link
+                  href="/sign-in"
+                  className="text-sm font-semibold leading-6 text-gray-900 hover:text-gray-600 transition-colors"
+                >
+                  Sign in <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+            </div>
+            
+            {/* Right: Interactive Demo */}
+            <div className="lg:pl-8">
+              <HeroDemo />
             </div>
           </div>
         </div>
@@ -80,20 +89,64 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* App Preview Section */}
       <section className="py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
+          <div className="mx-auto max-w-2xl text-center mb-16">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Ready to start tracking?
+              Clean, focused design
             </h2>
             <p className="mt-6 text-lg leading-8 text-gray-600">
+              No distractions. Just your goals, your progress, and what you need to do next.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl">
+                📊
+              </div>
+              <h3 className="font-semibold text-gray-900">Real progress</h3>
+              <p className="mt-2 text-sm text-gray-600">
+                See exactly where you are and what pace you need to hit your target.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-100 flex items-center justify-center text-3xl">
+                🔥
+              </div>
+              <h3 className="font-semibold text-gray-900">Daily streaks</h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Build momentum with streak tracking that keeps you accountable.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-purple-100 flex items-center justify-center text-3xl">
+                🌐
+              </div>
+              <h3 className="font-semibold text-gray-900">Cross-platform</h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Web, iOS, and Android. Your data syncs everywhere.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-24 sm:py-32 bg-gray-900">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Ready to start tracking?
+            </h2>
+            <p className="mt-6 text-lg leading-8 text-gray-300">
               Join Tally and make every day count toward your goals.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link
                 href="/app"
-                className="rounded-2xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 transition-colors"
+                className="rounded-2xl bg-white px-6 py-3 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
               >
                 Open app
               </Link>

@@ -1,0 +1,56 @@
+name: iOS CI
+
+on:
+  push:
+    branches: [main, rewrite-opus]
+    paths:
+      - 'tally-ios/**'
+      - '.github/workflows/ci-ios.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tally-ios/**'
+      - '.github/workflows/ci-ios.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: tally-ios/Tally
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Tuist
+        run: |
+          brew tap tuist/tuist
+          brew install tuist
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app
+
+      - name: Generate project
+        run: tuist generate
+
+      - name: Build
+        run: |
+          xcodebuild build \
+            -workspace Tally.xcworkspace \
+            -scheme Tally \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Test
+        run: |
+          xcodebuild test \
+            -workspace Tally.xcworkspace \
+            -scheme Tally \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO

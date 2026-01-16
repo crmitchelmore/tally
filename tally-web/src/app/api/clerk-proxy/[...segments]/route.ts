@@ -3,10 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 const CLERK_API = "https://frontend-api.clerk.dev";
 const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
 
-async function proxyRequest(req: NextRequest): Promise<Response> {
+async function proxyRequest(
+  req: NextRequest,
+  context: { params: Promise<{ segments: string[] }> }
+): Promise<Response> {
+  const { segments } = await context.params;
   const url = new URL(req.url);
-  // Extract path after /api/clerk-proxy
-  const clerkPath = url.pathname.replace("/api/clerk-proxy", "");
+  // Build the Clerk API path from the segments
+  const clerkPath = "/" + segments.join("/");
   const targetUrl = `${CLERK_API}${clerkPath}${url.search}`;
 
   const headers = new Headers();
@@ -27,7 +31,7 @@ async function proxyRequest(req: NextRequest): Promise<Response> {
       headers.set(header, value);
     }
   }
-  
+
   headers.set("origin", url.origin);
   // Required headers for Clerk proxy
   headers.set("Clerk-Proxy-Url", "https://tally-tracker.app/api/clerk-proxy");
@@ -35,7 +39,8 @@ async function proxyRequest(req: NextRequest): Promise<Response> {
     headers.set("Clerk-Secret-Key", CLERK_SECRET_KEY);
   }
   // Forward client IP
-  const forwarded = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
+  const forwarded =
+    req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
   if (forwarded) {
     headers.set("X-Forwarded-For", forwarded);
   }
@@ -57,7 +62,7 @@ async function proxyRequest(req: NextRequest): Promise<Response> {
   // Remove headers that shouldn't be proxied
   responseHeaders.delete("content-encoding");
   responseHeaders.delete("transfer-encoding");
-  
+
   // Rewrite Set-Cookie domain if present
   const setCookie = responseHeaders.get("set-cookie");
   if (setCookie) {
@@ -70,7 +75,10 @@ async function proxyRequest(req: NextRequest): Promise<Response> {
   if (location && location.includes("frontend-api.clerk.dev")) {
     responseHeaders.set(
       "location",
-      location.replace("https://frontend-api.clerk.dev", "https://tally-tracker.app/api/clerk-proxy")
+      location.replace(
+        "https://frontend-api.clerk.dev",
+        "https://tally-tracker.app/api/clerk-proxy"
+      )
     );
   }
 

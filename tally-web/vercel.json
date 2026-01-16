@@ -1,14 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "headers": [
+  "rewrites": [
     {
-      "source": "/__clerk/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache"
-        }
-      ]
+      "source": "/__clerk/:path*",
+      "destination": "/api/clerk-proxy/:path*"
     }
   ]
 }

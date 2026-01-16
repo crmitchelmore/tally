@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { HeroDemo } from "@/components/landing/HeroDemo";
+import { Testimonials } from "@/components/landing/Testimonials";
+import { LiveSyncDemo } from "@/components/landing/LiveSyncDemo";
+import { AppShowcase } from "@/components/landing/AppShowcase";
 
 export default function Home() {
   return (
@@ -89,49 +92,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* App Preview Section */}
-      <section className="py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Clean, focused design
-            </h2>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
-              No distractions. Just your goals, your progress, and what you need to do next.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl">
-                📊
-              </div>
-              <h3 className="font-semibold text-gray-900">Real progress</h3>
-              <p className="mt-2 text-sm text-gray-600">
-                See exactly where you are and what pace you need to hit your target.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-100 flex items-center justify-center text-3xl">
-                🔥
-              </div>
-              <h3 className="font-semibold text-gray-900">Daily streaks</h3>
-              <p className="mt-2 text-sm text-gray-600">
-                Build momentum with streak tracking that keeps you accountable.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-purple-100 flex items-center justify-center text-3xl">
-                🌐
-              </div>
-              <h3 className="font-semibold text-gray-900">Cross-platform</h3>
-              <p className="mt-2 text-sm text-gray-600">
-                Web, iOS, and Android. Your data syncs everywhere.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* App Showcase */}
+      <AppShowcase />
+
+      {/* Live Sync Demo */}
+      <LiveSyncDemo />
+
+      {/* Testimonials + Stats */}
+      <Testimonials />
 
       {/* CTA Section */}
       <section className="py-24 sm:py-32 bg-gray-900">

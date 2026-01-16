@@ -2,15 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/providers/convex-client-provider";
-import dynamic from "next/dynamic";
+import { ClientAnalyticsProvider } from "@/components/providers/ClientAnalyticsProvider";
 import { Suspense } from "react";
 import "./globals.css";
-
-// Load AnalyticsProvider only on client to avoid posthog-js SSR issues
-const AnalyticsProvider = dynamic(
-  () => import("@/components/providers/AnalyticsProvider").then(mod => mod.AnalyticsProvider),
-  { ssr: false }
-);
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,7 +34,7 @@ export default function RootLayout({
         >
           <ConvexClientProvider>
             <Suspense fallback={null}>
-              <AnalyticsProvider>{children}</AnalyticsProvider>
+              <ClientAnalyticsProvider>{children}</ClientAnalyticsProvider>
             </Suspense>
           </ConvexClientProvider>
         </body>

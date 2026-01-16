@@ -1,55 +1,64 @@
 import { describe, it, expect } from "vitest";
 import { calculateStats, formatPaceStatus } from "@/lib/stats";
+import { Challenge, Entry } from "@/types";
+import { Id } from "../../convex/_generated/dataModel";
 
 describe("calculateStats", () => {
-  const mockChallenge = {
-    _id: "challenge1",
-    userId: "user1",
+  const mockChallenge: Challenge = {
+    _id: "challenge1" as Id<"challenges">,
+    userId: "user1" as Id<"users">,
     name: "Test Challenge",
     targetNumber: 100,
     color: "#3B82F6",
     icon: "📚",
-    timeframeUnit: "year" as const,
+    timeframeUnit: "year",
     year: new Date().getFullYear(),
     isPublic: false,
     archived: false,
     createdAt: Date.now(),
   };
 
+  const makeEntry = (id: string, date: string, count: number): Entry => ({
+    _id: id as Id<"entries">,
+    userId: "u1" as Id<"users">,
+    challengeId: "c1" as Id<"challenges">,
+    date,
+    count,
+    createdAt: Date.now(),
+  });
+
   it("calculates total from entries", () => {
-    const entries = [
-      { _id: "e1", userId: "u1", challengeId: "c1", date: "2025-01-01", count: 10, createdAt: 1 },
-      { _id: "e2", userId: "u1", challengeId: "c1", date: "2025-01-02", count: 20, createdAt: 2 },
+    const entries: Entry[] = [
+      makeEntry("e1", "2025-01-01", 10),
+      makeEntry("e2", "2025-01-02", 20),
     ];
 
-    const stats = calculateStats(mockChallenge as any, entries as any);
+    const stats = calculateStats(mockChallenge, entries);
     expect(stats.total).toBe(30);
     expect(stats.remaining).toBe(70);
   });
 
   it("calculates remaining correctly", () => {
-    const entries = [
-      { _id: "e1", userId: "u1", challengeId: "c1", date: "2025-01-01", count: 50, createdAt: 1 },
-    ];
+    const entries: Entry[] = [makeEntry("e1", "2025-01-01", 50)];
 
-    const stats = calculateStats(mockChallenge as any, entries as any);
+    const stats = calculateStats(mockChallenge, entries);
     expect(stats.remaining).toBe(50);
   });
 
   it("handles empty entries", () => {
-    const stats = calculateStats(mockChallenge as any, []);
+    const stats = calculateStats(mockChallenge, []);
     expect(stats.total).toBe(0);
     expect(stats.remaining).toBe(100);
   });
 
   it("calculates days active", () => {
-    const entries = [
-      { _id: "e1", userId: "u1", challengeId: "c1", date: "2025-01-01", count: 10, createdAt: 1 },
-      { _id: "e2", userId: "u1", challengeId: "c1", date: "2025-01-01", count: 5, createdAt: 2 },
-      { _id: "e3", userId: "u1", challengeId: "c1", date: "2025-01-02", count: 20, createdAt: 3 },
+    const entries: Entry[] = [
+      makeEntry("e1", "2025-01-01", 10),
+      makeEntry("e2", "2025-01-01", 5),
+      makeEntry("e3", "2025-01-02", 20),
     ];
 
-    const stats = calculateStats(mockChallenge as any, entries as any);
+    const stats = calculateStats(mockChallenge, entries);
     expect(stats.daysActive).toBe(2);
   });
 });

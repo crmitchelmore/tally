@@ -3,6 +3,7 @@
 import { useUser, UserButton } from "@clerk/nextjs";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { Challenge } from "@/types";
 import { Id } from "../../../convex/_generated/dataModel";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -144,7 +145,7 @@ export default function AppPage() {
             {challenges.map((challenge) => (
               <ChallengeCard
                 key={challenge._id}
-                challenge={challenge as any}
+                challenge={challenge as Challenge}
                 onClick={() => setSelectedChallenge(challenge._id)}
               />
             ))}

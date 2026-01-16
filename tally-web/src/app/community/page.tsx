@@ -3,6 +3,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { api } from "../../../convex/_generated/api";
+import { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -31,10 +32,10 @@ export default function CommunityPage() {
 
   const handleToggleFollow = async (challengeId: string) => {
     if (!user?.id) return;
-    if (followedIds.has(challengeId as any)) {
-      await unfollow({ clerkId: user.id, challengeId: challengeId as any });
+    if (followedIds.has(challengeId as Id<"challenges">)) {
+      await unfollow({ clerkId: user.id, challengeId: challengeId as Id<"challenges"> });
     } else {
-      await follow({ clerkId: user.id, challengeId: challengeId as any });
+      await follow({ clerkId: user.id, challengeId: challengeId as Id<"challenges"> });
     }
   };
 

@@ -1,3 +1,4 @@
+import { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireUser } from "./users";
@@ -88,7 +89,7 @@ export const bulkImport = mutation({
 
       await ctx.db.insert("entries", {
         userId: user._id,
-        challengeId: newChallengeId as any,
+        challengeId: newChallengeId as Id<"challenges">,
         date: e.date,
         count: e.count,
         note: e.note,

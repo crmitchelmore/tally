@@ -3,7 +3,7 @@
 import { useQuery } from "convex/react";
 import { useUser } from "@clerk/nextjs";
 import { api } from "../../../convex/_generated/api";
-import { Challenge } from "@/types";
+import { Challenge, Entry } from "@/types";
 import { calculateStats, formatPaceStatus } from "@/lib/stats";
 import { AddEntrySheet } from "./AddEntrySheet";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ export function ChallengeCard({ challenge, onClick }: ChallengeCardProps) {
     user?.id ? { clerkId: user.id, challengeId: challenge._id } : "skip"
   );
 
-  const stats = entries ? calculateStats(challenge, entries as any) : null;
+  const stats = entries ? calculateStats(challenge, entries as Entry[]) : null;
   const pace = stats ? formatPaceStatus(stats.paceStatus) : null;
   const progress = stats ? Math.min(100, (stats.total / challenge.targetNumber) * 100) : 0;
 

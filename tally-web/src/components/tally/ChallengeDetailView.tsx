@@ -17,8 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Edit2, Trash2, Archive, MoreVertical, X, Calendar, Pencil, Check } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ArrowLeft, Edit2, Trash2, Archive, X, Calendar } from "lucide-react";
+import { useState } from "react";
 
 interface ChallengeDetailViewProps {
   challengeId: Id<"challenges">;
@@ -46,12 +46,6 @@ export function ChallengeDetailView({ challengeId, onClose }: ChallengeDetailVie
   const [editName, setEditName] = useState("");
   const [editTarget, setEditTarget] = useState("");
 
-  useEffect(() => {
-    if (challenge) {
-      setEditName(challenge.name);
-      setEditTarget(String(challenge.targetNumber));
-    }
-  }, [challenge]);
 
   if (!challenge || !entries) {
     return (
@@ -61,7 +55,7 @@ export function ChallengeDetailView({ challengeId, onClose }: ChallengeDetailVie
     );
   }
 
-  const stats = calculateStats(challenge as any, entries as any);
+  const stats = calculateStats(challenge as Challenge, entries as Entry[]);
   const pace = formatPaceStatus(stats.paceStatus);
   const progress = Math.min(100, (stats.total / challenge.targetNumber) * 100);
 
@@ -121,7 +115,7 @@ export function ChallengeDetailView({ challengeId, onClose }: ChallengeDetailVie
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => setShowEditDialog(true)}
+                onClick={() => { setEditName(challenge.name); setEditTarget(String(challenge.targetNumber)); setShowEditDialog(true); }}
               >
                 <Edit2 className="h-4 w-4" />
               </Button>
@@ -259,7 +253,7 @@ export function ChallengeDetailView({ challengeId, onClose }: ChallengeDetailVie
           <DialogHeader>
             <DialogTitle>Delete Challenge</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{challenge.name}"? This will also delete all {entries.length} entries. This action cannot be undone.
+              Are you sure you want to delete &ldquo;{challenge.name}&rdquo;? This will also delete all {entries.length} entries. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-3 mt-4">

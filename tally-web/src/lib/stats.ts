@@ -51,7 +51,7 @@ export function calculateStats(
   const sortedDates = Array.from(entryDates).sort().reverse();
   
   let currentStreak = 0;
-  let tempDate = new Date(today);
+  const tempDate = new Date(today);
   while (true) {
     const dateStr = tempDate.toISOString().split("T")[0];
     if (entryDates.has(dateStr)) {

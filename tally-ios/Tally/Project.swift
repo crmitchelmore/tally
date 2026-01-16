@@ -32,7 +32,9 @@ let project = Project(
             ),
             sources: ["Tally/Sources/**"],
             resources: ["Tally/Resources/**"],
-            dependencies: []
+            dependencies: [
+                .external(name: "Clerk"),
+            ]
         ),
         .target(
             name: "TallyTests",

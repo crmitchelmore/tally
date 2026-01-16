@@ -2,15 +2,34 @@ import SwiftUI
 
 @main
 struct TallyApp: App {
-    @State private var isAuthenticated = false
+    @State private var authManager = AuthManager.shared
     
     var body: some Scene {
         WindowGroup {
-            if isAuthenticated {
-                MainTabView()
-            } else {
-                WelcomeView(onSignIn: { isAuthenticated = true })
+            Group {
+                if authManager.isLoading {
+                    LoadingView()
+                } else if authManager.isAuthenticated {
+                    MainTabView()
+                } else {
+                    WelcomeView()
+                }
             }
+            .environment(authManager)
+            .task {
+                await authManager.checkSession()
+            }
+        }
+    }
+}
+
+struct LoadingView: View {
+    var body: some View {
+        VStack {
+            ProgressView()
+            Text("Loading...")
+                .foregroundColor(.secondary)
+                .padding(.top, 8)
         }
     }
 }
@@ -38,6 +57,6 @@ struct MainTabView: View {
                     Label("Settings", systemImage: "gearshape.fill")
                 }
         }
-        .tint(Color("AccentColor"))
+        .tint(Color.accentColor)
     }
 }

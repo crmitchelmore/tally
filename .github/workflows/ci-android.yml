@@ -1,0 +1,46 @@
+name: Android CI
+
+on:
+  push:
+    branches: [main, rewrite-opus]
+    paths:
+      - 'tally-android/**'
+      - '.github/workflows/ci-android.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tally-android/**'
+      - '.github/workflows/ci-android.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+      
+      - name: Grant execute permission for gradlew
+        working-directory: tally-android
+        run: chmod +x gradlew
+      
+      - name: Build with Gradle
+        working-directory: tally-android
+        run: ./gradlew build --no-daemon
+      
+      - name: Run tests
+        working-directory: tally-android
+        run: ./gradlew test --no-daemon
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: app-debug
+          path: tally-android/app/build/outputs/apk/debug/

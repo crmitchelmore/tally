@@ -7,14 +7,12 @@ final class ChallengesStore {
     var isLoading = false
     var error: String?
     
-    private let apiClient = APIClient.shared
-    
     func loadChallenges() async {
         isLoading = true
         error = nil
         
         do {
-            challenges = try await apiClient.fetchChallenges()
+            challenges = try await APIClient.shared.getChallenges()
         } catch let apiError as APIError {
             error = apiError.errorDescription
         } catch {
@@ -34,16 +32,16 @@ final class ChallengesStore {
         isPublic: Bool
     ) async {
         do {
-            _ = try await apiClient.createChallenge(CreateChallengeRequest(
-                name: name,
-                targetNumber: targetNumber,
+            _ = try await APIClient.shared.createChallenge(
+                title: name,
+                target: targetNumber,
+                unit: timeframeUnit,
                 color: color,
                 icon: icon,
-                timeframeUnit: timeframeUnit,
-                year: year,
+                startDate: Date(),
+                endDate: nil,
                 isPublic: isPublic
-            ))
-            // Reload challenges after creating
+            )
             await loadChallenges()
         } catch let apiError as APIError {
             error = apiError.errorDescription
@@ -55,18 +53,16 @@ final class ChallengesStore {
 
 @Observable
 final class EntriesStore {
-    var entries: [String: [EntryResponse]] = [:] // keyed by challengeId
+    var entries: [String: [EntryResponse]] = [:]
     var isLoading = false
     var error: String?
-    
-    private let apiClient = APIClient.shared
     
     func loadEntries(for challengeId: String) async {
         isLoading = true
         error = nil
         
         do {
-            entries[challengeId] = try await apiClient.fetchEntries(challengeId: challengeId)
+            entries[challengeId] = try await APIClient.shared.getEntries(challengeId: challengeId)
         } catch let apiError as APIError {
             error = apiError.errorDescription
         } catch {
@@ -78,23 +74,15 @@ final class EntriesStore {
     
     func createEntry(
         challengeId: String,
-        date: Date,
-        count: Int,
-        note: String?,
-        feeling: String?
+        count: Int = 1,
+        note: String? = nil
     ) async {
-        let dateFormatter = ISO8601DateFormatter()
-        dateFormatter.formatOptions = [.withFullDate]
-        let dateString = dateFormatter.string(from: date).prefix(10)
-        
         do {
-            _ = try await apiClient.createEntry(CreateEntryRequest(
+            _ = try await APIClient.shared.createEntry(
                 challengeId: challengeId,
-                date: String(dateString),
                 count: count,
-                note: note,
-                feeling: feeling
-            ))
+                note: note
+            )
             await loadEntries(for: challengeId)
         } catch let apiError as APIError {
             error = apiError.errorDescription
@@ -119,14 +107,12 @@ final class LeaderboardStore {
     var error: String?
     var selectedTimeRange = "month"
     
-    private let apiClient = APIClient.shared
-    
     func loadLeaderboard() async {
         isLoading = true
         error = nil
         
         do {
-            entries = try await apiClient.fetchLeaderboard(timeRange: selectedTimeRange)
+            entries = try await APIClient.shared.getLeaderboard(timeRange: selectedTimeRange)
         } catch let apiError as APIError {
             error = apiError.errorDescription
         } catch {
@@ -143,14 +129,12 @@ final class CommunityStore {
     var isLoading = false
     var error: String?
     
-    private let apiClient = APIClient.shared
-    
     func loadPublicChallenges() async {
         isLoading = true
         error = nil
         
         do {
-            publicChallenges = try await apiClient.fetchPublicChallenges()
+            publicChallenges = try await APIClient.shared.getPublicChallenges()
         } catch let apiError as APIError {
             error = apiError.errorDescription
         } catch {

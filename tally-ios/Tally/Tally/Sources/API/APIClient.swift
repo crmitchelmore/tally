@@ -8,8 +8,6 @@ actor APIClient {
     private var authToken: String?
     
     private init() {
-        // Use the Convex deployment URL for HTTP actions
-        // In production, this should come from environment or config
         self.baseURL = URL(string: ProcessInfo.processInfo.environment["CONVEX_HTTP_URL"] ?? "https://curious-panther-737.convex.site")!
     }
     
@@ -19,47 +17,72 @@ actor APIClient {
     
     // MARK: - Challenges
     
-    func fetchChallenges() async throws -> [ChallengeResponse] {
+    func getChallenges() async throws -> [ChallengeResponse] {
         let data = try await request(path: "/api/v1/challenges", method: "GET")
-        let response = try JSONDecoder().decode(APIResponse<[ChallengeResponse]>.self, from: data)
+        let response = try JSONDecoder.apiDecoder.decode(APIResponse<[ChallengeResponse]>.self, from: data)
         return response.data
     }
     
-    func createChallenge(_ challenge: CreateChallengeRequest) async throws -> String {
+    func createChallenge(
+        title: String,
+        target: Int,
+        unit: String,
+        color: String,
+        icon: String,
+        startDate: Date,
+        endDate: Date?,
+        isPublic: Bool
+    ) async throws -> String {
+        let challenge = CreateChallengeRequest(
+            name: title,
+            targetNumber: target,
+            color: color,
+            icon: icon,
+            timeframeUnit: unit,
+            year: Calendar.current.component(.year, from: startDate),
+            isPublic: isPublic
+        )
         let body = try JSONEncoder().encode(challenge)
         let data = try await request(path: "/api/v1/challenges", method: "POST", body: body)
-        let response = try JSONDecoder().decode(APIResponse<IDResponse>.self, from: data)
+        let response = try JSONDecoder.apiDecoder.decode(APIResponse<IDResponse>.self, from: data)
         return response.data.id
     }
     
     // MARK: - Entries
     
-    func fetchEntries(challengeId: String) async throws -> [EntryResponse] {
+    func getEntries(challengeId: String) async throws -> [EntryResponse] {
         let data = try await request(path: "/api/v1/entries?challengeId=\(challengeId)", method: "GET")
-        let response = try JSONDecoder().decode(APIResponse<[EntryResponse]>.self, from: data)
+        let response = try JSONDecoder.apiDecoder.decode(APIResponse<[EntryResponse]>.self, from: data)
         return response.data
     }
     
-    func createEntry(_ entry: CreateEntryRequest) async throws -> String {
+    func createEntry(challengeId: String, count: Int = 1, note: String? = nil) async throws -> String {
+        let entry = CreateEntryRequest(
+            challengeId: challengeId,
+            date: ISO8601DateFormatter().string(from: Date()),
+            count: count,
+            note: note,
+            feeling: nil
+        )
         let body = try JSONEncoder().encode(entry)
         let data = try await request(path: "/api/v1/entries", method: "POST", body: body)
-        let response = try JSONDecoder().decode(APIResponse<IDResponse>.self, from: data)
+        let response = try JSONDecoder.apiDecoder.decode(APIResponse<IDResponse>.self, from: data)
         return response.data.id
     }
     
     // MARK: - Public Challenges
     
-    func fetchPublicChallenges() async throws -> [ChallengeResponse] {
+    func getPublicChallenges() async throws -> [ChallengeResponse] {
         let data = try await request(path: "/api/v1/public-challenges", method: "GET", requiresAuth: false)
-        let response = try JSONDecoder().decode(APIResponse<[ChallengeResponse]>.self, from: data)
+        let response = try JSONDecoder.apiDecoder.decode(APIResponse<[ChallengeResponse]>.self, from: data)
         return response.data
     }
     
     // MARK: - Leaderboard
     
-    func fetchLeaderboard(timeRange: String = "month", limit: Int = 50) async throws -> [LeaderboardEntry] {
+    func getLeaderboard(timeRange: String = "month", limit: Int = 50) async throws -> [LeaderboardEntry] {
         let data = try await request(path: "/api/v1/leaderboard?timeRange=\(timeRange)&limit=\(limit)", method: "GET", requiresAuth: false)
-        let response = try JSONDecoder().decode(APIResponse<[LeaderboardEntry]>.self, from: data)
+        let response = try JSONDecoder.apiDecoder.decode(APIResponse<[LeaderboardEntry]>.self, from: data)
         return response.data
     }
     
@@ -136,6 +159,11 @@ struct ChallengeResponse: Codable, Identifiable {
     let createdAt: Double
     
     var id: String { _id }
+    var title: String { name }
+    var target: Int { targetNumber }
+    var unit: String { timeframeUnit }
+    var startDate: Date { Date(timeIntervalSince1970: createdAt / 1000) }
+    var endDate: Date? { nil }
 }
 
 struct EntryResponse: Codable, Identifiable {
@@ -148,6 +176,9 @@ struct EntryResponse: Codable, Identifiable {
     let createdAt: Double
     
     var id: String { _id }
+    var dateValue: Date {
+        ISO8601DateFormatter().date(from: date) ?? Date(timeIntervalSince1970: createdAt / 1000)
+    }
 }
 
 struct LeaderboardEntry: Codable, Identifiable {
@@ -196,18 +227,21 @@ enum APIError: Error, LocalizedError {
     
     var errorDescription: String? {
         switch self {
-        case .invalidURL:
-            return "Invalid URL"
-        case .unauthorized:
-            return "Please sign in to continue"
-        case .networkError:
-            return "Network error. Please check your connection."
-        case .clientError(let code):
-            return "Request error (\(code))"
-        case .serverError(let code):
-            return "Server error (\(code)). Please try again."
-        case .decodingError:
-            return "Failed to process response"
+        case .invalidURL: return "Invalid URL"
+        case .unauthorized: return "Please sign in to continue"
+        case .networkError: return "Network error. Please check your connection."
+        case .clientError(let code): return "Request error (\(code))"
+        case .serverError(let code): return "Server error (\(code)). Please try again."
+        case .decodingError: return "Failed to process response"
         }
     }
+}
+
+// MARK: - JSON Extensions
+
+extension JSONDecoder {
+    static let apiDecoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        return decoder
+    }()
 }

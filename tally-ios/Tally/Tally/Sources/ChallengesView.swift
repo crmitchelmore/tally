@@ -145,14 +145,12 @@ struct ChallengeCardView: View {
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .sheet(isPresented: $showAddEntry) {
-            AddEntryView(challengeId: challenge.id) { count, note, feeling in
+            AddEntryView(challengeId: challenge.id) { count, note in
                 Task {
                     await entriesStore.createEntry(
                         challengeId: challenge.id,
-                        date: Date(),
                         count: count,
-                        note: note,
-                        feeling: feeling
+                        note: note
                     )
                 }
                 showAddEntry = false
@@ -166,7 +164,7 @@ struct ChallengeCardView: View {
 
 struct AddEntryView: View {
     let challengeId: String
-    let onSave: (Int, String?, String?) -> Void
+    let onSave: (Int, String?) -> Void
     
     @State private var count = 1
     @State private var note = ""
@@ -191,7 +189,7 @@ struct AddEntryView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        onSave(count, note.isEmpty ? nil : note, nil)
+                        onSave(count, note.isEmpty ? nil : note)
                     }
                 }
             }

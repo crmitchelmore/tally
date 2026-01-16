@@ -7,7 +7,7 @@
       "Ensure secrets exist in GitHub Actions (names only; never commit/print values)",
       "Record any missing/blocked secrets in progress.txt"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "bootstrap",
@@ -35,7 +35,7 @@
     "steps": [
       "Follow plans/web-api/feature-auth.md",
       "Verify signed-out /app CTA and signed-in provisioning",
-      "Run existing web checks (bun run …) if present"
+      "Run existing web checks (bun run \u2026) if present"
     ],
     "passes": false
   },

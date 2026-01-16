@@ -3,3 +3,4 @@
 # If something is blocked (secrets/manual approvals), write "BLOCKED: ..." and move on.
 
 - 2026-01-16: Initialized Ralph-compatible PRD + runner scaffolding.
+- 2026-01-16: Synced .env secrets to GitHub Actions; verified secret names present.

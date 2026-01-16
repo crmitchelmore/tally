@@ -1,0 +1,45 @@
+name: CI - Web
+
+on:
+  push:
+    branches: [main, rewrite-opus]
+    paths:
+      - 'tally-web/**'
+      - '.github/workflows/ci-web.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tally-web/**'
+      - '.github/workflows/ci-web.yml'
+
+jobs:
+  lint-test-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tally-web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Type check
+        run: bun run build
+        env:
+          NEXT_PUBLIC_CONVEX_URL: https://bright-jackal-396.convex.cloud
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CONVEX_DEPLOYMENT: bright-jackal-396
+
+      - name: Unit tests
+        run: bun run test:unit

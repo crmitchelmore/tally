@@ -3,7 +3,7 @@ package com.tallytracker.android.ui.settings
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.outlined.Launch
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -57,7 +57,7 @@ fun SettingsScreen(
                 headlineContent = { Text("Export Data") },
                 supportingContent = { Text("Download your data as JSON") },
                 trailingContent = {
-                    Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null)
+                    Icon(Icons.Outlined.Launch, contentDescription = null)
                 },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -66,7 +66,7 @@ fun SettingsScreen(
                 headlineContent = { Text("Import Data") },
                 supportingContent = { Text("Restore from a backup") },
                 trailingContent = {
-                    Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null)
+                    Icon(Icons.Outlined.Launch, contentDescription = null)
                 },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -82,7 +82,7 @@ fun SettingsScreen(
             ListItem(
                 headlineContent = { Text("Website") },
                 trailingContent = {
-                    Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null)
+                    Icon(Icons.Outlined.Launch, contentDescription = null)
                 }
             )
             

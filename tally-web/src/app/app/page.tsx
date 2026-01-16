@@ -1,10 +1,11 @@
 "use client";
 
-import { useUser, SignOutButton, UserButton } from "@clerk/nextjs";
+import { useUser, UserButton } from "@clerk/nextjs";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { CreateChallengeDialog } from "@/components/tally/CreateChallengeDialog";
 
 export default function AppPage() {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -16,7 +17,6 @@ export default function AppPage() {
     isUserStored && user?.id ? { clerkId: user.id } : "skip"
   );
 
-  // Store user in Convex when they sign in
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
       storeUser({
@@ -81,9 +81,12 @@ export default function AppPage() {
 
       {/* Main content */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Your Challenges</h2>
-          <p className="text-gray-600 mt-1">Track your progress and stay on pace.</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Your Challenges</h2>
+            <p className="text-gray-600 mt-1">Track your progress and stay on pace.</p>
+          </div>
+          <CreateChallengeDialog />
         </div>
 
         {!isUserStored ? (
@@ -101,9 +104,7 @@ export default function AppPage() {
               <p className="text-gray-600 mb-6">
                 Create your first challenge to start tracking your progress.
               </p>
-              <button className="rounded-2xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 transition-colors">
-                Create Challenge
-              </button>
+              <CreateChallengeDialog />
             </div>
           </div>
         ) : (

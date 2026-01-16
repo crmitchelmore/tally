@@ -24,6 +24,7 @@ Create and manage challenges with a tactile, focused flow.
 - Honest: real totals and pace; no gamified noise.
 - Friendly/fast/calm: subtle motion, reduced-motion support, large tap targets.
 - Offline-first: local writes with clear sync state and retry.
+- Tag: `FRACTAL_COMPLETION_TALLIES` (challenge count entry/visualisation)
 
 ## Architecture notes (SPM)
 - Implement as a Swift package (e.g. `TallyFeatureChallenges`) and keep the app target as composition glue.

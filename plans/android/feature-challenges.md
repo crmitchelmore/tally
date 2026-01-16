@@ -24,6 +24,7 @@ Create and manage challenges with a tactile, focused flow.
 - Honest: real totals and pace; no gamified noise.
 - Friendly/fast/calm: subtle motion, reduced-motion support, large tap targets.
 - Offline-first: local writes with clear sync state and retry.
+- Tag: `FRACTAL_COMPLETION_TALLIES` (challenge count entry/visualisation)
 
 ## Implementation order
 1. Define screen states (loading, empty, error, offline).

@@ -27,6 +27,7 @@ Let users create, view, update, archive, and delete challenges.
 - Honest: real counts and pace; no gamified noise.
 - Friendly/fast/calm: subtle motion, reduced-motion support, readable contrast.
 - Offline-first: clear sync state for queued writes and retries.
+- Tag: `FRACTAL_COMPLETION_TALLIES` (challenge count entry/visualisation)
 
 ## Implementation order
 1. Define states (loading, empty, error, offline, permission).

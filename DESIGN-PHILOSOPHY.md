@@ -35,6 +35,42 @@ Tally should support all of these without judgment:
 ### Rolling tallies up
 - For large counts, group by fives visually first, then compress (e.g. “3×5 + 2”) while keeping *some* tally representation next to the number.
 
+### Fractal Completion Tallies (core identity system)
+> Reference image: `assets/identity/fractal-completion-tallies-reference.png` (source: `/Users/cm/Downloads/5.png`)
+
+**Tag:** `FRACTAL_COMPLETION_TALLIES` — include whenever implementing **entry/visualisation of challenge counts**.
+
+A hierarchical tally-mark icon system that stays intuitive at small sizes by **collapsing detail at exact completion thresholds** (25 / 100 / 1,000 / 10,000).
+
+- **Color system (max 3; cycle by layer)**
+  - **C1 (Base detail):** literal tallies / 5-gates
+  - **C2 (Mid cap):** **25-cap X overlay**
+  - **C3 (High cap):** **100-cap box outline**
+  - **Cycling:** for cap layers above C3, cycle back to **C1 → C2 → C3**.
+
+- **Core primitives**
+  - **5-gate (value = 5):** four vertical strokes + a diagonal slash.
+  - **25-unit (capacity = 25):** 5 positions in an X layout (center, NE/NW/SE/SW); each position holds one 5-gate.
+  - **25-cap overlay (exactly 25 only):** when the 25-unit is full, draw a bold **X overlay** across the whole unit in **C2**.
+  - **100-unit (capacity = 100):** a 2×2 square of 25-units with visible seams.
+  - **100-cap simplification (exactly 100 only):** hide all C1 5-gate detail; show **only** the **X (C2)** + **square outline (C3)**.
+  - **1,000-unit (capacity = 1,000):** a row of **10** 100-blocks.
+  - **1,000-cap simplification (exactly 1,000 only):** remove the internal X marks; keep the 10 squares and draw **one horizontal line overlay** through all 10 squares (next color in the cycle; typically C1).
+  - **10,000-unit (capacity = 10,000):** stack **10 rows** of the 1,000 representation (10×10 macro-grid of 100-block squares).
+  - **10,000 closure (exactly 10,000 only):** add a single bold **diagonal closure stroke** across the entire 10×10 block (next color in the cycle; typically C2).
+
+- **Representation by numeric range**
+  - **1–24:** show literal tallies / 5-gates in C1 placed into the 25-unit X layout (no cap overlay).
+  - **25:** add the C2 X overlay (and only at 25).
+  - **26–99:** 2×2 of 25-units; completed 25-units get the C2 overlay; the active unit shows C1 detail.
+  - **100:** collapse to **X (C2) + square outline (C3)**; remove all C1 detail.
+  - **101–999:** row of up to 10 “100 blocks”; completed blocks show **X (C2) inside square (C3)**; the partial block may expand down to the 25-structure when space allows.
+  - **1,000:** collapse to 10 squares + one horizontal line; remove X marks.
+  - **1,001–9,999:** stack up to 10 rows; completed rows use the 1,000-cap form; partial rows may expand down a level when space allows.
+  - **10,000:** add the diagonal closure stroke (never used for partial progress).
+
+**Non-negotiable rule:** cap marks (X overlays, box outlines, horizontal line, diagonal closure) appear **only** at their exact completion thresholds.
+
 ### Color direction
 - White “paper” is the default, but pure white may not work well enough.
 - Consider a **slightly off-white**, papery background (not yellow).

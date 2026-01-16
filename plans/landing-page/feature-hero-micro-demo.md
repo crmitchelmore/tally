@@ -5,8 +5,16 @@ Communicate the core loop instantly with a tactile "+1" demo.
 
 ## Scope
 - Interactive challenge card with a "+1" button.
-- Draw tally mark stroke and update mini chart.
+- Ink-stroke tally animation: 4 pencil-like vertical strokes; the 5th stroke is a red diagonal slash; update mini chart.
 - Client-side demo data only; no auth.
+
+## Tally mark visual spec
+- **Stroke style**: Pencil-like appearance with natural texture.
+- **Build-up sequence**: Draw strokes 1→4 individually; on 5th click, add red diagonal slash across the group.
+- **Draw-in duration**: ~150–300ms per stroke for smooth, visible animation.
+- **Reduced-motion behavior**: Show instant appearance; no animation.
+- **Decorative elements**: No emoji or confetti; keep visual focus on the mark itself.
+- **Sizing**: Desktop-first; ensure adequate tap targets for mobile (~44×44px minimum).
 
 ## UX + performance
 - No heavy JS in hero; hydrate after render.

@@ -8,12 +8,13 @@ Log progress with a tactile, fast flow.
 - Count or sets/reps; date (no future); optional note and feeling.
 - Edit and delete entries.
 - Per-day drilldown from heatmap.
-- Delight: confetti + light haptics (reduced-motion safe).
+- Delight: tally-mark ink stroke animation + light haptics (reduced-motion safe).
 
 ## Acceptance criteria
 - Entries update stats immediately.
 - Future dates blocked with clear error.
-- Reduced-motion disables confetti.
+- Success feedback draws a tally-mark ink stroke; instant for reduced-motion.
+- No confetti/emoji.
 
 ## Design philosophy integration
 - Tactile: immediate feedback on actions (optimistic UI, crisp motion).

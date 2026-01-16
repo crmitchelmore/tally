@@ -32,6 +32,11 @@
 - Tactile, focused, honest; friendly, fast, and calm.
 - Subtle motion, reduced-motion support, and accessibility first.
 
+## Visual motif enforcement (tally marks)
+- Canonical mark: 4 pencil-like vertical strokes + a red diagonal slash for five.
+- Use tally marks alongside key numbers (progress, totals, pace), grouped into fives.
+- No emoji/confetti; success feedback is always an ink-stroke tally.
+
 ## Delivery workflow (repo rules)
 - Each feature plan ships as its own PR.
 - Repo setting: disable squash merges; allow rebase-only merges.
@@ -55,14 +60,14 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 1. Foundation: app shell, design system, auth, API client, local cache.
 2. Core flows: challenges and entries.
 3. Insights + data management.
-4. Community + leaderboard.
+4. Community.
 5. Polish: performance, offline sync, accessibility.
 
 ## Phase detail (order)
 1. Foundation: app shell, design system, auth, API client, local cache.
 2. Core flows: challenges and entries, with optimistic UI.
 3. Insights + data management: stats, weekly summary, export/import, clear-all.
-4. Community + leaderboard: public challenges, follow, real aggregation UI.
+4. Community: public challenges, follow, real aggregation UI.
 5. Polish: offline sync clarity, accessibility, performance, store readiness.
 
 ## Testing focus (behavioral)
@@ -94,7 +99,6 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 - feature-stats.md
 - feature-data-portability.md
 - feature-community.md
-- feature-leaderboard.md
 - feature-store-upload.md
 
 ## Separate project: CI (last)

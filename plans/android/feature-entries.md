@@ -15,7 +15,8 @@ Log progress quickly with honest feedback.
 
 ## Acceptance criteria
 - Entry edits update stats without delay.
-- Reduced-motion disables confetti-like effects.
+- Success feedback draws a tally-mark ink stroke; instant for reduced-motion.
+- No confetti/emoji.
 
 ## Design philosophy integration
 - Tactile: immediate feedback with ink-like motion and haptics where available.

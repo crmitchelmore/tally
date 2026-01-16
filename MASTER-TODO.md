@@ -47,6 +47,8 @@ gh secret list --repo crmitchelmore/tally
 - TEST_USER_EMAIL
 - TEST_USER_PASSWORD
 - VERCEL_API_TOKEN
+- (Optional) VERCEL_ORG_ID (if not committing `.vercel/project.json`)
+- (Optional) VERCEL_PROJECT_ID (if not committing `.vercel/project.json`)
 - IOS_SIGNING_CERT_PASSWORD
 - IOS_KEYCHAIN_PASSWORD
 - GOOGLE_PLAY_SERVICE_ACCOUNT_JSON
@@ -177,20 +179,6 @@ done
   - [ ] Mark tests complete.
   - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
   - [ ] Update other platform feature plans with any changes.
-- [ ] Feature: Leaderboard (plans/web-api/feature-leaderboard.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (none for web; review iOS/Android).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Push live using credentials in .env.
-  - [ ] Verify on the remote environment.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
 - [ ] Feature: Stats (plans/web-api/feature-stats.md)
   - [ ] Design based on design-philosophy.md.
   - [ ] Verify plan against existing implementations on other platforms (none for web; review iOS/Android).
@@ -281,20 +269,6 @@ done
   - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
   - [ ] Update other platform feature plans with any changes.
 - [ ] Feature: Entries (plans/ios/feature-entries.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
-- [ ] Feature: Leaderboard (plans/ios/feature-leaderboard.md)
   - [ ] Design based on design-philosophy.md.
   - [ ] Verify plan against existing implementations on other platforms (review Android/Web).
   - [ ] Build it out.
@@ -417,20 +391,6 @@ done
   - [ ] Mark tests complete.
   - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
   - [ ] Update other platform feature plans with any changes.
-- [ ] Feature: Leaderboard (plans/android/feature-leaderboard.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
 - [ ] Feature: Stats (plans/android/feature-stats.md)
   - [ ] Design based on design-philosophy.md.
   - [ ] Verify plan against existing implementations on other platforms (review iOS/Web).
@@ -458,6 +418,7 @@ done
   - [ ] Update Copilot instructions and cross-platform plans with learnings after feature changes.
 - [ ] Feature: CD (deploy early) (plans/landing-page/feature-cd.md)
   - [ ] Ship a hello world landing page + web app to production.
+  - [ ] Configure GitHub Actions workflow for automatic deployment on push to main.
   - [ ] Verify production URL and basic CTA behavior.
 - [ ] Feature: App showcase (plans/landing-page/feature-app-showcase.md)
   - [ ] Design based on design-philosophy.md.

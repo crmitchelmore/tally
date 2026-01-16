@@ -14,7 +14,7 @@ The feature inventory below reflects what’s implemented in this repo today. `d
 
 - **Quick Add on challenge card (FLOW-012):** add a true quick-add UI on the dashboard challenge cards (today entry add is via sheets/dialogs).
 - **Dedicated “Trends/Progress” dashboard view (FLOW-020):** add a focused trends route/surface (today the dashboard shows overall stats + challenge cards, not a separate trends page).
-- **Community participant counts + real leaderboards (FLOW-030/031):** replace placeholders with real cross-user aggregation + participant metrics (see §8–9).
+- **Community participant counts (FLOW-030):** replace placeholders with real cross-user aggregation + participant metrics (see §8).
 - **Weekly timeframe support:** `CORE-FLOWS` mentions `weekly`; today challenge timeframe units are `year | month | custom` (see §4.1).
 
 (For completeness: **Sign out (FLOW-004)** is already supported via Clerk `UserButton afterSignOutUrl="/"` and `SignOutButton`.)
@@ -256,7 +256,7 @@ Entry fields:
 - Optional feeling/effort rating
 
 Delight + accessibility:
-- Confetti effect on submit (disabled if user prefers reduced motion)
+- Tally-ink stroke animation on submit (instant if user prefers reduced motion)
 - Light haptics via `navigator.vibrate` when available
 
 Source: `tally-web/src/components/tally/AddEntrySheet.tsx`, `tally-web/src/components/tally/AddEntryDetailSheet.tsx`. 
@@ -386,19 +386,6 @@ Source:
 
 ---
 
-## 9) Leaderboard
-
-A leaderboard UI exists with:
-- Time ranges: week, month, year, all-time
-- Tabs: Global vs My Ranks
-
-Important accuracy note (current state):
-- The UI is **not backed by real cross-user entry aggregation** (so `totalReps`, `progress`, `daysActive`, usernames/avatars are placeholders).
-- The HTTP endpoint `GET /api/v1/leaderboard` exists, but today it only returns **public challenges + follower counts** (sorted by followers) — not rep totals and not time-range aware.
-
-Source: `tally-web/src/components/tally/LeaderboardView.tsx`, `tally-web/convex/http.ts`, `tally-web/convex/followedChallenges.ts`. 
-
----
 
 ## 10) API (for mobile clients / integrations)
 
@@ -423,7 +410,6 @@ The app exposes a versioned HTTP API intended for mobile.
 - `POST /followed`
 - `DELETE /followed/{id}`
 - `GET /public/challenges` (no auth)
-- `GET /leaderboard` (no auth) — currently returns public challenges + follower counts (not rep totals)
 
 Notes:
 - Legacy compatibility aliases also exist under `/api/*` (deprecated; `/api/v1/*` recommended).
@@ -462,7 +448,7 @@ Source: `tally-web/src/providers/feature-flags-provider.tsx`, `tally-web/convex/
 - Avoid spinners; prefer skeletons/progressive rendering.
 
 ### 11.2 Accessibility
-- Respect reduced-motion preferences (confetti/animations should disable).
+- Respect reduced-motion preferences (tally-ink animations should show instantly).
 - Large tap targets for key actions (especially Add Entry).
 
 Source signal: reduced-motion hooks used in Add Entry UI and dashboard animations.
@@ -481,7 +467,7 @@ What’s concretely defined for mobile parity:
 - A versioned HTTP API (`/api/v1`) intended for mobile clients.
 
 What is not yet implemented to full parity (as of this repo state):
-- Full native UI for the web feature set (challenge dashboard/detail, charts, export/import, community, leaderboard).
+- Full native UI for the web feature set (challenge dashboard/detail, charts, export/import, community).
 
 ---
 
@@ -517,6 +503,5 @@ Use this as the “what to rebuild” list:
    - Public challenges list + search
    - Follow/unfollow
    - (Missing today) real aggregated totals + owner info
-8. Leaderboard
    - UI exists
    - (Missing today) real aggregation across users

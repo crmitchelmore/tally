@@ -18,6 +18,11 @@ Explain key features with high-signal text + media.
 - Honest: show real UI or faithful recordings; avoid exaggerated claims.
 - Friendly/fast/calm: subtle motion, reduced-motion fallback, high contrast.
 
+## Tally mark integration
+- Desktop-first: the accordion + media panel must feel designed for wide screens (not “mobile stretched”).
+- Carry the tally motif into media frames and number callouts (tally groups alongside counts).
+- No emoji/confetti; success states use ink-stroke tally marks.
+
 ## Implementation order
 1. Define section states (default, hover, reduced-motion, loading).
 2. Build static layout and copy with responsive structure.

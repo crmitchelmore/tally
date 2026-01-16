@@ -6,6 +6,8 @@ Create and manage challenges with a tactile, focused flow.
 ## Scope
 - Challenge list, detail, and settings views.
 - Create flow with timeframe (year | month | custom), color, icon, public toggle.
+- Dashboard challenge cards: progress ring, total/target, pace status, and a mini activity heatmap.
+- Detail view: core “at-a-glance” header (total/target, remaining, days left, per-day required, pace callout) + **yearly activity heatmap** with per-day drilldown.
 - Archive and delete actions with confirmation.
 
 ## UX notes

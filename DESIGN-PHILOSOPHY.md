@@ -20,15 +20,25 @@ Tally should support all of these without judgment:
 
 - Lean into **platform-native patterns** for each surface (iOS native, Android native, Web native).
 - Core tenets: **speed** and **responsiveness** — touches/actions should feel immediate.
-- Add **delight** via “cool animations” that feel good, but stay **classy** (not cringey).
-- The **tally mark** (four vertical lines + diagonal cross for five) is the foundation of the visual identity.
-- Need a foundational design for **rolling tallies up** into larger counts so it still makes sense at higher numbers.
-  - Initially: focus on **visual display** of rolled-up tallies.
-  - Later: could become a way of presenting/scaling counts, but prioritize visuals first.
-- Color direction:
-  - White “paper” is the default, but pure white may not work well enough.
-  - Consider a **slightly off-white**, papery background (not yellow).
-  - For the “add” picker: start with tally marks on a white background, but that may evolve.
+- Add **delight** via high-craft ink-stroke motion that feels physical and satisfying (never cringey).
+- **Desktop-first responsive (web):** design for wide screens first, then adapt down; avoid “mobile-only UI stretched to desktop”.
+
+### Visual motif (canonical): tally marks
+- The **tally mark** is the foundation of the visual identity.
+- Canonical form: **4 pencil-like vertical strokes**, then a **diagonal “slash”** for five (often the only warm red accent).
+- Tally marks must show up throughout the product where it improves comprehension:
+  - subtle background texture (2–4% opacity)
+  - alongside key numbers (progress, totals, pace) with grouping into fives
+  - success feedback as a new stroke being drawn
+- **No emoji/confetti** anywhere as “delight” — the ink is the delight.
+
+### Rolling tallies up
+- For large counts, group by fives visually first, then compress (e.g. “3×5 + 2”) while keeping *some* tally representation next to the number.
+
+### Color direction
+- White “paper” is the default, but pure white may not work well enough.
+- Consider a **slightly off-white**, papery background (not yellow).
+- The red diagonal slash is the signature accent; use sparingly.
 
 ## Experience principles
 
@@ -99,14 +109,16 @@ The landing page should feel like the product: **calm momentum**—minimal, conf
 ### Style direction to adopt (default)
 **“Ink + Momentum”**
 - Base: neutral UI (current shadcn New York feel), lots of whitespace.
-- Accent: a single warm “slash” color (the 5th tally stroke) used sparingly for CTAs and highlights.
+- Accent: a single warm **red slash** (the 5th tally stroke) used sparingly for CTAs, highlights, and “count reached” moments.
 - Texture: faint tally pattern (opacity 2–4%), never competing with content.
+- Desktop-first layout: designed for wide screens with intentional structure, not just scaled-up mobile cards.
 - Components: rounded-2xl cards, soft borders, gentle shadows; avoid loud gradients.
 
 ### Motion (high-craft, low-noise)
-- Prefer **microinteractions** (hover/press, count-up, draw-in strokes) over large ambient animation.
+- Prefer **microinteractions** (hover/press, count-up, **ink-stroke draw-in**) over large ambient animation.
 - Durations: ~120–220ms for UI, ~280–420ms for hero moments.
-- Always respect reduced-motion.
+- Success feedback is an ink-stroke tally being drawn (no emoji/confetti).
+- Always respect reduced-motion (show final marks instantly).
 
 ### Experiments (cheap validation)
 - **Micro-demo vs. static hero**

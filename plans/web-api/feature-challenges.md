@@ -6,7 +6,10 @@ Let users create, view, update, archive, and delete challenges.
 ## Scope
 - Create dialog with name, target, timeframe (year | month | custom), color, icon, public toggle.
 - Active list filtering (not archived; end date >= today or year >= current).
+- Dashboard challenge cards: progress ring, total/target, pace status, and a mini activity heatmap.
 - Detail view with settings, archive, delete.
+  - Include the core “at-a-glance” header: total/target, remaining, days left, per-day required, and the pace callout.
+  - Include the **yearly activity heatmap** with per-day drilldown.
 - Public/private visibility rules.
 
 ## UX notes

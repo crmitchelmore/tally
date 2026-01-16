@@ -1,15 +1,15 @@
 # Feature: Leaderboard (iOS)
 
-## Goal
-Show real rankings across users.
+> **Out of scope (for now):** We do **not** ship leaderboards or rankings.
+> Keep community as follow/share-only; followed challenges appear on a personal dashboard.
 
-## Scope
-- Leaderboard list with time range filters.
-- Global vs My Ranks tabs.
 
-## Acceptance criteria
-- Ranks are based on real aggregation.
-- Empty states are calm and informative.
+## Status
+**Deferred.** We explicitly avoid public ranking mechanics while we establish the core habit + community follow model.
+
+## Keep instead
+- Community: public challenges, follow/unfollow.
+- Followed challenges appear on the user’s personal dashboard.
 
 ## Design philosophy integration
 - Tactile: immediate feedback with ink-like motion and haptics where available.
@@ -18,19 +18,3 @@ Show real rankings across users.
 - Friendly/fast/calm: subtle motion, reduced-motion support, large tap targets.
 - Offline-first: local writes with clear sync state and retry.
 
-## Architecture notes (SPM)
-- Implement as a Swift package (e.g. `TallyFeatureLeaderboard`) and keep the app target as composition glue.
-- Shared types/live in shared packages (e.g. `TallyCore`); avoid feature-to-feature dependencies.
-
-## Implementation order
-1. Define screen states (loading, empty, error, offline).
-2. Build native UI layout and navigation.
-3. Wire API client and local persistence.
-4. Add optimistic updates and sync indicators.
-5. Accessibility and performance pass.
-
-## Behavioral tests
-- Primary flow works end-to-end (create, log, view, update).
-- Offline actions queue and sync when online.
-- Reduced-motion disables nonessential animation.
-- Error and empty states explain next actions.

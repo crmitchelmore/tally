@@ -17,6 +17,12 @@
 - Calm momentum with tactile ink cues.
 - Focused, honest messaging with one clear CTA per section.
 
+## Visual motif enforcement (tally marks)
+- Canonical mark: 4 pencil-like vertical strokes + a red diagonal slash for five.
+- The motif must show up everywhere it helps comprehension: subtle background texture + alongside key numbers.
+- No emoji/confetti; success feedback is always an ink-stroke tally.
+- Desktop-first responsive: design for wide screens first, then adapt down.
+
 ## Delivery workflow (repo rules)
 - Each feature plan ships as its own PR.
 - Repo setting: disable squash merges; allow rebase-only merges.
@@ -46,7 +52,7 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 4. Performance, accessibility, and polish.
 
 ## Phase detail (order)
-0. **CD (deploy early):** ship a hello world landing page + web app to production.
+0. **CD (deploy early):** ship a hello world landing page + web app to production with GitHub Actions automation.
 1. IA + copy: finalize narrative, CTAs, and section ordering.
 2. Hero micro-demo: build the interactive hero with reduced-motion fallback.
 3. Feature-led sections: showcase, how-it-works, live sync, testimonials, app showcase.

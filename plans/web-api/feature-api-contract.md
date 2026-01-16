@@ -5,7 +5,7 @@ Provide a stable HTTP API for mobile clients.
 
 ## Scope
 - Base /api/v1 with Bearer JWT auth.
-- Endpoints: auth/user, challenges, entries, followed, public challenges, leaderboard.
+- Endpoints: auth/user, challenges, entries, followed, public challenges.
 - Consistent error model and pagination where needed.
 - Maintain legacy /api aliases until deprecation plan exists.
 

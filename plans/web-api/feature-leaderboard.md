@@ -1,17 +1,15 @@
 # Feature: Leaderboard (web)
 
-## Goal
-Show honest, real rankings across users.
+> **Out of scope (for now):** We do **not** ship leaderboards or rankings.
+> Keep community as follow/share-only; followed challenges appear on a personal dashboard.
 
-## Scope
-- Leaderboard UI with time ranges (week/month/year/all).
-- Global vs My Ranks tabs.
-- Backend aggregation to compute totals and ranks.
 
-## Acceptance criteria
-- Ranks and totals are real (not placeholders).
-- Time range selection changes data.
-- Empty states are clear and calm.
+## Status
+**Deferred.** We explicitly avoid public ranking mechanics while we establish the core habit + community follow model.
+
+## Keep instead
+- Community: public challenges, follow/unfollow.
+- Followed challenges appear on the user’s personal dashboard.
 
 ## Design philosophy integration
 - Tactile: immediate feedback on actions (optimistic UI, crisp motion).
@@ -20,15 +18,3 @@ Show honest, real rankings across users.
 - Friendly/fast/calm: subtle motion, reduced-motion support, readable contrast.
 - Offline-first: clear sync state for queued writes and retries.
 
-## Implementation order
-1. Define states (loading, empty, error, offline, permission).
-2. Build UI layout with design system components.
-3. Wire Convex queries/mutations and validation.
-4. Add optimistic updates and sync indicators.
-5. Accessibility and performance pass.
-
-## Behavioral tests
-- Happy path from action to data persistence.
-- Offline/slow network queues work and later sync.
-- Reduced-motion disables nonessential animation.
-- Error and empty states provide clear next actions.

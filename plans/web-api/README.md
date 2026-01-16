@@ -44,6 +44,14 @@ DNS (Cloudflare):
 - Repo setting: disable squash merges; allow rebase-only merges.
 - PR reviews are recommended, but not required (no PR-only enforcement).
 
+## Known snags / sharp edges (read before executing)
+- **Web tooling:** `tally-web/` is Bun-only. Use `bun install` + `bun run ...` (don’t use npm/yarn/pnpm).
+- **Clerk proxy + Vercel path constraints:** Vercel blocks `__*` paths, so do **not** build around `/__clerk/*`. Current working setup is `/.clerk/:path* -> /api/clerk-proxy/:path*` (see `tally-web/vercel.json`) and the proxy handler lives in middleware (`tally-web/src/middleware.ts`).
+- **Middleware routing:** keep `/api/clerk-proxy(.*)` and public routes in sync with the middleware matcher; otherwise Clerk auth redirects/proxy calls can get blocked.
+- **API auth reality:** `tally-web/convex/http.ts` currently treats the Bearer token as a `clerkId` (there’s a TODO to validate real Clerk JWTs). Don’t assume JWT verification exists until it’s implemented.
+- **SSR gotchas:** avoid constructing browser-only clients at module scope (Convex/Clerk). Hydration-safe patterns are required to keep builds passing.
+- **Analytics:** PostHog integration has previously caused SSR/Turbopack build issues; if re-enabling, load it client-side only (dynamic import + `ssr:false`).
+
 ## Execution prompt (copy/paste)
 You are a senior engineer shipping Tally. Your job: execute this plan end-to-end until completed, using the tech stack specified and integrating the Tally design philosophy (tactile, focused, honest; friendly, fast, calm; progressive disclosure; subtle motion with reduced-motion support; accessible and high-contrast; offline-first with clear sync states).
 Use the plan sections and feature files in this folder plus /feature-map.md to ensure full parity. Follow the phase order and each feature's "Implementation order" before moving on; update docs if scope changes.

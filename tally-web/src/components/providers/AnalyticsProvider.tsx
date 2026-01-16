@@ -12,14 +12,14 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize PostHog on mount
   useEffect(() => {
-    initPostHog();
+    void initPostHog();
   }, []);
 
   // Track page views on route change
   useEffect(() => {
     if (pathname) {
       const url = searchParams?.toString() 
-        ? `${pathname}?${searchParams.toString()}`
+        ? \`\${pathname}?\${searchParams.toString()}\`
         : pathname;
       trackPageView(url);
     }
@@ -30,13 +30,13 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     if (!isLoaded) return;
     
     if (user) {
-      identifyUser(user.id, {
+      void identifyUser(user.id, {
         email: user.primaryEmailAddress?.emailAddress,
         name: user.fullName,
         createdAt: user.createdAt,
       });
     } else {
-      resetUser();
+      void resetUser();
     }
   }, [user, isLoaded]);
 

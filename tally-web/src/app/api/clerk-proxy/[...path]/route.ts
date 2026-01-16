@@ -13,7 +13,7 @@ async function proxyRequest(req: NextRequest): Promise<Response> {
   headers.delete("host");
   headers.set("origin", url.origin);
   // Required headers for Clerk proxy
-  headers.set("Clerk-Proxy-Url", "https://tally-tracker.app/__clerk");
+  headers.set("Clerk-Proxy-Url", "https://tally-tracker.app/.clerk");
   if (CLERK_SECRET_KEY) {
     headers.set("Clerk-Secret-Key", CLERK_SECRET_KEY);
   }

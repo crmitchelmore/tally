@@ -6,6 +6,8 @@ import { api } from "../../../convex/_generated/api";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CreateChallengeDialog } from "@/components/tally/CreateChallengeDialog";
+import { ChallengeCard } from "@/components/tally/ChallengeCard";
+import { AddEntrySheet } from "@/components/tally/AddEntrySheet";
 
 export default function AppPage() {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -80,7 +82,7 @@ export default function AppPage() {
       </header>
 
       {/* Main content */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 pb-24">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Your Challenges</h2>
@@ -110,39 +112,14 @@ export default function AppPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {challenges.map((challenge) => (
-              <div
-                key={challenge._id}
-                className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow cursor-pointer"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
-                    style={{ backgroundColor: challenge.color + "20", color: challenge.color }}
-                  >
-                    {challenge.icon}
-                  </div>
-                  <h3 className="font-semibold text-gray-900">{challenge.name}</h3>
-                </div>
-                <div className="flex justify-between items-end">
-                  <div>
-                    <p className="text-sm text-gray-500">Target</p>
-                    <p className="text-2xl font-bold text-gray-900">{challenge.targetNumber}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">
-                      {challenge.timeframeUnit === "year" 
-                        ? challenge.year 
-                        : challenge.timeframeUnit === "month"
-                        ? "Monthly"
-                        : "Custom"}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <ChallengeCard key={challenge._id} challenge={challenge as any} />
             ))}
           </div>
         )}
       </main>
+
+      {/* Floating Add Entry button */}
+      {challenges && challenges.length > 0 && <AddEntrySheet />}
     </div>
   );
 }

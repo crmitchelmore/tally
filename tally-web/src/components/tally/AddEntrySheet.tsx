@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, X, Dumbbell } from "lucide-react";
 import { Feeling } from "@/types";
 
 const FEELINGS: { value: Feeling; label: string; emoji: string }[] = [
@@ -43,6 +43,7 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [useSetsMode, setUseSetsMode] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
   
@@ -52,6 +53,7 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
     count: 1,
     note: "",
     feeling: undefined as Feeling | undefined,
+    sets: [] as { reps: number }[],
   });
 
   // Auto-select challenge if only one exists and no challengeId provided
@@ -72,19 +74,26 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
     ? window.matchMedia("(prefers-reduced-motion: reduce)").matches 
     : false;
 
+  // Calculate total count from sets
+  const totalFromSets = formData.sets.reduce((sum, set) => sum + set.reps, 0);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.id || !formData.challengeId) return;
 
     setIsSubmitting(true);
     try {
+      const finalCount = useSetsMode ? totalFromSets : formData.count;
+      const finalSets = useSetsMode && formData.sets.length > 0 ? formData.sets : undefined;
+
       await createEntry({
         clerkId: user.id,
         challengeId: formData.challengeId as Id<"challenges">,
         date: formData.date,
-        count: formData.count,
+        count: finalCount,
         note: formData.note || undefined,
         feeling: formData.feeling,
+        sets: finalSets,
       });
       
       // Show confetti if motion is allowed
@@ -105,7 +114,9 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
         count: 1,
         note: "",
         feeling: undefined,
+        sets: [],
       });
+      setUseSetsMode(false);
       onAdded?.();
     } catch (error) {
       console.error("Failed to add entry:", error);
@@ -116,6 +127,27 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
 
   const incrementCount = () => setFormData((prev) => ({ ...prev, count: prev.count + 1 }));
   const decrementCount = () => setFormData((prev) => ({ ...prev, count: Math.max(1, prev.count - 1) }));
+
+  const addSet = () => {
+    setFormData((prev) => ({
+      ...prev,
+      sets: [...prev.sets, { reps: 10 }],
+    }));
+  };
+
+  const removeSet = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      sets: prev.sets.filter((_, i) => i !== index),
+    }));
+  };
+
+  const updateSetReps = (index: number, reps: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      sets: prev.sets.map((set, i) => (i === index ? { reps } : set)),
+    }));
+  };
 
   const selectedChallenge = challenges?.find((c) => c._id === formData.challengeId);
 
@@ -179,29 +211,92 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
               </div>
             )}
 
+            {/* Toggle between simple count and sets mode */}
             <div className="space-y-2">
-              <Label>Count</Label>
-              <div className="flex items-center justify-center gap-4">
-                <Button
+              <div className="flex items-center justify-between">
+                <Label>Count</Label>
+                <button
                   type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={decrementCount}
-                  disabled={formData.count <= 1}
+                  onClick={() => {
+                    setUseSetsMode(!useSetsMode);
+                    if (!useSetsMode && formData.sets.length === 0) {
+                      setFormData((prev) => ({ ...prev, sets: [{ reps: 10 }] }));
+                    }
+                  }}
+                  className={`flex items-center gap-1 text-sm px-2 py-1 rounded-lg transition-colors ${
+                    useSetsMode
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
                 >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <Input
-                  type="number"
-                  min={1}
-                  value={formData.count}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, count: parseInt(e.target.value) || 1 }))}
-                  className="w-20 text-center text-2xl font-bold"
-                />
-                <Button type="button" variant="outline" size="icon" onClick={incrementCount}>
-                  <Plus className="h-4 w-4" />
-                </Button>
+                  <Dumbbell className="h-3 w-3" />
+                  Sets
+                </button>
               </div>
+
+              {!useSetsMode ? (
+                <div className="flex items-center justify-center gap-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={decrementCount}
+                    disabled={formData.count <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={formData.count}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, count: parseInt(e.target.value) || 1 }))}
+                    className="w-20 text-center text-2xl font-bold"
+                  />
+                  <Button type="button" variant="outline" size="icon" onClick={incrementCount}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {formData.sets.map((set, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500 w-16">Set {index + 1}</span>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={set.reps}
+                        onChange={(e) => updateSetReps(index, parseInt(e.target.value) || 1)}
+                        className="w-20 text-center"
+                      />
+                      <span className="text-sm text-gray-500">reps</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeSet(index)}
+                        className="h-8 w-8"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addSet}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Set
+                  </Button>
+                  {formData.sets.length > 0 && (
+                    <p className="text-center text-sm text-gray-500">
+                      Total: <span className="font-semibold text-gray-900">{totalFromSets}</span> reps
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

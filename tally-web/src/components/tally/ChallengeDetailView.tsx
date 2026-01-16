@@ -223,12 +223,23 @@ export function ChallengeDetailView({ challengeId, onClose }: ChallengeDetailVie
                         className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg"
                       >
                         <div className="flex items-center gap-3">
-                          <span className="font-medium">{entry.count}</span>
+                          <span className="font-semibold text-lg">{entry.count}</span>
+                          {entry.sets && entry.sets.length > 0 && (
+                            <span className="text-sm text-gray-500">
+                              ({entry.sets.map((s, i) => s.reps).join(" + ")})
+                            </span>
+                          )}
                           {entry.note && (
                             <span className="text-sm text-gray-500">{entry.note}</span>
                           )}
                           {entry.feeling && (
-                            <span className="text-lg">{entry.feeling}</span>
+                            <span className="text-lg">
+                              {entry.feeling === "very-easy" && "😊"}
+                              {entry.feeling === "easy" && "🙂"}
+                              {entry.feeling === "moderate" && "😐"}
+                              {entry.feeling === "hard" && "😓"}
+                              {entry.feeling === "very-hard" && "😤"}
+                            </span>
                           )}
                         </div>
                         <button

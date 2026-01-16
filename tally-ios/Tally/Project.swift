@@ -46,5 +46,15 @@ let project = Project(
             sources: ["Tally/Tests/**"],
             dependencies: [.target(name: "Tally")]
         ),
+        .target(
+            name: "TallyUITests",
+            destinations: .iOS,
+            product: .uiTests,
+            bundleId: "com.tally-tracker.ios.uitests",
+            deploymentTargets: .iOS("17.0"),
+            infoPlist: .default,
+            sources: ["Tally/UITests/**"],
+            dependencies: [.target(name: "Tally")]
+        ),
     ]
 )

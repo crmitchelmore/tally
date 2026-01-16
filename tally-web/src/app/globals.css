@@ -1,26 +1,355 @@
 @import "tailwindcss";
 
+/* 
+ * Tally Design System
+ * Inspired by ink on paper - tactile, focused, honest
+ */
+
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/newsreader/v21/cY9qfjOCX1hbuyalUrK439vogqC9yFZC.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/newsreader/v21/cY9qfjOCX1hbuyalUrK439vogqC9yFZC.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/newsreader/v21/cY9qfjOCX1hbuyalUrK439vogqC9yFZC.woff2') format('woff2');
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Paper colors - warm, not pure white */
+  --paper: #FAF9F7;
+  --paper-warm: #F5F3EF;
+  --paper-cream: #F0EDE6;
+  
+  /* Ink colors - rich, slightly warm blacks */
+  --ink: #1A1815;
+  --ink-light: #3D3A36;
+  --ink-muted: #6B6660;
+  --ink-faint: #A8A49E;
+  
+  /* The signature accent - the 5th tally stroke */
+  --slash: #C4410A;
+  --slash-light: #E85D1C;
+  --slash-dark: #9A3308;
+  
+  /* Semantic colors */
+  --success: #2D6A4F;
+  --warning: #C77C0A;
+  --danger: #B91C1C;
+  
+  /* Spacing rhythm */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  
+  /* Typography scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  
+  /* Shadows - soft, paper-like */
+  --shadow-sm: 0 1px 2px rgba(26, 24, 21, 0.04);
+  --shadow-md: 0 4px 12px rgba(26, 24, 21, 0.06);
+  --shadow-lg: 0 8px 24px rgba(26, 24, 21, 0.08);
+  
+  /* Borders */
+  --border-light: rgba(26, 24, 21, 0.06);
+  --border-medium: rgba(26, 24, 21, 0.12);
+  
+  /* Animation */
+  --transition-fast: 120ms ease-out;
+  --transition-normal: 200ms ease-out;
+  --transition-slow: 320ms ease-out;
+  
+  /* Legacy compatibility */
+  --background: var(--paper);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* No dark mode - paper is always paper */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
+  font-size: var(--text-base);
+  line-height: 1.6;
+  min-height: 100vh;
 }
+
+/* Paper texture background */
+.paper-texture {
+  background-color: var(--paper);
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* Subtle tally pattern for backgrounds */
+.tally-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='40' viewBox='0 0 60 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%231A1815' stroke-width='1' stroke-linecap='round' opacity='0.03'%3E%3Cline x1='10' y1='8' x2='10' y2='32'/%3E%3Cline x1='14' y1='8' x2='14' y2='32'/%3E%3Cline x1='18' y1='8' x2='18' y2='32'/%3E%3Cline x1='22' y1='8' x2='22' y2='32'/%3E%3Cline x1='6' y1='28' x2='26' y2='12'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Typography utilities */
+.font-display {
+  font-family: 'Newsreader', Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Number styling - tabular figures for alignment */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Focus states */
+:focus-visible {
+  outline: 2px solid var(--slash);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: var(--slash);
+  color: white;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ink-faint);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-muted);
+}
+
+/* Motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Desktop-first responsive containers */
+.container-narrow {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+}
+
+.container-medium {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+}
+
+.container-wide {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
+}
+
+/* Card styles */
+.card {
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-hover {
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+
+.card-hover:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Button base */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--ink-light);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--border-medium);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--paper-warm);
+}
+
+.btn-accent {
+  background: var(--slash);
+  color: white;
+  border-color: var(--slash);
+}
+
+.btn-accent:hover:not(:disabled) {
+  background: var(--slash-dark);
+}
+
+/* Input base */
+.input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-family: inherit;
+  font-size: var(--text-base);
+  color: var(--ink);
+  background: white;
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(26, 24, 21, 0.08);
+}
+
+.input::placeholder {
+  color: var(--ink-faint);
+}
+
+/* Progress bar */
+.progress-track {
+  height: 6px;
+  background: var(--paper-warm);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width var(--transition-slow);
+}
+
+/* Stat number styling */
+.stat-value {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: var(--text-3xl);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.stat-label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  margin-top: var(--space-xs);
+}
+
+/* Desktop layout utilities */
+@media (min-width: 768px) {
+  .desktop-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+  
+  .desktop-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+  }
+}
+
+@media (min-width: 1024px) {
+  .desktop-sidebar {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: var(--space-xl);
+  }
+}
+

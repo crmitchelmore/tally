@@ -12,18 +12,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Plus, Minus, X, Dumbbell } from "lucide-react";
+import { TallyInput, TallyMarks } from "./marks/TallyMarks";
 import { Feeling } from "@/types";
 
-const FEELINGS: { value: Feeling; label: string; emoji: string }[] = [
-  { value: "very-easy", label: "Very Easy", emoji: "😊" },
-  { value: "easy", label: "Easy", emoji: "🙂" },
-  { value: "moderate", label: "Moderate", emoji: "😐" },
-  { value: "hard", label: "Hard", emoji: "😓" },
-  { value: "very-hard", label: "Very Hard", emoji: "😤" },
+// Simple feeling indicators - subtle, not tacky emojis
+const FEELINGS: { value: Feeling; label: string; symbol: string }[] = [
+  { value: "very-easy", label: "Effortless", symbol: "◉" },
+  { value: "easy", label: "Easy", symbol: "○" },
+  { value: "moderate", label: "Moderate", symbol: "◐" },
+  { value: "hard", label: "Hard", symbol: "●" },
+  { value: "very-hard", label: "Tough", symbol: "◉" },
 ];
 
 interface AddEntrySheetProps {
@@ -42,7 +40,6 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
   
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
   const [useSetsMode, setUseSetsMode] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
@@ -70,10 +67,6 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
     }
   }, [challengeId]);
 
-  const prefersReducedMotion = typeof window !== "undefined" 
-    ? window.matchMedia("(prefers-reduced-motion: reduce)").matches 
-    : false;
-
   // Calculate total count from sets
   const totalFromSets = formData.sets.reduce((sum, set) => sum + set.reps, 0);
 
@@ -96,15 +89,9 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
         sets: finalSets,
       });
       
-      // Show confetti if motion is allowed
-      if (!prefersReducedMotion) {
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 2000);
-      }
-      
-      // Haptic feedback if available
+      // Subtle haptic feedback if available
       if (navigator.vibrate) {
-        navigator.vibrate(50);
+        navigator.vibrate(30);
       }
 
       setOpen(false);
@@ -124,9 +111,6 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
       setIsSubmitting(false);
     }
   };
-
-  const incrementCount = () => setFormData((prev) => ({ ...prev, count: prev.count + 1 }));
-  const decrementCount = () => setFormData((prev) => ({ ...prev, count: Math.max(1, prev.count - 1) }));
 
   const addSet = () => {
     setFormData((prev) => ({
@@ -152,43 +136,45 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
   const selectedChallenge = challenges?.find((c) => c._id === formData.challengeId);
 
   return (
-    <>
-      {showConfetti && (
-        <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center">
-          <div className="text-6xl animate-bounce">🎉</div>
-        </div>
-      )}
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          {trigger || (
-            <Button size="icon" className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50">
-              <Plus className="h-6 w-6" />
-            </Button>
-          )}
-        </SheetTrigger>
-        <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Add Entry</SheetTitle>
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        {trigger || (
+          <button className="btn btn-accent fixed bottom-8 right-8 shadow-lg z-50 px-5 py-3">
+            <span className="text-lg mr-1">+</span> Add Entry
+          </button>
+        )}
+      </SheetTrigger>
+      <SheetContent 
+        side="bottom" 
+        className="max-h-[90vh] overflow-y-auto bg-[var(--paper)] border-t border-[var(--border-light)]"
+      >
+        <div className="container-narrow py-6">
+          <SheetHeader className="mb-8">
+            <SheetTitle className="font-display text-2xl text-[var(--ink)]">
+              Log Entry
+            </SheetTitle>
           </SheetHeader>
-          <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-            {!challengeId && (
-              <div className="space-y-2">
-                <Label>Challenge</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {challenges?.map((challenge) => (
+          
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Challenge selector (if multiple) */}
+            {!challengeId && challenges && challenges.length > 1 && (
+              <div>
+                <label className="stat-label block mb-3">Challenge</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {challenges.map((challenge) => (
                     <button
                       key={challenge._id}
                       type="button"
                       onClick={() => setFormData((prev) => ({ ...prev, challengeId: challenge._id }))}
-                      className={`p-3 rounded-xl border-2 text-left transition-colors ${
+                      className={`p-4 rounded-lg border-2 text-left transition-all ${
                         formData.challengeId === challenge._id
-                          ? "border-gray-900 bg-gray-50"
-                          : "border-gray-200 hover:border-gray-300"
+                          ? "border-[var(--ink)] bg-white shadow-sm"
+                          : "border-[var(--border-light)] hover:border-[var(--border-medium)] bg-white"
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <span>{challenge.icon}</span>
-                        <span className="font-medium text-sm truncate">{challenge.name}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">{challenge.icon}</span>
+                        <span className="font-display text-[var(--ink)]">{challenge.name}</span>
                       </div>
                     </button>
                   ))}
@@ -196,123 +182,121 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
               </div>
             )}
 
+            {/* Selected challenge display */}
             {selectedChallenge && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+              <div className="flex items-center gap-4 p-4 bg-white rounded-lg border border-[var(--border-light)]">
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
-                  style={{ backgroundColor: selectedChallenge.color + "20" }}
+                  className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl"
+                  style={{ backgroundColor: selectedChallenge.color + "15" }}
                 >
                   {selectedChallenge.icon}
                 </div>
                 <div>
-                  <p className="font-medium">{selectedChallenge.name}</p>
-                  <p className="text-sm text-gray-500">Target: {selectedChallenge.targetNumber}</p>
+                  <p className="font-display text-lg text-[var(--ink)]">{selectedChallenge.name}</p>
+                  <p className="text-sm text-[var(--ink-muted)]">
+                    Target: {selectedChallenge.targetNumber}
+                  </p>
                 </div>
               </div>
             )}
 
-            {/* Toggle between simple count and sets mode */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>Count</Label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUseSetsMode(!useSetsMode);
-                    if (!useSetsMode && formData.sets.length === 0) {
-                      setFormData((prev) => ({ ...prev, sets: [{ reps: 10 }] }));
-                    }
-                  }}
-                  className={`flex items-center gap-1 text-sm px-2 py-1 rounded-lg transition-colors ${
-                    useSetsMode
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  <Dumbbell className="h-3 w-3" />
-                  Sets
-                </button>
-              </div>
-
-              {!useSetsMode ? (
-                <div className="flex items-center justify-center gap-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={decrementCount}
-                    disabled={formData.count <= 1}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={formData.count}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, count: parseInt(e.target.value) || 1 }))}
-                    className="w-20 text-center text-2xl font-bold"
-                  />
-                  <Button type="button" variant="outline" size="icon" onClick={incrementCount}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {formData.sets.map((set, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500 w-16">Set {index + 1}</span>
-                      <Input
-                        type="number"
-                        min={1}
-                        value={set.reps}
-                        onChange={(e) => updateSetReps(index, parseInt(e.target.value) || 1)}
-                        className="w-20 text-center"
-                      />
-                      <span className="text-sm text-gray-500">reps</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeSet(index)}
-                        className="h-8 w-8"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addSet}
-                    className="w-full"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Set
-                  </Button>
-                  {formData.sets.length > 0 && (
-                    <p className="text-center text-sm text-gray-500">
-                      Total: <span className="font-semibold text-gray-900">{totalFromSets}</span> reps
-                    </p>
-                  )}
-                </div>
-              )}
+            {/* Mode toggle */}
+            <div className="flex items-center gap-2 justify-center">
+              <button
+                type="button"
+                onClick={() => setUseSetsMode(false)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  !useSetsMode 
+                    ? "bg-[var(--ink)] text-[var(--paper)]" 
+                    : "text-[var(--ink-muted)] hover:text-[var(--ink)]"
+                }`}
+              >
+                Count
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setUseSetsMode(true);
+                  if (formData.sets.length === 0) {
+                    setFormData((prev) => ({ ...prev, sets: [{ reps: 10 }] }));
+                  }
+                }}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  useSetsMode 
+                    ? "bg-[var(--ink)] text-[var(--paper)]" 
+                    : "text-[var(--ink-muted)] hover:text-[var(--ink)]"
+                }`}
+              >
+                Sets & Reps
+              </button>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
+            {/* Tally input or Sets input */}
+            {!useSetsMode ? (
+              <TallyInput
+                value={formData.count}
+                onChange={(count) => setFormData((prev) => ({ ...prev, count }))}
+                max={50}
+                color={selectedChallenge?.color || "var(--ink)"}
+              />
+            ) : (
+              <div className="space-y-4">
+                {formData.sets.map((set, index) => (
+                  <div key={index} className="flex items-center gap-3 bg-white p-3 rounded-lg border border-[var(--border-light)]">
+                    <span className="text-sm text-[var(--ink-muted)] w-16">Set {index + 1}</span>
+                    <input
+                      type="number"
+                      min={1}
+                      value={set.reps}
+                      onChange={(e) => updateSetReps(index, parseInt(e.target.value) || 1)}
+                      className="input w-24 text-center"
+                    />
+                    <span className="text-sm text-[var(--ink-muted)]">reps</span>
+                    <button
+                      type="button"
+                      onClick={() => removeSet(index)}
+                      className="ml-auto text-[var(--ink-faint)] hover:text-[var(--danger)] transition-colors"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addSet}
+                  className="w-full py-3 border-2 border-dashed border-[var(--border-medium)] rounded-lg 
+                           text-[var(--ink-muted)] hover:text-[var(--ink)] hover:border-[var(--ink-muted)] 
+                           transition-colors"
+                >
+                  + Add Set
+                </button>
+                {formData.sets.length > 0 && (
+                  <div className="text-center pt-2">
+                    <span className="text-[var(--ink-muted)]">Total: </span>
+                    <span className="stat-value" style={{ fontSize: 'var(--text-xl)' }}>
+                      {totalFromSets}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Date picker */}
+            <div>
+              <label className="stat-label block mb-2">Date</label>
+              <input
                 type="date"
                 value={formData.date}
                 max={today}
                 onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
+                className="input"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>How did it feel?</Label>
-              <div className="flex justify-between">
+            {/* Feeling - subtle, not emoji-heavy */}
+            <div>
+              <label className="stat-label block mb-3">How did it feel?</label>
+              <div className="flex justify-between gap-2">
                 {FEELINGS.map((feeling) => (
                   <button
                     key={feeling.value}
@@ -321,40 +305,43 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
                       ...prev, 
                       feeling: prev.feeling === feeling.value ? undefined : feeling.value 
                     }))}
-                    className={`flex flex-col items-center p-2 rounded-xl transition-colors ${
+                    className={`flex-1 py-3 px-2 rounded-lg border transition-all text-center ${
                       formData.feeling === feeling.value
-                        ? "bg-gray-100"
-                        : "hover:bg-gray-50"
+                        ? "border-[var(--ink)] bg-white shadow-sm"
+                        : "border-[var(--border-light)] hover:border-[var(--border-medium)] bg-white"
                     }`}
                     title={feeling.label}
                   >
-                    <span className="text-2xl">{feeling.emoji}</span>
-                    <span className="text-xs text-gray-500 mt-1">{feeling.label}</span>
+                    <span className="block text-lg mb-1">{feeling.symbol}</span>
+                    <span className="text-xs text-[var(--ink-muted)]">{feeling.label}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="note">Note (optional)</Label>
-              <Input
-                id="note"
+            {/* Note */}
+            <div>
+              <label className="stat-label block mb-2">Note (optional)</label>
+              <input
+                type="text"
                 placeholder="Add a note..."
                 value={formData.note}
                 onChange={(e) => setFormData((prev) => ({ ...prev, note: e.target.value }))}
+                className="input"
               />
             </div>
 
-            <Button 
+            {/* Submit */}
+            <button 
               type="submit" 
-              className="w-full" 
-              disabled={isSubmitting || !formData.challengeId}
+              className="btn btn-primary w-full py-4 text-base"
+              disabled={isSubmitting || !formData.challengeId || (useSetsMode && totalFromSets === 0) || (!useSetsMode && formData.count === 0)}
             >
-              {isSubmitting ? "Adding..." : "Add Entry"}
-            </Button>
+              {isSubmitting ? "Logging..." : "Log Entry"}
+            </button>
           </form>
-        </SheetContent>
-      </Sheet>
-    </>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }

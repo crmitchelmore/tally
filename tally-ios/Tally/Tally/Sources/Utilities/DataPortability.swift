@@ -26,10 +26,13 @@ actor DataPortability {
             allEntries.append(contentsOf: entries)
         }
         
+        // Get current user from main actor
+        let currentUser = await MainActor.run { AuthManager.shared.currentUser }
+        
         let exportData = ExportData(
             exportDate: Date(),
             version: "1.0.0",
-            user: AuthManager.shared.currentUser,
+            user: currentUser,
             challenges: challenges,
             entries: allEntries
         )

@@ -10,6 +10,47 @@ struct SignInView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
+                // Google Sign-In Button
+                Button {
+                    Task {
+                        await authManager.signInWithGoogle()
+                        if authManager.isAuthenticated {
+                            dismiss()
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "g.circle.fill")
+                            .font(.title2)
+                        Text("Continue with Google")
+                            .font(.headline)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.white)
+                    .foregroundColor(.black)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+                }
+                .disabled(authManager.isLoading)
+                
+                // Divider
+                HStack {
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(.gray.opacity(0.3))
+                    Text("or")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(.gray.opacity(0.3))
+                }
+                
+                // Email/Password form
                 VStack(spacing: 16) {
                     TextField("Email", text: $email)
                         .textContentType(.emailAddress)
@@ -30,6 +71,7 @@ struct SignInView: View {
                     Text(error)
                         .font(.caption)
                         .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
                 }
                 
                 Button {

@@ -8,7 +8,8 @@ actor APIClient {
     private var authToken: String?
     
     private init() {
-        self.baseURL = URL(string: ProcessInfo.processInfo.environment["CONVEX_HTTP_URL"] ?? "https://curious-panther-737.convex.site")!
+        // Use the correct Convex deployment URL
+        self.baseURL = URL(string: ProcessInfo.processInfo.environment["CONVEX_HTTP_URL"] ?? "https://bright-jackal-396.convex.site")!
     }
     
     func setAuthToken(_ token: String?) {

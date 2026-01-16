@@ -1,4 +1,5 @@
 import SwiftUI
+import Clerk
 
 @main
 struct TallyApp: App {
@@ -7,7 +8,7 @@ struct TallyApp: App {
     var body: some Scene {
         WindowGroup {
             Group {
-                if authManager.isLoading {
+                if authManager.isLoading && !authManager.isClerkReady {
                     LoadingView()
                 } else if authManager.isAuthenticated {
                     MainTabView()
@@ -17,7 +18,8 @@ struct TallyApp: App {
             }
             .environment(authManager)
             .task {
-                await authManager.checkSession()
+                // Initialize Clerk through AuthManager
+                await authManager.initializeClerk()
             }
         }
     }

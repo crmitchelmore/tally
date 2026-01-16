@@ -12,7 +12,7 @@ import { ChallengeCard } from "@/components/tally/ChallengeCard";
 import { AddEntrySheet } from "@/components/tally/AddEntrySheet";
 import { ChallengeDetailView } from "@/components/tally/ChallengeDetailView";
 import { DataPortabilityDialog } from "@/components/tally/DataPortabilityDialog";
-import { Users, Trophy } from "lucide-react";
+import { TallyMarks } from "@/components/tally/marks/TallyMarks";
 
 export default function AppPage() {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -40,31 +40,28 @@ export default function AppPage() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-gray-400">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--paper)]">
+        <div className="text-[var(--ink-muted)]">Loading...</div>
       </div>
     );
   }
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--paper)] paper-texture p-6">
         <div className="text-center max-w-md">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Welcome to Tally</h1>
-          <p className="text-gray-600 mb-8">
-            Sign in to start tracking your goals and making progress every day.
+          <div className="mb-8">
+            <TallyMarks count={5} size="xl" color="var(--ink)" />
+          </div>
+          <h1 className="font-display text-4xl text-[var(--ink)] mb-4">Welcome to Tally</h1>
+          <p className="text-[var(--ink-muted)] text-lg mb-10 text-balance">
+            Track your goals with the simple satisfaction of marking progress.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/sign-up"
-              className="rounded-2xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 transition-colors"
-            >
+            <Link href="/sign-up" className="btn btn-accent px-8 py-4 text-base">
               Create an account
             </Link>
-            <Link
-              href="/sign-in"
-              className="rounded-2xl border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition-colors"
-            >
+            <Link href="/sign-in" className="btn btn-secondary px-8 py-4 text-base">
               Sign in
             </Link>
           </div>
@@ -84,64 +81,84 @@ export default function AppPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--paper)] paper-texture">
       {/* Header */}
-      <header className="bg-white border-b border-gray-100">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-[var(--border-light)] sticky top-0 z-40">
+        <div className="container-wide">
           <div className="flex h-16 items-center justify-between">
-            <h1 className="text-xl font-semibold text-gray-900">Tally</h1>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <TallyMarks count={5} size="sm" color="var(--ink)" />
+              <h1 className="font-display text-xl text-[var(--ink)]">Tally</h1>
+            </div>
+            <nav className="flex items-center gap-1">
               <Link
                 href="/community"
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Community"
+                className="px-3 py-2 text-[var(--ink-muted)] hover:text-[var(--ink)] hover:bg-[var(--paper-warm)] rounded-lg transition-colors text-sm"
               >
-                <Users className="h-5 w-5" />
+                Community
               </Link>
               <Link
                 href="/leaderboard"
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Leaderboard"
+                className="px-3 py-2 text-[var(--ink-muted)] hover:text-[var(--ink)] hover:bg-[var(--paper-warm)] rounded-lg transition-colors text-sm"
               >
-                <Trophy className="h-5 w-5" />
+                Leaderboard
               </Link>
+              <div className="w-px h-6 bg-[var(--border-light)] mx-2" />
               <DataPortabilityDialog isUserStored={isUserStored} />
-              <UserButton afterSignOutUrl="/" />
-            </div>
+              <UserButton 
+                afterSignOutUrl="/" 
+                appearance={{
+                  elements: {
+                    avatarBox: "w-8 h-8"
+                  }
+                }}
+              />
+            </nav>
           </div>
         </div>
       </header>
 
       {/* Main content */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 pb-24">
-        <div className="mb-8 flex items-center justify-between">
+      <main className="container-wide py-12 pb-32">
+        {/* Page header */}
+        <header className="mb-10 flex items-end justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Your Challenges</h2>
-            <p className="text-gray-600 mt-1">Track your progress and stay on pace.</p>
+            <h2 className="font-display text-3xl text-[var(--ink)] mb-2">Your Challenges</h2>
+            <p className="text-[var(--ink-muted)]">
+              {challenges?.length === 0 
+                ? "Create your first challenge to start tracking."
+                : "Track your progress and stay on pace."}
+            </p>
           </div>
           <CreateChallengeDialog />
-        </div>
+        </header>
 
+        {/* Challenges grid */}
         {!isUserStored ? (
-          <div className="text-center py-12">
-            <div className="animate-pulse text-gray-400">Setting up your account...</div>
+          <div className="text-center py-16">
+            <div className="text-[var(--ink-muted)]">Setting up your account...</div>
           </div>
         ) : challenges === undefined ? (
-          <div className="text-center py-12">
-            <div className="animate-pulse text-gray-400">Loading challenges...</div>
+          <div className="text-center py-16">
+            <div className="text-[var(--ink-muted)]">Loading challenges...</div>
           </div>
         ) : challenges.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-            <div className="mx-auto max-w-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No challenges yet</h3>
-              <p className="text-gray-600 mb-6">
-                Create your first challenge to start tracking your progress.
+          <div className="max-w-md mx-auto text-center py-16">
+            <div className="card">
+              <div className="mb-6 flex justify-center">
+                <div className="w-16 h-16 rounded-full bg-[var(--paper-warm)] flex items-center justify-center">
+                  <TallyMarks count={3} size="md" color="var(--ink-faint)" />
+                </div>
+              </div>
+              <h3 className="font-display text-xl text-[var(--ink)] mb-2">No challenges yet</h3>
+              <p className="text-[var(--ink-muted)] mb-6">
+                Create your first challenge to start making marks.
               </p>
               <CreateChallengeDialog />
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {challenges.map((challenge) => (
               <ChallengeCard
                 key={challenge._id}

@@ -11,24 +11,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
 import { TimeframeUnit } from "@/types";
 
+// Warm, papery color palette
 const COLORS = [
-  "#3B82F6", // blue
-  "#10B981", // emerald
-  "#8B5CF6", // violet
-  "#F59E0B", // amber
-  "#EF4444", // red
-  "#EC4899", // pink
-  "#06B6D4", // cyan
-  "#84CC16", // lime
+  "#2D6A4F", // forest green
+  "#C4410A", // slash red (brand accent)
+  "#1A5276", // deep blue
+  "#7D3C98", // plum
+  "#B9770E", // amber
+  "#1F618D", // slate blue
+  "#117A65", // teal
+  "#6C3483", // purple
 ];
 
-const ICONS = ["🎯", "💪", "📚", "🏃", "💧", "🧘", "✍️", "🎨", "🎸", "💤"];
+const ICONS = ["📚", "💪", "🏃", "✍️", "🎯", "💧", "🧘", "🎨", "🎸", "🌱"];
 
 interface CreateChallengeDialogProps {
   onCreated?: () => void;
@@ -89,20 +86,19 @@ export function CreateChallengeDialog({ onCreated }: CreateChallengeDialogProps)
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4" />
-          New Challenge
-        </Button>
+        <button className="btn btn-primary">
+          + New Challenge
+        </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[480px] bg-white">
         <DialogHeader>
-          <DialogTitle>Create Challenge</DialogTitle>
+          <DialogTitle className="font-display text-2xl text-[var(--ink)]">Create Challenge</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
+        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+          <div>
+            <label className="stat-label block mb-2">Name</label>
+            <input
+              className="input"
               placeholder="e.g., Read 50 books"
               value={formData.name}
               onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
@@ -110,10 +106,10 @@ export function CreateChallengeDialog({ onCreated }: CreateChallengeDialogProps)
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="target">Target</Label>
-            <Input
-              id="target"
+          <div>
+            <label className="stat-label block mb-2">Target</label>
+            <input
+              className="input"
               type="number"
               min={1}
               value={formData.targetNumber}
@@ -122,18 +118,18 @@ export function CreateChallengeDialog({ onCreated }: CreateChallengeDialogProps)
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Icon</Label>
+          <div>
+            <label className="stat-label block mb-3">Icon</label>
             <div className="flex flex-wrap gap-2">
               {ICONS.map((icon) => (
                 <button
                   key={icon}
                   type="button"
                   onClick={() => setFormData((prev) => ({ ...prev, icon }))}
-                  className={`w-10 h-10 text-lg rounded-xl border-2 transition-colors ${
+                  className={`w-11 h-11 text-xl rounded-lg border-2 transition-all ${
                     formData.icon === icon
-                      ? "border-gray-900 bg-gray-100"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-[var(--ink)] bg-[var(--paper-warm)] shadow-sm"
+                      : "border-[var(--border-light)] hover:border-[var(--border-medium)] bg-white"
                   }`}
                 >
                   {icon}
@@ -142,18 +138,18 @@ export function CreateChallengeDialog({ onCreated }: CreateChallengeDialogProps)
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Color</Label>
-            <div className="flex flex-wrap gap-2">
+          <div>
+            <label className="stat-label block mb-3">Color</label>
+            <div className="flex flex-wrap gap-3">
               {COLORS.map((color) => (
                 <button
                   key={color}
                   type="button"
                   onClick={() => setFormData((prev) => ({ ...prev, color }))}
-                  className={`w-8 h-8 rounded-full border-2 transition-transform ${
+                  className={`w-9 h-9 rounded-full transition-all ${
                     formData.color === color
-                      ? "border-gray-900 scale-110"
-                      : "border-transparent hover:scale-105"
+                      ? "ring-2 ring-offset-2 ring-[var(--ink)] scale-110"
+                      : "hover:scale-105"
                   }`}
                   style={{ backgroundColor: color }}
                 />
@@ -161,18 +157,18 @@ export function CreateChallengeDialog({ onCreated }: CreateChallengeDialogProps)
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Timeframe</Label>
+          <div>
+            <label className="stat-label block mb-3">Timeframe</label>
             <div className="flex gap-2">
               {(["year", "month", "custom"] as TimeframeUnit[]).map((unit) => (
                 <button
                   key={unit}
                   type="button"
                   onClick={() => setFormData((prev) => ({ ...prev, timeframeUnit: unit }))}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     formData.timeframeUnit === unit
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      ? "bg-[var(--ink)] text-[var(--paper)]"
+                      : "bg-[var(--paper-warm)] text-[var(--ink-muted)] hover:text-[var(--ink)]"
                   }`}
                 >
                   {unit.charAt(0).toUpperCase() + unit.slice(1)}
@@ -182,13 +178,12 @@ export function CreateChallengeDialog({ onCreated }: CreateChallengeDialogProps)
           </div>
 
           {formData.timeframeUnit === "year" && (
-            <div className="space-y-2">
-              <Label htmlFor="year">Year</Label>
+            <div>
+              <label className="stat-label block mb-2">Year</label>
               <select
-                id="year"
                 value={formData.year}
                 onChange={(e) => setFormData((prev) => ({ ...prev, year: parseInt(e.target.value) }))}
-                className="flex h-10 w-full rounded-xl border border-gray-200 bg-white text-gray-900 px-3 py-2 text-sm"
+                className="input"
               >
                 {Array.from({ length: 5 }, (_, i) => currentYear + i).map((y) => (
                   <option key={y} value={y}>
@@ -199,26 +194,26 @@ export function CreateChallengeDialog({ onCreated }: CreateChallengeDialogProps)
             </div>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <input
               type="checkbox"
               id="isPublic"
               checked={formData.isPublic}
               onChange={(e) => setFormData((prev) => ({ ...prev, isPublic: e.target.checked }))}
-              className="h-4 w-4 rounded border-gray-300"
+              className="w-4 h-4 rounded border-[var(--border-medium)] text-[var(--ink)] focus:ring-[var(--ink)]"
             />
-            <Label htmlFor="isPublic" className="font-normal">
+            <label htmlFor="isPublic" className="text-sm text-[var(--ink-muted)]">
               Make this challenge public
-            </Label>
+            </label>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border-light)]">
+            <button type="button" className="btn btn-secondary" onClick={() => setOpen(false)}>
               Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting || !formData.name.trim()}>
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting || !formData.name.trim()}>
               {isSubmitting ? "Creating..." : "Create Challenge"}
-            </Button>
+            </button>
           </div>
         </form>
       </DialogContent>

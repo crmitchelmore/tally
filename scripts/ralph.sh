@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -e
+set -o pipefail
 
 RALPH_VERSION="tally-1.0.0"
 
@@ -163,7 +164,7 @@ for ((i=1; i<=iterations; i++)); do
     echo
 
     # Always include all local skills.
-    if compgen -G ".github/skills/*.md" >/dev/null 2>&1; then
+    if ls .github/skills/*.md >/dev/null 2>&1; then
       echo "## Skills"
       for f in .github/skills/*.md; do
         echo
@@ -190,21 +191,21 @@ for ((i=1; i<=iterations; i++)); do
 
   set +e
   result=$(
-    "$COPILOT_CMD" "${extra_cmd_args[@]}" --add-dir "$PWD" --model "$MODEL" \
+    "$COPILOT_CMD" ${extra_cmd_args:+"${extra_cmd_args[@]}"} --add-dir "$PWD" --model "$MODEL" \
       --no-color --stream off --silent \
       -p "@$combined_file Follow the attached prompt." \
       "${copilot_tool_args[@]}" \
       2>&1
   )
-  status=$?
+  exit_status=$?
   set -e
 
   rm -f "$combined_file" >/dev/null 2>&1 || true
 
   echo "$result"
 
-  if [[ $status -ne 0 ]]; then
-    echo "Copilot exited with status $status; continuing to next iteration."
+  if [[ $exit_status -ne 0 ]]; then
+    echo "Copilot exited with status $exit_status; continuing to next iteration."
     continue
   fi
 

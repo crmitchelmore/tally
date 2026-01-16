@@ -48,3 +48,8 @@ captures/
 
 # Copilot automation logs
 .copilot-logs/
+
+# Ralph temp files
+.ralph-context.*
+.ralph-prompt.*
+.ralph-combined.*

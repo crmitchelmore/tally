@@ -73,8 +73,6 @@ These are the minimum tools we rely on for building/verifying across platforms.
 - `java`/`javac`, `gradle`, `adb`
 - Android Emulator (recommended for device-level verification): `emulator` (from Android SDK)
 
-**Infra:**
-- `pulumi`, `npm`
 
 Quick check (OK/MISSING):
 ```bash

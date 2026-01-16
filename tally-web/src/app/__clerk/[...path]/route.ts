@@ -17,9 +17,14 @@ async function proxyRequest(req: NextRequest): Promise<Response> {
     body: req.body,
     // @ts-expect-error - duplex is required for streaming body
     duplex: "half",
+    redirect: "follow",
   });
 
   const responseHeaders = new Headers(response.headers);
+  // Remove headers that shouldn't be proxied
+  responseHeaders.delete("content-encoding");
+  responseHeaders.delete("transfer-encoding");
+  
   // Rewrite Set-Cookie domain if present
   const setCookie = responseHeaders.get("set-cookie");
   if (setCookie) {

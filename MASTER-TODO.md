@@ -91,211 +91,52 @@ done
 - [ ] Work through this list end-to-end without stopping between items.
 - [ ] After checking any item below, immediately commit.
 
+### How to implement and verify each feature
+
+**For all regular features (non-unique items)**: Use [.github/skills/implement-requirement-and-verify.md](.github/skills/implement-requirement-and-verify.md).
+This skill guides the entire cycle: design, build, test (behavioral, unit, UI, E2E), deploy, verify, snapshot, mark complete, and update instructions/platforms.
+
+**For unique/special items** (Store upload, CD, Observability): Follow the explicit steps listed under each feature.
+
+---
+
 ## Web (plans/web-api)
 - [ ] Plan overview (plans/web-api/README.md)
   - [ ] Verify scope and assumptions.
   - [ ] Update Copilot instructions and cross-platform plans with learnings after feature changes.
 - [ ] Feature: API client (plans/web-api/feature-api-client.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (none for web; review iOS/Android).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Push live using credentials in .env.
-  - [ ] Verify on the remote environment.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Auth (plans/web-api/feature-auth.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (none for web; review iOS/Android).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Push live using credentials in .env.
-  - [ ] Verify on the remote environment.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Challenges (plans/web-api/feature-challenges.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (none for web; review iOS/Android).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Push live using credentials in .env.
-  - [ ] Verify on the remote environment.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Community (plans/web-api/feature-community.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (none for web; review iOS/Android).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Push live using credentials in .env.
-  - [ ] Verify on the remote environment.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Data portability (plans/web-api/feature-data-portability.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (none for web; review iOS/Android).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Push live using credentials in .env.
-  - [ ] Verify on the remote environment.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Entries (plans/web-api/feature-entries.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (none for web; review iOS/Android).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Push live using credentials in .env.
-  - [ ] Verify on the remote environment.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Stats (plans/web-api/feature-stats.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (none for web; review iOS/Android).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Push live using credentials in .env.
-  - [ ] Verify on the remote environment.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 
 ## iOS (plans/ios)
 - [ ] Plan overview (plans/ios/README.md)
   - [ ] Verify scope and assumptions.
   - [ ] Update Copilot instructions and cross-platform plans with learnings after feature changes.
 - [ ] Feature: API client (plans/ios/feature-api-client.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Auth (plans/ios/feature-auth.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Challenges (plans/ios/feature-challenges.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Community (plans/ios/feature-community.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Data portability (plans/ios/feature-data-portability.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Entries (plans/ios/feature-entries.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Stats (plans/ios/feature-stats.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Store upload (pre-release) (plans/ios/feature-store-upload.md)
   - [ ] Prepare App Store Connect metadata and required assets.
   - [ ] Create and upload a signed build to App Store Connect.
@@ -308,103 +149,19 @@ done
   - [ ] Verify scope and assumptions.
   - [ ] Update Copilot instructions and cross-platform plans with learnings after feature changes.
 - [ ] Feature: API contract (plans/android/feature-api-contract.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Auth (plans/android/feature-auth.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Challenges (plans/android/feature-challenges.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Community (plans/android/feature-community.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Data portability (plans/android/feature-data-portability.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Entries (plans/android/feature-entries.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Stats (plans/android/feature-stats.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Build on simulators using production environments.
-  - [ ] Verify on simulators.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Store upload (pre-release) (plans/android/feature-store-upload.md)
   - [ ] Prepare Play Console listing metadata, forms, and required assets.
   - [ ] Create and upload a signed AAB to an internal/closed testing track.
@@ -421,89 +178,19 @@ done
   - [ ] Configure GitHub Actions workflow for automatic deployment on push to main.
   - [ ] Verify production URL and basic CTA behavior.
 - [ ] Feature: App showcase (plans/landing-page/feature-app-showcase.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Feature showcase (plans/landing-page/feature-feature-showcase.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Hero micro demo (plans/landing-page/feature-hero-micro-demo.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: How it works (plans/landing-page/feature-how-it-works.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: iOS + Android pages (plans/landing-page/feature-ios-android-pages.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Live sync demo (plans/landing-page/feature-live-sync-demo.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Testimonials + stats (plans/landing-page/feature-testimonials-stats.md)
-  - [ ] Design based on design-philosophy.md.
-  - [ ] Verify plan against existing implementations on other platforms (review iOS/Android/Web).
-  - [ ] Build it out.
-  - [ ] Add behavioral tests.
-  - [ ] Add unit tests.
-  - [ ] Verify with UI tests.
-  - [ ] Verify with end-to-end tests.
-  - [ ] Add snapshot tests to confirm visuals.
-  - [ ] Mark tests complete.
-  - [ ] Update Copilot instructions/skills and any affected plans with learnings from this feature.
-  - [ ] Update other platform feature plans with any changes.
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 
 ## Observability (after all apps + landing page)
 - [ ] Plan overview (plans/observability/README.md)

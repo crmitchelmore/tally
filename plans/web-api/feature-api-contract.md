@@ -4,7 +4,8 @@
 Provide a stable HTTP API for mobile clients.
 
 ## Scope
-- Base /api/v1 with Bearer JWT auth.
+- Base /api/v1 with Bearer auth.
+  - **Current implementation detail:** Convex HTTP routes in `tally-web/convex/http.ts` currently treat the Bearer token as the Clerk user id (`clerkId`) and include a TODO to verify real JWTs against Clerk.
 - Endpoints: auth/user, challenges, entries, followed, public challenges, leaderboard.
 - Consistent error model and pagination where needed.
 - Maintain legacy /api aliases until deprecation plan exists.

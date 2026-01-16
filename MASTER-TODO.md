@@ -55,7 +55,8 @@ gh secret list --repo crmitchelmore/tally
 - ANDROID_KEY_PASSWORD
 - ANDROID_KEYSTORE_BASE64
 - IOS_TEAM_ID
-- HONEYCOMB_API_KEY
+
+(Observability is post-product; do not require Honeycomb secrets during initial bootstrap.)
 
 ### 2) Verify toolchains are available (local + CI)
 These are the minimum tools we rely on for building/verifying across platforms.

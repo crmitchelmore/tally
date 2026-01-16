@@ -6,7 +6,10 @@ Make sign up/in seamless and ensure backend user records exist.
 ## Scope
 - Clerk hosted SignIn/SignUp routes.
 - Signed-out /app prompt with CTA.
-- Clerk proxy route (/__clerk/*) to keep auth on domain.
+- Clerk proxy requests must be handled on-domain.
+  - **Current implementation:** Vercel rewrite `/.clerk/:path* -> /api/clerk-proxy/:path*` (see `tally-web/vercel.json`).
+  - Proxy handler lives in Next.js middleware (`tally-web/src/middleware.ts`) and forwards to `https://frontend-api.clerk.dev`.
+  - **Do not use** `/__clerk/*` (Vercel blocks double-underscore paths).
 - POST /api/v1/auth/user for user creation/sync.
 
 ## Key references (canonical docs)

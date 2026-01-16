@@ -53,3 +53,6 @@ captures/
 .ralph-context.*
 .ralph-prompt.*
 .ralph-combined.*
+.ralph-ctx.*
+.ctx.*
+.ctx

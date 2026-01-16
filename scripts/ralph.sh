@@ -190,14 +190,29 @@ for ((i=1; i<=iterations; i++)); do
   } >"$combined_file"
 
   set +e
-  result=$(
-    "$COPILOT_CMD" ${extra_cmd_args:+"${extra_cmd_args[@]}"} --add-dir "$PWD" --model "$MODEL" \
-      --no-color --stream off --silent \
-      -p "@$combined_file Follow the attached prompt." \
-      "${copilot_tool_args[@]}" \
-      2>&1
-  )
-  exit_status=$?
+
+  if command -v script >/dev/null 2>&1; then
+    transcript_file="$(mktemp -t ralph-copilot.XXXXXX)"
+    script -q -F "$transcript_file" \
+      "$COPILOT_CMD" ${extra_cmd_args:+"${extra_cmd_args[@]}"} --add-dir "$PWD" --model "$MODEL" \
+        --no-color --stream off --silent \
+        -p "@$combined_file Follow the attached prompt." \
+        "${copilot_tool_args[@]}" \
+      >/dev/null 2>&1
+    exit_status=$?
+    result="$(cat "$transcript_file" 2>/dev/null || true)"
+    rm -f "$transcript_file" >/dev/null 2>&1 || true
+  else
+    result=$(
+      "$COPILOT_CMD" ${extra_cmd_args:+"${extra_cmd_args[@]}"} --add-dir "$PWD" --model "$MODEL" \
+        --no-color --stream off --silent \
+        -p "@$combined_file Follow the attached prompt." \
+        "${copilot_tool_args[@]}" \
+        2>&1
+    )
+    exit_status=$?
+  fi
+
   set -e
 
   rm -f "$combined_file" >/dev/null 2>&1 || true

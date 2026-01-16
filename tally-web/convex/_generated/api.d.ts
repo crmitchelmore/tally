@@ -12,6 +12,7 @@ import type * as challenges from "../challenges.js";
 import type * as entries from "../entries.js";
 import type * as followedChallenges from "../followedChallenges.js";
 import type * as import_ from "../import.js";
+import type * as leaderboard from "../leaderboard.js";
 import type * as users from "../users.js";
 
 import type {
@@ -25,6 +26,7 @@ declare const fullApi: ApiFromModules<{
   entries: typeof entries;
   followedChallenges: typeof followedChallenges;
   import: typeof import_;
+  leaderboard: typeof leaderboard;
   users: typeof users;
 }>;
 

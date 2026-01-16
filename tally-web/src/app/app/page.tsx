@@ -3,15 +3,20 @@
 import { useUser, UserButton } from "@clerk/nextjs";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { Id } from "../../../convex/_generated/dataModel";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CreateChallengeDialog } from "@/components/tally/CreateChallengeDialog";
 import { ChallengeCard } from "@/components/tally/ChallengeCard";
 import { AddEntrySheet } from "@/components/tally/AddEntrySheet";
+import { ChallengeDetailView } from "@/components/tally/ChallengeDetailView";
+import { DataPortabilityDialog } from "@/components/tally/DataPortabilityDialog";
+import { Users, Trophy } from "lucide-react";
 
 export default function AppPage() {
   const { user, isLoaded, isSignedIn } = useUser();
   const [isUserStored, setIsUserStored] = useState(false);
+  const [selectedChallenge, setSelectedChallenge] = useState<Id<"challenges"> | null>(null);
 
   const storeUser = useMutation(api.users.getOrCreate);
   const challenges = useQuery(
@@ -67,6 +72,16 @@ export default function AppPage() {
     );
   }
 
+  // Show detail view if a challenge is selected
+  if (selectedChallenge) {
+    return (
+      <ChallengeDetailView
+        challengeId={selectedChallenge}
+        onClose={() => setSelectedChallenge(null)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -74,7 +89,22 @@ export default function AppPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <h1 className="text-xl font-semibold text-gray-900">Tally</h1>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Link
+                href="/community"
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Community"
+              >
+                <Users className="h-5 w-5" />
+              </Link>
+              <Link
+                href="/leaderboard"
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Leaderboard"
+              >
+                <Trophy className="h-5 w-5" />
+              </Link>
+              <DataPortabilityDialog />
               <UserButton afterSignOutUrl="/" />
             </div>
           </div>
@@ -112,7 +142,11 @@ export default function AppPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {challenges.map((challenge) => (
-              <ChallengeCard key={challenge._id} challenge={challenge as any} />
+              <ChallengeCard
+                key={challenge._id}
+                challenge={challenge as any}
+                onClick={() => setSelectedChallenge(challenge._id)}
+              />
             ))}
           </div>
         )}

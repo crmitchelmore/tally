@@ -88,6 +88,28 @@ fi
 MODEL="${MODEL:-gpt-5.2-codex}"
 COPILOT_CMD="${COPILOT_CMD:-copilot}"
 
+# Apply common zsh alias defaults (cos/co) while always executing the real `copilot` binary.
+# cos='copilot --yolo --disable-mcp-server multitasker --disable-mcp-server chrome-devtools'
+# co='copilot --yolo --disable-mcp-server mobile-mcp --disable-mcp-server vibium --disable-mcp-server multitasker --disable-mcp-server chrome-devtools --disable-mcp-server mcpxcodebuild'
+extra_cmd_args=()
+case "$COPILOT_CMD" in
+  copilot)
+    ;;
+  cos)
+    COPILOT_CMD="copilot"
+    extra_cmd_args+=(--yolo --disable-mcp-server multitasker --disable-mcp-server chrome-devtools)
+    ;;
+  co)
+    COPILOT_CMD="copilot"
+    extra_cmd_args+=(--yolo --disable-mcp-server mobile-mcp --disable-mcp-server vibium --disable-mcp-server multitasker --disable-mcp-server chrome-devtools --disable-mcp-server mcpxcodebuild)
+    ;;
+  *)
+    # If it's a real executable, just run it.
+    ;;
+esac
+
+command -v "$COPILOT_CMD" >/dev/null 2>&1 || { echo "Error: COPILOT_CMD not found: $COPILOT_CMD" >&2; exit 127; }
+
 [[ -n "$prompt_file" ]] || { echo "Error: --prompt is required" >&2; usage; exit 1; }
 [[ -r "$prompt_file" ]] || { echo "Error: prompt file not readable: $prompt_file" >&2; exit 1; }
 [[ -z "$prd_file" || -r "$prd_file" ]] || { echo "Error: PRD file not readable: $prd_file" >&2; exit 1; }
@@ -168,7 +190,7 @@ for ((i=1; i<=iterations; i++)); do
 
   set +e
   result=$(
-    "$COPILOT_CMD" --add-dir "$PWD" --model "$MODEL" \
+    "$COPILOT_CMD" "${extra_cmd_args[@]}" --add-dir "$PWD" --model "$MODEL" \
       --no-color --stream off --silent \
       -p "@$combined_file Follow the attached prompt." \
       "${copilot_tool_args[@]}" \

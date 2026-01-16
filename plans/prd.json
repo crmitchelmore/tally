@@ -17,7 +17,7 @@
       "Follow MASTER-TODO.md section \"Verify required integrations / automation access\"",
       "If anything is missing, note it in progress.txt and move on"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "landing",

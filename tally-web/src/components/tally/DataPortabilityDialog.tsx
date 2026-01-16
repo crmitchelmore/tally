@@ -15,7 +15,7 @@ import {
 import { Settings, Download, Upload, Trash2, AlertTriangle } from "lucide-react";
 import { useState, useRef } from "react";
 
-export function DataPortabilityDialog() {
+export function DataPortabilityDialog({ isUserStored = false }: { isUserStored?: boolean }) {
   const { user } = useUser();
   const [open, setOpen] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -23,9 +23,10 @@ export function DataPortabilityDialog() {
   const [importResult, setImportResult] = useState<{ success: boolean; message: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Only query when dialog is open AND user is stored in Convex
   const exportData = useQuery(
     api.import.exportData,
-    user?.id ? { clerkId: user.id } : "skip"
+    open && isUserStored && user?.id ? { clerkId: user.id } : "skip"
   );
   const bulkImport = useMutation(api.import.bulkImport);
   const clearAllData = useMutation(api.import.clearAllData);

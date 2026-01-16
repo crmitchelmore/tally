@@ -105,7 +105,7 @@ export default function AppPage() {
               >
                 <Trophy className="h-5 w-5" />
               </Link>
-              <DataPortabilityDialog />
+              <DataPortabilityDialog isUserStored={isUserStored} />
               <UserButton afterSignOutUrl="/" />
             </div>
           </div>

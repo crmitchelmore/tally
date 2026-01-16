@@ -9,7 +9,7 @@ Usage:
   ./scripts/ralph.sh --prompt <file> [--prd <file>] [--allow-profile <safe|dev|locked>] [--allow-tools <toolSpec> ...] [--deny-tools <toolSpec> ...] <iterations>
 
 Environment:
-  MODEL        Copilot model (default: gpt-5.2)
+  MODEL        Copilot model (default: gpt-5.2-codex)
   COPILOT_CMD  Copilot command to run (default: copilot). Set to "cos" if you use that wrapper.
 
 Notes:
@@ -85,7 +85,7 @@ if ! [[ "$iterations" =~ ^[0-9]+$ ]] || [[ "$iterations" -lt 1 ]]; then
   exit 1
 fi
 
-MODEL="${MODEL:-gpt-5.2}"
+MODEL="${MODEL:-gpt-5.2-codex}"
 COPILOT_CMD="${COPILOT_CMD:-copilot}"
 
 [[ -n "$prompt_file" ]] || { echo "Error: --prompt is required" >&2; usage; exit 1; }

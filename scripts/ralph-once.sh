@@ -9,7 +9,7 @@ Usage:
   ./scripts/ralph-once.sh --prompt <file> [--prd <file>] [--allow-profile <safe|dev|locked>] [--allow-tools <toolSpec> ...] [--deny-tools <toolSpec> ...]
 
 Environment:
-  MODEL        Copilot model (default: gpt-5.2)
+  MODEL        Copilot model (default: gpt-5.2-codex)
   COPILOT_CMD  Copilot command to run (default: copilot). Set to "cos" if you use that wrapper.
 
 Notes:
@@ -78,7 +78,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-MODEL="${MODEL:-gpt-5.2}"
+MODEL="${MODEL:-gpt-5.2-codex}"
 COPILOT_CMD="${COPILOT_CMD:-copilot}"
 
 [[ -n "$prompt_file" ]] || { echo "Error: --prompt is required" >&2; usage; exit 1; }

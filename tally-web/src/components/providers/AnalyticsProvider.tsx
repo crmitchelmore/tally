@@ -1,25 +1,42 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 
-// Analytics will be lazily loaded only on client
-type AnalyticsModule = typeof import('@/lib/analytics');
-let analyticsModule: AnalyticsModule | null = null;
-
-async function getAnalytics(): Promise<AnalyticsModule | null> {
-  if (typeof window === 'undefined') return null;
-  if (!analyticsModule) {
-    analyticsModule = await import('@/lib/analytics');
-  }
-  return analyticsModule;
+// Lazy load entire posthog module at runtime
+function usePostHog() {
+  const posthogRef = useRef<typeof import('posthog-js').default | null>(null);
+  
+  useEffect(() => {
+    // Only load in browser
+    if (typeof window === 'undefined') return;
+    
+    import('posthog-js').then(mod => {
+      const posthog = mod.default;
+      posthogRef.current = posthog;
+      
+      const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+      if (key) {
+        posthog.init(key, {
+          api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
+          person_profiles: 'identified_only',
+          capture_pageview: false,
+          capture_pageleave: true,
+          autocapture: false,
+        });
+      }
+    });
+  }, []);
+  
+  return posthogRef;
 }
 
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user, isLoaded } = useUser();
+  const posthogRef = usePostHog();
 
   // Memoize the URL to track
   const currentUrl = useMemo(() => {
@@ -28,38 +45,26 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     return search ? pathname + '?' + search : pathname;
   }, [pathname, searchParams]);
 
-  // Initialize PostHog on mount
-  useEffect(() => {
-    getAnalytics().then(analytics => {
-      if (analytics) void analytics.initPostHog();
-    });
-  }, []);
-
   // Track page views on route change
   useEffect(() => {
-    if (!currentUrl) return;
-    getAnalytics().then(analytics => {
-      if (analytics) analytics.trackPageView(currentUrl);
-    });
-  }, [currentUrl]);
+    if (!currentUrl || !posthogRef.current) return;
+    posthogRef.current.capture('$pageview', { $current_url: currentUrl });
+  }, [currentUrl, posthogRef]);
 
   // Identify user when auth state changes
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded || !posthogRef.current) return;
     
-    getAnalytics().then(analytics => {
-      if (!analytics) return;
-      if (user) {
-        void analytics.identifyUser(user.id, {
-          email: user.primaryEmailAddress?.emailAddress,
-          name: user.fullName,
-          createdAt: user.createdAt,
-        });
-      } else {
-        void analytics.resetUser();
-      }
-    });
-  }, [user, isLoaded]);
+    if (user) {
+      posthogRef.current.identify(user.id, {
+        email: user.primaryEmailAddress?.emailAddress,
+        name: user.fullName,
+        createdAt: user.createdAt,
+      });
+    } else {
+      posthogRef.current.reset();
+    }
+  }, [user, isLoaded, posthogRef]);
 
   return <>{children}</>;
 }

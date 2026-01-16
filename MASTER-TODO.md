@@ -7,6 +7,8 @@ NEVER STOP TO ASK QUESTIONS - MAKE THE BEST DECISION WITHOUT COMPROMISING SECURI
 ### 1) GitHub repository secrets (from local `.env`)
 Before any deploy/CI work, copy **all** secret values from the repo-root `.env` into **GitHub → Settings → Secrets and variables → Actions**.
 
+To test deploys, use the simplest hello world type app if we don't have anything else to deploy.
+
 Preferred (scripted, avoids pasting values in UI):
 ```bash
 # From repo root
@@ -76,7 +78,7 @@ These are the minimum tools we rely on for building/verifying across platforms.
 
 Quick check (OK/MISSING):
 ```bash
-for c in bun node corepack xcodebuild xcrun tuist xcodegen java javac gradle adb emulator pulumi npm; do
+for c in bun node corepack xcodebuild xcrun tuist xcodegen java javac gradle adb emulator; do
   printf '%-10s ' "$c"; command -v "$c" >/dev/null 2>&1 && echo OK || echo MISSING;
 done
 ```

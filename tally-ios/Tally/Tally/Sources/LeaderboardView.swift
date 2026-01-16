@@ -1,60 +1,67 @@
 import SwiftUI
 
 struct LeaderboardView: View {
-    @State private var timeRange: TimeRange = .month
-    @State private var entries: [LeaderboardEntry] = []
+    @State private var store = LeaderboardStore()
     
-    enum TimeRange: String, CaseIterable {
-        case week = "Week"
-        case month = "Month"
-        case year = "Year"
-        case all = "All Time"
-    }
+    let timeRanges = ["week", "month", "year", "all"]
+    let timeRangeLabels = ["Week", "Month", "Year", "All Time"]
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                Picker("Time Range", selection: $timeRange) {
-                    ForEach(TimeRange.allCases, id: \.self) { range in
-                        Text(range.rawValue).tag(range)
+                // Time range picker
+                Picker("Time Range", selection: $store.selectedTimeRange) {
+                    ForEach(Array(zip(timeRanges, timeRangeLabels)), id: \.0) { range, label in
+                        Text(label).tag(range)
                     }
                 }
                 .pickerStyle(.segmented)
                 .padding()
+                .onChange(of: store.selectedTimeRange) {
+                    Task { await store.loadLeaderboard() }
+                }
                 
-                if entries.isEmpty {
+                // Leaderboard list
+                if store.isLoading && store.entries.isEmpty {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                } else if let error = store.error {
+                    ContentUnavailableView(
+                        "Error",
+                        systemImage: "exclamationmark.triangle",
+                        description: Text(error)
+                    )
+                } else if store.entries.isEmpty {
                     ContentUnavailableView(
                         "No Entries Yet",
                         systemImage: "trophy",
-                        description: Text("Be the first to log an entry and claim the top spot!")
+                        description: Text("Be the first to log an entry!")
                     )
                 } else {
-                    List {
-                        ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
-                            LeaderboardRow(rank: index + 1, entry: entry)
-                        }
+                    List(store.entries) { entry in
+                        LeaderboardRowView(entry: entry)
                     }
+                    .listStyle(.plain)
                 }
             }
             .navigationTitle("Leaderboard")
+            .refreshable {
+                await store.loadLeaderboard()
+            }
+            .task {
+                await store.loadLeaderboard()
+            }
         }
     }
 }
 
-struct LeaderboardEntry: Identifiable {
-    let id: String
-    let name: String
-    let avatarUrl: String?
-    let total: Int
-}
-
-struct LeaderboardRow: View {
-    let rank: Int
+struct LeaderboardRowView: View {
     let entry: LeaderboardEntry
     
     var rankIcon: some View {
         Group {
-            switch rank {
+            switch entry.rank {
             case 1:
                 Image(systemName: "trophy.fill")
                     .foregroundColor(.yellow)
@@ -65,29 +72,43 @@ struct LeaderboardRow: View {
                 Image(systemName: "medal.fill")
                     .foregroundColor(.orange)
             default:
-                Text("\(rank)")
+                Text("\(entry.rank)")
                     .font(.headline)
                     .foregroundColor(.secondary)
+                    .frame(width: 30)
             }
         }
     }
     
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
             rankIcon
-                .frame(width: 32)
+                .frame(width: 30)
             
-            Circle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 40, height: 40)
-                .overlay {
-                    Text(String(entry.name.first ?? "?"))
-                        .font(.headline)
-                        .foregroundColor(.secondary)
+            // Avatar
+            if let avatarUrl = entry.avatarUrl, let url = URL(string: avatarUrl) {
+                AsyncImage(url: url) { image in
+                    image.resizable()
+                } placeholder: {
+                    Circle().fill(Color.gray.opacity(0.3))
                 }
+                .frame(width: 40, height: 40)
+                .clipShape(Circle())
+            } else {
+                Circle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 40, height: 40)
+                    .overlay {
+                        Text(String(entry.name?.prefix(1) ?? "?"))
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                    }
+            }
             
-            Text(entry.name)
-                .font(.headline)
+            VStack(alignment: .leading) {
+                Text(entry.name ?? "Anonymous")
+                    .font(.body)
+            }
             
             Spacer()
             
@@ -99,6 +120,7 @@ struct LeaderboardRow: View {
                     .foregroundColor(.secondary)
             }
         }
+        .padding(.vertical, 4)
     }
 }
 

@@ -1,50 +1,86 @@
 import SwiftUI
 
 struct CommunityView: View {
+    @State private var store = CommunityStore()
     @State private var searchText = ""
-    @State private var publicChallenges: [Challenge] = []
+    
+    var filteredChallenges: [ChallengeResponse] {
+        if searchText.isEmpty {
+            return store.publicChallenges
+        }
+        return store.publicChallenges.filter {
+            $0.name.localizedCaseInsensitiveContains(searchText)
+        }
+    }
     
     var body: some View {
         NavigationStack {
-            List {
-                if publicChallenges.isEmpty {
-                    ContentUnavailableView.search(text: searchText)
+            Group {
+                if store.isLoading && store.publicChallenges.isEmpty {
+                    ProgressView("Loading community...")
+                } else if let error = store.error {
+                    ContentUnavailableView(
+                        "Error",
+                        systemImage: "exclamationmark.triangle",
+                        description: Text(error)
+                    )
+                } else if store.publicChallenges.isEmpty {
+                    ContentUnavailableView(
+                        "No Public Challenges",
+                        systemImage: "person.2",
+                        description: Text("Be the first to create a public challenge!")
+                    )
                 } else {
-                    ForEach(publicChallenges) { challenge in
+                    List(filteredChallenges) { challenge in
                         PublicChallengeRow(challenge: challenge)
                     }
+                    .listStyle(.plain)
                 }
             }
             .navigationTitle("Community")
-            .searchable(text: $searchText, prompt: "Search public challenges")
+            .searchable(text: $searchText, prompt: "Search challenges")
+            .refreshable {
+                await store.loadPublicChallenges()
+            }
+            .task {
+                await store.loadPublicChallenges()
+            }
         }
     }
 }
 
 struct PublicChallengeRow: View {
-    let challenge: Challenge
-    @State private var isFollowing = false
+    let challenge: ChallengeResponse
     
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
             Text(challenge.icon)
                 .font(.title2)
+                .frame(width: 44, height: 44)
+                .background(Color(hex: challenge.color).opacity(0.2))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(challenge.name)
                     .font(.headline)
-                Text("\(challenge.targetNumber) in \(challenge.year)")
+                
+                Text(challenge.timeframeUnit == "year"
+                     ? "\(challenge.targetNumber) in \(challenge.year)"
+                     : "\(challenge.targetNumber) per month")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
             
             Spacer()
             
-            Button(action: { isFollowing.toggle() }) {
-                Image(systemName: isFollowing ? "person.badge.minus" : "person.badge.plus")
-                    .foregroundColor(isFollowing ? .secondary : .accentColor)
+            Button(action: {
+                // TODO: Implement follow functionality
+            }) {
+                Image(systemName: "plus.circle")
+                    .font(.title3)
             }
         }
+        .padding(.vertical, 4)
     }
 }
 

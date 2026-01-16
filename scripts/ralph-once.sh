@@ -123,11 +123,24 @@ for tool in "${deny_tools[@]}"; do
   copilot_tool_args+=(--deny-tool "$tool")
 done
 
-# Single attachment: combine PRD + progress + prompt to avoid multi-@file issues.
+# Single attachment: combine skills + PRD + progress + prompt to avoid multi-@file issues.
 context_file="$(mktemp .ralph-context.XXXXXX)"
 {
   echo "# Context"
   echo
+
+  # Always include all local skills.
+  if compgen -G ".github/skills/*.md" >/dev/null 2>&1; then
+    echo "## Skills"
+    for f in .github/skills/*.md; do
+      echo
+      echo "### $(basename "$f")"
+      echo
+      cat "$f"
+    done
+    echo
+  fi
+
   if [[ -n "$prd_file" ]]; then
     echo "## PRD ($prd_file)"
     cat "$prd_file"

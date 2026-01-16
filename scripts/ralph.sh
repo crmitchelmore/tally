@@ -139,6 +139,19 @@ for ((i=1; i<=iterations; i++)); do
   {
     echo "# Context"
     echo
+
+    # Always include all local skills.
+    if compgen -G ".github/skills/*.md" >/dev/null 2>&1; then
+      echo "## Skills"
+      for f in .github/skills/*.md; do
+        echo
+        echo "### $(basename "$f")"
+        echo
+        cat "$f"
+      done
+      echo
+    fi
+
     if [[ -n "$prd_file" ]]; then
       echo "## PRD ($prd_file)"
       cat "$prd_file"

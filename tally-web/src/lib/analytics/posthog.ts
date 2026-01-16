@@ -1,25 +1,24 @@
 // PostHog analytics - client-side only
-// Use dynamic import to prevent window access during SSR
-
-let posthogModule: typeof import('posthog-js') | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let posthog: any = null;
 
 async function getPostHog() {
   if (typeof window === 'undefined') return null;
-  if (!posthogModule) {
-    posthogModule = await import('posthog-js');
+  if (!posthog) {
+    const mod = await import('posthog-js');
+    posthog = mod.default;
   }
-  return posthogModule.default;
+  return posthog;
 }
 
-// Initialize PostHog only on client side
 export async function initPostHog() {
   if (typeof window === 'undefined') return;
   if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
   
-  const posthog = await getPostHog();
-  if (!posthog) return;
+  const ph = await getPostHog();
+  if (!ph) return;
   
-  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+  ph.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
     person_profiles: 'identified_only',
     capture_pageview: false,
@@ -28,40 +27,31 @@ export async function initPostHog() {
   });
 }
 
-// Set user identity after auth
 export async function identifyUser(userId: string, properties?: Record<string, unknown>) {
-  if (typeof window === 'undefined') return;
-  const posthog = await getPostHog();
-  posthog?.identify(userId, properties);
+  const ph = await getPostHog();
+  ph?.identify(userId, properties);
 }
 
-// Clear identity on logout
 export async function resetUser() {
-  if (typeof window === 'undefined') return;
-  const posthog = await getPostHog();
-  posthog?.reset();
+  const ph = await getPostHog();
+  ph?.reset();
 }
-
-// ============================================
-// TALLY EVENT TAXONOMY (shared across platforms)
-// ============================================
 
 async function capture(event: string, properties?: Record<string, unknown>) {
-  if (typeof window === 'undefined') return;
-  const posthog = await getPostHog();
-  posthog?.capture(event, properties);
+  const ph = await getPostHog();
+  ph?.capture(event, properties);
 }
 
 export function trackSignUp(method: 'email' | 'google' | 'apple') {
-  capture('user_signed_up', { method });
+  void capture('user_signed_up', { method });
 }
 
 export function trackSignIn(method: 'email' | 'google' | 'apple') {
-  capture('user_signed_in', { method });
+  void capture('user_signed_in', { method });
 }
 
 export function trackSignOut() {
-  capture('user_signed_out');
+  void capture('user_signed_out');
 }
 
 export function trackChallengeCreated(properties: {
@@ -71,7 +61,7 @@ export function trackChallengeCreated(properties: {
   unit: string;
   isPublic: boolean;
 }) {
-  capture('challenge_created', properties);
+  void capture('challenge_created', properties);
 }
 
 export function trackEntryLogged(properties: {
@@ -79,7 +69,7 @@ export function trackEntryLogged(properties: {
   count: number;
   hasNote: boolean;
 }) {
-  capture('entry_logged', properties);
+  void capture('entry_logged', properties);
 }
 
 export function trackChallengeCompleted(properties: {
@@ -87,24 +77,24 @@ export function trackChallengeCompleted(properties: {
   name: string;
   daysToComplete: number;
 }) {
-  capture('challenge_completed', properties);
+  void capture('challenge_completed', properties);
 }
 
 export function trackDataExported() {
-  capture('data_exported');
+  void capture('data_exported');
 }
 
 export function trackDataImported(properties: {
   challengeCount: number;
   entryCount: number;
 }) {
-  capture('data_imported', properties);
+  void capture('data_imported', properties);
 }
 
 export function trackPageView(path: string) {
-  capture('$pageview', { $current_url: path });
+  void capture('$pageview', { $current_url: path });
 }
 
 export function trackFeatureUsed(feature: string, properties?: Record<string, unknown>) {
-  capture('feature_used', { feature, ...properties });
+  void capture('feature_used', { feature, ...properties });
 }

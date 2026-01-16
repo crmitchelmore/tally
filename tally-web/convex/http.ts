@@ -1,3 +1,4 @@
+import { Id } from "./_generated/dataModel";
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
@@ -114,7 +115,7 @@ http.route({
     try {
       const entries = await ctx.runQuery(api.entries.listByChallenge, {
         clerkId,
-        challengeId: challengeId as any,
+        challengeId: challengeId as Id<"challenges">,
       });
       return new Response(JSON.stringify({ data: entries }), {
         status: 200,

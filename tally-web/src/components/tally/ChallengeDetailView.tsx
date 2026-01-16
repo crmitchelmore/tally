@@ -227,18 +227,33 @@ export function ChallengeDetailView({ challengeId, onClose }: ChallengeDetailVie
                           </div>
                         </div>
                         <div className="space-y-2">
-                          {dayEntries.map((entry) => (
-                            <div
-                              key={entry._id}
-                              className="flex items-center justify-between py-2 px-3 bg-[var(--paper-warm)] rounded-lg group"
-                            >
-                              <div className="flex items-center gap-3">
-                                <span className="font-display text-lg text-[var(--ink)]">{entry.count}</span>
-                                {entry.sets && entry.sets.length > 0 && (
-                                  <span className="text-sm text-[var(--ink-muted)]">
-                                    ({entry.sets.map((s) => s.reps).join(" + ")})
-                                  </span>
-                                )}
+                          {dayEntries.map((entry) => {
+                            const entrySets = entry.sets ?? [];
+
+                            return (
+                              <div
+                                key={entry._id}
+                                className="flex items-center justify-between py-2 px-3 bg-[var(--paper-warm)] rounded-lg group"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span className="font-display text-lg text-[var(--ink)]">{entry.count}</span>
+                                  {entrySets.length > 0 && (
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      {entrySets.map((set, index) => (
+                                        <div key={`${entry._id}-set-${index}`} className="flex items-center gap-2">
+                                          <TallyMarks
+                                            count={set.reps}
+                                            size="sm"
+                                            color={challenge.color}
+                                            maxDisplay={15}
+                                          />
+                                          {index < entrySets.length - 1 && (
+                                            <span className="text-[var(--ink-faint)] text-xs">+</span>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
                                 {entry.note && (
                                   <span className="text-sm text-[var(--ink-muted)] italic">{entry.note}</span>
                                 )}
@@ -254,8 +269,9 @@ export function ChallengeDetailView({ challengeId, onClose }: ChallengeDetailVie
                               >
                                 ×
                               </button>
-                            </div>
-                          ))}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     );

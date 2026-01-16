@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { FormPanel } from "./FormPanel";
 import { TimeframeUnit } from "@/types";
 
 // Warm, papery color palette
@@ -90,11 +91,12 @@ export function CreateChallengeDialog({ onCreated }: CreateChallengeDialogProps)
           + New Challenge
         </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[480px] bg-white">
-        <DialogHeader>
-          <DialogTitle className="font-display text-2xl text-[var(--ink)]">Create Challenge</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+      <DialogContent className="bg-white">
+        <FormPanel>
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl text-[var(--ink)]">Create Challenge</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-6 mt-4">
           <div>
             <label className="stat-label block mb-2">Name</label>
             <input
@@ -215,7 +217,8 @@ export function CreateChallengeDialog({ onCreated }: CreateChallengeDialogProps)
               {isSubmitting ? "Creating..." : "Create Challenge"}
             </button>
           </div>
-        </form>
+          </form>
+        </FormPanel>
       </DialogContent>
     </Dialog>
   );

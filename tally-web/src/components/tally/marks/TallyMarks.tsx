@@ -7,6 +7,7 @@ interface TallyMarksProps {
   count: number;
   size?: "sm" | "md" | "lg" | "xl";
   color?: string;
+  slashColor?: string;
   animate?: boolean;
   maxDisplay?: number;
   className?: string;
@@ -20,6 +21,7 @@ export function TallyMarks({
   count,
   size = "md",
   color = "currentColor",
+  slashColor = "var(--slash)",
   animate = false,
   maxDisplay = 50,
   className = "",
@@ -60,6 +62,7 @@ export function TallyMarks({
             strokeWidth={config.strokeWidth}
             gap={config.gap}
             color={color}
+            slashColor={slashColor}
             count={5}
             animate={animate}
             delay={groupIndex * 0.1}
@@ -74,6 +77,7 @@ export function TallyMarks({
             strokeWidth={config.strokeWidth}
             gap={config.gap}
             color={color}
+            slashColor={slashColor}
             count={remainder}
             animate={animate}
             delay={groups * 0.1}
@@ -99,12 +103,13 @@ interface TallyGroupProps {
   strokeWidth: number;
   gap: number;
   color: string;
+  slashColor: string;
   count: number;
   animate: boolean;
   delay: number;
 }
 
-function TallyGroup({ x, height, strokeWidth, gap, color, count, animate, delay }: TallyGroupProps) {
+function TallyGroup({ x, height, strokeWidth, gap, color, slashColor, count, animate, delay }: TallyGroupProps) {
   // Add slight randomness to make marks feel hand-drawn
   const randomOffset = useMemo(() => {
     return Array.from({ length: 4 }).map(() => ({
@@ -174,7 +179,7 @@ function TallyGroup({ x, height, strokeWidth, gap, color, count, animate, delay 
             y1={height - 4}
             x2={x + 3 * gap + gap / 2}
             y2={4}
-            stroke={color}
+            stroke={slashColor}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
             custom={4}
@@ -188,7 +193,7 @@ function TallyGroup({ x, height, strokeWidth, gap, color, count, animate, delay 
             y1={height - 4}
             x2={x + 3 * gap + gap / 2}
             y2={4}
-            stroke={color}
+            stroke={slashColor}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
           />
@@ -206,6 +211,8 @@ interface TallyInputProps {
   onChange: (value: number) => void;
   max?: number;
   color?: string;
+  inputLabel?: string;
+  quickAddOptions?: number[];
   className?: string;
 }
 
@@ -214,18 +221,31 @@ export function TallyInput({
   onChange, 
   max = 25,
   color = "var(--ink)",
+  inputLabel = "Enter number",
+  quickAddOptions = [5, 10, 100],
   className = "" 
 }: TallyInputProps) {
+  const clampValue = (next: number) => Math.min(max, Math.max(0, next));
+
   const handleTap = () => {
-    if (value < max) {
-      onChange(value + 1);
-    }
+    onChange(clampValue(value + 1));
   };
 
   const handleRemove = () => {
-    if (value > 0) {
-      onChange(value - 1);
+    onChange(clampValue(value - 1));
+  };
+
+  const handleQuickAdd = (amount: number) => {
+    onChange(clampValue(value + amount));
+  };
+
+  const handleNumberChange = (nextValue: string) => {
+    const parsed = parseInt(nextValue, 10);
+    if (Number.isNaN(parsed)) {
+      onChange(0);
+      return;
     }
+    onChange(clampValue(parsed));
   };
 
   return (
@@ -270,6 +290,32 @@ export function TallyInput({
         >
           +
         </button>
+      </div>
+
+      <div className="w-full max-w-[320px] mt-4">
+        <label className="stat-label block mb-2">{inputLabel}</label>
+        <input
+          type="number"
+          min={0}
+          max={max}
+          value={value}
+          onChange={(e) => handleNumberChange(e.target.value)}
+          className="input text-center"
+          aria-label={inputLabel}
+        />
+      </div>
+
+      <div className="w-full max-w-[320px] mt-3 grid grid-cols-3 gap-2">
+        {quickAddOptions.map((amount) => (
+          <button
+            key={amount}
+            type="button"
+            onClick={() => handleQuickAdd(amount)}
+            className="btn btn-secondary py-2"
+          >
+            +{amount}
+          </button>
+        ))}
       </div>
     </div>
   );

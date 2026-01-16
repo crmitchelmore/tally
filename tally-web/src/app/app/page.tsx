@@ -3,7 +3,7 @@
 import { useUser, UserButton } from "@clerk/nextjs";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { Challenge } from "@/types";
+import { Challenge, Entry } from "@/types";
 import { Id } from "../../../convex/_generated/dataModel";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -13,6 +13,8 @@ import { AddEntrySheet } from "@/components/tally/AddEntrySheet";
 import { ChallengeDetailView } from "@/components/tally/ChallengeDetailView";
 import { DataPortabilityDialog } from "@/components/tally/DataPortabilityDialog";
 import { TallyMarks } from "@/components/tally/marks/TallyMarks";
+import { ActivityHeatmap } from "@/components/tally/ActivityHeatmap";
+import { calculateDashboardStats } from "@/lib/stats";
 
 export default function AppPage() {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -22,6 +24,10 @@ export default function AppPage() {
   const storeUser = useMutation(api.users.getOrCreate);
   const challenges = useQuery(
     api.challenges.listActive,
+    isUserStored && user?.id ? { clerkId: user.id } : "skip"
+  );
+  const entries = useQuery(
+    api.entries.listByUser,
     isUserStored && user?.id ? { clerkId: user.id } : "skip"
   );
 
@@ -80,7 +86,13 @@ export default function AppPage() {
     );
   }
 
-  return (
+   const today = new Date().toISOString().split("T")[0];
+   const dashboardStats = challenges && entries
+     ? calculateDashboardStats(challenges as Challenge[], entries as Entry[], today)
+     : null;
+   const currentYear = new Date().getFullYear();
+
+   return (
     <div className="min-h-screen bg-[var(--paper)] paper-texture">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-[var(--border-light)] sticky top-0 z-40">
@@ -133,12 +145,11 @@ export default function AppPage() {
           <CreateChallengeDialog />
         </header>
 
-        {/* Challenges grid */}
         {!isUserStored ? (
           <div className="text-center py-16">
             <div className="text-[var(--ink-muted)]">Setting up your account...</div>
           </div>
-        ) : challenges === undefined ? (
+        ) : challenges === undefined || entries === undefined ? (
           <div className="text-center py-16">
             <div className="text-[var(--ink-muted)]">Loading challenges...</div>
           </div>
@@ -158,14 +169,116 @@ export default function AppPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {challenges.map((challenge) => (
-              <ChallengeCard
-                key={challenge._id}
-                challenge={challenge as Challenge}
-                onClick={() => setSelectedChallenge(challenge._id)}
-              />
-            ))}
+          <div className="space-y-12">
+            {dashboardStats && (
+              <>
+                <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                  <div className="card">
+                    <p className="stat-label flex items-center gap-2">Total marks</p>
+                    <p className="stat-value mt-4">{dashboardStats.totalMarks}</p>
+                    <p className="text-sm text-[var(--ink-muted)] mt-2">All time</p>
+                  </div>
+                  <div className="card">
+                    <p className="stat-label flex items-center gap-2">Today</p>
+                    <p className="stat-value mt-4">{dashboardStats.todayTotal}</p>
+                    <p className="text-sm text-[var(--ink-muted)] mt-2">Entries today</p>
+                  </div>
+                  <div className="card">
+                    <p className="stat-label flex items-center gap-2">Best streak</p>
+                    <p className="stat-value mt-4">{dashboardStats.bestStreak}</p>
+                    <p className="text-sm text-[var(--ink-muted)] mt-2">Days</p>
+                  </div>
+                  <div className="card">
+                    <p className="stat-label flex items-center gap-2">Ahead of pace</p>
+                    <p className="stat-value mt-4">{dashboardStats.aheadChallenges}</p>
+                    <p className="text-sm text-[var(--ink-muted)] mt-2">
+                      of {challenges.length} challenges
+                    </p>
+                  </div>
+                </section>
+
+                <section className="card">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-display text-xl text-[var(--ink)]">Activity</h3>
+                      <p className="text-sm text-[var(--ink-muted)]">{currentYear}</p>
+                    </div>
+                  </div>
+                  <ActivityHeatmap
+                    entries={entries as Entry[]}
+                    year={currentYear}
+                    className="mt-6"
+                  />
+                </section>
+
+                <section>
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-xl">🏆</span>
+                    <h3 className="font-display text-xl text-[var(--ink)]">Personal Records</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div className="card">
+                      <p className="stat-label">Best single day</p>
+                      <p className="stat-value mt-4">{dashboardStats.bestSingleDay?.count ?? 0}</p>
+                      <p className="text-sm text-[var(--ink-muted)] mt-2">
+                        {dashboardStats.bestSingleDay
+                          ? `${dashboardStats.bestSingleDay.challengeName ?? "Entry"} · ${dashboardStats.bestSingleDay.date}`
+                          : "No entries yet"}
+                      </p>
+                    </div>
+                    <div className="card">
+                      <p className="stat-label">Longest streak</p>
+                      <p className="stat-value mt-4">{dashboardStats.bestStreak}</p>
+                      <p className="text-sm text-[var(--ink-muted)] mt-2">
+                        {dashboardStats.bestStreak ? "Days" : "No streaks yet"}
+                      </p>
+                    </div>
+                    <div className="card">
+                      <p className="stat-label">Highest daily average</p>
+                      <p className="stat-value mt-4">{dashboardStats.highestDailyAverage?.value ?? 0}</p>
+                      <p className="text-sm text-[var(--ink-muted)] mt-2">
+                        {dashboardStats.highestDailyAverage?.challengeName ?? "No data yet"}
+                      </p>
+                    </div>
+                    <div className="card">
+                      <p className="stat-label">Most active days</p>
+                      <p className="stat-value mt-4">{dashboardStats.mostActiveDays?.value ?? 0}</p>
+                      <p className="text-sm text-[var(--ink-muted)] mt-2">
+                        {dashboardStats.mostActiveDays?.challengeName ?? "No data yet"}
+                      </p>
+                    </div>
+                    <div className="card">
+                      <p className="stat-label">Biggest single entry</p>
+                      <p className="stat-value mt-4">{dashboardStats.biggestSingleEntry?.count ?? 0}</p>
+                      <p className="text-sm text-[var(--ink-muted)] mt-2">
+                        {dashboardStats.biggestSingleEntry
+                          ? `${dashboardStats.biggestSingleEntry.challengeName ?? "Entry"} · ${dashboardStats.biggestSingleEntry.date}`
+                          : "No entries yet"}
+                      </p>
+                    </div>
+                    <div className="card">
+                      <p className="stat-label">Max reps in single set</p>
+                      <p className="stat-value mt-4">{dashboardStats.maxRepsInSet?.reps ?? 0}</p>
+                      <p className="text-sm text-[var(--ink-muted)] mt-2">
+                        {dashboardStats.maxRepsInSet
+                          ? `${dashboardStats.maxRepsInSet.challengeName ?? "Entry"} · ${dashboardStats.maxRepsInSet.date}`
+                          : "No sets yet"}
+                      </p>
+                    </div>
+                  </div>
+                </section>
+              </>
+            )}
+
+            <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {challenges.map((challenge) => (
+                <ChallengeCard
+                  key={challenge._id}
+                  challenge={challenge as Challenge}
+                  onClick={() => setSelectedChallenge(challenge._id)}
+                />
+              ))}
+            </section>
           </div>
         )}
       </main>

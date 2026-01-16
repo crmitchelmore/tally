@@ -127,3 +127,119 @@ export function formatPaceStatus(status: PaceStatus): { text: string; color: str
       return { text: "Behind", color: "text-amber-600" };
   }
 }
+
+export interface DashboardStats {
+  totalMarks: number;
+  todayTotal: number;
+  bestStreak: number;
+  aheadChallenges: number;
+  bestSingleDay: { date: string; count: number; challengeName?: string } | null;
+  highestDailyAverage: { value: number; challengeName?: string } | null;
+  mostActiveDays: { value: number; challengeName?: string } | null;
+  biggestSingleEntry: { date: string; count: number; challengeName?: string } | null;
+  maxRepsInSet: { date: string; reps: number; challengeName?: string } | null;
+}
+
+export function calculateDashboardStats(
+  challenges: Challenge[],
+  entries: Entry[],
+  today: string
+): DashboardStats {
+  const challengeById = new Map<string, Challenge>(
+    challenges.map((challenge) => [challenge._id, challenge])
+  );
+  const totalMarks = entries.reduce((sum, entry) => sum + entry.count, 0);
+  const todayTotal = entries.reduce((sum, entry) => (
+    entry.date === today ? sum + entry.count : sum
+  ), 0);
+
+  const statsByChallenge = challenges.map((challenge) => {
+    const challengeEntries = entries.filter((entry) => entry.challengeId === challenge._id);
+    return {
+      challenge,
+      stats: calculateStats(challenge, challengeEntries),
+      entries: challengeEntries,
+    };
+  });
+
+  const bestStreak = statsByChallenge.reduce(
+    (max, item) => Math.max(max, item.stats.longestStreak),
+    0
+  );
+  const aheadChallenges = statsByChallenge.reduce(
+    (count, item) => count + (item.stats.paceStatus === "ahead" ? 1 : 0),
+    0
+  );
+
+  let bestSingleDay: DashboardStats["bestSingleDay"] = null;
+  let biggestSingleEntry: DashboardStats["biggestSingleEntry"] = null;
+  let maxRepsInSet: DashboardStats["maxRepsInSet"] = null;
+
+  const countsByChallengeDate = new Map<string, number>();
+  for (const entry of entries) {
+    const key = `${entry.challengeId}:${entry.date}`;
+    countsByChallengeDate.set(key, (countsByChallengeDate.get(key) || 0) + entry.count);
+  }
+
+  for (const [key, count] of countsByChallengeDate.entries()) {
+    const [challengeId, date] = key.split(":");
+    if (!bestSingleDay || count > bestSingleDay.count) {
+      bestSingleDay = {
+        date,
+        count,
+        challengeName: challengeById.get(challengeId)?.name,
+      };
+    }
+  }
+
+  for (const entry of entries) {
+    if (!biggestSingleEntry || entry.count > biggestSingleEntry.count) {
+      biggestSingleEntry = {
+        date: entry.date,
+        count: entry.count,
+        challengeName: challengeById.get(entry.challengeId)?.name,
+      };
+    }
+    if (entry.sets) {
+      for (const set of entry.sets) {
+        if (!maxRepsInSet || set.reps > maxRepsInSet.reps) {
+          maxRepsInSet = {
+            date: entry.date,
+            reps: set.reps,
+            challengeName: challengeById.get(entry.challengeId)?.name,
+          };
+        }
+      }
+    }
+  }
+
+  let highestDailyAverage: DashboardStats["highestDailyAverage"] = null;
+  let mostActiveDays: DashboardStats["mostActiveDays"] = null;
+
+  for (const item of statsByChallenge) {
+    if (!highestDailyAverage || item.stats.averagePerDay > highestDailyAverage.value) {
+      highestDailyAverage = {
+        value: Number(item.stats.averagePerDay.toFixed(1)),
+        challengeName: item.challenge.name,
+      };
+    }
+    if (!mostActiveDays || item.stats.daysActive > mostActiveDays.value) {
+      mostActiveDays = {
+        value: item.stats.daysActive,
+        challengeName: item.challenge.name,
+      };
+    }
+  }
+
+  return {
+    totalMarks,
+    todayTotal,
+    bestStreak,
+    aheadChallenges,
+    bestSingleDay,
+    highestDailyAverage,
+    mostActiveDays,
+    biggestSingleEntry,
+    maxRepsInSet,
+  };
+}

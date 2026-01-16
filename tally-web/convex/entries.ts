@@ -79,6 +79,17 @@ export const listByDate = query({
   },
 });
 
+export const listByUser = query({
+  args: { clerkId: v.string() },
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx, args.clerkId);
+    return await ctx.db
+      .query("entries")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+  },
+});
+
 export const update = mutation({
   args: {
     clerkId: v.string(),

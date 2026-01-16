@@ -12,7 +12,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { TallyInput, TallyMarks } from "./marks/TallyMarks";
+import { TallyInput } from "./marks/TallyMarks";
+import { FormPanel } from "./FormPanel";
 import { Feeling } from "@/types";
 
 // Simple feeling indicators - subtle, not tacky emojis
@@ -134,6 +135,7 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
   };
 
   const selectedChallenge = challenges?.find((c) => c._id === formData.challengeId);
+  const tallyColor = selectedChallenge?.color || "var(--ink)";
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -146,9 +148,9 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
       </SheetTrigger>
       <SheetContent 
         side="bottom" 
-        className="max-h-[90vh] overflow-y-auto bg-[var(--paper)] border-t border-[var(--border-light)]"
+        className="max-h-[90vh] overflow-hidden bg-[var(--paper)] border-t border-[var(--border-light)]"
       >
-        <div className="container-narrow py-6">
+        <FormPanel className="py-6 px-[var(--space-lg)]">
           <SheetHeader className="mb-8">
             <SheetTitle className="font-display text-2xl text-[var(--ink)]">
               Log Entry
@@ -236,29 +238,32 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
               <TallyInput
                 value={formData.count}
                 onChange={(count) => setFormData((prev) => ({ ...prev, count }))}
-                max={50}
-                color={selectedChallenge?.color || "var(--ink)"}
+                max={500}
+                color={tallyColor}
+                inputLabel="Enter number"
               />
             ) : (
               <div className="space-y-4">
                 {formData.sets.map((set, index) => (
-                  <div key={index} className="flex items-center gap-3 bg-white p-3 rounded-lg border border-[var(--border-light)]">
-                    <span className="text-sm text-[var(--ink-muted)] w-16">Set {index + 1}</span>
-                    <input
-                      type="number"
-                      min={1}
+                  <div key={index} className="bg-white p-4 rounded-lg border border-[var(--border-light)] space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-[var(--ink-muted)]">Set {index + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeSet(index)}
+                        className="text-[var(--ink-faint)] hover:text-[var(--danger)] transition-colors"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <TallyInput
                       value={set.reps}
-                      onChange={(e) => updateSetReps(index, parseInt(e.target.value) || 1)}
-                      className="input w-24 text-center"
+                      onChange={(nextValue) => updateSetReps(index, nextValue)}
+                      max={500}
+                      color={tallyColor}
+                      inputLabel="Reps"
+                      className="items-stretch"
                     />
-                    <span className="text-sm text-[var(--ink-muted)]">reps</span>
-                    <button
-                      type="button"
-                      onClick={() => removeSet(index)}
-                      className="ml-auto text-[var(--ink-faint)] hover:text-[var(--danger)] transition-colors"
-                    >
-                      ×
-                    </button>
                   </div>
                 ))}
                 <button
@@ -340,7 +345,7 @@ export function AddEntrySheet({ challengeId, onAdded, trigger }: AddEntrySheetPr
               {isSubmitting ? "Logging..." : "Log Entry"}
             </button>
           </form>
-        </div>
+        </FormPanel>
       </SheetContent>
     </Sheet>
   );

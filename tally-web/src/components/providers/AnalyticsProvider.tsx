@@ -4,13 +4,17 @@ import { useEffect, useMemo } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 
-// Check if we're in a browser environment
-const isBrowser = typeof window !== 'undefined';
+// Analytics will be lazily loaded only on client
+type AnalyticsModule = typeof import('@/lib/analytics');
+let analyticsModule: AnalyticsModule | null = null;
 
-// Lazy load analytics module (only on client)
-const analyticsPromise = isBrowser 
-  ? import('@/lib/analytics')
-  : Promise.resolve(null);
+async function getAnalytics(): Promise<AnalyticsModule | null> {
+  if (typeof window === 'undefined') return null;
+  if (!analyticsModule) {
+    analyticsModule = await import('@/lib/analytics');
+  }
+  return analyticsModule;
+}
 
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -26,7 +30,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize PostHog on mount
   useEffect(() => {
-    analyticsPromise.then(analytics => {
+    getAnalytics().then(analytics => {
       if (analytics) void analytics.initPostHog();
     });
   }, []);
@@ -34,7 +38,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   // Track page views on route change
   useEffect(() => {
     if (!currentUrl) return;
-    analyticsPromise.then(analytics => {
+    getAnalytics().then(analytics => {
       if (analytics) analytics.trackPageView(currentUrl);
     });
   }, [currentUrl]);
@@ -43,7 +47,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isLoaded) return;
     
-    analyticsPromise.then(analytics => {
+    getAnalytics().then(analytics => {
       if (!analytics) return;
       if (user) {
         void analytics.identifyUser(user.id, {

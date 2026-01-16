@@ -2,9 +2,15 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/providers/convex-client-provider";
-import { AnalyticsProvider } from "@/components/providers/AnalyticsProvider";
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import "./globals.css";
+
+// Load AnalyticsProvider only on client to avoid posthog-js SSR issues
+const AnalyticsProvider = dynamic(
+  () => import("@/components/providers/AnalyticsProvider").then(mod => mod.AnalyticsProvider),
+  { ssr: false }
+);
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

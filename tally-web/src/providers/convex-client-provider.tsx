@@ -1,9 +1,9 @@
 "use client";
 
 import { ConvexProvider, ConvexReactClient } from "convex/react";
-import { ReactNode, useEffect, useState, useRef } from "react";
+import { ReactNode, useSyncExternalStore } from "react";
 
-// Singleton client to prevent recreation
+// Singleton client
 let globalClient: ConvexReactClient | null = null;
 
 function getConvexClient() {
@@ -20,23 +20,30 @@ function getConvexClient() {
   return globalClient;
 }
 
+// Subscribe function for useSyncExternalStore (no-op since client never changes)
+function subscribe() {
+  return () => {};
+}
+
+// Server snapshot always returns null
+function getServerSnapshot() {
+  return null;
+}
+
+// Client snapshot returns the global client
+function getClientSnapshot() {
+  return getConvexClient();
+}
+
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
-  const [client, setClient] = useState<ConvexReactClient | null>(() => {
-    // Try to get client on initial render (client-side only)
-    if (typeof window !== 'undefined') {
-      return getConvexClient();
-    }
-    return null;
-  });
+  // Use useSyncExternalStore to safely get client without setState in effect
+  const client = useSyncExternalStore(
+    subscribe,
+    getClientSnapshot,
+    getServerSnapshot
+  );
 
-  useEffect(() => {
-    // Ensure client is available after hydration
-    if (!client) {
-      setClient(getConvexClient());
-    }
-  }, [client]);
-
-  // During SSR or before client is ready, render a minimal placeholder
+  // During SSR or before client is ready, show loading
   if (!client) {
     return (
       <div className="min-h-screen flex items-center justify-center">

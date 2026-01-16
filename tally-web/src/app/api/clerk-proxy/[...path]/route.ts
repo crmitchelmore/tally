@@ -6,11 +6,28 @@ const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
 async function proxyRequest(req: NextRequest): Promise<Response> {
   const url = new URL(req.url);
   // Extract path after /api/clerk-proxy
-  const path = url.pathname.replace("/api/clerk-proxy", "");
-  const targetUrl = `${CLERK_API}${path}${url.search}`;
+  const clerkPath = url.pathname.replace("/api/clerk-proxy", "");
+  const targetUrl = `${CLERK_API}${clerkPath}${url.search}`;
 
-  const headers = new Headers(req.headers);
-  headers.delete("host");
+  const headers = new Headers();
+  // Copy only safe headers
+  const safeHeaders = [
+    "content-type",
+    "accept",
+    "accept-language",
+    "cookie",
+    "user-agent",
+    "sec-fetch-site",
+    "sec-fetch-mode",
+    "sec-fetch-dest",
+  ];
+  for (const header of safeHeaders) {
+    const value = req.headers.get(header);
+    if (value) {
+      headers.set(header, value);
+    }
+  }
+  
   headers.set("origin", url.origin);
   // Required headers for Clerk proxy
   headers.set("Clerk-Proxy-Url", "https://tally-tracker.app/api/clerk-proxy");
@@ -23,13 +40,17 @@ async function proxyRequest(req: NextRequest): Promise<Response> {
     headers.set("X-Forwarded-For", forwarded);
   }
 
+  // Read body as ArrayBuffer to ensure it's passed through unchanged
+  let body: ArrayBuffer | null = null;
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    body = await req.arrayBuffer();
+  }
+
   const response = await fetch(targetUrl, {
     method: req.method,
     headers,
-    body: req.body,
-    // @ts-expect-error - duplex is required for streaming body
-    duplex: "half",
-    redirect: "follow",
+    body: body,
+    redirect: "manual", // Handle redirects ourselves
   });
 
   const responseHeaders = new Headers(response.headers);
@@ -42,6 +63,15 @@ async function proxyRequest(req: NextRequest): Promise<Response> {
   if (setCookie) {
     const rewritten = setCookie.replace(/domain=[^;]+;?/gi, "");
     responseHeaders.set("set-cookie", rewritten);
+  }
+
+  // Handle redirects - rewrite location header to use proxy URL
+  const location = responseHeaders.get("location");
+  if (location && location.includes("frontend-api.clerk.dev")) {
+    responseHeaders.set(
+      "location",
+      location.replace("https://frontend-api.clerk.dev", "https://tally-tracker.app/api/clerk-proxy")
+    );
   }
 
   return new NextResponse(response.body, {

@@ -130,7 +130,7 @@ Analyze the Copilot output and determine:
 4. Are all tasks complete?
 
 Output ONLY one of these exact responses:
-- WAITING_FOR_INPUT: [what it's waiting for]
+- WAITING_FOR_INPUT: [what it is waiting for]
 - TASK_BLOCKED: [task identifier]
 - TASKS_COMPLETED: [brief summary]
 - PROJECT_COMPLETE

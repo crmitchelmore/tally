@@ -188,7 +188,7 @@ export function CreateChallengeDialog({ onCreated }: CreateChallengeDialogProps)
                 id="year"
                 value={formData.year}
                 onChange={(e) => setFormData((prev) => ({ ...prev, year: parseInt(e.target.value) }))}
-                className="flex h-10 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm"
+                className="flex h-10 w-full rounded-xl border border-gray-200 bg-white text-gray-900 px-3 py-2 text-sm"
               >
                 {Array.from({ length: 5 }, (_, i) => currentYear + i).map((y) => (
                   <option key={y} value={y}>

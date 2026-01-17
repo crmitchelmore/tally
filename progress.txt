@@ -62,3 +62,5 @@ SHIPPED: Added landing testimonials + stats section with calm quotes, stacked st
 SHIPPED: Added landing live sync demo section with offline/queued/up-to-date states, reduced-motion-safe animation, and a single CTA; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.
 
 SHIPPED: Added landing app showcase section with dashboard + challenge preview stack, lazy-rendered media, reduced-motion-safe ink/progress animation, and single CTA; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+
+SHIPPED: Added /ios and /android coming-soon pages with calm previews, store placeholders, and CTAs back to /app; added links from landing hero. bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).

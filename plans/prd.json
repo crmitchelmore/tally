@@ -167,7 +167,7 @@
       "Verify CTAs route correctly",
       "Check accessibility + responsive layout"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "ios",

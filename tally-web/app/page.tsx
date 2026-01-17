@@ -115,6 +115,26 @@ export default function LandingPage() {
             >
               Create account
             </Link>
+            <Link
+              href="/ios"
+              style={{
+                color: "#6b6b6b",
+                textDecoration: "none",
+                fontWeight: 600,
+              }}
+            >
+              iOS coming soon
+            </Link>
+            <Link
+              href="/android"
+              style={{
+                color: "#6b6b6b",
+                textDecoration: "none",
+                fontWeight: 600,
+              }}
+            >
+              Android coming soon
+            </Link>
           </div>
         </div>
         <HeroDemo />

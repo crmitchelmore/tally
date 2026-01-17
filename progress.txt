@@ -3,3 +3,5 @@
 # If something is blocked (secrets/manual approvals), write "BLOCKED: ..." and move on.
 
 BLOCKED: CD item needs Vercel project/domain setup, GitHub Actions secrets (VERCEL_API_TOKEN/ORG/PROJECT), and a production URL to smoke-check; added Next.js hello-world landing + /app shell and deploy workflow, ran bun build locally.
+
+BLOCKED: CD still requires Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and a production URL smoke check; added deploy-production workflow and verified bun run build locally.

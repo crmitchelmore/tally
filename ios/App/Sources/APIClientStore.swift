@@ -25,6 +25,8 @@ final class APIClientStore: ObservableObject {
         self.syncStatus = pendingWrites.isEmpty ? .offline : .queued(pendingWrites.count)
     }
 
+    var apiClient: APIClientProviding { client }
+
     func refresh(activeOnly: Bool = true) async {
         syncStatus = .syncing
         do {
@@ -80,6 +82,8 @@ final class APIClientStore: ObservableObject {
                     _ = try await client.createChallenge(request)
                 case .createEntry(let request):
                     _ = try await client.createEntry(request)
+                case .deleteChallenge(let id):
+                    _ = try await client.deleteChallenge(id: id)
                 }
             } catch {
                 remaining.append(write)
@@ -92,6 +96,7 @@ final class APIClientStore: ObservableObject {
 enum QueuedWrite: Codable, Equatable, Sendable {
     case createChallenge(ChallengeCreateRequest)
     case createEntry(EntryCreateRequest)
+    case deleteChallenge(id: String)
 }
 
 final class APIClientCache {

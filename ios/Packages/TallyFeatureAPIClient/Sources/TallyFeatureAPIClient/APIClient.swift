@@ -32,6 +32,7 @@ public protocol APIClientProviding: Sendable {
     func fetchEntries(challengeId: String?, date: String?) async throws -> [Entry]
     func createChallenge(_ request: ChallengeCreateRequest) async throws -> Challenge
     func updateChallenge(id: String, _ request: ChallengeUpdateRequest) async throws -> Challenge
+    func deleteChallenge(id: String) async throws
     func createEntry(_ request: EntryCreateRequest) async throws -> Entry
     func updateEntry(id: String, _ request: EntryUpdateRequest) async throws -> Entry
     func deleteEntry(id: String) async throws
@@ -81,6 +82,11 @@ public struct APIClient: APIClientProviding {
     public func updateChallenge(id: String, _ request: ChallengeUpdateRequest) async throws -> Challenge {
         let url = try makeURL(path: "challenges/\(id)")
         return try await send(url: url, method: "PATCH", body: request, responseType: Challenge.self)
+    }
+
+    public func deleteChallenge(id: String) async throws {
+        let url = try makeURL(path: "challenges/\(id)")
+        _ = try await send(url: url, method: "DELETE", responseType: EmptyResponse.self)
     }
 
     public func createEntry(_ request: EntryCreateRequest) async throws -> Entry {

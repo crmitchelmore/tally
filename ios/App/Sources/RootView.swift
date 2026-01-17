@@ -1,5 +1,6 @@
 import SwiftUI
 import TallyFeatureAuth
+import TallyFeatureChallenges
 
 struct RootView: View {
     @ObservedObject var state: AppState
@@ -19,13 +20,13 @@ struct RootView: View {
                         onSignIn: state.completeAuth,
                         errorMessage: state.authErrorMessage
                     )
-                case .signedIn(let user):
-                    if let store = state.apiClientStore {
-                        APIShellView(
+                case .signedIn:
+                    if let store = state.challengesStore {
+                        ChallengesView(
                             store: store,
                             onSignOut: state.signOut
                         )
-                    } else {
+                    } else if case .signedIn(let user) = state.route {
                         SignedInView(
                             user: user,
                             onSignOut: state.signOut

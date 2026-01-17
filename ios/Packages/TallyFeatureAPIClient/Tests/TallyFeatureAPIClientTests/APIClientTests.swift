@@ -27,6 +27,30 @@ final class APIClientTests: XCTestCase {
         _ = try await client.fetchChallenges(activeOnly: true)
     }
 
+    func testDeleteChallengeBuildsExpectedURL() async throws {
+        let session = makeSession()
+        let client = APIClient(
+            baseURL: URL(string: "https://example.com/api/v1")!,
+            tokenProvider: { "token" },
+            session: session
+        )
+        URLProtocolStub.requestHandler = { request in
+            XCTAssertEqual(request.url?.absoluteString, "https://example.com/api/v1/challenges/123")
+            XCTAssertEqual(request.httpMethod, "DELETE")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer token")
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )
+            let data = Data("{}".utf8)
+            return (response!, data)
+        }
+
+        try await client.deleteChallenge(id: "123")
+    }
+
     private func makeSession() -> URLSession {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [URLProtocolStub.self]

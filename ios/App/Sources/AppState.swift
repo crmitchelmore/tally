@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 import TallyCore
 import TallyFeatureAPIClient
+import TallyFeatureChallenges
 
 @MainActor
 final class AppState: ObservableObject {
@@ -15,6 +16,7 @@ final class AppState: ObservableObject {
     @Published var syncStatus: SyncStatus = .upToDate
     @Published var authErrorMessage: String?
     @Published var apiClientStore: APIClientStore?
+    @Published var challengesStore: ChallengesStore?
     private var bootstrapError: String?
 
     private let authClient: AuthClient
@@ -88,6 +90,7 @@ final class AppState: ObservableObject {
             try await authClient.signOut()
             route = .signedOut
             apiClientStore = nil
+            challengesStore = nil
             syncStatus = .upToDate
             authErrorMessage = nil
         } catch {
@@ -108,9 +111,11 @@ final class AppState: ObservableObject {
             let client = TallyFeatureAPIClient.APIClient(baseURL: baseURL, tokenProvider: tokenProvider)
             let store = APIClientStore(client: client)
             apiClientStore = store
+            challengesStore = ChallengesStore(apiClient: client)
             await store.refresh(activeOnly: true)
         } catch {
             apiClientStore = nil
+            challengesStore = nil
             authErrorMessage = error.localizedDescription
         }
     }

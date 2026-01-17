@@ -12,6 +12,7 @@ let project = Project(
         .package(path: "../Packages/TallyCore"),
         .package(path: "../Packages/TallyFeatureAuth"),
         .package(path: "../Packages/TallyFeatureAPIClient"),
+        .package(path: "../Packages/TallyFeatureChallenges"),
         .package(url: "https://github.com/clerk/clerk-ios", from: "0.57.0")
     ],
     settings: .settings(
@@ -34,6 +35,7 @@ let project = Project(
                 .package(product: "TallyCore"),
                 .package(product: "TallyFeatureAuth"),
                 .package(product: "TallyFeatureAPIClient"),
+                .package(product: "TallyFeatureChallenges"),
                 .package(product: "Clerk")
             ],
             settings: .settings(

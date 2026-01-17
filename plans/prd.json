@@ -197,7 +197,7 @@
       "Verify offline-first behavior and clear sync state",
       "Run existing iOS tests"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "android",

@@ -30,7 +30,8 @@ Verify secrets exist (names only):
 gh secret list --repo crmitchelmore/tally
 ```
 
-**Required secret names (no values):**
+**Required secret names (no values):** 
+These are all available in .env USE THEM to do whatever is needed!
 - CLERK_SECRET_KEY
 - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 - CLOUDFLARE_API_TOKEN
@@ -49,8 +50,9 @@ gh secret list --repo crmitchelmore/tally
 - TEST_USER_EMAIL
 - TEST_USER_PASSWORD
 - VERCEL_API_TOKEN
-- (Optional) VERCEL_ORG_ID (if not committing `.vercel/project.json`)
-- (Optional) VERCEL_PROJECT_ID (if not committing `.vercel/project.json`)
+- VERCEL_ORG_ID
+- VERCEL_PROJECT_ID
+- VERCEL_PROD_URL
 - IOS_SIGNING_CERT_PASSWORD
 - IOS_KEYCHAIN_PASSWORD
 - GOOGLE_PLAY_SERVICE_ACCOUNT_JSON

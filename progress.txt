@@ -85,3 +85,5 @@ UPDATED: Added Vercel link step to deploy-production workflow; verified bun run 
 
 SHIPPED: CD item verified; bun run build succeeds with repo .env and production URL smoke-check returns HTTP 200 locally. Deploy workflow already present for main; next step is a main-branch run to confirm Actions in production.
 BLOCKED: Android auth cannot proceed because no Android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no checks run.
+
+BLOCKED: Android auth cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no checks run.

@@ -147,7 +147,7 @@
       "Verify performance + reduced-motion handling",
       "Check a11y basics"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "landing",

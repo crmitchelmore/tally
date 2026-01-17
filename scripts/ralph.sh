@@ -77,7 +77,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-iterations="${1:-100}"
+iterations="${1:-1000}"
 
 if ! [[ "$iterations" =~ ^[0-9]+$ ]] || [[ "$iterations" -lt 1 ]]; then
   echo "Error: [iterations] must be a positive integer" >&2

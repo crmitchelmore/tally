@@ -125,7 +125,7 @@ progress_file="progress.txt"
 
 # Prevent indefinite hangs (e.g. when `script`/PTY capture wedges).
 # On macOS we rely on GNU coreutils `timeout` (Homebrew: coreutils) when available.
-RALPH_TIMEOUT_SECONDS="${RALPH_TIMEOUT_SECONDS:-900}"
+RALPH_TIMEOUT_SECONDS="${RALPH_TIMEOUT_SECONDS:-7200}"
 
 run_with_timeout() {
   local timeout_s="$1"

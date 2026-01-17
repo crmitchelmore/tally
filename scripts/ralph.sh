@@ -118,6 +118,29 @@ command -v "$COPILOT_CMD" >/dev/null 2>&1 || { echo "Error: COPILOT_CMD not foun
 progress_file="progress.txt"
 [[ -r "$progress_file" ]] || { echo "Error: progress file not readable: $progress_file" >&2; exit 1; }
 
+# Prevent indefinite hangs (e.g. when `script`/PTY capture wedges).
+# On macOS we rely on GNU coreutils `timeout` (Homebrew: coreutils) when available.
+RALPH_TIMEOUT_SECONDS="${RALPH_TIMEOUT_SECONDS:-900}"
+
+run_with_timeout() {
+  local timeout_s="$1"
+  shift
+
+  local timeout_cmd=""
+  if command -v timeout >/dev/null 2>&1; then
+    timeout_cmd="timeout"
+  elif command -v gtimeout >/dev/null 2>&1; then
+    timeout_cmd="gtimeout"
+  fi
+
+  if [[ -n "$timeout_cmd" ]]; then
+    "$timeout_cmd" --kill-after=5s "${timeout_s}s" "$@"
+    return $?
+  fi
+
+  "$@"
+}
+
 
 declare -a copilot_tool_args
 copilot_tool_args+=(--deny-tool 'shell(rm)')
@@ -158,7 +181,7 @@ for ((i=1; i<=iterations; i++)); do
   echo "Iteration $i"
   echo "------------------------------------"
 
-  combined_file="$(mktemp .ralph-combined.${i}.XXXXXX)"
+  combined_file="$(mktemp -t ralph-combined.${i}.XXXXXX)"
   {
     echo "# Context"
     echo
@@ -191,26 +214,53 @@ for ((i=1; i<=iterations; i++)); do
 
   set +e
 
+  copilot_prompt="@$combined_file"
+  combined_dir="$(dirname "$combined_file")"
+
   if command -v script >/dev/null 2>&1; then
     transcript_file="$(mktemp -t ralph-copilot.XXXXXX)"
-    script -q -F "$transcript_file" \
-      "$COPILOT_CMD" ${extra_cmd_args:+"${extra_cmd_args[@]}"} --add-dir "$PWD" --model "$MODEL" \
-        --no-color --stream off --silent \
-        -p "@$combined_file Follow the attached prompt." \
-        "${copilot_tool_args[@]}" \
-      >/dev/null 2>&1
+    transcript_err_file="$(mktemp -t ralph-copilot-err.XXXXXX)"
+
+    run_with_timeout "$RALPH_TIMEOUT_SECONDS" \
+      script -q -F "$transcript_file" \
+        "$COPILOT_CMD" ${extra_cmd_args:+"${extra_cmd_args[@]}"} --add-dir "$PWD" --add-dir "$combined_dir" --model "$MODEL" \
+          --no-color --stream off --silent \
+          -p "$copilot_prompt" \
+          "${copilot_tool_args[@]}" \
+      >/dev/null 2>"$transcript_err_file"
     exit_status=$?
-    result="$(cat "$transcript_file" 2>/dev/null || true)"
-    rm -f "$transcript_file" >/dev/null 2>&1 || true
+    result="$(tr -d '\r' <"$transcript_file" 2>/dev/null || true)"
+
+    # If PTY capture produced nothing (or failed), fall back to plain capture.
+    if [[ -z "${result//[$'\n'\r'\t ']/}" ]]; then
+      if [[ -s "$transcript_err_file" ]]; then
+        result="$(cat "$transcript_err_file" 2>/dev/null || true)"
+      else
+        output_file="$(mktemp -t ralph-copilot-out.XXXXXX)"
+        run_with_timeout "$RALPH_TIMEOUT_SECONDS" \
+          "$COPILOT_CMD" ${extra_cmd_args:+"${extra_cmd_args[@]}"} --add-dir "$PWD" --add-dir "$combined_dir" --model "$MODEL" \
+            --no-color --stream off --silent \
+            -p "$copilot_prompt" \
+            "${copilot_tool_args[@]}" \
+          >"$output_file" 2>&1
+        exit_status=$?
+        result="$(cat "$output_file" 2>/dev/null || true)"
+        rm -f "$output_file" >/dev/null 2>&1 || true
+      fi
+    fi
+
+    rm -f "$transcript_file" "$transcript_err_file" >/dev/null 2>&1 || true
   else
-    result=$(
-      "$COPILOT_CMD" ${extra_cmd_args:+"${extra_cmd_args[@]}"} --add-dir "$PWD" --model "$MODEL" \
+    output_file="$(mktemp -t ralph-copilot-out.XXXXXX)"
+    run_with_timeout "$RALPH_TIMEOUT_SECONDS" \
+      "$COPILOT_CMD" ${extra_cmd_args:+"${extra_cmd_args[@]}"} --add-dir "$PWD" --add-dir "$combined_dir" --model "$MODEL" \
         --no-color --stream off --silent \
-        -p "@$combined_file Follow the attached prompt." \
+        -p "$copilot_prompt" \
         "${copilot_tool_args[@]}" \
-        2>&1
-    )
+      >"$output_file" 2>&1
     exit_status=$?
+    result="$(cat "$output_file" 2>/dev/null || true)"
+    rm -f "$output_file" >/dev/null 2>&1 || true
   fi
 
   set -e
@@ -220,7 +270,11 @@ for ((i=1; i<=iterations; i++)); do
   echo "$result"
 
   if [[ $exit_status -ne 0 ]]; then
-    echo "Copilot exited with status $exit_status; continuing to next iteration."
+    if [[ $exit_status -eq 124 ]]; then
+      echo "Copilot timed out after ${RALPH_TIMEOUT_SECONDS}s; continuing to next iteration."
+    else
+      echo "Copilot exited with status $exit_status; continuing to next iteration."
+    fi
     continue
   fi
 

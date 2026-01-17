@@ -2,7 +2,4 @@
 # Append short notes per iteration; never delete history.
 # If something is blocked (secrets/manual approvals), write "BLOCKED: ..." and move on.
 
-BLOCKED: CD (landing + /app) cannot start because repo has no web/landing code or build tooling (no package.json/Next.js app), so there is nothing to deploy yet.
-BLOCKED: CD workflow also requires Vercel project + prod domain configuration and GitHub Actions secrets (VERCEL_API_TOKEN, optional VERCEL_ORG_ID/VERCEL_PROJECT_ID) which need external setup.
-No verification commands exist yet for this item because there is no web code or build tooling in the repo.
-Next: initialize web/landing app per tech-stack-requirements.md (Next.js + Bun) so deployment workflow can be added.
+

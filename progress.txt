@@ -50,3 +50,5 @@ SHIPPED: Web stats added to /app (dashboard highlights, challenge pace/streaks w
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
 
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
+
+BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.

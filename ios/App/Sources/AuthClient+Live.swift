@@ -2,7 +2,7 @@ import Clerk
 import Foundation
 import TallyCore
 
-private enum AuthConstants {
+enum AuthConstants {
     static let tokenKey = "clerk.jwt"
 }
 

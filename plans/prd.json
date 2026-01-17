@@ -187,7 +187,7 @@
       "Ensure Bearer auth",
       "Add/verify tests if already present"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "ios",

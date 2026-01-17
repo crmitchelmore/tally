@@ -20,10 +20,17 @@ struct RootView: View {
                         errorMessage: state.authErrorMessage
                     )
                 case .signedIn(let user):
-                    SignedInView(
-                        user: user,
-                        onSignOut: state.signOut
-                    )
+                    if let store = state.apiClientStore {
+                        APIShellView(
+                            store: store,
+                            onSignOut: state.signOut
+                        )
+                    } else {
+                        SignedInView(
+                            user: user,
+                            onSignOut: state.signOut
+                        )
+                    }
                 }
             }
             .animation(.easeOut(duration: 0.2), value: state.route)

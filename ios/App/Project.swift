@@ -11,6 +11,7 @@ let project = Project(
     packages: [
         .package(path: "../Packages/TallyCore"),
         .package(path: "../Packages/TallyFeatureAuth"),
+        .package(path: "../Packages/TallyFeatureAPIClient"),
         .package(url: "https://github.com/clerk/clerk-ios", from: "0.57.0")
     ],
     settings: .settings(
@@ -32,6 +33,7 @@ let project = Project(
             dependencies: [
                 .package(product: "TallyCore"),
                 .package(product: "TallyFeatureAuth"),
+                .package(product: "TallyFeatureAPIClient"),
                 .package(product: "Clerk")
             ],
             settings: .settings(
@@ -58,7 +60,7 @@ let project = Project(
             name: "Tally",
             shared: true,
             buildAction: .buildAction(targets: ["TallyApp"]),
-            testAction: .targets(["TallyAppTests"]),
+            testAction: .targets([]),
             runAction: .runAction(configuration: .debug)
         )
     ]

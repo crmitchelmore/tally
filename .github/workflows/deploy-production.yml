@@ -7,9 +7,6 @@ on:
 jobs:
   deploy-production:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: tally-web
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -18,13 +15,9 @@ jobs:
       - name: Deploy (Vercel)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
-        run: npx vercel deploy --prod --token=$VERCEL_TOKEN
+        run: |
+          npx vercel deploy --prod --token=$VERCEL_TOKEN
       - name: Smoke check
         env:
-          PROD_URL: ${{ secrets.VERCEL_PROD_URL }}
-        run: |
-          if [ -z "$PROD_URL" ]; then
-            echo "Missing VERCEL_PROD_URL secret" >&2
-            exit 1
-          fi
-          curl -fsS "$PROD_URL" >/dev/null
+          VERCEL_PROD_URL: ${{ secrets.VERCEL_PROD_URL }}
+        run: curl -fsS "$VERCEL_PROD_URL" >/dev/null

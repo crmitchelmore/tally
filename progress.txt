@@ -7,3 +7,7 @@ BLOCKED: CD item needs Vercel project/domain setup, GitHub Actions secrets (VERC
 BLOCKED: CD still requires Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and a production URL smoke check; added deploy-production workflow and verified bun run build locally.
 
 BLOCKED: Web auth build requires NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key missing during bun run build); wired Clerk routes/middleware and /api/v1/auth/user stub.
+
+BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and a production URL smoke-check; no additional changes or checks run this iteration.
+
+BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and production URL smoke-check; added deploy-production GitHub Actions workflow, bun run build failed due to missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.

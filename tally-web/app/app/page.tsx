@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
 import { ProvisionUser } from "./provision-user";
+import EntriesClient from "../ui/entries/entries-client";
 
 export default async function AppShell() {
   const user = await currentUser();
@@ -106,30 +107,13 @@ export default async function AppShell() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        gap: "12px",
+        justifyContent: "flex-start",
+        gap: "24px",
         padding: "48px 24px",
-        textAlign: "center",
       }}
     >
-      <h1
-        style={{
-          fontSize: "32px",
-          lineHeight: "1.2",
-          margin: 0,
-        }}
-      >
-        {user?.firstName ? `Welcome back, ${user.firstName}.` : "Tally app shell"}
-      </h1>
       <ProvisionUser />
-      <p
-        style={{
-          margin: 0,
-          color: "#4b4b4b",
-        }}
-      >
-        This is the early /app placeholder while we wire up the full product.
-      </p>
+      <EntriesClient />
       <Link
         href="/"
         style={{

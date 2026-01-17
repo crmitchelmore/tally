@@ -12,7 +12,12 @@ export default function SignInPage() {
         backgroundColor: "#f7f7f5",
       }}
     >
-      <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" />
+      <SignIn
+        routing="path"
+        path="/sign-in"
+        signUpUrl="/sign-up"
+        afterSignInUrl="/app"
+      />
     </main>
   );
 }

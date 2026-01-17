@@ -20,6 +20,7 @@ BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKE
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and production URL smoke-check; unable to verify deploy/smoke without external setup.
 
 # Latest
+BLOCKED: CD still needs Vercel project/domain setup + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and a production URL smoke-check; cannot complete CD acceptance without external setup, moving on to next PRD item next iteration.
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and production URL smoke-check; no changes or checks run this iteration.
 
 SHIPPED: Landing hero micro-demo with interactive +1 tally marks, ink-like strokes, and reduced-motion support; updated hero layout to include demo. Verified bun run build succeeds when loading repo .env for Clerk publishable key.
@@ -29,6 +30,8 @@ BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL
 BLOCKED: Web auth build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY; added /app signed-out CTA and redirect back to /app after sign-in/sign-up; build requires Clerk publishable key to pass.
 
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
+
+SHIPPED: Web data portability UI + API (export JSON/CSV, import replace-all, clear-all) added to /app with confirm modal and CSV handling; bun run build succeeds when sourcing .env (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY required).
 
 # Latest
 SHIPPED: Landing feature showcase section with desktop accordion + media panel and mobile stacked cards, lazy media render on view, and a single CTA; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).

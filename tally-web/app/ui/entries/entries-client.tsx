@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import DataPortability from "../data-portability/data-portability";
 
 const accent = "#b21f24";
 const ink = "#1a1a1a";
@@ -2129,6 +2130,8 @@ export default function EntriesClient() {
           {offlineQueue.length} entries queued for sync when you're back online.
         </div>
       ) : null}
+
+      <DataPortability />
     </div>
   );
 }

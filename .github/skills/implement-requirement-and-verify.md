@@ -31,6 +31,7 @@ Checklist:
    - Manual smoke: create/update challenge, log entry, confirm tally UI + reduced-motion.
 
 6) Verify in CI + deploy targets (when relevant)
+   - Commit sensibly. Push to main
    - Ensure CI is green.
    - If deploy is part of the task: verify build first, deploy, then smoke-check production.
 

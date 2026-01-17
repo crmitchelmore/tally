@@ -157,7 +157,7 @@
       "Verify media lazy-loading and offscreen pause",
       "Check Core Web Vitals risks"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "landing",

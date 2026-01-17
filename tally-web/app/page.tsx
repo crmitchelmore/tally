@@ -4,6 +4,7 @@ import { FeatureShowcase } from "./ui/feature-showcase";
 import { HowItWorks } from "./ui/how-it-works";
 import { LiveSyncDemo } from "./ui/live-sync-demo";
 import { TestimonialsStats } from "./ui/testimonials-stats";
+import { AppShowcase } from "./ui/app-showcase";
 
 export default function LandingPage() {
   return (
@@ -120,6 +121,7 @@ export default function LandingPage() {
       </section>
       <FeatureShowcase />
       <HowItWorks />
+      <AppShowcase />
       <LiveSyncDemo />
       <TestimonialsStats />
     </main>

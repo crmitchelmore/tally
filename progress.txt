@@ -60,3 +60,5 @@ SHIPPED: Added landing how-it-works section with three-step flow, calm CTAs, and
 SHIPPED: Web community now shows public challenges with real totals, progress, owner info, and follow counts; follow/unfollow is immediate with optimistic counts and offline guard; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
 SHIPPED: Added landing testimonials + stats section with calm quotes, stacked stats, and a single CTA; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
 SHIPPED: Added landing live sync demo section with offline/queued/up-to-date states, reduced-motion-safe animation, and a single CTA; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.
+
+SHIPPED: Added landing app showcase section with dashboard + challenge preview stack, lazy-rendered media, reduced-motion-safe ink/progress animation, and single CTA; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).

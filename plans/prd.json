@@ -47,7 +47,7 @@
       "Ensure endpoints match feature-map.md + docs/API.md (if present)",
       "Run existing checks"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "web",
@@ -57,7 +57,7 @@
       "Verify timeframe rules + public/private access",
       "Run existing checks"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "web",
@@ -67,7 +67,7 @@
       "Verify fast entry UX + reduced-motion support",
       "Run existing checks"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "web",
@@ -77,7 +77,7 @@
       "Verify computed stats match feature-map.md",
       "Run existing checks"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "web",

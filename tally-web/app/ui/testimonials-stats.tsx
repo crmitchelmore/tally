@@ -36,6 +36,21 @@ const STATS = [
   },
 ];
 
+const BADGES = [
+  {
+    label: "Offline-first",
+    detail: "Queue marks with calm sync states.",
+  },
+  {
+    label: "Reduced motion",
+    detail: "Ink appears instantly when needed.",
+  },
+  {
+    label: "High contrast",
+    detail: "Readable, steady, and focused.",
+  },
+];
+
 export function TestimonialsStats() {
   return (
     <section className="testimonials" aria-labelledby="testimonials-title">
@@ -64,6 +79,14 @@ export function TestimonialsStats() {
               <div key={stat.value} className="stat-row">
                 <span className="stat-value">{stat.value}</span>
                 <span className="stat-label">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+          <div className="badge-grid" aria-label="Product principles">
+            {BADGES.map((badge) => (
+              <div key={badge.label} className="badge-card">
+                <span className="badge-label">{badge.label}</span>
+                <span className="badge-detail">{badge.detail}</span>
               </div>
             ))}
           </div>
@@ -106,11 +129,15 @@ export function TestimonialsStats() {
         .quote-card {
           border-radius: 24px;
           border: 1px solid #e4e1da;
-          background: #fdfcf9;
+          background: linear-gradient(140deg, #fdfcf9 0%, #f7f2ea 100%);
           padding: 20px;
           display: grid;
           gap: 14px;
           transition: transform 150ms ease, box-shadow 150ms ease;
+        }
+        .quote-card:focus-within {
+          outline: 2px solid rgba(178, 31, 36, 0.6);
+          outline-offset: 2px;
         }
         .quote-card blockquote {
           margin: 0;
@@ -147,7 +174,7 @@ export function TestimonialsStats() {
         .stats-card {
           border-radius: 24px;
           border: 1px solid #e4e1da;
-          background: #f5f1ea;
+          background: linear-gradient(160deg, #f5f1ea 0%, #efe9df 100%);
           padding: 20px;
           display: grid;
           gap: 16px;
@@ -165,6 +192,29 @@ export function TestimonialsStats() {
           font-size: 14px;
           color: #4b4b4b;
         }
+        .badge-grid {
+          display: grid;
+          gap: 12px;
+        }
+        .badge-card {
+          border-radius: 18px;
+          border: 1px solid #e4e1da;
+          background: #ffffff;
+          padding: 12px 14px;
+          display: grid;
+          gap: 6px;
+        }
+        .badge-label {
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.16em;
+          color: #6b6b6b;
+        }
+        .badge-detail {
+          font-size: 13px;
+          color: #1a1a1a;
+          font-weight: 600;
+        }
         .testimonials-cta {
           display: inline-flex;
           align-items: center;
@@ -177,6 +227,10 @@ export function TestimonialsStats() {
           text-decoration: none;
           font-weight: 600;
           width: fit-content;
+        }
+        .testimonials-cta:focus-visible {
+          outline: 2px solid rgba(178, 31, 36, 0.7);
+          outline-offset: 2px;
         }
         @media (prefers-reduced-motion: reduce) {
           .quote-card,

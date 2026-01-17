@@ -90,7 +90,7 @@ export function LiveSyncDemo() {
           <div className="live-sync-states">
             {SYNC_STATES.map((state) => (
               <div key={state.label} className="live-sync-state">
-                <span className={`state-dot ${state.tone}`} />
+                <span className={`state-dot ${state.tone}`} aria-hidden="true" />
                 <div>
                   <p className="state-label">{state.label}</p>
                   <p className="state-detail">{state.detail}</p>

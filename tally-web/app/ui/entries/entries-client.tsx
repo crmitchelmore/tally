@@ -68,6 +68,13 @@ type Followed = {
   followedAt: string;
 };
 
+type FollowQueueItem = {
+  id: string;
+  action: "follow" | "unfollow";
+  challengeId: string;
+  followedId?: string;
+};
+
 const todayIso = () => new Date().toISOString().slice(0, 10);
 const dayMs = 24 * 60 * 60 * 1000;
 
@@ -195,12 +202,14 @@ function PublicChallengeCard({
   challenge,
   isOwner,
   isFollowing,
+  isPending,
   disabled,
   onToggle,
 }: {
   challenge: PublicChallenge;
   isOwner: boolean;
   isFollowing: boolean;
+  isPending: boolean;
   disabled: boolean;
   onToggle: () => void;
 }) {
@@ -287,7 +296,7 @@ function PublicChallengeCard({
           opacity: disabled || isOwner ? 0.6 : 1,
         }}
       >
-        {isOwner ? "Your challenge" : isFollowing ? "Following" : "Follow"}
+        {isOwner ? "Your challenge" : isPending ? "Updating..." : isFollowing ? "Following" : "Follow"}
       </button>
     </div>
   );
@@ -1371,6 +1380,8 @@ export default function EntriesClient() {
   const [followed, setFollowed] = useState<Followed[]>([]);
   const [publicQuery, setPublicQuery] = useState("");
   const [followSyncing, setFollowSyncing] = useState<string | null>(null);
+  const [followQueue, setFollowQueue] = useState<FollowQueueItem[]>([]);
+  const [pendingFollows, setPendingFollows] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -1443,7 +1454,7 @@ export default function EntriesClient() {
   }, [loadData]);
 
   const syncQueue = useCallback(async () => {
-    if (!offlineQueue.length || offline || saving) return;
+    if ((!offlineQueue.length && !followQueue.length) || offline || saving) return;
     setSaving(true);
     try {
       for (const queued of offlineQueue) {
@@ -1466,12 +1477,61 @@ export default function EntriesClient() {
         setEntries((prev) => [...prev, saved]);
       }
       setOfflineQueue([]);
+      for (const queued of followQueue) {
+        if (queued.action === "follow") {
+          const response = await fetch("/api/v1/followed", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ challengeId: queued.challengeId }),
+          });
+          if (!response.ok) {
+            throw new Error("Unable to sync follow.");
+          }
+          const created = (await response.json()) as Followed;
+          setFollowed((prev) => {
+            const next = prev.filter(
+              (record) =>
+                record.challengeId !== queued.challengeId || !record.id.startsWith("local_follow_")
+            );
+            return next.some((record) => record.id === created.id) ? next : [...next, created];
+          });
+          setPendingFollows((prev) => {
+            const next = new Set(prev);
+            next.delete(queued.challengeId);
+            return next;
+          });
+          continue;
+        }
+        if (!queued.followedId) {
+          continue;
+        }
+        const response = await fetch(`/api/v1/followed/${queued.followedId}`, { method: "DELETE" });
+        if (!response.ok) {
+          throw new Error("Unable to sync unfollow.");
+        }
+        setFollowed((prev) => prev.filter((record) => record.id !== queued.followedId));
+        setPendingFollows((prev) => {
+          const next = new Set(prev);
+          next.delete(queued.challengeId);
+          return next;
+        });
+      }
+      setFollowQueue([]);
     } catch (syncError) {
-      setError(syncError instanceof Error ? syncError.message : "Unable to sync offline entries.");
+      setError(
+        syncError instanceof Error ? syncError.message : "Unable to sync offline activity."
+      );
     } finally {
       setSaving(false);
     }
-  }, [offlineQueue, offline, saving]);
+  }, [offlineQueue, followQueue, offline, saving]);
+
+  const enqueueFollow = useCallback((item: FollowQueueItem) => {
+    setFollowQueue((prev) => {
+      const next = prev.filter((entry) => entry.challengeId !== item.challengeId);
+      return [...next, item];
+    });
+  }, []);
 
   const handleToggleFollow = useCallback(
     async (challengeId: string) => {
@@ -1481,6 +1541,7 @@ export default function EntriesClient() {
       }
       setError(null);
       setFollowSyncing(challengeId);
+      setPendingFollows((prev) => new Set(prev).add(challengeId));
       const existing = followed.find((record) => record.challengeId === challengeId);
       try {
         if (existing) {
@@ -1497,6 +1558,11 @@ export default function EntriesClient() {
                 : challenge
             )
           );
+          setPendingFollows((prev) => {
+            const next = new Set(prev);
+            next.delete(challengeId);
+            return next;
+          });
           return;
         }
         const response = await fetch("/api/v1/followed", {
@@ -1514,8 +1580,18 @@ export default function EntriesClient() {
               : challenge
           )
         );
+        setPendingFollows((prev) => {
+          const next = new Set(prev);
+          next.delete(challengeId);
+          return next;
+        });
       } catch (followError) {
         setError(followError instanceof Error ? followError.message : "Unable to update follow.");
+        setPendingFollows((prev) => {
+          const next = new Set(prev);
+          next.delete(challengeId);
+          return next;
+        });
       } finally {
         setFollowSyncing(null);
       }
@@ -2172,20 +2248,16 @@ export default function EntriesClient() {
           />
           <StatusCard
             label="Longest streak"
-            value={challengeStats ? `${challengeStats.streaks.longest}` : "—"}
-            detail="From selected challenge"
+            value={`${overallStats.streaks.longest}`}
+            detail="Across all entries"
           />
           <StatusCard
             label="Highest daily average"
             value={`${overallStats.average.toFixed(1)}`}
           />
           <StatusCard
-            label="Most active day"
-            value={
-              overallStats.mostActiveDay.count
-                ? `${formatDisplayDate(overallStats.mostActiveDay.date)} (${overallStats.mostActiveDay.count})`
-                : "—"
-            }
+            label="Most active days"
+            value={`${overallStats.streaks.daysActive}`}
           />
           <StatusCard label="Biggest single entry" value={`${overallStats.biggestEntry || 0}`} />
           <StatusCard label="Max reps in a set" value={`${overallStats.largestSet || 0}`} />
@@ -2364,14 +2436,18 @@ export default function EntriesClient() {
             {publicFiltered.map((challenge) => {
               const isOwner = challenges.some((mine) => mine.id === challenge.id);
               const isFollowing = followingCardIds.has(challenge.id);
+              const isPending = pendingFollows.has(challenge.id);
               return (
                 <PublicChallengeCard
                   key={challenge.id}
                   challenge={challenge}
                   isOwner={isOwner}
                   isFollowing={isFollowing}
+                  isPending={isPending}
                   disabled={followSyncing === challenge.id}
-                  onToggle={() => handleToggleFollow(challenge.id)}
+                  onToggle={() => {
+                    void handleToggleFollow(challenge.id);
+                  }}
                 />
               );
             })}

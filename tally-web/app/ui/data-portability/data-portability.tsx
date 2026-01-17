@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
+import { captureEvent, logWideEvent } from "../../lib/telemetry";
 
 const accent = "#b21f24";
 const ink = "#1a1a1a";
@@ -290,6 +291,8 @@ export default function DataPortability() {
       setError(null);
       setStatus(null);
       setBusy(true);
+      const startedAt = Date.now();
+      await captureEvent("data_export_started", { format });
       try {
         const response = await fetch("/api/v1/data/export", { cache: "no-store" });
         if (!response.ok) throw new Error("Unable to export data.");
@@ -304,7 +307,22 @@ export default function DataPortability() {
         link.download = format === "json" ? filenameJson : filenameCsv;
         link.click();
         URL.revokeObjectURL(url);
-        setStatus(`Exported ${payload.challenges.length} challenges and ${payload.entries.length} entries.`);
+        const duration = Date.now() - startedAt;
+        await captureEvent("data_export_completed", {
+          format,
+          duration_ms: duration,
+          challenge_count: payload.challenges.length,
+          entry_count: payload.entries.length,
+        });
+        logWideEvent("data_export_completed", {
+          format,
+          duration_ms: duration,
+          challenge_count: payload.challenges.length,
+          entry_count: payload.entries.length,
+        });
+        setStatus(
+          `Exported ${payload.challenges.length} challenges and ${payload.entries.length} entries.`
+        );
       } catch (exportError) {
         setError(exportError instanceof Error ? exportError.message : "Unable to export data.");
       } finally {
@@ -337,6 +355,11 @@ export default function DataPortability() {
     if (!pendingImport) return;
     setBusy(true);
     setError(null);
+    const startedAt = Date.now();
+    await captureEvent("data_import_started", {
+      challenge_count: pendingImport.challenges.length,
+      entry_count: pendingImport.entries.length,
+    });
     try {
       const response = await fetch("/api/v1/data/import", {
         method: "POST",
@@ -347,6 +370,17 @@ export default function DataPortability() {
         const message = (await response.json()) as { error?: string };
         throw new Error(message.error || "Unable to import data.");
       }
+      const duration = Date.now() - startedAt;
+      await captureEvent("data_import_completed", {
+        duration_ms: duration,
+        challenge_count: pendingImport.challenges.length,
+        entry_count: pendingImport.entries.length,
+      });
+      logWideEvent("data_import_completed", {
+        duration_ms: duration,
+        challenge_count: pendingImport.challenges.length,
+        entry_count: pendingImport.entries.length,
+      });
       setStatus("Import complete. All existing data was replaced.");
       setPendingImport(null);
       setConfirmOpen(false);
@@ -360,9 +394,12 @@ export default function DataPortability() {
   const clearAll = useCallback(async () => {
     setBusy(true);
     setError(null);
+    const startedAt = Date.now();
     try {
       const response = await fetch("/api/v1/data/clear", { method: "POST" });
       if (!response.ok) throw new Error("Unable to clear data.");
+      const duration = Date.now() - startedAt;
+      logWideEvent("data_clear_completed", { duration_ms: duration });
       setStatus("All data cleared.");
     } catch (clearError) {
       setError(clearError instanceof Error ? clearError.message : "Unable to clear data.");

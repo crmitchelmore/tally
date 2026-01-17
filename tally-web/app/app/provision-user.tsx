@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { captureEvent, logWideEvent } from "../lib/telemetry";
 
 type ProvisionState = "idle" | "loading" | "ready" | "error";
 
@@ -12,14 +13,26 @@ export function ProvisionUser() {
 
     const ensureUser = async () => {
       setStatus("loading");
+      const startedAt = Date.now();
       try {
         const response = await fetch("/api/v1/auth/user", { method: "POST" });
         if (!response.ok) {
           throw new Error("Failed to provision user");
         }
+        const payload = (await response.json()) as { userId?: string };
         if (alive) {
           setStatus("ready");
         }
+        await captureEvent(
+          "auth_signed_in",
+          { duration_ms: Date.now() - startedAt },
+          { userId: payload.userId, isSignedIn: true }
+        );
+        logWideEvent("auth_signed_in", {
+          duration_ms: Date.now() - startedAt,
+          user_id: payload.userId,
+          is_signed_in: true,
+        });
       } catch {
         if (alive) {
           setStatus("error");

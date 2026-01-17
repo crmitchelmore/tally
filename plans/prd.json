@@ -37,7 +37,7 @@
       "Verify signed-out /app CTA and signed-in provisioning",
       "Run existing web checks (bun run \u2026) if present"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "web",

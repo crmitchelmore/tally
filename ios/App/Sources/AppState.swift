@@ -3,6 +3,8 @@ import SwiftUI
 import TallyCore
 import TallyFeatureAPIClient
 import TallyFeatureChallenges
+import TallyFeatureEntries
+import TallyFeatureEntries
 
 @MainActor
 final class AppState: ObservableObject {
@@ -17,6 +19,7 @@ final class AppState: ObservableObject {
     @Published var authErrorMessage: String?
     @Published var apiClientStore: APIClientStore?
     @Published var challengesStore: ChallengesStore?
+    @Published var entriesStore: EntriesStore?
     private var bootstrapError: String?
 
     private let authClient: AuthClient
@@ -50,6 +53,7 @@ final class AppState: ObservableObject {
         do {
             if let user = try await authClient.currentUser() {
                 route = .signedIn(user)
+                await authClient.onAuthEvent(.signedIn(userId: user.id))
                 await configureAPIClient()
             } else {
                 route = .signedOut
@@ -75,6 +79,7 @@ final class AppState: ObservableObject {
             let user = try await authClient.signIn()
             try await authClient.syncUser()
             route = .signedIn(user)
+            await authClient.onAuthEvent(.signedIn(userId: user.id))
             await configureAPIClient()
             syncStatus = .upToDate
             authErrorMessage = nil
@@ -87,10 +92,13 @@ final class AppState: ObservableObject {
     func signOut() async {
         syncStatus = .syncing
         do {
+            let user = try await authClient.currentUser()
             try await authClient.signOut()
+            await authClient.onAuthEvent(.signedOut(userId: user?.id))
             route = .signedOut
             apiClientStore = nil
             challengesStore = nil
+            entriesStore = nil
             syncStatus = .upToDate
             authErrorMessage = nil
         } catch {
@@ -112,10 +120,12 @@ final class AppState: ObservableObject {
             let store = APIClientStore(client: client)
             apiClientStore = store
             challengesStore = ChallengesStore(apiClient: client)
+            entriesStore = EntriesStore(apiClient: client)
             await store.refresh(activeOnly: true)
         } catch {
             apiClientStore = nil
             challengesStore = nil
+            entriesStore = nil
             authErrorMessage = error.localizedDescription
         }
     }

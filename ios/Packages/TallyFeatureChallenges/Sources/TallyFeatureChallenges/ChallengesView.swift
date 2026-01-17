@@ -1,15 +1,23 @@
 import SwiftUI
 import TallyCore
 import TallyFeatureAPIClient
+import TallyFeatureEntries
 
 public struct ChallengesView: View {
     @ObservedObject private var store: ChallengesStore
+    private let entriesStore: EntriesStoreProtocol
     private let onSignOut: @Sendable () async -> Void
     @State private var isPresentingCreate = false
     @State private var selectedChallengeId: String?
+    @State private var entriesChallengeId: String?
 
-    public init(store: ChallengesStore, onSignOut: @Sendable @escaping () async -> Void) {
+    public init(
+        store: ChallengesStore,
+        entriesStore: EntriesStoreProtocol,
+        onSignOut: @Sendable @escaping () async -> Void
+    ) {
         self.store = store
+        self.entriesStore = entriesStore
         self.onSignOut = onSignOut
     }
 
@@ -37,6 +45,14 @@ public struct ChallengesView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        entriesChallengeId = store.challenges.first?.id
+                    } label: {
+                        Image(systemName: "square.and.pencil")
+                    }
+                    .disabled(store.challenges.isEmpty)
                 }
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Sign out") {
@@ -71,6 +87,9 @@ public struct ChallengesView: View {
                     await store.deleteChallenge(id: selected.id)
                 }
             )
+        }
+        .sheet(item: entriesChallengeBinding) { challenge in
+            EntriesView(store: entriesStore, challenge: challenge)
         }
     }
 
@@ -170,6 +189,11 @@ public struct ChallengesView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .contextMenu {
+                    Button("Log entries") {
+                        entriesChallengeId = challenge.id
+                    }
+                }
             }
         }
     }
@@ -186,6 +210,18 @@ public struct ChallengesView: View {
         )
     }
 
+    private var entriesChallengeBinding: Binding<Challenge?> {
+        Binding(
+            get: {
+                guard let selected = entriesChallengeId else { return nil }
+                return store.challenges.first { $0.id == selected }
+            },
+            set: { newValue in
+                entriesChallengeId = newValue?.id
+            }
+        )
+    }
+
 }
 
 #Preview {
@@ -194,6 +230,6 @@ public struct ChallengesView: View {
         tokenProvider: { "token" }
     )
     let store = ChallengesStore(apiClient: client)
-    return ChallengesView(store: store, onSignOut: {})
+    return ChallengesView(store: store, entriesStore: EntriesStore(apiClient: client), onSignOut: {})
         .preferredColorScheme(.light)
 }

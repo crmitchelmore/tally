@@ -13,17 +13,20 @@ public struct AuthClient: Sendable {
     public var signIn: @Sendable () async throws -> User
     public var signOut: @Sendable () async throws -> Void
     public var syncUser: @Sendable () async throws -> Void
+    public var onAuthEvent: @Sendable (AuthEvent) async -> Void
 
     public init(
         currentUser: @escaping @Sendable () async throws -> User?,
         signIn: @escaping @Sendable () async throws -> User,
         signOut: @escaping @Sendable () async throws -> Void,
-        syncUser: @escaping @Sendable () async throws -> Void
+        syncUser: @escaping @Sendable () async throws -> Void,
+        onAuthEvent: @escaping @Sendable (AuthEvent) async -> Void = { _ in }
     ) {
         self.currentUser = currentUser
         self.signIn = signIn
         self.signOut = signOut
         self.syncUser = syncUser
+        self.onAuthEvent = onAuthEvent
     }
 }
 
@@ -38,7 +41,8 @@ public extension AuthClient {
             )
         },
         signOut: {},
-        syncUser: {}
+        syncUser: {},
+        onAuthEvent: { _ in }
     )
 }
 
@@ -59,7 +63,8 @@ public extension AuthClient {
             signOut: {
                 state = nil
             },
-            syncUser: {}
+            syncUser: {},
+            onAuthEvent: { _ in }
         )
     }
 }

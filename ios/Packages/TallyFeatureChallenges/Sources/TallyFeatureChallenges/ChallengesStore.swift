@@ -78,6 +78,8 @@ public final class ChallengesStore: ObservableObject {
     @Published public private(set) var state: State = .idle
 
     private let apiClient: APIClientProviding
+
+    public var apiClient: APIClientProviding { apiClient }
     private let cache: ChallengesCache
     private var queue: [QueuedWrite] = []
 
@@ -143,6 +145,15 @@ public final class ChallengesStore: ObservableObject {
             challenges.insert(created, at: 0)
             cache.saveChallenges(challenges)
             lastError = nil
+            await track(
+                event: .challengeCreated,
+                properties: [
+                    "challenge_id": created.id,
+                    "timeframe_unit": created.timeframeUnit,
+                    "target_number": "\(created.targetNumber)"
+                ],
+                userId: created.userId
+            )
         } catch {
             queue.append(.createChallenge(request))
             cache.saveQueue(queue)
@@ -167,6 +178,15 @@ public final class ChallengesStore: ObservableObject {
             let updated = try await apiClient.updateChallenge(id: id, request)
             replaceChallenge(updated)
             lastError = nil
+            await track(
+                event: updated.archived ? .challengeArchived : .challengeUpdated,
+                properties: [
+                    "challenge_id": updated.id,
+                    "timeframe_unit": updated.timeframeUnit,
+                    "target_number": "\(updated.targetNumber)"
+                ],
+                userId: updated.userId
+            )
         } catch {
             queue.append(.updateChallenge(id: id, request))
             cache.saveQueue(queue)
@@ -181,6 +201,15 @@ public final class ChallengesStore: ObservableObject {
             let updated = try await apiClient.updateChallenge(id: id, request)
             replaceChallenge(updated)
             lastError = nil
+            await track(
+                event: .challengeArchived,
+                properties: [
+                    "challenge_id": updated.id,
+                    "timeframe_unit": updated.timeframeUnit,
+                    "target_number": "\(updated.targetNumber)"
+                ],
+                userId: updated.userId
+            )
         } catch {
             queue.append(.updateChallenge(id: id, request))
             cache.saveQueue(queue)
@@ -190,6 +219,7 @@ public final class ChallengesStore: ObservableObject {
     }
 
     public func deleteChallenge(id: String) async {
+        let existing = challenges.first { $0.id == id }
         do {
             try await apiClient.deleteChallenge(id: id)
         } catch {
@@ -202,6 +232,38 @@ public final class ChallengesStore: ObservableObject {
         entries.removeAll { $0.challengeId == id }
         cache.saveChallenges(challenges)
         cache.saveEntries(entries)
+        if let challenge = existing {
+            await track(
+                event: .challengeArchived,
+                properties: [
+                    "challenge_id": challenge.id,
+                    "timeframe_unit": challenge.timeframeUnit,
+                    "target_number": "\(challenge.targetNumber)",
+                    "archived": "true"
+                ],
+                userId: challenge.userId
+            )
+        }
+    }
+
+    private func track(event: TelemetryEvent, properties: [String: String], userId: String?) async {
+        guard let contextProvider = TelemetryStore.shared.contextProvider,
+              let client = TelemetryStore.shared.client else { return }
+        let base = contextProvider()
+        let context = TelemetryContext(
+            platform: base.platform,
+            env: base.env,
+            appVersion: base.appVersion,
+            buildNumber: base.buildNumber,
+            userId: userId ?? base.userId,
+            isSignedIn: true,
+            sessionId: base.sessionId,
+            traceId: base.traceId,
+            spanId: base.spanId,
+            requestId: base.requestId
+        )
+        await client.capture(event, properties: properties, context: context)
+        await client.logWideEvent(event, properties: properties, context: context)
     }
 
     public func entriesForChallenge(_ challengeId: String) -> [Entry] {

@@ -63,6 +63,44 @@ extension AuthClient {
                 try KeychainStore.set(token, for: AuthConstants.tokenKey)
                 let client = APIClient(baseURL: apiBaseURL)
                 try await client.postAuthUser(token: token)
+            },
+            onAuthEvent: { event in
+                guard let context = TelemetryStore.shared.contextProvider?() else { return }
+                guard let client = TelemetryStore.shared.client else { return }
+                switch event {
+                case .signedIn(let userId):
+                    var context = context
+                    context = TelemetryContext(
+                        platform: context.platform,
+                        env: context.env,
+                        appVersion: context.appVersion,
+                        buildNumber: context.buildNumber,
+                        userId: userId,
+                        isSignedIn: true,
+                        sessionId: context.sessionId,
+                        traceId: context.traceId,
+                        spanId: context.spanId,
+                        requestId: context.requestId
+                    )
+                    await client.capture(.authSignedIn, properties: [:], context: context)
+                    await client.logWideEvent(.authSignedIn, properties: [:], context: context)
+                case .signedOut(let userId):
+                    var context = context
+                    context = TelemetryContext(
+                        platform: context.platform,
+                        env: context.env,
+                        appVersion: context.appVersion,
+                        buildNumber: context.buildNumber,
+                        userId: userId,
+                        isSignedIn: false,
+                        sessionId: context.sessionId,
+                        traceId: context.traceId,
+                        spanId: context.spanId,
+                        requestId: context.requestId
+                    )
+                    await client.capture(.authSignedOut, properties: [:], context: context)
+                    await client.logWideEvent(.authSignedOut, properties: [:], context: context)
+                }
             }
         )
     }

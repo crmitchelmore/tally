@@ -1,10 +1,9 @@
 import SwiftUI
 import TallyFeatureAuth
 import TallyFeatureChallenges
-
+import TallyFeatureEntries
 struct RootView: View {
     @ObservedObject var state: AppState
-
     var body: some View {
         ZStack {
             BackgroundTexture()
@@ -24,6 +23,7 @@ struct RootView: View {
                     if let store = state.challengesStore {
                         ChallengesView(
                             store: store,
+                            entriesStore: state.entriesStore ?? EntriesStore(apiClient: store.apiClient),
                             onSignOut: state.signOut
                         )
                     } else if case .signedIn(let user) = state.route {
@@ -38,7 +38,6 @@ struct RootView: View {
         }
     }
 }
-
 struct RootView_Previews: PreviewProvider {
     static var previews: some View {
         RootView(state: AppState(route: .signedOut))

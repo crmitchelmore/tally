@@ -27,5 +27,11 @@
   <string>$(CLERK_PUBLISHABLE_KEY)</string>
   <key>ConvexDeployment</key>
   <string>$(CONVEX_DEPLOYMENT)</string>
+  <key>TelemetryEnvironment</key>
+  <string>$(TELEMETRY_ENVIRONMENT)</string>
+  <key>PosthogApiKey</key>
+  <string>$(POSTHOG_API_KEY)</string>
+  <key>PosthogHost</key>
+  <string>$(POSTHOG_HOST)</string>
 </dict>
 </plist>

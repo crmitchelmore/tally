@@ -40,3 +40,10 @@ enum ClerkEnvironmentError: LocalizedError {
         }
     }
 }
+
+extension ClerkEnvironment {
+    static func telemetryEnvironment() -> String {
+        let env = Bundle.main.object(forInfoDictionaryKey: "TelemetryEnvironment") as? String
+        return env?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false ? env! : "development"
+    }
+}

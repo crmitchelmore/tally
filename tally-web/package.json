@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "node ./middleware.test.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.8",

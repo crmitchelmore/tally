@@ -1,0 +1,21 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tally-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run build
+      - name: Deploy (Vercel)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
+        run: npx vercel deploy --prod --token=$VERCEL_TOKEN

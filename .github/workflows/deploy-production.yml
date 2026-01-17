@@ -16,7 +16,7 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
         run: |
-          npx vercel deploy --prod --token=$VERCEL_TOKEN
+          npx vercel deploy --prod --yes --token=$VERCEL_TOKEN
       - name: Smoke check
         env:
           VERCEL_PROD_URL: ${{ secrets.VERCEL_PROD_URL }}

@@ -11,3 +11,6 @@ BLOCKED: Web auth build requires NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publis
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and a production URL smoke-check; no additional changes or checks run this iteration.
 
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and production URL smoke-check; added deploy-production GitHub Actions workflow, bun run build failed due to missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.
+
+BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and production URL smoke-check; verified GitHub Actions secrets list and deploy-production workflow exists, bun run build succeeds only when local .env provides NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, latest deploy-production workflow run on main failed.
+BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and production URL smoke-check; updated deploy-production workflow to add --yes for vercel deploy to avoid confirmation prompt, verified local bun run build succeeds with .env.

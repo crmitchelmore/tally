@@ -84,3 +84,4 @@ SHIPPED: Fixed Deploy Production workflow to run in tally-web and pass NEXT_PUBL
 UPDATED: Added Vercel link step to deploy-production workflow; verified bun run build and production URL curl succeed locally with .env; workflow still needs a main-branch run to confirm.
 
 SHIPPED: CD item verified; bun run build succeeds with repo .env and production URL smoke-check returns HTTP 200 locally. Deploy workflow already present for main; next step is a main-branch run to confirm Actions in production.
+BLOCKED: Android auth cannot proceed because no Android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no checks run.

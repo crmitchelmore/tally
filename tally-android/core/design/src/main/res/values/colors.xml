@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="tally_ink">#1A1A1A</color>
+    <color name="tally_paper">#F8F7F2</color>
+    <color name="tally_accent">#D6453D</color>
+</resources>

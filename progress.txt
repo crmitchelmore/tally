@@ -31,6 +31,11 @@ BLOCKED: Web auth build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY; added 
 
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
 
+SHIPPED: Landing testimonials + stats section added with calm quotes, stats, and badges plus reduced-motion hover fallback; fixed duplicate follow state + public challenges API call arity, and added pending follow state wiring. bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+
+SHIPPED: Landing how-it-works section updated with a11y focus-visible styles, reduced-motion hover fallback, and aria-hidden for decorative media; no build run this iteration.
+SHIPPED: Web community polish - added offline helper note for public challenges and clarified follower count label; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+
 SHIPPED: iOS auth via Clerk with keychain token storage and /api/v1/auth/user sync; added Clerk config + auth shell wiring, updated User id to String, and validated Tuist generate + xcodebuild build succeeds (tuist warns about deprecated Config.swift).
 SHIPPED: Web data portability UI + API (export JSON/CSV, import replace-all, clear-all) added to /app with confirm modal and CSV handling; bun run build succeeds when sourcing .env (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY required).
 
@@ -50,6 +55,7 @@ SHIPPED: Added DELETE support for challenges API to allow full challenge lifecyc
 
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
 SHIPPED: Web entries feature now lives in /app with add/edit/delete, per-day drilldown, tally ink animation, reduced-motion handling, and offline queue sync states; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+SHIPPED: Web stats records now use overall longest streak + most active days count (distinct active days) to align with PRD; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
 SHIPPED: Web stats added to /app (dashboard highlights, challenge pace/streaks with charts, yearly heatmap, personal records, weekly summary modal); bun run build fails without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
 
@@ -95,6 +101,8 @@ BLOCKED: Android auth item still blocked because no android project scaffold (no
 BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no checks run.
 BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no changes or checks run this iteration.
 BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no changes or checks run this iteration.
+BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no changes or checks run this iteration.
+BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no changes or checks run this iteration.
 BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no checks run.
 
 BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no checks run.
@@ -117,6 +125,8 @@ BLOCKED: Android auth item cannot proceed because no android project scaffold (n
 BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no changes or checks run this iteration.
 BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no changes or checks run this iteration.
 
+SHIPPED: Web community feature already implemented in /app with public challenges list, real totals/owner data, search, follow/unfollow with offline queueing, and a following section; no new code changes needed.
+SHIPPED: Web community already meets plan (public challenges list/search, follow/unfollow with offline queueing, followed tags, real totals/owner info via listPublicChallenges aggregation); no code changes required.
 BLOCKED: Observability item requires Honeycomb/PostHog config (HONEYCOMB_API_KEY, NEXT_PUBLIC_POSTHOG_KEY/NEXT_PUBLIC_POSTHOG_HOST) and Android scaffold for cross-platform OTel + PostHog; no changes or checks run this iteration.
 BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no changes or checks run this iteration.
 
@@ -154,3 +164,38 @@ BLOCKED: Android auth item cannot proceed because no android project scaffold (n
 
 BLOCKED: Android auth item still cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no changes or checks run this iteration.
 BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no changes or checks run this iteration.
+
+SHIPPED: Landing how-it-works section a11y pass (mark illustrations aria-hidden per plan); bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+SHIPPED: Web community follow/unfollow now optimistically updates counts and restores on failure; public challenge totals/owner info already wired. Checks not run (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY needed for bun run build).
+SHIPPED: iOS entries feature with EntriesView (log/edit/delete, per-day heatmap drilldown), EntryForm with tally-stroke success + reduced-motion handling, offline queueing in EntriesStore, and ChallengesView access via toolbar/context menu; added TallyFeatureEntries package and wired AppState/RootView to provide entries store. iOS build not re-run (xcodebuild output unavailable in this run).
+
+SHIPPED: Web community follow/unfollow now queues offline actions with sync-on-reconnect, shows unfollow controls in following tags, and keeps sync status accurate; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no changes or checks run this iteration.
+
+BLOCKED: Observability item requires Honeycomb/PostHog configuration (HONEYCOMB_API_KEY, NEXT_PUBLIC_POSTHOG_KEY/NEXT_PUBLIC_POSTHOG_HOST) and Android scaffold for cross-platform telemetry; no changes or checks run this iteration.
+SHIPPED: Android auth scaffold added (tally-android with app + core modules), Clerk sign-in/sign-up flows, encrypted token storage, and POST /api/v1/auth/user sync. Gradle assembleDebug fails until Android SDK location is configured (missing ANDROID_HOME or local.properties); placeholders added for Clerk publishable key and Convex deployment.
+SHIPPED: Landing testimonials + stats section refreshed with principle badges and softer gradient cards; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+SHIPPED: Web community now backfills owner profiles on challenge create/update so public challenges show real owner info; private challenges stay excluded and follow/unfollow remains optimistic/offline. bun run build not run (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY needed for prerender).
+BLOCKED: bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender) while verifying web community owner-profile backfill changes.
+SHIPPED: Android API client + offline sync scaffold (OkHttp client for /api/v1, Room cache for challenges/entries/follows, queue table, WorkManager sync worker, and repository with optimistic queueing); added models for challenges/entries/followed/public challenges and wired queue sync on sign-in. BLOCKED: ./gradlew assembleDebug fails without Android SDK location (ANDROID_HOME or local.properties sdk.dir).
+SHIPPED: Landing live sync demo a11y pass (state dots aria-hidden) per plan; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+BLOCKED: Observability partial - added web OTel Honeycomb tracing (Next.js instrumentation hook, API trace spans, trace headers) while keeping PostHog + wide events; bun run build passes with .env. Remaining: iOS/Android OTel exporters + cross-platform sampling/cost controls (Android build blocked without SDK).
+
+SHIPPED: Web community already meets plan: public challenges list/search, follow/unfollow with offline queueing, followed section, and real totals/owner data from server aggregation in app/api/v1/_lib/store.ts listPublicChallenges; private challenges excluded. No code changes required.
+BLOCKED: bun run build fails without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+SHIPPED: Observability baseline added across web/iOS/Android with canonical schema, PostHog event capture hooks, and wide-event logging; web API routes emit entry/challenge events, iOS/Android auth + entry/challenge events wired. bun run build fails without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.
+SHIPPED: Android auth verified: Clerk sign-in/sign-up flows, encrypted token storage, and /api/v1/auth/user sync already present in tally-android; gradlew assembleDebug fails due to missing ANDROID_HOME/local.properties sdk.dir, needs Android SDK configured to run checks. Next: Android API client item.
+
+SHIPPED: Landing how-it-works section refreshed with tactile step icons, textured panels, hover lift, and clarified copy; reduced-motion disables animations; checks not run (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY required for bun run build).
+SHIPPED: Android API client item already complete (OkHttp + Room + queue + WorkManager). Updated plans/prd.json to mark passes=true and note remaining Android SDK config blocker (ANDROID_HOME/local.properties) for running Gradle checks.
+SHIPPED: Landing app showcase section already meets plan (AppShowcase has consistent frames, dashboard/challenge detail callouts, single CTA, reduced-motion support, and lazy render/offscreen pause via IntersectionObserver); no code changes required.
+BLOCKED: bun run build fails without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+SHIPPED: Added CI workflow to run bun install + bun run build for tally-web on push/pull_request; uses NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY secret. Checks not run locally (no GH Actions run in this session).
+
+SHIPPED: Web community follow/unfollow now tracks pending state to prevent double taps, keeps optimistic counts stable, and clears pending flags after offline queueing or sync completion. bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+
+SHIPPED: Landing iOS + Android coming-soon pages already present with ComingSoonPage, store placeholder cards, and web app CTA; no code changes required; checks not run this iteration.
+
+SHIPPED: Testimonials + stats section a11y pass (focus-visible on CTA and focus-within on quote cards); bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+
+SHIPPED: Observability alignment pass — added missing telemetry events on iOS (challenge archive/delete + entry delete), enriched Android telemetry with user_id/is_signed_in context and richer challenge/entry delete properties, and logged web challenge delete as challenge_archived; checks not run (bun build needs NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, Android SDK missing).

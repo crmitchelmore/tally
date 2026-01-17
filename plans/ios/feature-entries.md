@@ -4,12 +4,14 @@
 Log progress quickly with honest feedback.
 
 ## Scope
-- Add entry flow (count or sets/reps).
+- Add Entry sheets: global (select challenge) and per-challenge detail.
+- Count or sets/reps; date (defaults to today, no future); optional note and feeling.
 - Edit/delete entry.
-- Date picker (no future dates), note, feeling.
 - Per-day drilldown from heatmap.
+- Delight: tally-mark ink stroke animation + light haptics (reduced-motion safe).
 
 ## UX notes
+- Use SwiftUI sheets/forms and large tap targets.
 - Light haptics on submit; respect reduced motion.
 - Immediate UI update.
 

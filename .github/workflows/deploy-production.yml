@@ -13,6 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - name: Ensure Vercel project link
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
+        run: |
+          if [ ! -f ".vercel/project.json" ]; then
+            npx vercel link --yes --token=$VERCEL_TOKEN
+          fi
       - run: bun install
       - name: bun run build
         env:

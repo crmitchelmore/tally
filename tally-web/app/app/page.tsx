@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { currentUser } from "@clerk/nextjs/server";
 
-export default function AppShell() {
+export default async function AppShell() {
+  const user = await currentUser();
   return (
     <main
       style={{
@@ -21,7 +23,7 @@ export default function AppShell() {
           margin: 0,
         }}
       >
-        Tally app shell
+        {user?.firstName ? `Welcome back, ${user.firstName}.` : "Tally app shell"}
       </h1>
       <p
         style={{

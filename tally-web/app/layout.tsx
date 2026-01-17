@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata = {
   title: "Tally",
@@ -7,18 +8,20 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body
-        style={{
-          margin: 0,
-          fontFamily:
-            "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-          backgroundColor: "#f7f7f5",
-          color: "#141414",
-        }}
-      >
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body
+          style={{
+            margin: 0,
+            fontFamily:
+              "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            backgroundColor: "#f7f7f5",
+            color: "#141414",
+          }}
+        >
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

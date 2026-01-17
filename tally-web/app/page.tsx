@@ -62,6 +62,35 @@ export default function LandingPage() {
       >
         Open the app
       </Link>
+      <div
+        style={{
+          display: "flex",
+          gap: "12px",
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
+        <Link
+          href="/sign-in"
+          style={{
+            color: "#b21f24",
+            textDecoration: "none",
+            fontWeight: 600,
+          }}
+        >
+          Sign in
+        </Link>
+        <Link
+          href="/sign-up"
+          style={{
+            color: "#b21f24",
+            textDecoration: "none",
+            fontWeight: 600,
+          }}
+        >
+          Create account
+        </Link>
+      </div>
     </main>
   );
 }

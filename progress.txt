@@ -80,3 +80,4 @@ BLOCKED: Android auth and API client cannot proceed because no Android project s
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
 
 BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir/Gradle/Kotlin); no checks run.
+SHIPPED: Fixed Deploy Production workflow to run in tally-web and pass NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY into bun run build; local bun run build succeeds when exporting .env and production URL smoke check returns 200.

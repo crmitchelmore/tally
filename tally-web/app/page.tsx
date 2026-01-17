@@ -2,6 +2,7 @@ import Link from "next/link";
 import { HeroDemo } from "./ui/hero-demo";
 import { FeatureShowcase } from "./ui/feature-showcase";
 import { HowItWorks } from "./ui/how-it-works";
+import { TestimonialsStats } from "./ui/testimonials-stats";
 
 export default function LandingPage() {
   return (
@@ -118,6 +119,7 @@ export default function LandingPage() {
       </section>
       <FeatureShowcase />
       <HowItWorks />
+      <TestimonialsStats />
     </main>
   );
 }

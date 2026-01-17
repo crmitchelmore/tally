@@ -58,3 +58,4 @@ BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL
 
 SHIPPED: Added landing how-it-works section with three-step flow, calm CTAs, and ink-style visuals; reduced-motion disables animations. bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
 SHIPPED: Web community now shows public challenges with real totals, progress, owner info, and follow counts; follow/unfollow is immediate with optimistic counts and offline guard; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+SHIPPED: Added landing testimonials + stats section with calm quotes, stacked stats, and a single CTA; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).

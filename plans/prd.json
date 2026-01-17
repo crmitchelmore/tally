@@ -137,7 +137,7 @@
       "Verify calm, high-contrast presentation",
       "Check responsive behavior"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "landing",

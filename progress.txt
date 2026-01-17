@@ -82,3 +82,5 @@ BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL
 BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir/Gradle/Kotlin); no checks run.
 SHIPPED: Fixed Deploy Production workflow to run in tally-web and pass NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY into bun run build; local bun run build succeeds when exporting .env and production URL smoke check returns 200.
 UPDATED: Added Vercel link step to deploy-production workflow; verified bun run build and production URL curl succeed locally with .env; workflow still needs a main-branch run to confirm.
+
+SHIPPED: CD item verified; bun run build succeeds with repo .env and production URL smoke-check returns HTTP 200 locally. Deploy workflow already present for main; next step is a main-branch run to confirm Actions in production.

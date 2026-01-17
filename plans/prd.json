@@ -205,7 +205,8 @@
     "steps": [
       "Follow plans/android/feature-auth.md",
       "Ensure EncryptedSharedPreferences token storage",
-      "Verify signed-out vs signed-in navigation"
+      "Verify signed-out vs signed-in navigation",
+      "BLOCKED: Android project scaffold missing (no android/ dir, Gradle files, or Kotlin sources)."
     ],
     "passes": false
   },
@@ -215,7 +216,8 @@
     "steps": [
       "Follow plans/android/feature-api-client.md",
       "Ensure Bearer auth",
-      "Add/verify tests if already present"
+      "Add/verify tests if already present",
+      "BLOCKED: Android project scaffold missing (no android/ dir, Gradle files, or Kotlin sources)."
     ],
     "passes": false
   },

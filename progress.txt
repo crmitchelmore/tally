@@ -78,3 +78,5 @@ BLOCKED: CD verification shows production URL responds 401 (needs public URL or 
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
 BLOCKED: Android auth and API client cannot proceed because no Android project scaffold (no android/ dir, gradle files, or Kotlin sources).
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
+
+BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir/Gradle/Kotlin); no checks run.

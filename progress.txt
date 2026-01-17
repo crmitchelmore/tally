@@ -138,3 +138,4 @@ BLOCKED: Android auth item cannot proceed because no android project scaffold (n
 BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no changes or checks run this iteration.
 
 BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no changes or checks run this iteration.
+BLOCKED: Android auth item cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no changes or checks run this iteration.

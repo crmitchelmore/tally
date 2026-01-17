@@ -23,3 +23,9 @@ BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKE
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and production URL smoke-check; no changes or checks run this iteration.
 
 SHIPPED: Landing hero micro-demo with interactive +1 tally marks, ink-like strokes, and reduced-motion support; updated hero layout to include demo. Verified bun run build succeeds when loading repo .env for Clerk publishable key.
+
+BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; verified VERCEL_API_TOKEN present and .vercel/project.json missing; no changes or checks run this iteration.
+
+BLOCKED: Web auth build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY; added /app signed-out CTA and redirect back to /app after sign-in/sign-up; build requires Clerk publishable key to pass.
+
+BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.

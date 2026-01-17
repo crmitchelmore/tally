@@ -87,3 +87,7 @@ SHIPPED: CD item verified; bun run build succeeds with repo .env and production 
 BLOCKED: Android auth cannot proceed because no Android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no checks run.
 
 BLOCKED: Android auth cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no checks run.
+
+BLOCKED: Android auth cannot proceed because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no checks run.
+
+BLOCKED: Android auth item still blocked because no android project scaffold (no android/ dir, Gradle files, or Kotlin sources); no checks run.

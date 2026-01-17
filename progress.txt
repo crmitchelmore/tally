@@ -18,3 +18,8 @@ BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKE
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and production URL smoke-check; no additional changes or checks run this iteration.
 
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and production URL smoke-check; unable to verify deploy/smoke without external setup.
+
+# Latest
+BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_API_TOKEN, VERCEL_PROD_URL) and production URL smoke-check; no changes or checks run this iteration.
+
+SHIPPED: Landing hero micro-demo with interactive +1 tally marks, ink-like strokes, and reduced-motion support; updated hero layout to include demo. Verified bun run build succeeds when loading repo .env for Clerk publishable key.

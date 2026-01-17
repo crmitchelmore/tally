@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeroDemo } from "./ui/hero-demo";
 
 export default function LandingPage() {
   return (
@@ -6,91 +7,111 @@ export default function LandingPage() {
       style={{
         minHeight: "100vh",
         display: "flex",
-        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: "16px",
-        padding: "48px 24px",
-        textAlign: "center",
+        padding: "64px 24px",
+        background:
+          "linear-gradient(180deg, rgba(247,247,245,1) 0%, rgba(243,242,238,1) 100%)",
       }}
     >
-      <p
+      <section
         style={{
-          fontSize: "12px",
-          letterSpacing: "0.2em",
-          textTransform: "uppercase",
-          color: "#6b6b6b",
-          margin: 0,
-        }}
-      >
-        Tally
-      </p>
-      <h1
-        style={{
-          fontSize: "40px",
-          lineHeight: "1.1",
-          margin: 0,
-          maxWidth: "520px",
-        }}
-      >
-        Track progress with honest, ink-like marks.
-      </h1>
-      <p
-        style={{
-          margin: 0,
-          maxWidth: "520px",
-          color: "#4b4b4b",
-        }}
-      >
-        A calm space to log what matters, stay on pace, and see momentum grow
-        without pressure.
-      </p>
-      <Link
-        href="/app"
-        style={{
-          display: "inline-flex",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gap: "48px",
           alignItems: "center",
-          justifyContent: "center",
-          height: "44px",
-          padding: "0 24px",
-          borderRadius: "999px",
-          backgroundColor: "#b21f24",
-          color: "#ffffff",
-          textDecoration: "none",
-          fontWeight: 600,
+          width: "min(1100px, 100%)",
         }}
       >
-        Open the app
-      </Link>
-      <div
-        style={{
-          display: "flex",
-          gap: "12px",
-          flexWrap: "wrap",
-          justifyContent: "center",
-        }}
-      >
-        <Link
-          href="/sign-in"
+        <div
           style={{
-            color: "#b21f24",
-            textDecoration: "none",
-            fontWeight: 600,
+            display: "flex",
+            flexDirection: "column",
+            gap: "18px",
+            textAlign: "left",
           }}
         >
-          Sign in
-        </Link>
-        <Link
-          href="/sign-up"
-          style={{
-            color: "#b21f24",
-            textDecoration: "none",
-            fontWeight: 600,
-          }}
-        >
-          Create account
-        </Link>
-      </div>
+          <p
+            style={{
+              fontSize: "12px",
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: "#6b6b6b",
+              margin: 0,
+            }}
+          >
+            Tally
+          </p>
+          <h1
+            style={{
+              fontSize: "44px",
+              lineHeight: "1.1",
+              margin: 0,
+              maxWidth: "520px",
+            }}
+          >
+            Track progress with honest, ink-like marks.
+          </h1>
+          <p
+            style={{
+              margin: 0,
+              maxWidth: "520px",
+              color: "#4b4b4b",
+              fontSize: "16px",
+            }}
+          >
+            A calm space to log what matters, stay on pace, and see momentum grow
+            without pressure.
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              flexWrap: "wrap",
+              alignItems: "center",
+            }}
+          >
+            <Link
+              href="/app"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "44px",
+                padding: "0 24px",
+                borderRadius: "999px",
+                backgroundColor: "#b21f24",
+                color: "#ffffff",
+                textDecoration: "none",
+                fontWeight: 600,
+              }}
+            >
+              Open the app
+            </Link>
+            <Link
+              href="/sign-in"
+              style={{
+                color: "#b21f24",
+                textDecoration: "none",
+                fontWeight: 600,
+              }}
+            >
+              Sign in
+            </Link>
+            <Link
+              href="/sign-up"
+              style={{
+                color: "#b21f24",
+                textDecoration: "none",
+                fontWeight: 600,
+              }}
+            >
+              Create account
+            </Link>
+          </div>
+        </div>
+        <HeroDemo />
+      </section>
     </main>
   );
 }

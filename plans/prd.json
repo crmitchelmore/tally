@@ -117,7 +117,7 @@
       "Verify desktop-first layout and one clear CTA",
       "Check a11y basics"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "landing",

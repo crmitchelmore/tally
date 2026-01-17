@@ -30,6 +30,8 @@ BLOCKED: Web auth build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY; added 
 
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
 
+# Latest
+SHIPPED: Landing feature showcase section with desktop accordion + media panel and mobile stacked cards, lazy media render on view, and a single CTA; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
 BLOCKED: CD item still requires Vercel project/domain setup plus Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) to smoke-check production; no changes or checks run this iteration.
 
 SHIPPED: Web auth provisioning now triggers POST /api/v1/auth/user from /app and shows sync status; bun run build passes when sourcing repo .env (Clerk publishable key required).
@@ -45,3 +47,6 @@ SHIPPED: Added DELETE support for challenges API to allow full challenge lifecyc
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
 SHIPPED: Web entries feature now lives in /app with add/edit/delete, per-day drilldown, tally ink animation, reduced-motion handling, and offline queue sync states; bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
 SHIPPED: Web stats added to /app (dashboard highlights, challenge pace/streaks with charts, yearly heatmap, personal records, weekly summary modal); bun run build fails without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
+BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
+
+BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.

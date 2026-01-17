@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HeroDemo } from "./ui/hero-demo";
+import { FeatureShowcase } from "./ui/feature-showcase";
 
 export default function LandingPage() {
   return (
@@ -7,9 +8,11 @@ export default function LandingPage() {
       style={{
         minHeight: "100vh",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "64px 24px",
+        padding: "64px 24px 96px",
+        gap: "96px",
         background:
           "linear-gradient(180deg, rgba(247,247,245,1) 0%, rgba(243,242,238,1) 100%)",
       }}
@@ -112,6 +115,7 @@ export default function LandingPage() {
         </div>
         <HeroDemo />
       </section>
+      <FeatureShowcase />
     </main>
   );
 }

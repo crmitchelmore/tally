@@ -8,6 +8,11 @@ let project = Project(
         disableBundleAccessors: false,
         disableSynthesizedResourceAccessors: false
     ),
+    packages: [
+        .package(path: "../Packages/TallyCore"),
+        .package(path: "../Packages/TallyFeatureAuth"),
+        .package(url: "https://github.com/clerk/clerk-ios", from: "0.57.0")
+    ],
     settings: .settings(
         configurations: [
             .debug(name: .debug),
@@ -17,29 +22,28 @@ let project = Project(
     targets: [
         .target(
             name: "TallyApp",
-            platform: .iOS,
+            destinations: .iOS,
             product: .app,
             bundleId: "app.tally",
-            deploymentTarget: .iOS(targetVersion: "17.0", devices: [.iphone]),
-            infoPlist: .extendingDefault(
-                with: [
-                    "UILaunchScreen": [:],
-                    "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
-                    "UIApplicationSceneManifest": [
-                        "UIApplicationSupportsMultipleScenes": false
-                    ]
-                ]
-            ),
+            deploymentTargets: .iOS("17.0"),
+            infoPlist: .file(path: "Sources/Info.plist"),
             sources: ["Sources/**"],
             resources: ["Resources/**"],
             dependencies: [
-                .project(target: "TallyCore", path: "../Packages/TallyCore"),
-                .project(target: "TallyFeatureAuth", path: "../Packages/TallyFeatureAuth")
-            ]
+                .package(product: "TallyCore"),
+                .package(product: "TallyFeatureAuth"),
+                .package(product: "Clerk")
+            ],
+            settings: .settings(
+                base: [
+                    "CLERK_PUBLISHABLE_KEY": "$(NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)",
+                    "CONVEX_DEPLOYMENT": "$(CONVEX_DEPLOYMENT)"
+                ]
+            )
         ),
         .target(
             name: "TallyAppTests",
-            platform: .iOS,
+            destinations: .iOS,
             product: .unitTests,
             bundleId: "app.tally.tests",
             infoPlist: .default,

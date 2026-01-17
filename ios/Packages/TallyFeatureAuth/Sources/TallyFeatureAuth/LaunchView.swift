@@ -1,7 +1,9 @@
 import SwiftUI
 
-struct LaunchView: View {
-    var body: some View {
+public struct LaunchView: View {
+    public init() {}
+
+    public var body: some View {
         VStack(spacing: 16) {
             ProgressView("Syncing your tallies…")
                 .progressViewStyle(.circular)

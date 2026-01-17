@@ -15,13 +15,15 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(name: "TallyCore", path: "../TallyCore")
+        .package(name: "TallyCore", path: "../TallyCore"),
+        .package(url: "https://github.com/clerk/clerk-ios", from: "0.57.0")
     ],
     targets: [
         .target(
             name: "TallyFeatureAuth",
             dependencies: [
-                "TallyCore"
+                "TallyCore",
+                .product(name: "Clerk", package: "clerk-ios")
             ]
         ),
         .testTarget(

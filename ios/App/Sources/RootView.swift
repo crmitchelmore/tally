@@ -16,7 +16,8 @@ struct RootView: View {
                         }
                 case .signedOut:
                     AuthShell(
-                        onSignIn: state.completeAuth
+                        onSignIn: state.completeAuth,
+                        errorMessage: state.authErrorMessage
                     )
                 case .signedIn(let user):
                     SignedInView(
@@ -26,7 +27,6 @@ struct RootView: View {
                 }
             }
             .animation(.easeOut(duration: 0.2), value: state.route)
-            .accessibilityTransition(.opacity)
         }
     }
 }

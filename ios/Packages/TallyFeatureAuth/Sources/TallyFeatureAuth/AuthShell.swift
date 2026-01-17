@@ -1,11 +1,18 @@
+import Clerk
 import SwiftUI
 import TallyCore
 
 public struct AuthShell: View {
     let onSignIn: @Sendable () async -> Void
+    let errorMessage: String?
+    @State private var isShowingAuth = false
 
-    public init(onSignIn: @escaping @Sendable () async -> Void) {
+    public init(
+        onSignIn: @escaping @Sendable () async -> Void,
+        errorMessage: String? = nil
+    ) {
         self.onSignIn = onSignIn
+        self.errorMessage = errorMessage
     }
 
     public var body: some View {
@@ -25,9 +32,7 @@ public struct AuthShell: View {
             }
 
             Button(action: {
-                Task {
-                    await onSignIn()
-                }
+                isShowingAuth = true
             }) {
                 Label("Continue with Clerk", systemImage: "pencil.tip")
                     .font(.headline)
@@ -40,9 +45,16 @@ public struct AuthShell: View {
             .buttonStyle(.plain)
             .accessibilityHint("Opens Clerk sign-in to continue tracking challenges.")
 
-            Text("Offline-friendly, honest progress. No streak panic.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+            if let errorMessage {
+                Text(errorMessage)
+                    .font(.footnote)
+                    .foregroundStyle(Color(red: 0.7, green: 0.15, blue: 0.15))
+                    .multilineTextAlignment(.center)
+            } else {
+                Text("Offline-friendly, honest progress. No streak panic.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(32)
         .frame(maxWidth: 420)
@@ -52,6 +64,16 @@ public struct AuthShell: View {
                 .shadow(color: .black.opacity(0.12), radius: 20, y: 10)
         )
         .padding()
+        .sheet(isPresented: $isShowingAuth) {
+            AuthView(isDismissable: true)
+        }
+        .onChange(of: isShowingAuth) { _, isPresented in
+            if !isPresented, Clerk.shared.user != nil {
+                Task {
+                    await onSignIn()
+                }
+            }
+        }
     }
 }
 

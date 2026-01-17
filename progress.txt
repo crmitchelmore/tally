@@ -31,6 +31,7 @@ BLOCKED: Web auth build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY; added 
 
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
 
+SHIPPED: iOS auth via Clerk with keychain token storage and /api/v1/auth/user sync; added Clerk config + auth shell wiring, updated User id to String, and validated Tuist generate + xcodebuild build succeeds (tuist warns about deprecated Config.swift).
 SHIPPED: Web data portability UI + API (export JSON/CSV, import replace-all, clear-all) added to /app with confirm modal and CSV handling; bun run build succeeds when sourcing .env (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY required).
 
 # Latest
@@ -66,3 +67,7 @@ SHIPPED: Added landing app showcase section with dashboard + challenge preview s
 SHIPPED: Added /ios and /android coming-soon pages with calm previews, store placeholders, and CTAs back to /app; added links from landing hero. bun run build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key required for prerender).
 
 BLOCKED: iOS auth item cannot proceed because no iOS app project or Swift sources exist in repo (no .xcodeproj/.xcworkspace); needs iOS scaffold before Clerk auth.
+
+BLOCKED: CD item still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
+
+BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.

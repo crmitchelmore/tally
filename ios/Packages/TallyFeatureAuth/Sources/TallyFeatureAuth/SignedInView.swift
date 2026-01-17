@@ -1,11 +1,16 @@
 import SwiftUI
 import TallyCore
 
-struct SignedInView: View {
+public struct SignedInView: View {
     let user: User
     let onSignOut: @Sendable () async -> Void
 
-    var body: some View {
+    public init(user: User, onSignOut: @Sendable @escaping () async -> Void) {
+        self.user = user
+        self.onSignOut = onSignOut
+    }
+
+    public var body: some View {
         VStack(spacing: 24) {
             VStack(spacing: 8) {
                 Text("Welcome back, \(user.displayName)")
@@ -41,7 +46,7 @@ struct SignedInView: View {
 
 #Preview {
     SignedInView(
-        user: .init(id: UUID(), email: "sam@example.com", displayName: "Sam"),
+        user: .init(id: "preview-user", email: "sam@example.com", displayName: "Sam"),
         onSignOut: {}
     )
 }

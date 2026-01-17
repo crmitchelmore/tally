@@ -1,9 +1,11 @@
 import SwiftUI
 
-struct BackgroundTexture: View {
+public struct BackgroundTexture: View {
     @Environment(\.colorScheme) private var colorScheme
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         Rectangle()
             .fill(backgroundColor)
             .overlay(
@@ -16,7 +18,7 @@ struct BackgroundTexture: View {
                             let x = CGFloat(column) * spacing
                             let y = CGFloat(row) * spacing
                             context.translateBy(x: x, y: y)
-                            drawTallyMark(in: context)
+                            drawTallyMark(in: &context)
                             context.translateBy(x: -x, y: -y)
                         }
                     }

@@ -5,7 +5,7 @@
 - Swift Package Manager (SPM) for a highly modular architecture:
   - Shared packages (e.g. `TallyCore` for API + models)
   - One package per feature (Entries, Challenges, Stats, etc.)
-- Tuist for **generated Xcode projects/workspaces** (define projects in code via `Project.swift`/`Workspace.swift`, don’t hand-edit `.xcodeproj`)
+- Tuist for **generated Xcode projects/workspaces** (define projects in code via `Project.swift`/`Workspace.swift`, don’t hand-edit `.xcodeproj`) IMPORTANT: Use tuist to generate the project - use sensible values when youd on't know
 - Clerk auth for iOS and JWT for API calls
 - Local persistence for offline-first behavior
 

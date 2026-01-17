@@ -29,3 +29,4 @@ BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL
 BLOCKED: Web auth build failed without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY; added /app signed-out CTA and redirect back to /app after sign-in/sign-up; build requires Clerk publishable key to pass.
 
 BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.
+BLOCKED: CD still needs Vercel project/domain + Actions secrets (VERCEL_PROD_URL and optionally VERCEL_ORG_ID/VERCEL_PROJECT_ID) and production URL smoke-check; no changes or checks run this iteration.

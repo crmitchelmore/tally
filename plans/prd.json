@@ -97,7 +97,7 @@
       "Replace any placeholder totals/owner info with real server-side aggregation",
       "Run existing checks"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "landing",

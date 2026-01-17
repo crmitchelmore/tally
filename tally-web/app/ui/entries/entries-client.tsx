@@ -54,6 +54,20 @@ type EntryDraft = {
   sets: { reps: number }[];
 };
 
+type PublicChallenge = Challenge & {
+  totalReps: number;
+  progress: number;
+  followerCount: number;
+  ownerName: string;
+  ownerAvatarUrl: string | null;
+};
+
+type Followed = {
+  id: string;
+  challengeId: string;
+  followedAt: string;
+};
+
 const todayIso = () => new Date().toISOString().slice(0, 10);
 const dayMs = 24 * 60 * 60 * 1000;
 
@@ -175,6 +189,108 @@ function computeStreaks(dailyTotals: Map<string, number>, endDate: string) {
     if (run > longest) longest = run;
   }
   return { current, longest, daysActive: dates.length };
+}
+
+function PublicChallengeCard({
+  challenge,
+  isOwner,
+  isFollowing,
+  disabled,
+  onToggle,
+}: {
+  challenge: PublicChallenge;
+  isOwner: boolean;
+  isFollowing: boolean;
+  disabled: boolean;
+  onToggle: () => void;
+}) {
+  const progress = Math.min(Math.max(challenge.progress, 0), 1);
+  const progressLabel =
+    challenge.targetNumber > 0
+      ? `${Math.round(progress * 100)}% of ${challenge.targetNumber}`
+      : `${challenge.totalReps} marks`;
+  return (
+    <div
+      style={{
+        borderRadius: "18px",
+        border: `1px solid ${surfaceEdge}`,
+        background: "#ffffff",
+        padding: "16px",
+        display: "grid",
+        gap: "10px",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
+        <div style={{ display: "grid", gap: "6px" }}>
+          <p style={{ margin: 0, fontWeight: 600, fontSize: "16px" }}>{challenge.name}</p>
+          <p style={{ margin: 0, fontSize: "13px", color: muted }}>
+            {challenge.ownerName} · {challenge.totalReps} marks
+          </p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {challenge.ownerAvatarUrl ? (
+            <img
+              src={challenge.ownerAvatarUrl}
+              alt={`${challenge.ownerName} avatar`}
+              style={{ width: "32px", height: "32px", borderRadius: "50%" }}
+            />
+          ) : (
+            <div
+              aria-hidden="true"
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: "#f0ede6",
+                border: `1px solid ${surfaceEdge}`,
+              }}
+            />
+          )}
+        </div>
+      </div>
+      <div
+        aria-label={`Progress ${progressLabel}`}
+        style={{
+          height: "10px",
+          borderRadius: "999px",
+          background: "rgba(26, 26, 26, 0.08)",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: `${progress * 100}%`,
+            height: "100%",
+            background: challenge.color || accent,
+            transition: "width 200ms ease",
+          }}
+        />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
+        <p style={{ margin: 0, fontSize: "12px", color: muted }}>{progressLabel}</p>
+        <p style={{ margin: 0, fontSize: "12px", color: muted }}>
+          {challenge.followerCount} following
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={onToggle}
+        disabled={disabled || isOwner}
+        style={{
+          height: "36px",
+          borderRadius: "999px",
+          border: `1px solid ${isFollowing ? accent : surfaceEdge}`,
+          background: isFollowing ? "#fff5f5" : "#ffffff",
+          color: isFollowing ? accent : ink,
+          fontWeight: 600,
+          cursor: disabled || isOwner ? "not-allowed" : "pointer",
+          opacity: disabled || isOwner ? 0.6 : 1,
+        }}
+      >
+        {isOwner ? "Your challenge" : isFollowing ? "Following" : "Follow"}
+      </button>
+    </div>
+  );
 }
 
 function StatusCard({
@@ -1251,6 +1367,10 @@ export default function EntriesClient() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [publicChallenges, setPublicChallenges] = useState<PublicChallenge[]>([]);
+  const [followed, setFollowed] = useState<Followed[]>([]);
+  const [publicQuery, setPublicQuery] = useState("");
+  const [followSyncing, setFollowSyncing] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -1282,19 +1402,31 @@ export default function EntriesClient() {
     try {
       setLoading(true);
       setError(null);
-      const [challengesResponse, entriesResponse] = await Promise.all([
+      const [challengesResponse, entriesResponse, publicResponse, followedResponse] =
+        await Promise.all([
         fetch("/api/v1/challenges", { cache: "no-store" }),
         fetch("/api/v1/entries", { cache: "no-store" }),
+        fetch("/api/v1/public/challenges", { cache: "no-store" }),
+        fetch("/api/v1/followed", { cache: "no-store" }),
       ]);
-      if (!challengesResponse.ok || !entriesResponse.ok) {
+      if (
+        !challengesResponse.ok ||
+        !entriesResponse.ok ||
+        !publicResponse.ok ||
+        !followedResponse.ok
+      ) {
         throw new Error("Unable to load entries.");
       }
-      const [challengeData, entryData] = await Promise.all([
+      const [challengeData, entryData, publicData, followedData] = await Promise.all([
         challengesResponse.json(),
         entriesResponse.json(),
+        publicResponse.json(),
+        followedResponse.json(),
       ]);
       setChallenges(challengeData);
       setEntries(entryData);
+      setPublicChallenges(publicData);
+      setFollowed(followedData);
       setDraft((prev) => ({
         ...prev,
         challengeId: prev.challengeId || challengeData[0]?.id || "",
@@ -1340,6 +1472,56 @@ export default function EntriesClient() {
       setSaving(false);
     }
   }, [offlineQueue, offline, saving]);
+
+  const handleToggleFollow = useCallback(
+    async (challengeId: string) => {
+      if (offline) {
+        setError("You're offline. Follow when you're back online.");
+        return;
+      }
+      setError(null);
+      setFollowSyncing(challengeId);
+      const existing = followed.find((record) => record.challengeId === challengeId);
+      try {
+        if (existing) {
+          const response = await fetch(`/api/v1/followed/${existing.id}`, { method: "DELETE" });
+          if (!response.ok) throw new Error("Unable to unfollow.");
+          setFollowed((prev) => prev.filter((record) => record.id !== existing.id));
+          setPublicChallenges((prev) =>
+            prev.map((challenge) =>
+              challenge.id === challengeId
+                ? {
+                    ...challenge,
+                    followerCount: Math.max(0, challenge.followerCount - 1),
+                  }
+                : challenge
+            )
+          );
+          return;
+        }
+        const response = await fetch("/api/v1/followed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ challengeId }),
+        });
+        if (!response.ok) throw new Error("Unable to follow.");
+        const created = (await response.json()) as Followed;
+        setFollowed((prev) => [...prev, created]);
+        setPublicChallenges((prev) =>
+          prev.map((challenge) =>
+            challenge.id === challengeId
+              ? { ...challenge, followerCount: challenge.followerCount + 1 }
+              : challenge
+          )
+        );
+      } catch (followError) {
+        setError(followError instanceof Error ? followError.message : "Unable to update follow.");
+      } finally {
+        setFollowSyncing(null);
+      }
+    },
+    [followed, offline]
+  );
 
   useEffect(() => {
     const handleOnline = () => {
@@ -1483,6 +1665,10 @@ export default function EntriesClient() {
     ? entries.filter((entry) => entry.challengeId === draft.challengeId)
     : entries;
 
+  const followingCardIds = useMemo(() => {
+    return new Set(followed.map((record) => record.challengeId));
+  }, [followed]);
+
   const selectedChallenge = selectedChallengeId
     ? challenges.find((challenge) => challenge.id === selectedChallengeId) ?? null
     : null;
@@ -1493,6 +1679,18 @@ export default function EntriesClient() {
       : entries;
     return buildDailyTotals(relevant);
   }, [entries, selectedChallenge]);
+
+  const publicFiltered = useMemo(() => {
+    const query = publicQuery.trim().toLowerCase();
+    const filtered = publicChallenges.filter((challenge) => {
+      if (!query) return true;
+      return (
+        challenge.name.toLowerCase().includes(query) ||
+        challenge.ownerName.toLowerCase().includes(query)
+      );
+    });
+    return filtered;
+  }, [publicChallenges, publicQuery]);
 
   const overallStats = useMemo(() => {
     const total = entries.reduce((sum, entry) => sum + entry.count, 0);
@@ -2114,6 +2312,98 @@ export default function EntriesClient() {
               </div>
             ))}
         </div>
+      </section>
+
+      <section
+        style={{
+          display: "grid",
+          gap: "16px",
+          borderRadius: "20px",
+          border: `1px solid ${surfaceEdge}`,
+          padding: "18px",
+          background: "#ffffff",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
+          <div>
+            <p
+              style={{
+                margin: 0,
+                fontSize: "12px",
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: muted,
+              }}
+            >
+              Community
+            </p>
+            <p style={{ margin: "6px 0 0", fontSize: "18px", fontWeight: 600 }}>
+              Public challenges, real totals.
+            </p>
+          </div>
+          <input
+            value={publicQuery}
+            onChange={(event) => setPublicQuery(event.target.value)}
+            placeholder="Search by challenge or owner"
+            style={{
+              height: "36px",
+              borderRadius: "999px",
+              border: `1px solid ${surfaceEdge}`,
+              padding: "0 14px",
+              minWidth: "220px",
+              fontSize: "13px",
+            }}
+          />
+        </div>
+        {!publicChallenges.length ? (
+          <p style={{ margin: 0, color: muted }}>
+            No public challenges yet. Toggle one of yours to public to appear here.
+          </p>
+        ) : publicFiltered.length ? (
+          <div style={{ display: "grid", gap: "12px" }}>
+            {publicFiltered.map((challenge) => {
+              const isOwner = challenges.some((mine) => mine.id === challenge.id);
+              const isFollowing = followingCardIds.has(challenge.id);
+              return (
+                <PublicChallengeCard
+                  key={challenge.id}
+                  challenge={challenge}
+                  isOwner={isOwner}
+                  isFollowing={isFollowing}
+                  disabled={followSyncing === challenge.id}
+                  onToggle={() => handleToggleFollow(challenge.id)}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <p style={{ margin: 0, color: muted }}>No challenges match that search.</p>
+        )}
+        {followed.length ? (
+          <div style={{ display: "grid", gap: "8px" }}>
+            <p style={{ margin: 0, fontSize: "12px", color: muted }}>Following</p>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              {followed.map((record) => {
+                const challenge = publicChallenges.find((item) => item.id === record.challengeId);
+                if (!challenge) return null;
+                return (
+                  <div
+                    key={record.id}
+                    style={{
+                      borderRadius: "999px",
+                      border: `1px solid ${surfaceEdge}`,
+                      padding: "6px 12px",
+                      fontSize: "12px",
+                      background: surface,
+                    }}
+                  >
+                    {challenge.name}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
       </section>
 
       {offlineQueue.length ? (

@@ -1,5 +1,6 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { jsonError, jsonOk } from "../../_lib/response";
+import { registerUser } from "../../_lib/store";
 
 const users = new Map<string, { userId: string; clerkId: string }>();
 
@@ -7,15 +8,27 @@ export async function POST() {
   const { userId } = await auth();
 
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonError("Unauthorized", 401);
   }
 
   const existing = users.get(userId);
   if (existing) {
-    return NextResponse.json(existing, { status: 200 });
+    return jsonOk(existing, 200);
   }
 
+  const clerkUser = await currentUser();
+  if (clerkUser) {
+    registerUser(userId, {
+      id: userId,
+      email: clerkUser.primaryEmailAddress?.emailAddress,
+      name:
+        clerkUser.fullName ||
+        [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim() ||
+        undefined,
+      avatarUrl: clerkUser.imageUrl,
+    });
+  }
   const record = { userId, clerkId: userId };
   users.set(userId, record);
-  return NextResponse.json(record, { status: 200 });
+  return jsonOk(record, 200);
 }

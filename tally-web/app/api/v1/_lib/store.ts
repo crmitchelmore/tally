@@ -145,6 +145,14 @@ export function listFollowed(userId: string) {
 }
 
 export function createFollowed(userId: string, challengeId: string) {
+  const challenge = store.challenges.find(
+    (candidate) => candidate.id === challengeId && candidate.isPublic && !candidate.archived
+  );
+  if (!challenge) return null;
+  const existing = store.followed.find(
+    (record) => record.userId === userId && record.challengeId === challengeId
+  );
+  if (existing) return existing;
   const record: Followed = {
     id: nextId("followed"),
     userId,
@@ -164,7 +172,26 @@ export function deleteFollowed(userId: string, id: string) {
 }
 
 export function listPublicChallenges() {
-  return store.challenges.filter((challenge) => challenge.isPublic && !challenge.archived);
+  return store.challenges
+    .filter((challenge) => challenge.isPublic && !challenge.archived)
+    .map((challenge) => {
+      const owner = store.users.get(challenge.userId);
+      const totalReps = store.entries
+        .filter((entry) => entry.challengeId === challenge.id)
+        .reduce((sum, entry) => sum + entry.count, 0);
+      const progress = challenge.targetNumber > 0 ? totalReps / challenge.targetNumber : 0;
+      const followerCount = store.followed.filter(
+        (record) => record.challengeId === challenge.id
+      ).length;
+      return {
+        ...challenge,
+        totalReps,
+        progress,
+        followerCount,
+        ownerName: owner?.name || owner?.email || "Anonymous",
+        ownerAvatarUrl: owner?.avatarUrl || null,
+      };
+    });
 }
 
 export function getExportData(userId: string) {

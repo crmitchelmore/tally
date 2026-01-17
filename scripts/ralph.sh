@@ -16,7 +16,6 @@ Environment:
 Notes:
   - Defaults to YOLO (dev) tools if you don’t specify --allow-profile/--allow-tools.
   - Defaults to 100 iterations if [iterations] is omitted.
-  - Always denied: shell(rm), shell(git push)
 USAGE
 }
 
@@ -109,6 +108,12 @@ case "$COPILOT_CMD" in
     ;;
 esac
 
+# Without --yolo, Copilot may block waiting for interactive approvals; under PTY
+# capture that looks like a hang. Default dev profile should be non-interactive.
+if [[ "$(basename "$COPILOT_CMD")" == "copilot" && "$allow_profile" == "dev" ]]; then
+  extra_cmd_args+=(--yolo)
+fi
+
 command -v "$COPILOT_CMD" >/dev/null 2>&1 || { echo "Error: COPILOT_CMD not found: $COPILOT_CMD" >&2; exit 127; }
 
 [[ -n "$prompt_file" ]] || { echo "Error: --prompt is required" >&2; usage; exit 1; }
@@ -138,18 +143,52 @@ run_with_timeout() {
     return $?
   fi
 
+  # Fallback when coreutils timeout isn't on PATH: run the command in its own
+  # process group and kill the whole group on timeout to avoid indefinite hangs.
+  if command -v python3 >/dev/null 2>&1; then
+    python3 - "$timeout_s" "$@" <<'PY'
+import os
+import signal
+import subprocess
+import sys
+
+timeout_s = int(sys.argv[1])
+cmd = sys.argv[2:]
+
+p = subprocess.Popen(cmd, preexec_fn=os.setsid)
+try:
+  p.wait(timeout=timeout_s)
+  raise SystemExit(p.returncode)
+except subprocess.TimeoutExpired:
+  try:
+    os.killpg(p.pid, signal.SIGTERM)
+  except ProcessLookupError:
+    raise SystemExit(124)
+  try:
+    p.wait(timeout=5)
+  except subprocess.TimeoutExpired:
+    try:
+      os.killpg(p.pid, signal.SIGKILL)
+    except ProcessLookupError:
+      pass
+    p.wait()
+  raise SystemExit(124)
+PY
+    return $?
+  fi
+
   "$@"
 }
 
 
 declare -a copilot_tool_args
-copilot_tool_args+=(--deny-tool 'shell(rm)')
-copilot_tool_args+=(--deny-tool 'shell(git push)')
 
 if [[ ${#allow_tools[@]} -eq 0 ]]; then
   case "$allow_profile" in
     dev)
       copilot_tool_args+=(--allow-all-tools)
+      # Ensure non-interactive approvals in dev runs.
+      copilot_tool_args+=(--yolo)
       ;;
     safe)
       copilot_tool_args+=(--allow-tool 'write')
@@ -214,10 +253,12 @@ for ((i=1; i<=iterations; i++)); do
 
   set +e
 
-  copilot_prompt="@$combined_file"
+  copilot_prompt="Ship the next PRD item per instructions in this file. @$combined_file"
   combined_dir="$(dirname "$combined_file")"
 
-  if command -v script >/dev/null 2>&1; then
+  # The PTY created by `script` can trigger interactive prompts from Copilot CLI.
+  # Prefer plain capture for dev runs.
+  if command -v script >/dev/null 2>&1 && [[ "$allow_profile" != "dev" ]]; then
     transcript_file="$(mktemp -t ralph-copilot.XXXXXX)"
     transcript_err_file="$(mktemp -t ralph-copilot-err.XXXXXX)"
 
@@ -225,6 +266,7 @@ for ((i=1; i<=iterations; i++)); do
       script -q -F "$transcript_file" \
         "$COPILOT_CMD" ${extra_cmd_args:+"${extra_cmd_args[@]}"} --add-dir "$PWD" --add-dir "$combined_dir" --model "$MODEL" \
           --no-color --stream off --silent \
+          --allow-all-paths \
           -p "$copilot_prompt" \
           "${copilot_tool_args[@]}" \
       >/dev/null 2>"$transcript_err_file"
@@ -240,6 +282,7 @@ for ((i=1; i<=iterations; i++)); do
         run_with_timeout "$RALPH_TIMEOUT_SECONDS" \
           "$COPILOT_CMD" ${extra_cmd_args:+"${extra_cmd_args[@]}"} --add-dir "$PWD" --add-dir "$combined_dir" --model "$MODEL" \
             --no-color --stream off --silent \
+            --allow-all-paths \
             -p "$copilot_prompt" \
             "${copilot_tool_args[@]}" \
           >"$output_file" 2>&1
@@ -255,6 +298,7 @@ for ((i=1; i<=iterations; i++)); do
     run_with_timeout "$RALPH_TIMEOUT_SECONDS" \
       "$COPILOT_CMD" ${extra_cmd_args:+"${extra_cmd_args[@]}"} --add-dir "$PWD" --add-dir "$combined_dir" --model "$MODEL" \
         --no-color --stream off --silent \
+        --allow-all-paths \
         -p "$copilot_prompt" \
         "${copilot_tool_args[@]}" \
       >"$output_file" 2>&1

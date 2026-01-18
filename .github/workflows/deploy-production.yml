@@ -22,8 +22,8 @@ jobs:
           if [ ! -f ".vercel/project.json" ]; then
             mkdir -p .vercel
             cat > .vercel/project.json <<EOF
-            {"orgId":"$VERCEL_ORG_ID","projectId":"$VERCEL_PROJECT_ID"}
-            EOF
+{"orgId":"$VERCEL_ORG_ID","projectId":"$VERCEL_PROJECT_ID"}
+EOF
           fi
       - run: bun install
       - name: bun run build

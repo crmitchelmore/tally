@@ -14,10 +14,44 @@ public struct Challenge: Codable, Equatable, Sendable {
     public let isPublic: Bool
     public let archived: Bool
     public let createdAt: String
+
+    public init(
+        id: String,
+        userId: String,
+        name: String,
+        targetNumber: Int,
+        color: String,
+        icon: String,
+        timeframeUnit: String,
+        startDate: String?,
+        endDate: String?,
+        year: Int,
+        isPublic: Bool,
+        archived: Bool,
+        createdAt: String
+    ) {
+        self.id = id
+        self.userId = userId
+        self.name = name
+        self.targetNumber = targetNumber
+        self.color = color
+        self.icon = icon
+        self.timeframeUnit = timeframeUnit
+        self.startDate = startDate
+        self.endDate = endDate
+        self.year = year
+        self.isPublic = isPublic
+        self.archived = archived
+        self.createdAt = createdAt
+    }
 }
 
 public struct EntrySet: Codable, Equatable, Sendable {
     public let reps: Int
+
+    public init(reps: Int) {
+        self.reps = reps
+    }
 }
 
 public struct Entry: Codable, Equatable, Sendable {
@@ -30,6 +64,28 @@ public struct Entry: Codable, Equatable, Sendable {
     public let sets: [EntrySet]?
     public let feeling: String?
     public let createdAt: String
+
+    public init(
+        id: String,
+        userId: String,
+        challengeId: String,
+        date: String,
+        count: Int,
+        note: String?,
+        sets: [EntrySet]?,
+        feeling: String?,
+        createdAt: String
+    ) {
+        self.id = id
+        self.userId = userId
+        self.challengeId = challengeId
+        self.date = date
+        self.count = count
+        self.note = note
+        self.sets = sets
+        self.feeling = feeling
+        self.createdAt = createdAt
+    }
 }
 
 public struct ChallengeCreateRequest: Codable, Equatable, Sendable {

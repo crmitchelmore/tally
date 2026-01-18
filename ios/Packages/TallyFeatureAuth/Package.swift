@@ -28,7 +28,8 @@ let package = Package(
         ),
         .testTarget(
             name: "TallyFeatureAuthTests",
-            dependencies: ["TallyFeatureAuth"]
+            dependencies: ["TallyFeatureAuth"],
+            path: "Tests/TallyFeatureAuthTests"
         )
     ]
 )

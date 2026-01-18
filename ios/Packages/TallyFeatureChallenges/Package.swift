@@ -16,14 +16,16 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "TallyCore", path: "../TallyCore"),
-        .package(name: "TallyFeatureAPIClient", path: "../TallyFeatureAPIClient")
+        .package(name: "TallyFeatureAPIClient", path: "../TallyFeatureAPIClient"),
+        .package(name: "TallyFeatureEntries", path: "../TallyFeatureEntries")
     ],
     targets: [
         .target(
             name: "TallyFeatureChallenges",
             dependencies: [
                 "TallyCore",
-                "TallyFeatureAPIClient"
+                "TallyFeatureAPIClient",
+                "TallyFeatureEntries"
             ]
         ),
     ]

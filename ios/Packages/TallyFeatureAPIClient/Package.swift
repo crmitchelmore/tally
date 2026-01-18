@@ -26,7 +26,8 @@ let package = Package(
         ),
         .testTarget(
             name: "TallyFeatureAPIClientTests",
-            dependencies: ["TallyFeatureAPIClient"]
+            dependencies: ["TallyFeatureAPIClient"],
+            path: "Tests/TallyFeatureAPIClientTests"
         )
     ]
 )

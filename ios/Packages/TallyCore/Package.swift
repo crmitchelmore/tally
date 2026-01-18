@@ -20,7 +20,8 @@ let package = Package(
         ),
         .testTarget(
             name: "TallyCoreTests",
-            dependencies: ["TallyCore"]
+            dependencies: ["TallyCore"],
+            path: "Tests/TallyCoreTests"
         )
     ]
 )

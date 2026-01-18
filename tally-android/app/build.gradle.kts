@@ -19,22 +19,31 @@ android {
     versionName = "0.1.0"
 
     val isCI = System.getenv("CI")?.toBoolean() == true
-    val clerkPublishableKey = project.findProperty("TALLY_CLERK_PUBLISHABLE_KEY") as String?
+
+    val clerkPublishableKey = (System.getenv("TALLY_CLERK_PUBLISHABLE_KEY")
+      ?: System.getenv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY")
+      ?: project.findProperty("TALLY_CLERK_PUBLISHABLE_KEY") as String?)
     if (clerkPublishableKey.isNullOrEmpty() && !isCI) {
-      throw GradleException("Missing TALLY_CLERK_PUBLISHABLE_KEY in gradle.properties")
+      throw GradleException("Missing Clerk publishable key (set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY env or TALLY_CLERK_PUBLISHABLE_KEY gradle.properties)")
     }
     val keyValue = clerkPublishableKey ?: "pk_test_placeholder_for_ci"
     buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"${keyValue}\"")
 
-    val convexDeployment = project.findProperty("TALLY_CONVEX_DEPLOYMENT") as String?
+    val convexDeployment = (System.getenv("TALLY_CONVEX_DEPLOYMENT")
+      ?: System.getenv("CONVEX_DEPLOYMENT")
+      ?: project.findProperty("TALLY_CONVEX_DEPLOYMENT") as String?)
     if (convexDeployment.isNullOrEmpty() && !isCI) {
-      throw GradleException("Missing TALLY_CONVEX_DEPLOYMENT in gradle.properties")
+      throw GradleException("Missing Convex deployment (set CONVEX_DEPLOYMENT env or TALLY_CONVEX_DEPLOYMENT gradle.properties)")
     }
     val deploymentValue = convexDeployment ?: "dev"
     buildConfigField("String", "CONVEX_DEPLOYMENT", "\"${deploymentValue}\"")
 
-    val posthogKey = project.findProperty("TALLY_POSTHOG_API_KEY") as String?
-    val posthogHost = project.findProperty("TALLY_POSTHOG_HOST") as String?
+    val posthogKey = (System.getenv("TALLY_POSTHOG_API_KEY")
+      ?: System.getenv("NEXT_PUBLIC_POSTHOG_KEY")
+      ?: project.findProperty("TALLY_POSTHOG_API_KEY") as String?)
+    val posthogHost = (System.getenv("TALLY_POSTHOG_HOST")
+      ?: System.getenv("NEXT_PUBLIC_POSTHOG_HOST")
+      ?: project.findProperty("TALLY_POSTHOG_HOST") as String?)
     val posthogKeyValue = posthogKey ?: "phc_placeholder"
     val posthogHostValue = posthogHost ?: "https://app.posthog.com"
     buildConfigField("String", "POSTHOG_API_KEY", "\"${posthogKeyValue}\"")

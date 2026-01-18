@@ -16,9 +16,14 @@ jobs:
       - name: Ensure Vercel project link
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           if [ ! -f ".vercel/project.json" ]; then
-            npx vercel link --yes --token=$VERCEL_TOKEN
+            mkdir -p .vercel
+            cat > .vercel/project.json <<EOF
+            {"orgId":"$VERCEL_ORG_ID","projectId":"$VERCEL_PROJECT_ID"}
+            EOF
           fi
       - run: bun install
       - name: bun run build

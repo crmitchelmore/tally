@@ -78,3 +78,24 @@
   - GET /api/v1/stats (totalMarks, today, bestStreak, paceStatus, personal records)
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Web API contract" passes=true
+
+## 2026-01-20: Web challenges feature (feature-challenges.md)
+- Created challenges component folder (src/components/challenges/):
+  - challenge-card.tsx: Dashboard card with progress ring, TallyMark preview, pace status
+  - create-challenge-dialog.tsx: Modal dialog for creating challenges with name, target, timeframe (year/month/custom), color picker, icon selector, public toggle
+  - challenge-list.tsx: Grid view with loading/empty/error states and create button
+  - activity-heatmap.tsx: Yearly activity heatmap with intensity scaling and day-click drilldown
+- Created /app/challenges/[id]/page.tsx detail view:
+  - Header with stats grid (progress, remaining, days left, per-day needed)
+  - Pace callout with ahead/on-pace/behind status
+  - TallyMark visualization of total progress
+  - ActivityHeatmap component for yearly view
+  - Streaks & records section
+  - Settings panel with archive/unarchive and delete options
+- Updated /app/page.tsx to use ChallengeList with API integration:
+  - Fetches challenges with stats on mount
+  - Create challenge wired to POST /api/v1/challenges
+  - Loading, empty, error states with clear feedback
+- Accessibility: focus-visible states, ARIA labels, reduced-motion support
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Web challenges feature" passes=true

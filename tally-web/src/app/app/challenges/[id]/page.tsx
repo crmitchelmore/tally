@@ -1,0 +1,308 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { TallyMark } from "@/components/ui/tally-mark";
+import { ActivityHeatmap } from "@/components/challenges/activity-heatmap";
+import type { Challenge, ChallengeStats, Entry } from "@/app/api/v1/_lib/types";
+
+interface ChallengeData {
+  challenge: Challenge;
+  stats: ChallengeStats;
+  entries: Entry[];
+}
+
+/**
+ * Challenge detail page.
+ * Shows challenge header with stats, yearly activity heatmap, and settings.
+ */
+export default function ChallengeDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const challengeId = params.id as string;
+
+  const [data, setData] = useState<ChallengeData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Fetch challenge data
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [challengeRes, statsRes, entriesRes] = await Promise.all([
+        fetch(`/api/v1/challenges/${challengeId}`),
+        fetch(`/api/v1/challenges/${challengeId}/stats`),
+        fetch(`/api/v1/entries?challengeId=${challengeId}`),
+      ]);
+
+      if (!challengeRes.ok) {
+        if (challengeRes.status === 404) throw new Error("Challenge not found");
+        if (challengeRes.status === 403) throw new Error("Access denied");
+        throw new Error("Failed to load challenge");
+      }
+
+      const [challengeData, statsData, entriesData] = await Promise.all([
+        challengeRes.json(),
+        statsRes.json(),
+        entriesRes.json(),
+      ]);
+
+      setData({
+        challenge: challengeData.challenge,
+        stats: statsData.stats,
+        entries: entriesData.entries || [],
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load challenge");
+    } finally {
+      setLoading(false);
+    }
+  }, [challengeId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Archive/unarchive
+  const handleToggleArchive = async () => {
+    if (!data) return;
+    try {
+      const res = await fetch(`/api/v1/challenges/${challengeId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isArchived: !data.challenge.isArchived }),
+      });
+      if (res.ok) {
+        fetchData();
+      }
+    } catch {
+      // Ignore
+    }
+  };
+
+  // Delete
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this challenge? This cannot be undone.")) {
+      return;
+    }
+    try {
+      setDeleting(true);
+      const res = await fetch(`/api/v1/challenges/${challengeId}`, { method: "DELETE" });
+      if (res.ok) {
+        router.push("/app");
+      }
+    } catch {
+      // Ignore
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="h-6 w-24 bg-border/50 rounded" />
+        <div className="bg-surface border border-border rounded-2xl p-6">
+          <div className="h-8 w-48 bg-border/50 rounded mb-4" />
+          <div className="h-24 bg-border/50 rounded" />
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="text-center py-16">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-error/10 text-error mb-4">
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01" />
+          </svg>
+        </div>
+        <p className="text-ink font-medium">{error}</p>
+        <Link href="/app" className="mt-4 inline-block text-sm text-accent hover:text-accent/80">
+          ← Back to dashboard
+        </Link>
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  const { challenge, stats, entries } = data;
+
+  const paceColors = {
+    ahead: "text-success",
+    "on-pace": "text-ink",
+    behind: "text-warning",
+  };
+
+  const paceMessages = {
+    ahead: `You're ahead of pace!`,
+    "on-pace": "Right on track.",
+    behind: `Behind by ${Math.ceil((stats.daysElapsed * challenge.target / (new Date(challenge.endDate).getTime() - new Date(challenge.startDate).getTime()) * 86400000) - stats.totalCount)} marks`,
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Back link */}
+      <Link
+        href="/app"
+        className="inline-flex items-center gap-1 text-sm text-muted hover:text-ink transition-colors"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to challenges
+      </Link>
+
+      {/* Header card */}
+      <div className="bg-surface border border-border rounded-2xl p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span
+              className="w-4 h-4 rounded-full flex-shrink-0"
+              style={{ backgroundColor: challenge.color }}
+            />
+            <h1 className="text-2xl font-semibold text-ink">{challenge.name}</h1>
+            {challenge.isArchived && (
+              <span className="text-xs text-muted px-2 py-0.5 bg-border/50 rounded-full">
+                Archived
+              </span>
+            )}
+            {challenge.isPublic && (
+              <span className="text-xs text-muted px-2 py-0.5 bg-border/50 rounded-full">
+                Public
+              </span>
+            )}
+          </div>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="p-2 rounded-lg text-muted hover:bg-border/50 transition-colors"
+            aria-label="Settings"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Stats grid */}
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <p className="text-sm text-muted">Progress</p>
+            <p className="text-2xl font-semibold text-ink tabular-nums">
+              {stats.totalCount.toLocaleString()}
+              <span className="text-muted text-base font-normal"> / {challenge.target.toLocaleString()}</span>
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted">Remaining</p>
+            <p className="text-2xl font-semibold text-ink tabular-nums">
+              {stats.remaining.toLocaleString()}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted">Days left</p>
+            <p className="text-2xl font-semibold text-ink tabular-nums">
+              {stats.daysRemaining}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted">Per day needed</p>
+            <p className="text-2xl font-semibold text-ink tabular-nums">
+              {stats.perDayRequired.toFixed(1)}
+            </p>
+          </div>
+        </div>
+
+        {/* Pace callout */}
+        <div className={`mt-4 p-3 rounded-lg bg-border/30 ${paceColors[stats.paceStatus]}`}>
+          <p className="text-sm font-medium">{paceMessages[stats.paceStatus]}</p>
+          <p className="text-xs text-muted mt-0.5">
+            Current pace: {stats.currentPace}/day · Best day: {stats.bestDay?.count || 0} marks
+          </p>
+        </div>
+
+        {/* TallyMark display */}
+        <div className="mt-6 flex justify-center">
+          <TallyMark count={stats.totalCount} size="lg" />
+        </div>
+      </div>
+
+      {/* Activity heatmap */}
+      <div className="bg-surface border border-border rounded-2xl p-6">
+        <h2 className="text-lg font-semibold text-ink mb-4">Activity</h2>
+        <ActivityHeatmap
+          entries={entries}
+          startDate={challenge.startDate}
+          endDate={challenge.endDate}
+          color={challenge.color}
+          onDayClick={(date, count) => {
+            // Could open a day detail modal here
+            console.log(`Day ${date}: ${count} marks`);
+          }}
+        />
+      </div>
+
+      {/* Streaks and records */}
+      <div className="bg-surface border border-border rounded-2xl p-6">
+        <h2 className="text-lg font-semibold text-ink mb-4">Streaks & Records</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <p className="text-sm text-muted">Current streak</p>
+            <p className="text-xl font-semibold text-ink tabular-nums">{stats.streakCurrent} days</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted">Best streak</p>
+            <p className="text-xl font-semibold text-ink tabular-nums">{stats.streakBest} days</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted">Best day</p>
+            <p className="text-xl font-semibold text-ink tabular-nums">{stats.bestDay?.count || 0} marks</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted">Daily average</p>
+            <p className="text-xl font-semibold text-ink tabular-nums">{stats.dailyAverage.toFixed(1)}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Settings panel */}
+      {showSettings && (
+        <div className="bg-surface border border-border rounded-2xl p-6">
+          <h2 className="text-lg font-semibold text-ink mb-4">Settings</h2>
+          <div className="space-y-3">
+            <button
+              onClick={handleToggleArchive}
+              className="w-full text-left px-4 py-3 rounded-lg border border-border hover:bg-border/30 transition-colors"
+            >
+              <p className="font-medium text-ink">
+                {challenge.isArchived ? "Unarchive Challenge" : "Archive Challenge"}
+              </p>
+              <p className="text-sm text-muted">
+                {challenge.isArchived
+                  ? "Restore this challenge to your active list"
+                  : "Hide from active challenges (can be restored later)"}
+              </p>
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="w-full text-left px-4 py-3 rounded-lg border border-error/30 hover:bg-error/10 transition-colors text-error"
+            >
+              <p className="font-medium">{deleting ? "Deleting..." : "Delete Challenge"}</p>
+              <p className="text-sm opacity-70">Permanently remove this challenge and all entries</p>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

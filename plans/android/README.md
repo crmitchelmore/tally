@@ -6,6 +6,11 @@
 - Clerk auth for Android and JWT for API calls
 - Local persistence for offline-first behavior (Room)
 
+## Local build prerequisites (avoid common blocker)
+- Android SDK path must be configured or Gradle will fail:
+  - set `ANDROID_HOME` (or `ANDROID_SDK_ROOT`), OR
+  - create `local.properties` with `sdk.dir=...` (do not commit `local.properties`).
+
 ## Key references (canonical docs)
 - Jetpack Compose: https://developer.android.com/jetpack/compose
 - Kotlin: https://kotlinlang.org/docs/home.html

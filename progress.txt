@@ -1,0 +1,5 @@
+# progress.txt
+# Running log for PRD-driven work.
+#
+# Use one line per notable change or verification. When something needs external input,
+# write: "BLOCKED: ..." and move on.

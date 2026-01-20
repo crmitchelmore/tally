@@ -40,7 +40,7 @@ Mobile traces (Honeycomb + OpenTelemetry):
 - OTLP exporter configuration (endpoints/headers): https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/
 
 ## Implementation order
-1. Define the canonical schema (event names, property keys, log fields) and commit it (this folder).
+1. Define the canonical schema (event names, property keys, log fields) in `plans/observability/schema.md` and commit it.
 2. Add OTel baseline setup + exporters for Honeycomb (per platform). Ensure production secrets/config are in GitHub/Vercel.
 3. Add a thin telemetry wrapper per platform so we don’t scatter vendor calls throughout UI/business logic.
 4. Instrument the highest-value flows first (auth → create challenge → log entry).

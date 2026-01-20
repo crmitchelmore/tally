@@ -25,7 +25,8 @@ Be able to deploy a "hello world" version of the landing page and the web app to
 
 **Secrets (GitHub Actions):**
 - `VERCEL_API_TOKEN` — Vercel API token for deployment
-- (Optional) `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` — only if you are *not* committing `.vercel/project.json`.
+- `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` — used to write `.vercel/project.json` during CI/CD (we don't commit `.vercel/`).
+- `VERCEL_PROD_URL` — production URL for smoke checks (set to `https://tally-tracker.app/`).
 
 **Implementation approach:**
 - Use Vercel CLI (`vercel deploy --prod`) for explicit control and visibility
@@ -44,18 +45,39 @@ on:
 jobs:
   deploy-production:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tally-web
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+
+      - name: Ensure Vercel project link
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ ! -f ".vercel/project.json" ]; then
+            mkdir -p .vercel
+            printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" > .vercel/project.json
+          fi
+
       - run: bun install
-      - run: bun run build
+      - name: bun run build
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+        run: bun run build
+
       - name: Deploy (Vercel)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
-        run: |
-          npx vercel deploy --prod --token=$VERCEL_TOKEN
+        run: npx vercel deploy --prod --yes --token=$VERCEL_TOKEN
+
       - name: Smoke check
-        run: curl -fsS https://YOUR_DOMAIN_OR_VERCEL_URL/ >/dev/null
+        env:
+          VERCEL_PROD_URL: ${{ secrets.VERCEL_PROD_URL }}
+        run: curl -fsS "$VERCEL_PROD_URL" >/dev/null
 ```
 
 **Optional (not required):**
@@ -89,5 +111,5 @@ jobs:
 7. Verify CD workflow: merge trivial change to `main`, confirm auto-deploy.
 
 ## Behavioral tests
-- Visiting the production URL returns HTTP 200 and renders headline + primary CTA.
+- Visiting https://tally-tracker.app returns HTTP 200 and renders headline + primary CTA.
 - Primary CTA works on mobile + desktop breakpoints.

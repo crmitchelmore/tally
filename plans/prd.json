@@ -1,0 +1,244 @@
+[
+  {
+    "category": "bootstrap",
+    "description": "Sync repo .env secrets into GitHub Actions secrets (names already listed in MASTER-TODO.md)",
+    "steps": [
+      "Open MASTER-TODO.md and follow \"GitHub repository secrets (from local .env)\"",
+      "Ensure secrets exist in GitHub Actions (names only; never commit/print values)",
+      "Record any missing/blocked secrets in progress.txt"
+    ],
+    "passes": true
+  },
+  {
+    "category": "bootstrap",
+    "description": "Verify required local toolchains and automation access (gh auth, bun/node/corepack, etc.)",
+    "steps": [
+      "Follow MASTER-TODO.md section \"Verify toolchains are available (local + CI)\"",
+      "Follow MASTER-TODO.md section \"Verify required integrations / automation access\"",
+      "If anything is missing, note it in progress.txt and move on"
+    ],
+    "passes": true
+  },
+  {
+    "category": "landing",
+    "description": "CD: deploy hello-world landing page + /app shell to production via GitHub Actions + Vercel",
+    "steps": [
+      "Follow plans/landing-page/feature-cd.md implementation order",
+      "Add/verify deploy workflow runs on push to main",
+      "Smoke-check production URL returns HTTP 200"
+    ],
+    "passes": false
+  },
+  {
+    "category": "web",
+    "description": "Web auth + user provisioning (Clerk + /api/v1/auth/user)",
+    "steps": [
+      "Follow plans/web-api/feature-auth.md",
+      "Verify signed-out /app CTA and signed-in provisioning",
+      "Run existing web checks (bun run \u2026) if present"
+    ],
+    "passes": false
+  },
+  {
+    "category": "web",
+    "description": "Web API contract: implement /api/v1 endpoints per docs and plans/web-api/feature-api-contract.md",
+    "steps": [
+      "Follow plans/web-api/feature-api-contract.md",
+      "Ensure endpoints match feature-map.md + docs/API.md (if present)",
+      "Run existing checks"
+    ],
+    "passes": false
+  },
+  {
+    "category": "web",
+    "description": "Web challenges feature (create/list/detail/update/archive/delete)",
+    "steps": [
+      "Follow plans/web-api/feature-challenges.md",
+      "Verify timeframe rules + public/private access",
+      "Run existing checks"
+    ],
+    "passes": false
+  },
+  {
+    "category": "web",
+    "description": "Web entries feature (add/edit/delete, per-day drilldown)",
+    "steps": [
+      "Follow plans/web-api/feature-entries.md",
+      "Verify fast entry UX + reduced-motion support",
+      "Run existing checks"
+    ],
+    "passes": false
+  },
+  {
+    "category": "web",
+    "description": "Web stats feature (pace, streaks, charts, weekly summary)",
+    "steps": [
+      "Follow plans/web-api/feature-stats.md",
+      "Verify computed stats match feature-map.md",
+      "Run existing checks"
+    ],
+    "passes": false
+  },
+  {
+    "category": "web",
+    "description": "Web data portability (export/import JSON+CSV, clear-all)",
+    "steps": [
+      "Follow plans/web-api/feature-data-portability.md",
+      "Verify import replace-all semantics",
+      "Run existing checks"
+    ],
+    "passes": false
+  },
+  {
+    "category": "web",
+    "description": "Web community (public challenges + follow/unfollow; real aggregation where required)",
+    "steps": [
+      "Follow plans/web-api/feature-community.md",
+      "Replace any placeholder totals/owner info with real server-side aggregation",
+      "Run existing checks"
+    ],
+    "passes": false
+  },
+  {
+    "category": "landing",
+    "description": "Landing page hero micro-demo (reduced-motion + performance safe)",
+    "steps": [
+      "Follow plans/landing-page/feature-hero-micro-demo.md",
+      "Verify reduced-motion fallback",
+      "Verify no heavy hero JS regressions"
+    ],
+    "passes": false
+  },
+  {
+    "category": "landing",
+    "description": "Landing page feature showcase section",
+    "steps": [
+      "Follow plans/landing-page/feature-feature-showcase.md",
+      "Verify desktop-first layout and one clear CTA",
+      "Check a11y basics"
+    ],
+    "passes": false
+  },
+  {
+    "category": "landing",
+    "description": "Landing page how-it-works section",
+    "steps": [
+      "Follow plans/landing-page/feature-how-it-works.md",
+      "Verify copy matches real product flows",
+      "Check reduced-motion"
+    ],
+    "passes": false
+  },
+  {
+    "category": "landing",
+    "description": "Landing page testimonials + stats section",
+    "steps": [
+      "Follow plans/landing-page/feature-testimonials-stats.md",
+      "Verify calm, high-contrast presentation",
+      "Check responsive behavior"
+    ],
+    "passes": false
+  },
+  {
+    "category": "landing",
+    "description": "Landing page live sync demo section",
+    "steps": [
+      "Follow plans/landing-page/feature-live-sync-demo.md",
+      "Verify performance + reduced-motion handling",
+      "Check a11y basics"
+    ],
+    "passes": false
+  },
+  {
+    "category": "landing",
+    "description": "Landing page app showcase section",
+    "steps": [
+      "Follow plans/landing-page/feature-app-showcase.md",
+      "Verify media lazy-loading and offscreen pause",
+      "Check Core Web Vitals risks"
+    ],
+    "passes": false
+  },
+  {
+    "category": "landing",
+    "description": "Landing page iOS + Android coming-soon pages",
+    "steps": [
+      "Follow plans/landing-page/feature-ios-android-pages.md",
+      "Verify CTAs route correctly",
+      "Check accessibility + responsive layout"
+    ],
+    "passes": false
+  },
+  {
+    "category": "ios",
+    "description": "iOS auth (Clerk) + secure token storage + /api/v1/auth/user sync",
+    "steps": [
+      "Follow plans/ios/feature-auth.md",
+      "Ensure Keychain token storage",
+      "Verify signed-out vs signed-in navigation"
+    ],
+    "passes": false
+  },
+  {
+    "category": "ios",
+    "description": "iOS API client",
+    "steps": [
+      "Follow plans/ios/feature-api-client.md",
+      "Ensure Bearer auth",
+      "Add/verify tests if already present"
+    ],
+    "passes": false
+  },
+  {
+    "category": "ios",
+    "description": "iOS challenges",
+    "steps": [
+      "Follow plans/ios/feature-challenges.md",
+      "Verify offline-first behavior and clear sync state",
+      "Run existing iOS tests"
+    ],
+    "passes": false
+  },
+  {
+    "category": "android",
+    "description": "Android auth (Clerk) + secure token storage + /api/v1/auth/user sync",
+    "steps": [
+      "Follow plans/android/feature-auth.md",
+      "Ensure Android SDK location is configured (ANDROID_HOME/ANDROID_SDK_ROOT or local.properties sdk.dir) before running Gradle.",
+      "Ensure EncryptedSharedPreferences token storage",
+      "Verify signed-out vs signed-in navigation"
+    ],
+    "passes": false
+  },
+  {
+    "category": "android",
+    "description": "Android API client",
+    "steps": [
+      "Follow plans/android/feature-api-client.md",
+      "Ensure Android SDK location is configured (ANDROID_HOME/ANDROID_SDK_ROOT or local.properties sdk.dir) before running Gradle.",
+      "Ensure Bearer auth",
+      "Add/verify tests if already present"
+    ],
+    "passes": false
+  },
+  {
+    "category": "observability",
+    "description": "Observability (post-product): OTel to Honeycomb + PostHog taxonomy + structured logs",
+    "steps": [
+      "Follow plans/observability/README.md and plans/observability/feature-observability.md",
+      "Ensure canonical context fields are included",
+      "Verify sampling/cost controls"
+    ],
+    "passes": false
+  },
+  {
+    "category": "process",
+    "description": "CI (last): add lint/build/test checks and (optional) preview deploy workflows",
+    "steps": [
+      "Follow MASTER-TODO.md CI section",
+      "Ensure existing platform commands are wired into GitHub Actions",
+      "Verify green on main"
+    ],
+    "passes": false
+  }
+]

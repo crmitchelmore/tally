@@ -9,6 +9,8 @@ Goal: add consistent telemetry across platforms so we can answer: **what happene
 - **User analytics (PostHog):** consistent event names + properties across platforms.
 - **Logs:** structured logs shaped as **wide events / canonical log line** (per https://loggingsucks.com/).
 
+Canonical schema (source of truth): `plans/observability/schema.md`.
+
 ## Logging philosophy (loggingsucks.com)
 - Prefer **one context-rich event** per request / user action over many small log lines.
 - Optimize logs for **querying**, not writing: high-cardinality fields (user, ids) + high-dimensional context.

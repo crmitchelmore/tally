@@ -7,6 +7,8 @@ NEVER STOP TO ASK QUESTIONS - MAKE THE BEST DECISION WITHOUT COMPROMISING SECURI
 ### 1) GitHub repository secrets (from local `.env`)
 Before any deploy/CI work, copy **all** secret values from the repo-root `.env` into **GitHub → Settings → Secrets and variables → Actions**.
 
+To test deploys, use the simplest hello world type app if we don't have anything else to deploy.
+
 Preferred (scripted, avoids pasting values in UI):
 ```bash
 # From repo root
@@ -47,8 +49,9 @@ gh secret list --repo crmitchelmore/tally
 - TEST_USER_EMAIL
 - TEST_USER_PASSWORD
 - VERCEL_API_TOKEN
-- (Optional) VERCEL_ORG_ID (if not committing `.vercel/project.json`)
-- (Optional) VERCEL_PROJECT_ID (if not committing `.vercel/project.json`)
+- VERCEL_ORG_ID
+- VERCEL_PROJECT_ID
+- VERCEL_PROD_URL
 - IOS_SIGNING_CERT_PASSWORD
 - IOS_KEYCHAIN_PASSWORD
 - GOOGLE_PLAY_SERVICE_ACCOUNT_JSON
@@ -72,13 +75,14 @@ These are the minimum tools we rely on for building/verifying across platforms.
 **Android:**
 - `java`/`javac`, `gradle`, `adb`
 - Android Emulator (recommended for device-level verification): `emulator` (from Android SDK)
+- Android SDK path must be configured or Gradle will fail:
+  - set `ANDROID_HOME` (or `ANDROID_SDK_ROOT`), OR
+  - create `local.properties` with `sdk.dir=...` (do not commit `local.properties`).
 
-**Infra:**
-- `pulumi`, `npm`
 
 Quick check (OK/MISSING):
 ```bash
-for c in bun node corepack xcodebuild xcrun tuist xcodegen java javac gradle adb emulator pulumi npm; do
+for c in bun node corepack xcodebuild xcrun tuist xcodegen java javac gradle adb emulator; do
   printf '%-10s ' "$c"; command -v "$c" >/dev/null 2>&1 && echo OK || echo MISSING;
 done
 ```

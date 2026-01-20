@@ -5,6 +5,7 @@ import { TallyMark } from "@/components/ui/tally-mark";
 import { ChallengeList } from "@/components/challenges";
 import { DashboardHighlights, PersonalRecords, WeeklySummary } from "@/components/stats";
 import { DataManagementSection } from "@/components/data";
+import { FollowedChallengesSection, CommunitySection } from "@/components/community";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import type { 
@@ -230,6 +231,9 @@ export default function AppPage() {
         challengeNames={challengeNames}
       />
 
+      {/* Followed challenges */}
+      <FollowedChallengesSection onRefresh={handleRefresh} />
+
       {/* Challenges list */}
       <ChallengeList
         challenges={challenges}
@@ -238,6 +242,9 @@ export default function AppPage() {
         onCreateChallenge={handleCreateChallenge}
         onRefresh={handleRefresh}
       />
+
+      {/* Community section */}
+      <CommunitySection onRefresh={handleRefresh} />
 
       {/* Weekly summary modal */}
       <WeeklySummary

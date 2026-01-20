@@ -151,3 +151,24 @@
 - Clear requires typing "delete" to confirm
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Web data portability" passes=true
+
+## 2026-01-20: Web community feature (feature-community.md)
+- Created community component folder (src/components/community/):
+  - public-challenge-card.tsx: Card for public challenges with follow/unfollow button, optimistic UI updates, progress bar, follower count, owner info
+  - public-challenges-list.tsx: List with debounced search, loading/empty/error states
+  - followed-challenges-section.tsx: Dashboard section showing followed challenges in horizontal scroll, with unfollow on hover
+  - community-section.tsx: Collapsible section to browse public challenges
+  - index.ts: Barrel exports
+- Updated /app/page.tsx to include:
+  - FollowedChallengesSection between PersonalRecords and ChallengeList
+  - CommunitySection at bottom for discovering public challenges
+- API endpoints already exist with real server-side aggregation from feature-api-contract.md:
+  - GET /api/v1/public/challenges: real totalReps, progress, followerCount, owner aggregation
+  - POST /api/v1/follow: follow validation (public only, not own challenge)
+  - DELETE /api/v1/follow: unfollow
+  - GET /api/v1/followed: followed challenges with aggregated data
+- Optimistic UI updates for follow/unfollow with error revert
+- Private challenges never appear in public list (filtered in getPublicChallenges)
+- Accessibility: focus-visible states, ARIA labels for buttons
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Web community" passes=true

@@ -1177,3 +1177,324 @@ main.landing {
   margin-right: 12px;
   color: var(--color-border);
 }
+
+/* ============================================
+   Live Sync Demo Section
+   ============================================ */
+
+.live-sync-demo {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.sync-demo-heading {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.025em;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 768px) {
+  .sync-demo-heading {
+    font-size: 2.5rem;
+  }
+}
+
+.sync-demo-subhead {
+  font-size: 1.125rem;
+  color: var(--color-muted);
+  margin-bottom: 40px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Devices grid */
+.sync-demo-devices {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 480px) {
+  .sync-demo-devices {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+
+/* Device card */
+.sync-device {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.sync-device:hover {
+  border-color: var(--color-muted);
+}
+
+.sync-device-offline {
+  border-color: var(--color-warning);
+  opacity: 0.8;
+}
+
+.sync-device-syncing {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(184, 59, 46, 0.1);
+}
+
+.dark .sync-device-syncing {
+  box-shadow: 0 0 0 2px rgba(212, 90, 77, 0.15);
+}
+
+.sync-device-synced {
+  border-color: var(--color-success);
+}
+
+.sync-device-icon {
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
+.sync-device-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.sync-device-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.sync-device-count {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sync status pill */
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--color-paper);
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+.sync-status-offline {
+  background: color-mix(in oklch, var(--color-warning), transparent 85%);
+  color: var(--color-warning);
+}
+
+.sync-status-queued {
+  background: color-mix(in oklch, var(--color-accent), transparent 85%);
+  color: var(--color-accent);
+}
+
+.sync-status-syncing {
+  background: color-mix(in oklch, var(--color-accent), transparent 85%);
+  color: var(--color-accent);
+}
+
+.sync-status-synced {
+  background: color-mix(in oklch, var(--color-success), transparent 85%);
+  color: var(--color-success);
+}
+
+.sync-status-icon {
+  font-size: 0.625rem;
+  line-height: 1;
+}
+
+/* Syncing animation (pulsing icon) */
+.sync-status-syncing .sync-status-icon {
+  animation: sync-pulse 1s ease-in-out infinite;
+}
+
+@keyframes sync-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sync-status-syncing .sync-status-icon {
+    animation: none;
+  }
+}
+
+.sync-status-label {
+  white-space: nowrap;
+}
+
+/* Tally visual */
+.sync-tally-visual {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.sync-tally-group {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.sync-five-gate {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  position: relative;
+}
+
+.sync-partial {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  position: relative;
+}
+
+.sync-stroke {
+  width: 3px;
+  height: 28px;
+  border-radius: 2px;
+  background: var(--color-ink);
+  transition: transform 200ms ease;
+}
+
+.sync-stroke-new {
+  animation: sync-stroke-draw 200ms ease-out;
+  transform-origin: bottom;
+}
+
+@keyframes sync-stroke-draw {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sync-stroke-new {
+    animation: none;
+  }
+}
+
+.sync-slash {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 36px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  transform: translate(-50%, -50%) rotate(-18deg);
+}
+
+/* Actions */
+.sync-demo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.sync-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px;
+  min-height: 48px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-accent);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms, transform 100ms;
+}
+
+.sync-add-btn:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--color-accent), black 10%);
+}
+
+.sync-add-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.sync-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sync-add-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.sync-add-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.sync-offline-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px;
+  min-height: 48px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms, border-color 150ms;
+}
+
+.sync-offline-btn:hover:not(:disabled) {
+  background: var(--color-paper);
+  border-color: var(--color-muted);
+}
+
+.sync-offline-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sync-offline-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.sync-demo-note {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}

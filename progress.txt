@@ -263,3 +263,30 @@
 - Reduced-motion: inherits global reduced-motion rules (no section-specific animations)
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Landing page testimonials + stats section" passes=true
+
+## 2026-01-20: Landing page live sync demo section (feature-live-sync-demo.md)
+- Created LiveSyncDemo component (src/components/landing/live-sync-demo.tsx):
+  - Shows sync states across simulated devices (phone, desktop)
+  - States: offline, queued (pending), syncing, synced (up to date)
+  - Interactive +1 button triggers sync flow animation
+  - "Go offline" button simulates offline/reconnect flow
+  - Tally mark visualization updates with new strokes
+- Added CSS styles to globals.css:
+  - .live-sync-demo section with max-width 720px
+  - .sync-device cards with state-based border colors (warning/accent/success)
+  - .sync-status pill with colored backgrounds for each state
+  - .sync-pulse keyframe animation for syncing icon
+  - Reduced-motion: animation disabled via global rule
+- Performance:
+  - Lightweight client component (~1.5 kB)
+  - No external dependencies (uses pure React state)
+  - Animations CSS-only (no requestAnimationFrame loops)
+- Accessibility:
+  - ARIA labels on section, device group, buttons
+  - aria-live on status pills for screen reader updates
+  - Focus-visible states on all interactive elements
+  - Large tap targets (min 48px height on buttons)
+- Exported from src/components/landing/index.ts
+- Added to landing page between HowItWorks and TestimonialsStats
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Landing page live sync demo section" passes=true

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { HeroMicroDemo, FeatureShowcase, HowItWorks, TestimonialsStats } from "@/components/landing";
+import { HeroMicroDemo, FeatureShowcase, HowItWorks, TestimonialsStats, LiveSyncDemo } from "@/components/landing";
 
 export default function Home() {
   return (
@@ -42,6 +42,9 @@ export default function Home() {
 
       {/* How it works section */}
       <HowItWorks />
+
+      {/* Live sync demo section */}
+      <LiveSyncDemo />
 
       {/* Testimonials + stats section */}
       <TestimonialsStats />

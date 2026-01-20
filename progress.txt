@@ -268,3 +268,42 @@ Time: ~2 minutes
   - ✅ API requests include Bearer token (stored in EncryptedSharedPreferences)
   - ✅ Signed-out state is clear and safe (SignInScreen with tally logo)
 - PRD item "Android auth" passes=true
+
+## 2026-01-20: Android API client module (:core:network)
+- Created new :core:network module for API communication
+- Models (Models.kt):
+  - Challenge, Entry, ChallengeStats, DashboardStats, BestDay data classes
+  - TimeframeType, Feeling, PaceStatus enums with @Serializable + @SerialName
+  - All models use snake_case JSON mapping via @SerialName annotations
+- Requests (Requests.kt):
+  - CreateChallengeRequest, UpdateChallengeRequest
+  - CreateEntryRequest, UpdateEntryRequest
+- Responses (Responses.kt):
+  - ChallengeResponse, ChallengesResponse, EntryResponse, EntriesResponse
+  - StatsResponse, DashboardStatsResponse
+- Error handling (ApiError.kt):
+  - Sealed class ApiError with Unauthorized, Forbidden, NotFound, BadRequest,
+    NetworkError, RateLimited, ServerError
+  - Each error has isRecoverable and requiresReauth properties
+  - ApiResult<T> sealed class with Success/Failure, map(), onSuccess(),
+    onFailure() operators
+- API client (TallyApiClient.kt):
+  - HTTP client using HttpURLConnection + kotlinx.serialization
+  - Bearer auth via AuthManager.getToken()
+  - Full CRUD for challenges: list, get, create, update, delete
+  - Full CRUD for entries: list, create, update, delete
+  - Stats endpoints: getChallengeStats, getDashboardStats
+- Unit tests (29 tests, all passing):
+  - ModelsTest.kt: Model deserialization, enum serialization
+  - RequestsTest.kt: Request serialization
+  - ApiErrorTest.kt: Error properties, ApiResult operators
+- Dependencies:
+  - kotlinx-serialization-json:1.7.3
+  - kotlinx-coroutines-android:1.9.0
+  - androidx.annotation:annotation:1.9.1
+- Build: ./gradlew :core:network:testDebugUnitTest + assembleDebug: SUCCESS
+- Acceptance criteria:
+  - [x] Challenges + entries CRUD available via typed Kotlin API
+  - [x] Network errors → offline queue (handled via ApiResult.isRecoverable)
+  - [x] Matches iOS API layer shape (same models, same endpoints)
+- PRD item "Android API client" passes=true

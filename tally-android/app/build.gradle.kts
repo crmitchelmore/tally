@@ -51,6 +51,7 @@ android {
 dependencies {
     implementation(project(":core:design"))
     implementation(project(":core:auth"))
+    implementation(project(":core:network"))
     
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

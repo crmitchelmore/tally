@@ -25,3 +25,4 @@ rootProject.name = "Tally"
 include(":app")
 include(":core:design")
 include(":core:auth")
+include(":core:network")

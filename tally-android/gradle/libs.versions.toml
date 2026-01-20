@@ -9,6 +9,8 @@ navigationCompose = "2.8.5"
 kotlinxSerializationJson = "1.7.3"
 securityCrypto = "1.1.0-alpha06"
 browser = "1.8.0"
+junit = "4.13.2"
+kotlinxCoroutinesTest = "1.8.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -25,6 +27,8 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

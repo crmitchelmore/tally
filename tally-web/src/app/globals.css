@@ -1707,3 +1707,173 @@ main.landing {
   outline: 2px solid var(--color-accent);
   outline-offset: 4px;
 }
+
+/* ========================================
+   Platform pages (iOS / Android coming soon)
+   ======================================== */
+
+.platform-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 24px;
+  gap: 48px;
+}
+
+.platform-hero {
+  width: 100%;
+  max-width: 560px;
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  padding: 48px 32px;
+  background: var(--color-surface);
+  box-shadow: 0 24px 60px rgba(27, 26, 23, 0.08);
+  text-align: center;
+  position: relative;
+}
+
+.dark .platform-hero {
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+}
+
+.platform-tally {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  opacity: 0.15;
+  transform: scale(0.8);
+}
+
+.platform-eyebrow {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 12px;
+  color: var(--color-muted);
+  margin-bottom: 16px;
+}
+
+.platform-heading {
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  margin-bottom: 16px;
+}
+
+@media (min-width: 640px) {
+  .platform-heading {
+    font-size: 2.5rem;
+  }
+}
+
+.platform-subhead {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--color-muted);
+  max-width: 420px;
+  margin: 0 auto 32px;
+}
+
+/* Store button placeholder */
+.platform-store-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border: 2px dashed var(--color-border);
+  border-radius: 12px;
+  background: var(--color-paper);
+  opacity: 0.8;
+  cursor: default;
+  margin-bottom: 32px;
+}
+
+.platform-store-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--color-ink);
+}
+
+.platform-store-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.platform-store-label {
+  font-size: 11px;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.platform-store-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+/* Actions */
+.platform-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (min-width: 480px) {
+  .platform-actions {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+/* Features section */
+.platform-features {
+  width: 100%;
+  max-width: 560px;
+}
+
+.platform-feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.platform-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  font-size: 1rem;
+  color: var(--color-ink);
+}
+
+.platform-feature-icon {
+  color: var(--color-accent);
+  font-size: 0.875rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

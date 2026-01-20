@@ -55,7 +55,7 @@ jobs:
         run: |
           npx vercel deploy --prod --token=$VERCEL_TOKEN
       - name: Smoke check
-        run: curl -fsS https://YOUR_DOMAIN_OR_VERCEL_URL/ >/dev/null
+        run: curl -fsS https://tally-tracker.app/ >/dev/null
 ```
 
 **Optional (not required):**
@@ -89,5 +89,5 @@ jobs:
 7. Verify CD workflow: merge trivial change to `main`, confirm auto-deploy.
 
 ## Behavioral tests
-- Visiting the production URL returns HTTP 200 and renders headline + primary CTA.
+- Visiting https://tally-tracker.app returns HTTP 200 and renders headline + primary CTA.
 - Primary CTA works on mobile + desktop breakpoints.

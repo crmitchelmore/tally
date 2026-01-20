@@ -139,7 +139,7 @@
       "Verify copy matches real product flows",
       "Check reduced-motion"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "landing",

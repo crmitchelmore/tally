@@ -224,3 +224,24 @@
 - Reduced-motion: accordion panel transition disabled
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Landing page feature showcase section" passes=true
+
+## 2026-01-20: Landing page how-it-works section (feature-how-it-works.md)
+- Created HowItWorks component (src/components/landing/how-it-works.tsx):
+  - 3-step flow: Create challenge → Log progress → See pace
+  - Step cards with tally-stroke number indicators (1/2/3 strokes)
+  - Desktop: horizontal layout with connector lines between steps
+  - Mobile: stacked vertical cards
+  - Copy matches real product flows (target+timeframe, tap to log, ahead/on-track/behind)
+- Added CSS styles to globals.css:
+  - .how-it-works section with max-width 1120px
+  - .hiw-step-card with hover states and shadows
+  - .hiw-step-number with tally stroke indicators
+  - .hiw-connector desktop-only connectors with accent dots
+  - Responsive breakpoints at 768px
+  - .hiw-cta single clear CTA button
+- Updated landing page to include HowItWorks after FeatureShowcase
+- Exported from src/components/landing/index.ts
+- Accessibility: ARIA labels on section, focus-visible states on CTA
+- Reduced-motion: no animations in component (static steps)
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Landing page how-it-works section" passes=true

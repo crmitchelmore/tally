@@ -757,3 +757,246 @@ main.landing {
   outline: 2px solid var(--color-accent);
   outline-offset: 4px;
 }
+
+/* ============================================
+   How It Works Section
+   ============================================ */
+
+.how-it-works {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+.hiw-heading {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  text-align: center;
+  margin-bottom: 12px;
+  letter-spacing: -0.025em;
+}
+
+@media (min-width: 768px) {
+  .hiw-heading {
+    font-size: 2.5rem;
+  }
+}
+
+.hiw-subheading {
+  font-size: 1.125rem;
+  color: var(--color-muted);
+  text-align: center;
+  margin-bottom: 48px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 768px) {
+  .hiw-subheading {
+    margin-bottom: 64px;
+  }
+}
+
+/* Steps container */
+.hiw-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .hiw-steps {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0;
+  }
+}
+
+/* Step wrapper (card + connector) */
+.hiw-step-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .hiw-step-wrapper {
+    flex: 1;
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+/* Step card */
+.hiw-step-card {
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-surface);
+  padding: 28px 24px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(27, 26, 23, 0.04);
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+  width: 100%;
+}
+
+.dark .hiw-step-card {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.hiw-step-card:hover {
+  border-color: var(--color-muted);
+  box-shadow: 0 8px 24px rgba(27, 26, 23, 0.08);
+}
+
+.dark .hiw-step-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 768px) {
+  .hiw-step-card {
+    text-align: left;
+    min-height: 220px;
+  }
+}
+
+/* Step number with tally strokes */
+.hiw-step-number {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  .hiw-step-number {
+    align-items: flex-start;
+  }
+}
+
+.hiw-step-strokes {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 24px;
+}
+
+.hiw-stroke {
+  width: 3px;
+  height: 20px;
+  background: var(--color-accent);
+  border-radius: 1.5px;
+  opacity: 0.7;
+}
+
+.hiw-step-digit {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+/* Step content */
+.hiw-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hiw-step-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+@media (min-width: 768px) {
+  .hiw-step-title {
+    font-size: 1.25rem;
+  }
+}
+
+.hiw-step-description {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-muted);
+}
+
+/* Connector between steps */
+.hiw-connector {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hiw-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    flex-shrink: 0;
+    height: 220px;
+  }
+}
+
+.hiw-connector-line {
+  width: 32px;
+  height: 2px;
+  background: var(--color-border);
+  border-radius: 1px;
+  position: relative;
+}
+
+/* Dashed connector effect */
+.hiw-connector-line::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  transform: translateY(-50%);
+  opacity: 0.5;
+}
+
+/* CTA wrap */
+.hiw-cta-wrap {
+  margin-top: 48px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .hiw-cta-wrap {
+    margin-top: 64px;
+  }
+}
+
+.hiw-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  padding: 14px 32px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  transition: background-color 200ms, transform 100ms;
+}
+
+.hiw-cta:hover {
+  background: color-mix(in oklch, var(--color-accent), black 10%);
+}
+
+.hiw-cta:active {
+  transform: scale(0.98);
+}
+
+.hiw-cta:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}

@@ -13,6 +13,19 @@ Make sign up/in seamless and ensure backend user records exist.
 - Clerk Next.js quickstart: https://clerk.com/docs/quickstarts/nextjs
 - `clerkMiddleware`: https://clerk.com/docs/references/nextjs/clerk-middleware
 - Server auth helpers (`auth()`): https://clerk.com/docs/references/nextjs/auth
+- https://tally-tracker.app/api/clerk-proxy/.well-known/jwks.json JWKS url 
+- JWKS public key: 
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv4IT+0UT+TnO6hcRcv45
+hguOhvmAeo4QWxzWVcL7YtdqSrCHxBEeDBObziaoH1SFZBbegDe0A7Gddloa5Gpx
+Rv94THTuRqz88I2DV14OzEXhvf0QvIpyDKBYRmAq0YQV7P2txr0d3T8iW1Lj7c1b
+0oGp0k1tE+muYBy0lV2eztCUNy6WvmbHpH7hc1/Otg3vmuiZJgsKCn5bNp1tKguC
+4TOKsWDV9RjMy7IMkWzDTDHbpBPB3OLpdiunkcwsBraceMWwKMTA9ylM4DPnyMBI
+jVei3X6P25Q4RcijnbDxcsrtstZvgK4nbyC6QlG/xvDw0ipViGRAOSscZvFCTakn
+YwIDAQAB
+-----END PUBLIC KEY-----
+- Use CLERK_SECRET_KEY to make any configuration changes to clerk.
+- Redirect url: https://tally-tracker.app/api/clerk-proxy/v1/oauth_callback
 
 ## Key implementation notes
 - Store clerkId on users.

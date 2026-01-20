@@ -191,7 +191,7 @@
       "Define design tokens in TallyDesign Swift Package",
       "Run existing checks"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "ios",

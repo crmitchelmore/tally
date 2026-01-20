@@ -1,0 +1,45 @@
+import SwiftUI
+import TallyDesign
+
+/// Main app view with tab-based navigation
+struct AppView: View {
+    @State private var selectedTab = 0
+    @Environment(\.colorScheme) private var colorScheme
+    
+    var body: some View {
+        ZStack {
+            // Paper background
+            Color.tallyPaper
+                .ignoresSafeArea()
+            
+            TabView(selection: $selectedTab) {
+                NavigationStack {
+                    HomeView()
+                }
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
+                }
+                .tag(0)
+                
+                NavigationStack {
+                    CommunityView()
+                }
+                .tabItem {
+                    Label("Community", systemImage: "person.2.fill")
+                }
+                .tag(1)
+            }
+            .tint(.tallyAccent)
+            
+            // Sync status indicator at top
+            VStack {
+                SyncStatusView()
+                Spacer()
+            }
+        }
+    }
+}
+
+#Preview {
+    AppView()
+}

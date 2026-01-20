@@ -99,7 +99,7 @@
       "Verify import replace-all semantics",
       "Run existing checks"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "web",

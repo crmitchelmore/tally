@@ -4,6 +4,7 @@ import Link from "next/link";
 import { TallyMark } from "@/components/ui/tally-mark";
 import { ChallengeList } from "@/components/challenges";
 import { DashboardHighlights, PersonalRecords, WeeklySummary } from "@/components/stats";
+import { DataManagementSection } from "@/components/data";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import type { 
@@ -208,12 +209,15 @@ export default function AppPage() {
             Your tallies are ready. Create a challenge or log progress below.
           </p>
         </div>
-        <button
-          onClick={() => setShowWeeklySummary(true)}
-          className="flex-shrink-0 px-4 py-2 rounded-xl border border-border text-sm font-medium text-ink hover:bg-border/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-        >
-          Weekly Summary
-        </button>
+        <div className="flex-shrink-0 flex gap-2">
+          <DataManagementSection onDataChange={handleRefresh} />
+          <button
+            onClick={() => setShowWeeklySummary(true)}
+            className="px-4 py-2 rounded-xl border border-border text-sm font-medium text-ink hover:bg-border/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          >
+            Weekly Summary
+          </button>
+        </div>
       </section>
 
       {/* Dashboard highlights */}

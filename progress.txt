@@ -134,3 +134,20 @@
 - Weekly summary matches selected week with navigation
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Web stats feature" passes=true
+
+## 2026-01-20: Web data portability (feature-data-portability.md)
+- Created data component folder (src/components/data/):
+  - export-data.tsx: Export JSON and CSV formats with download trigger
+  - import-data.tsx: File picker with replace-all confirmation dialog
+  - clear-data.tsx: Dangerous action with "delete" confirmation text
+  - data-management-section.tsx: Modal dialog containing all three actions
+- Added DataManagementSection to /app page header (beside Weekly Summary)
+- API endpoints already exist from feature-api-contract.md:
+  - GET /api/v1/data exports all user challenges and entries
+  - POST /api/v1/data imports with replace-all semantics + ID remapping
+  - DELETE /api/v1/data clears all user data
+- CSV export includes # CHALLENGES and # ENTRIES sections with headers
+- Import validates JSON structure before clearing existing data
+- Clear requires typing "delete" to confirm
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Web data portability" passes=true

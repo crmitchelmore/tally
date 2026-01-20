@@ -316,3 +316,27 @@
 - Added to landing page between HowItWorks and LiveSyncDemo
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Landing page app showcase section" passes=true
+
+## 2026-01-20: Landing page iOS + Android coming-soon pages (feature-ios-android-pages.md)
+- Verified existing /ios and /android pages with:
+  - App Store / Google Play placeholder buttons (dashed border style)
+  - "Coming soon on the" label above store name
+  - CTA to "Try the web app now" + "Back to home" link
+  - Tally decoration in top-right corner
+  - Feature preview list (native design, real-time sync, offline-first)
+- Added platform links to AppShowcase component:
+  - "Coming soon: iOS · Android" links below primary CTA
+  - Links to /ios and /android pages from landing page
+- CSS styles already in globals.css:
+  - .platform-page, .platform-hero, .platform-store-btn, etc.
+  - Responsive layout (flex-direction on mobile)
+  - High contrast, readable type
+  - focus-visible states on all links
+- Accessibility:
+  - ARIA labels on store buttons ("Download on the App Store (coming soon)")
+  - Screen-reader-only heading for features section
+  - Keyboard navigable with clear focus states
+- Responsive layout verified (stacked CTAs on mobile, side-by-side on 480px+)
+- Reduced-motion: inherits global rules (no page-specific animations)
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Landing page iOS + Android coming-soon pages" passes=true

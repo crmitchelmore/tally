@@ -113,10 +113,24 @@ export function AppShowcase() {
         ))}
       </div>
 
-      {/* Single CTA */}
+      {/* Primary CTA */}
       <div className="app-showcase-cta-wrap">
         <a href="/app" className="app-showcase-cta">
           Start tracking
+        </a>
+      </div>
+
+      {/* Platform links */}
+      <div className="app-showcase-platforms">
+        <span className="app-showcase-platforms-label">Coming soon:</span>
+        <a href="/ios" className="app-showcase-platform-link">
+          iOS
+        </a>
+        <span className="app-showcase-platform-sep" aria-hidden="true">
+          ·
+        </span>
+        <a href="/android" className="app-showcase-platform-link">
+          Android
         </a>
       </div>
     </section>

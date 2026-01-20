@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { TelemetryProvider } from "@/components/TelemetryProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -25,7 +26,7 @@ export default function RootLayout({
 }>) {
   const body = (
     <body className={`${inter.variable} font-sans antialiased`}>
-      {children}
+      <TelemetryProvider>{children}</TelemetryProvider>
     </body>
   );
 

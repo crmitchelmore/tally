@@ -7,6 +7,7 @@ import {
   getActiveChallenges,
   getChallengesByUserId,
   createChallenge,
+  getUserByClerkId,
 } from "../_lib/store";
 import {
   jsonOk,
@@ -17,65 +18,103 @@ import {
 import { validateCreateChallenge } from "../_lib/validate";
 import type { TimeframeType } from "../_lib/types";
 import type { NextRequest } from "next/server";
+import {
+  captureEvent,
+  withSpan,
+  generateRequestId,
+} from "@/lib/telemetry";
 
 export async function GET(request: NextRequest) {
-  try {
-    const authResult = await requireAuth();
-    if (isAuthError(authResult)) {
-      return authResult.response;
+  const requestId = generateRequestId();
+
+  return withSpan("challenges.list", { request_id: requestId }, async (span) => {
+    try {
+      const authResult = await requireAuth();
+      if (isAuthError(authResult)) {
+        return authResult.response;
+      }
+
+      const user = getUserByClerkId(authResult.userId);
+      span.setAttribute("user.id", user?.id || authResult.userId);
+
+      const { searchParams } = new URL(request.url);
+      const includeArchived = searchParams.get("includeArchived") === "true";
+      span.setAttribute("include_archived", includeArchived);
+
+      const challenges = includeArchived
+        ? getChallengesByUserId(authResult.userId)
+        : getActiveChallenges(authResult.userId);
+
+      span.setAttribute("challenges.count", challenges.length);
+
+      return jsonOk({ challenges });
+    } catch (error) {
+      console.error("Error in GET /api/v1/challenges:", error);
+      return jsonInternalError();
     }
-
-    const { searchParams } = new URL(request.url);
-    const includeArchived = searchParams.get("includeArchived") === "true";
-
-    const challenges = includeArchived
-      ? getChallengesByUserId(authResult.userId)
-      : getActiveChallenges(authResult.userId);
-
-    return jsonOk({ challenges });
-  } catch (error) {
-    console.error("Error in GET /api/v1/challenges:", error);
-    return jsonInternalError();
-  }
+  });
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const authResult = await requireAuth();
-    if (isAuthError(authResult)) {
-      return authResult.response;
+  const requestId = generateRequestId();
+
+  return withSpan("challenges.create", { request_id: requestId }, async (span) => {
+    try {
+      const authResult = await requireAuth();
+      if (isAuthError(authResult)) {
+        return authResult.response;
+      }
+
+      const user = getUserByClerkId(authResult.userId);
+      const userId = user?.id || authResult.userId;
+      span.setAttribute("user.id", userId);
+
+      const body = await request.json();
+      const validation = validateCreateChallenge(body);
+
+      if (!validation.valid) {
+        return jsonBadRequest("Validation failed", validation.errors);
+      }
+
+      // Calculate dates based on timeframe
+      const { startDate, endDate } = calculateTimeframeDates(
+        body.timeframeType as TimeframeType,
+        body.startDate,
+        body.endDate
+      );
+
+      const challenge = createChallenge(authResult.userId, {
+        name: body.name.trim(),
+        target: body.target,
+        timeframeType: body.timeframeType as TimeframeType,
+        startDate,
+        endDate,
+        color: body.color || "#FF4747", // Default tally red
+        icon: body.icon || "tally",
+        isPublic: body.isPublic ?? false,
+      });
+
+      span.setAttribute("challenge.id", challenge.id);
+      span.setAttribute("challenge.timeframe_type", challenge.timeframeType);
+      span.setAttribute("challenge.target", challenge.target);
+
+      // Capture challenge_created event
+      await captureEvent(
+        "challenge_created",
+        { userId, requestId },
+        {
+          challenge_id: challenge.id,
+          timeframe_unit: challenge.timeframeType,
+          target_number: challenge.target,
+        }
+      );
+
+      return jsonCreated({ challenge });
+    } catch (error) {
+      console.error("Error in POST /api/v1/challenges:", error);
+      return jsonInternalError();
     }
-
-    const body = await request.json();
-    const validation = validateCreateChallenge(body);
-
-    if (!validation.valid) {
-      return jsonBadRequest("Validation failed", validation.errors);
-    }
-
-    // Calculate dates based on timeframe
-    const { startDate, endDate } = calculateTimeframeDates(
-      body.timeframeType as TimeframeType,
-      body.startDate,
-      body.endDate
-    );
-
-    const challenge = createChallenge(authResult.userId, {
-      name: body.name.trim(),
-      target: body.target,
-      timeframeType: body.timeframeType as TimeframeType,
-      startDate,
-      endDate,
-      color: body.color || "#FF4747", // Default tally red
-      icon: body.icon || "tally",
-      isPublic: body.isPublic ?? false,
-    });
-
-    return jsonCreated({ challenge });
-  } catch (error) {
-    console.error("Error in POST /api/v1/challenges:", error);
-    return jsonInternalError();
-  }
+  });
 }
 
 function calculateTimeframeDates(

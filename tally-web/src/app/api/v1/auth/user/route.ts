@@ -12,44 +12,67 @@ import {
   jsonNotFound,
   jsonInternalError,
 } from "../../_lib/response";
+import {
+  captureEvent,
+  withSpan,
+  generateRequestId,
+} from "@/lib/telemetry";
 
 export async function POST() {
-  try {
-    const { userId: clerkId } = await auth();
-    
-    if (!clerkId) {
-      return jsonUnauthorized();
-    }
-
-    const clerkUser = await currentUser();
-    if (!clerkUser) {
-      return jsonNotFound("User not found");
-    }
-
-    // Check if user already exists
-    const existingUser = getUserByClerkId(clerkId);
-    
-    if (existingUser) {
-      // Update user info
-      existingUser.email = clerkUser.emailAddresses[0]?.emailAddress ?? "";
-      existingUser.name = `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || "Anonymous";
-      updateUser(existingUser);
+  const requestId = generateRequestId();
+  
+  return withSpan("auth.provision_user", { request_id: requestId }, async (span) => {
+    try {
+      const { userId: clerkId } = await auth();
       
-      return jsonOk({ user: existingUser });
+      if (!clerkId) {
+        return jsonUnauthorized();
+      }
+
+      span.setAttribute("user.clerk_id", clerkId);
+
+      const clerkUser = await currentUser();
+      if (!clerkUser) {
+        return jsonNotFound("User not found");
+      }
+
+      // Check if user already exists
+      const existingUser = getUserByClerkId(clerkId);
+      
+      if (existingUser) {
+        // Update user info
+        existingUser.email = clerkUser.emailAddresses[0]?.emailAddress ?? "";
+        existingUser.name = `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || "Anonymous";
+        updateUser(existingUser);
+        
+        span.setAttribute("user.id", existingUser.id);
+        span.setAttribute("user.is_new", false);
+        
+        return jsonOk({ user: existingUser });
+      }
+
+      // Create new user
+      const newUser = createUser(
+        clerkId,
+        clerkUser.emailAddresses[0]?.emailAddress ?? "",
+        `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || "Anonymous"
+      );
+
+      span.setAttribute("user.id", newUser.id);
+      span.setAttribute("user.is_new", true);
+
+      // Capture auth_signed_in event for new users
+      await captureEvent("auth_signed_in", {
+        userId: newUser.id,
+        requestId,
+      });
+
+      return jsonCreated({ user: newUser });
+    } catch (error) {
+      console.error("Error in /api/v1/auth/user:", error);
+      return jsonInternalError();
     }
-
-    // Create new user
-    const newUser = createUser(
-      clerkId,
-      clerkUser.emailAddresses[0]?.emailAddress ?? "",
-      `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || "Anonymous"
-    );
-
-    return jsonCreated({ user: newUser });
-  } catch (error) {
-    console.error("Error in /api/v1/auth/user:", error);
-    return jsonInternalError();
-  }
+  });
 }
 
 export async function GET() {

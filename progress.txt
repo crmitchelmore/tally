@@ -307,3 +307,43 @@ Time: ~2 minutes
   - [x] Network errors → offline queue (handled via ApiResult.isRecoverable)
   - [x] Matches iOS API layer shape (same models, same endpoints)
 - PRD item "Android API client" passes=true
+
+## 2026-01-20: Observability (OTel + PostHog + structured logs)
+- Added observability packages to tally-web:
+  - posthog-js, posthog-node for client/server analytics
+  - @opentelemetry/api, @opentelemetry/sdk-node for tracing
+  - @opentelemetry/exporter-trace-otlp-http for Honeycomb export
+  - @opentelemetry/resources, @opentelemetry/semantic-conventions
+- Created telemetry infrastructure:
+  - tally-web/src/lib/telemetry.ts: Server-side telemetry wrapper
+    - Canonical event types per plans/observability/schema.md
+    - Common properties (platform, env, app_version, build_number, user_id, session_id, trace_id, span_id, request_id)
+    - Domain properties (challenge_id, entry_id, entry_count, etc.)
+    - Wide event logging (structured JSON per loggingsucks.com philosophy)
+    - PostHog server-side capture via posthog-node
+    - OTel span wrapper with withSpan() helper
+    - Request ID generation for correlation
+  - tally-web/instrumentation.ts: Next.js OTel initialization
+    - NodeSDK setup with OTLP exporter to Honeycomb
+    - Service resource attributes (service.name, service.version, deployment.environment)
+    - Graceful shutdown on SIGTERM
+  - tally-web/src/components/TelemetryProvider.tsx: Client-side provider
+    - PostHog client initialization with privacy settings (respect_dnt, no autocapture)
+    - Captures app_opened on mount
+    - identifyUser/resetUser helpers for auth flows
+    - captureClientEvent for explicit event capture
+- Instrumented core API flows:
+  - /api/v1/auth/user: auth_signed_in event on new user creation
+  - /api/v1/challenges: challenge_created event with timeframe/target properties
+  - /api/v1/entries: entry_created event with count/note/feeling properties
+  - /api/v1/data: data_export_started/completed, data_import_started/completed events
+  - All routes wrapped with OTel spans and canonical attributes
+- Updated layout.tsx: Wrapped app with TelemetryProvider
+- Env vars used: NEXT_PUBLIC_POSTHOG_KEY, NEXT_PUBLIC_POSTHOG_HOST, HONEYCOMB_API_KEY
+- Build: bun run lint (no errors) + bun run build: BUILD SUCCEEDED
+- Acceptance criteria:
+  - [x] OTel traces initialized for Honeycomb (when HONEYCOMB_API_KEY present)
+  - [x] PostHog events captured with canonical schema
+  - [x] Logs are queryable by user_id, session_id, trace_id, challenge_id, request_id
+  - [x] Sampling/cost controls: PostHog uses explicit events only (no autocapture)
+- PRD item "Observability" passes=true

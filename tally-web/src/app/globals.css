@@ -1498,3 +1498,212 @@ main.landing {
   font-size: 0.875rem;
   color: var(--color-muted);
 }
+
+/* ============================================
+   App Showcase Section
+   ============================================ */
+
+.app-showcase {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+.app-showcase-heading {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  text-align: center;
+  letter-spacing: -0.025em;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 768px) {
+  .app-showcase-heading {
+    font-size: 2.5rem;
+  }
+}
+
+.app-showcase-subhead {
+  font-size: 1.125rem;
+  color: var(--color-muted);
+  text-align: center;
+  margin-bottom: 48px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 768px) {
+  .app-showcase-subhead {
+    margin-bottom: 64px;
+  }
+}
+
+/* Screen previews grid */
+.app-showcase-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 640px) {
+  .app-showcase-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+}
+
+/* Screen frame (device mockup) */
+.app-showcase-frame {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-surface);
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(27, 26, 23, 0.06);
+  transition: box-shadow 200ms ease, border-color 200ms ease, transform 200ms ease;
+}
+
+.dark .app-showcase-frame {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.app-showcase-frame:hover {
+  border-color: var(--color-muted);
+  box-shadow: 0 12px 40px rgba(27, 26, 23, 0.1);
+  transform: translateY(-2px);
+}
+
+.dark .app-showcase-frame:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-showcase-frame,
+  .app-showcase-frame:hover {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* Placeholder content (tally mark + label) */
+.app-showcase-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 48px 32px;
+  min-height: 200px;
+  background: var(--color-paper);
+}
+
+@media (min-width: 768px) {
+  .app-showcase-placeholder {
+    min-height: 280px;
+    padding: 64px 40px;
+  }
+}
+
+/* Tally mark decoration */
+.app-showcase-tally {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  position: relative;
+}
+
+.asp-stroke {
+  width: 4px;
+  height: 40px;
+  background: var(--color-ink);
+  border-radius: 2px;
+  opacity: 0.15;
+}
+
+.asp-slash {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 52px;
+  background: var(--color-accent);
+  border-radius: 2px;
+  transform: translate(-50%, -50%) rotate(-20deg);
+  opacity: 0.2;
+}
+
+.app-showcase-screen-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+}
+
+/* Caption below media */
+.app-showcase-caption {
+  padding: 20px 24px;
+  border-top: 1px solid var(--color-border);
+}
+
+.app-showcase-caption-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin-bottom: 6px;
+}
+
+@media (min-width: 768px) {
+  .app-showcase-caption-title {
+    font-size: 1.125rem;
+  }
+}
+
+.app-showcase-caption-text {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+/* CTA wrap */
+.app-showcase-cta-wrap {
+  margin-top: 48px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .app-showcase-cta-wrap {
+    margin-top: 64px;
+  }
+}
+
+.app-showcase-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  padding: 14px 32px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  transition: background-color 200ms, transform 100ms;
+}
+
+.app-showcase-cta:hover {
+  background: color-mix(in oklch, var(--color-accent), black 10%);
+}
+
+.app-showcase-cta:active {
+  transform: scale(0.98);
+}
+
+.app-showcase-cta:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}

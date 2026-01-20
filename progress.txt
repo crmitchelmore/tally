@@ -290,3 +290,29 @@
 - Added to landing page between HowItWorks and TestimonialsStats
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Landing page live sync demo section" passes=true
+
+## 2026-01-20: Landing page app showcase section (feature-app-showcase.md)
+- Created AppShowcase component (src/components/landing/app-showcase.tsx):
+  - 2 screen previews: Dashboard (all challenges at a glance) and Challenge Detail (tally marks + stats)
+  - Tally-styled placeholders with subtle ink strokes until real screenshots available
+  - Captions below each screen with title and description
+  - Single CTA: "Start tracking"
+- Added CSS styles to globals.css:
+  - .app-showcase section with max-width 1120px
+  - .app-showcase-grid responsive 2-column layout (1-col mobile, 2-col 640px+)
+  - .app-showcase-frame device mockup with hover lift effect
+  - .app-showcase-placeholder tally mark decoration at low opacity
+  - .app-showcase-caption below media with title + description
+  - Reduced-motion: hover transform disabled
+- Lazy loading:
+  - IntersectionObserver with 100px rootMargin for early loading
+  - Content only renders when section enters viewport
+  - Once loaded, stays rendered (no unload on scroll)
+- Accessibility:
+  - ARIA labels on frames (role="img")
+  - focus-visible states on CTA
+  - High contrast text
+- Exported from src/components/landing/index.ts
+- Added to landing page between HowItWorks and LiveSyncDemo
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Landing page app showcase section" passes=true

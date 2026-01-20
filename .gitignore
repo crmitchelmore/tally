@@ -1,7 +1,7 @@
 # macOS
 .DS_Store
 
-# Environment
+# Environment (never commit secrets)
 .env
 .env.*
 !.env.example
@@ -10,6 +10,10 @@
 .envrc
 .direnv/
 
+# Local env files in sub-projects
+**/.env.local
+**/.env.*.local
+
 # Node / Next.js
 node_modules/
 .next/
@@ -17,12 +21,11 @@ out/
 dist/
 .turbo/
 .vercel/
+bun.lockb
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-.env.local
-.env.*.local
 
 # iOS / Xcode
 DerivedData/
@@ -37,6 +40,7 @@ Carthage/Build/
 
 # Android / Gradle
 .gradle/
+**/.kotlin/
 local.properties
 *.iml
 .idea/

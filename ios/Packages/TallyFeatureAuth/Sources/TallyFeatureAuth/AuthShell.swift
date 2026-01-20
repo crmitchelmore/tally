@@ -2,6 +2,12 @@ import Clerk
 import SwiftUI
 import TallyCore
 
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
 public struct AuthShell: View {
     let onSignIn: @Sendable () async -> Void
     let errorMessage: String?
@@ -60,13 +66,11 @@ public struct AuthShell: View {
         .frame(maxWidth: 420)
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
                 .shadow(color: .black.opacity(0.12), radius: 20, y: 10)
         )
         .padding()
-        .sheet(isPresented: $isShowingAuth) {
-            AuthView(isDismissable: true)
-        }
+        .sheet(isPresented: $isShowingAuth) { authSheet }
         .onChange(of: isShowingAuth) { _, isPresented in
             if !isPresented, Clerk.shared.user != nil {
                 Task {
@@ -75,6 +79,25 @@ public struct AuthShell: View {
             }
         }
     }
+}
+
+private var surfaceColor: Color {
+#if canImport(UIKit)
+    return Color(uiColor: .systemBackground)
+#elseif canImport(AppKit)
+    return Color(nsColor: .windowBackgroundColor)
+#else
+    return Color.white
+#endif
+}
+
+private var authSheet: some View {
+#if canImport(UIKit)
+    return AuthView(isDismissable: true)
+#else
+    return Text("Sign-in is available on iOS.")
+        .padding()
+#endif
 }
 
 private struct TallyMarkStack: View {

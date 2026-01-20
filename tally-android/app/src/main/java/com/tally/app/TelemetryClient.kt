@@ -24,10 +24,11 @@ object TelemetryClient {
 
   fun capture(event: String, properties: Map<String, Any?>) {
     if (BuildConfig.POSTHOG_API_KEY.isBlank()) return
+    val safeProperties = properties.filterValues { it != null }.mapValues { it.value as Any }
     PostHog.capture(
       event,
       AppContextHolder.userId ?: sessionId,
-      properties,
+      safeProperties,
       emptyMap(),
       emptyMap(),
       baseProperties(),
@@ -42,7 +43,7 @@ object TelemetryClient {
       "timestamp" to System.currentTimeMillis(),
       "session_id" to sessionId
     )
-    payload.putAll(baseProperties().toMap())
+    payload.putAll(baseProperties().mapValues { it.value })
     payload.putAll(properties)
     Log.i(TAG, payload.toString())
   }

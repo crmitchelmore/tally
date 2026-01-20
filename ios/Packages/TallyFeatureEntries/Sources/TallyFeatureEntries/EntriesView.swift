@@ -2,6 +2,13 @@ import SwiftUI
 import TallyCore
 import TallyFeatureAPIClient
 
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
+@available(iOS 17, macOS 13, *)
 public struct EntriesView<Store: EntriesStoreProtocol>: View {
     @ObservedObject private var store: Store
     private let challenge: Challenge
@@ -30,6 +37,7 @@ public struct EntriesView<Store: EntriesStoreProtocol>: View {
             }
             .navigationTitle("Entries")
             .toolbar {
+                #if canImport(UIKit)
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Close") { dismiss() }
                 }
@@ -40,6 +48,18 @@ public struct EntriesView<Store: EntriesStoreProtocol>: View {
                         Image(systemName: "plus")
                     }
                 }
+                #else
+                ToolbarItem(placement: .automatic) {
+                    Button("Close") { dismiss() }
+                }
+                ToolbarItem(placement: .automatic) {
+                    Button {
+                        isPresentingCreate = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+                #endif
             }
         }
         .task {
@@ -102,7 +122,7 @@ public struct EntriesView<Store: EntriesStoreProtocol>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
                 .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
         )
     }
@@ -130,7 +150,7 @@ public struct EntriesView<Store: EntriesStoreProtocol>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
         )
     }
 
@@ -160,7 +180,7 @@ public struct EntriesView<Store: EntriesStoreProtocol>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
         )
     }
 
@@ -186,7 +206,7 @@ public struct EntriesView<Store: EntriesStoreProtocol>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
         )
     }
 
@@ -284,7 +304,12 @@ private struct HeatmapGrid: View {
                         .frame(height: 16)
                         .overlay(
                             RoundedRectangle(cornerRadius: 4, style: .continuous)
-                                .stroke(day.date == selectedDate ? Color(red: 0.68, green: 0.12, blue: 0.14) : Color(.systemGray5), lineWidth: 0.8)
+                                .stroke(
+                                    day.date == selectedDate
+                                        ? Color(red: 0.68, green: 0.12, blue: 0.14)
+                                        : mutedStroke,
+                                    lineWidth: 0.8
+                                )
                         )
                 }
                 .buttonStyle(.plain)
@@ -296,7 +321,7 @@ private struct HeatmapGrid: View {
     private func color(for count: Int) -> Color {
         switch count {
         case 0:
-            return Color(.systemGray6)
+            return mutedFill
         case 1:
             return Color(red: 0.85, green: 0.76, blue: 0.76)
         case 2:
@@ -331,7 +356,37 @@ private struct EntryRowView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.systemGray6))
+                .fill(mutedFill)
         )
     }
+}
+
+private var surfaceColor: Color {
+#if canImport(UIKit)
+    return Color(uiColor: .systemBackground)
+#elseif canImport(AppKit)
+    return Color(nsColor: .windowBackgroundColor)
+#else
+    return Color.white
+#endif
+}
+
+private var mutedFill: Color {
+#if canImport(UIKit)
+    return Color(uiColor: .systemGray6)
+#elseif canImport(AppKit)
+    return Color(nsColor: .controlBackgroundColor)
+#else
+    return Color.gray.opacity(0.1)
+#endif
+}
+
+private var mutedStroke: Color {
+#if canImport(UIKit)
+    return Color(uiColor: .systemGray5)
+#elseif canImport(AppKit)
+    return Color(nsColor: .separatorColor)
+#else
+    return Color.gray.opacity(0.3)
+#endif
 }

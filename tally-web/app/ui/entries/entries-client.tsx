@@ -17,6 +17,13 @@ const FEELINGS = [
   { value: "very-hard", label: "Very hard" },
 ] as const;
 
+const CHALLENGE_ICONS = [
+  { value: "dot", label: "Dot" },
+  { value: "plus", label: "Plus" },
+  { value: "star", label: "Star" },
+  { value: "ring", label: "Ring" },
+] as const;
+
 type Feeling = (typeof FEELINGS)[number]["value"];
 
 type Challenge = {
@@ -52,6 +59,18 @@ type EntryDraft = {
   note: string;
   feeling?: Feeling;
   sets: { reps: number }[];
+};
+
+type ChallengeDraft = {
+  name: string;
+  targetNumber: number;
+  color: string;
+  icon: (typeof CHALLENGE_ICONS)[number]["value"];
+  timeframeUnit: "year" | "month" | "custom";
+  startDate: string;
+  endDate: string;
+  year: number;
+  isPublic: boolean;
 };
 
 type PublicChallenge = Challenge & {
@@ -678,6 +697,281 @@ function WeeklySummaryDialog({
   );
 }
 
+function ChallengeForm({
+  draft,
+  onChange,
+  onSave,
+  onCancel,
+  saving,
+}: {
+  draft: ChallengeDraft;
+  onChange: (next: ChallengeDraft) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  saving: boolean;
+}) {
+  const year = draft.year;
+  const isCustom = draft.timeframeUnit === "custom";
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(16, 16, 16, 0.4)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+        zIndex: 45,
+      }}
+    >
+      <div
+        style={{
+          width: "min(560px, 100%)",
+          borderRadius: "24px",
+          background: "#ffffff",
+          padding: "20px",
+          border: `1px solid ${surfaceEdge}`,
+          display: "grid",
+          gap: "14px",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
+          <div>
+            <p
+              style={{
+                margin: 0,
+                fontSize: "12px",
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: muted,
+              }}
+            >
+              New challenge
+            </p>
+            <p style={{ margin: "6px 0 0", fontSize: "18px", fontWeight: 600 }}>
+              Name what matters and set a pace.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            style={{
+              height: "36px",
+              padding: "0 16px",
+              borderRadius: "999px",
+              border: `1px solid ${surfaceEdge}`,
+              background: "#ffffff",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Close
+          </button>
+        </div>
+        <div style={{ display: "grid", gap: "8px" }}>
+          <label style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.14em" }}>
+            Challenge name
+          </label>
+          <input
+            aria-label="Challenge name"
+            value={draft.name}
+            onChange={(event) => onChange({ ...draft, name: event.target.value })}
+            placeholder="Read 20 pages"
+            style={{
+              height: "40px",
+              borderRadius: "12px",
+              border: `1px solid ${surfaceEdge}`,
+              padding: "0 12px",
+              fontSize: "14px",
+            }}
+          />
+        </div>
+        <div style={{ display: "grid", gap: "8px" }}>
+          <label style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.14em" }}>
+            Target number
+          </label>
+          <input
+            type="number"
+            min={1}
+            aria-label="Challenge target number"
+            value={draft.targetNumber}
+            onChange={(event) =>
+              onChange({ ...draft, targetNumber: Number(event.target.value) })
+            }
+            style={{
+              height: "40px",
+              borderRadius: "12px",
+              border: `1px solid ${surfaceEdge}`,
+              padding: "0 12px",
+              fontSize: "14px",
+            }}
+          />
+        </div>
+        <div style={{ display: "grid", gap: "8px" }}>
+          <label style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.14em" }}>
+            Timeframe
+          </label>
+          <select
+            aria-label="Challenge timeframe"
+            value={draft.timeframeUnit}
+            onChange={(event) =>
+              onChange({
+                ...draft,
+                timeframeUnit: event.target.value as ChallengeDraft["timeframeUnit"],
+                startDate: event.target.value === "custom" ? draft.startDate : "",
+                endDate: event.target.value === "custom" ? draft.endDate : "",
+              })
+            }
+            style={{
+              height: "40px",
+              borderRadius: "12px",
+              border: `1px solid ${surfaceEdge}`,
+              padding: "0 12px",
+              fontSize: "14px",
+            }}
+          >
+            <option value="year">This year</option>
+            <option value="month">This month</option>
+            <option value="custom">Custom range</option>
+          </select>
+        </div>
+        {isCustom ? (
+          <div style={{ display: "grid", gap: "8px" }}>
+            <label style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.14em" }}>
+              Custom dates
+            </label>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+              <input
+                type="date"
+                aria-label="Challenge start date"
+                value={draft.startDate}
+                onChange={(event) => onChange({ ...draft, startDate: event.target.value })}
+                style={{
+                  height: "40px",
+                  borderRadius: "12px",
+                  border: `1px solid ${surfaceEdge}`,
+                  padding: "0 12px",
+                  fontSize: "14px",
+                }}
+              />
+              <input
+                type="date"
+                aria-label="Challenge end date"
+                value={draft.endDate}
+                onChange={(event) => onChange({ ...draft, endDate: event.target.value })}
+                style={{
+                  height: "40px",
+                  borderRadius: "12px",
+                  border: `1px solid ${surfaceEdge}`,
+                  padding: "0 12px",
+                  fontSize: "14px",
+                }}
+              />
+            </div>
+          </div>
+        ) : null}
+        <div style={{ display: "grid", gap: "8px" }}>
+          <label style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.14em" }}>
+            Color
+          </label>
+          <input
+            type="text"
+            aria-label="Challenge color"
+            value={draft.color}
+            onChange={(event) => onChange({ ...draft, color: event.target.value })}
+            placeholder="#b21f24"
+            style={{
+              height: "40px",
+              borderRadius: "12px",
+              border: `1px solid ${surfaceEdge}`,
+              padding: "0 12px",
+              fontSize: "14px",
+            }}
+          />
+        </div>
+        <div style={{ display: "grid", gap: "8px" }}>
+          <label style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.14em" }}>
+            Icon
+          </label>
+          <select
+            aria-label="Challenge icon"
+            value={draft.icon}
+            onChange={(event) =>
+              onChange({ ...draft, icon: event.target.value as ChallengeDraft["icon"] })
+            }
+            style={{
+              height: "40px",
+              borderRadius: "12px",
+              border: `1px solid ${surfaceEdge}`,
+              padding: "0 12px",
+              fontSize: "14px",
+            }}
+          >
+            {CHALLENGE_ICONS.map((icon) => (
+              <option key={icon.value} value={icon.value}>
+                {icon.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <input
+            id="challenge-public"
+            type="checkbox"
+            aria-label="Challenge public"
+            checked={draft.isPublic}
+            onChange={(event) => onChange({ ...draft, isPublic: event.target.checked })}
+          />
+          <label htmlFor="challenge-public" style={{ fontSize: "14px" }}>
+            Share as public challenge
+          </label>
+        </div>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={saving}
+            style={{
+              height: "40px",
+              padding: "0 20px",
+              borderRadius: "999px",
+              border: "none",
+              background: accent,
+              color: "#ffffff",
+              fontWeight: 600,
+              cursor: saving ? "not-allowed" : "pointer",
+              opacity: saving ? 0.7 : 1,
+            }}
+          >
+            Create challenge
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            style={{
+              height: "40px",
+              padding: "0 20px",
+              borderRadius: "999px",
+              border: `1px solid ${surfaceEdge}`,
+              background: "#ffffff",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+        <p style={{ margin: 0, fontSize: "12px", color: muted }}>
+          Year: {year}. Targets track against your chosen timeframe.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function TallyMarks({ count, reducedMotion }: { count: number; reducedMotion: boolean }) {
   const groups = Math.ceil(Math.max(count, 1) / 5);
   const totalWidth = groups * 68;
@@ -994,6 +1288,7 @@ function EntryForm({
           Challenge
         </label>
         <select
+          aria-label="Entry challenge"
           value={draft.challengeId}
           onChange={(event) =>
             onChange({ ...draft, challengeId: event.target.value })
@@ -1026,6 +1321,7 @@ function EntryForm({
         </label>
         <input
           type="date"
+          aria-label="Entry date"
           value={draft.date}
           onChange={(event) => onChange({ ...draft, date: event.target.value })}
           max={todayIso()}
@@ -1051,6 +1347,7 @@ function EntryForm({
         <input
           type="number"
           min={1}
+          aria-label="Entry count"
           value={draft.count}
           onChange={(event) =>
             onChange({ ...draft, count: Number(event.target.value) })
@@ -1076,6 +1373,7 @@ function EntryForm({
         </label>
         <textarea
           rows={3}
+          aria-label="Entry note"
           value={draft.note}
           onChange={(event) => onChange({ ...draft, note: event.target.value })}
           style={{
@@ -1387,6 +1685,8 @@ export default function EntriesClient() {
   const [saving, setSaving] = useState(false);
   const [offlineQueue, setOfflineQueue] = useState<EntryDraft[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [showChallengeForm, setShowChallengeForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<"entries" | "overview" | "community">("entries");
   const [draft, setDraft] = useState<EntryDraft>(() => ({
     challengeId: "",
     date: todayIso(),
@@ -1394,6 +1694,20 @@ export default function EntriesClient() {
     note: "",
     sets: [],
   }));
+  const [challengeDraft, setChallengeDraft] = useState<ChallengeDraft>(() => {
+    const year = new Date().getFullYear();
+    return {
+      name: "",
+      targetNumber: 20,
+      color: accent,
+      icon: "dot",
+      timeframeUnit: "year",
+      startDate: "",
+      endDate: "",
+      year,
+      isPublic: false,
+    };
+  });
   const [selectedDate, setSelectedDate] = useState(todayIso());
   const [selectedChallengeId, setSelectedChallengeId] = useState<string>("");
   const [weeklySummaryOpen, setWeeklySummaryOpen] = useState(false);
@@ -1442,6 +1756,7 @@ export default function EntriesClient() {
         ...prev,
         challengeId: prev.challengeId || challengeData[0]?.id || "",
       }));
+      setSelectedChallengeId((prev) => prev || challengeData[0]?.id || "");
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Unable to load data.");
     } finally {
@@ -1608,6 +1923,12 @@ export default function EntriesClient() {
   }, [syncQueue]);
 
   const startNew = () => {
+    setActiveTab("entries");
+    if (!challenges.length) {
+      startNewChallenge();
+      return;
+    }
+    setError(null);
     setDraft({
       challengeId: challenges[0]?.id ?? "",
       date: todayIso(),
@@ -1616,6 +1937,85 @@ export default function EntriesClient() {
       sets: [],
     });
     setShowForm(true);
+  };
+
+  const startNewChallenge = () => {
+    setError(null);
+    const year = new Date().getFullYear();
+    setChallengeDraft({
+      name: "",
+      targetNumber: 20,
+      color: accent,
+      icon: "dot",
+      timeframeUnit: "year",
+      startDate: "",
+      endDate: "",
+      year,
+      isPublic: false,
+    });
+    setShowChallengeForm(true);
+    setShowForm(false);
+  };
+
+  const handleSaveChallenge = async () => {
+    if (!challengeDraft.name.trim()) {
+      setError("Add a challenge name.");
+      return;
+    }
+    if (challengeDraft.targetNumber <= 0) {
+      setError("Target must be at least 1.");
+      return;
+    }
+    if (challengeDraft.timeframeUnit === "custom") {
+      if (!challengeDraft.startDate || !challengeDraft.endDate) {
+        setError("Add both start and end dates.");
+        return;
+      }
+      if (challengeDraft.startDate > challengeDraft.endDate) {
+        setError("Start date must be before end date.");
+        return;
+      }
+    }
+
+    if (offline) {
+      setError("You're offline. Create the challenge when you're back online.");
+      return;
+    }
+    setSaving(true);
+    try {
+      setError(null);
+      const response = await fetch("/api/v1/challenges", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: challengeDraft.name.trim(),
+          targetNumber: challengeDraft.targetNumber,
+          color: challengeDraft.color.trim(),
+          icon: challengeDraft.icon,
+          timeframeUnit: challengeDraft.timeframeUnit,
+          startDate: challengeDraft.timeframeUnit === "custom" ? challengeDraft.startDate : undefined,
+          endDate: challengeDraft.timeframeUnit === "custom" ? challengeDraft.endDate : undefined,
+          year: challengeDraft.year,
+          isPublic: challengeDraft.isPublic,
+          archived: false,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error("Unable to create challenge.");
+      }
+      const created = (await response.json()) as Challenge;
+      setChallenges((prev) => [...prev, created]);
+      setSelectedChallengeId(created.id);
+      setDraft((prev) => ({ ...prev, challengeId: created.id }));
+      setShowChallengeForm(false);
+      setActiveTab("entries");
+    } catch (challengeError) {
+      setError(
+        challengeError instanceof Error ? challengeError.message : "Unable to create challenge."
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSave = async () => {
@@ -1888,48 +2288,90 @@ export default function EntriesClient() {
     >
       <header
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
+          display: "grid",
           gap: "12px",
         }}
       >
-        <div>
-          <p
-            style={{
-              margin: 0,
-              fontSize: "12px",
-              letterSpacing: "0.2em",
-              textTransform: "uppercase",
-              color: muted,
-            }}
-          >
-            Entries
-          </p>
-          <h1 style={{ margin: "6px 0 0", fontSize: "32px" }}>Log today</h1>
-          <p style={{ margin: "6px 0 0", color: muted }}>
-            Quick marks, honest progress, and calm pacing.
-          </p>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+          <div>
+            <p
+              style={{
+                margin: 0,
+                fontSize: "12px",
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: muted,
+              }}
+            >
+              App
+            </p>
+            <h1 style={{ margin: "6px 0 0", fontSize: "32px" }}>Tally dashboard</h1>
+            <p style={{ margin: "6px 0 0", color: muted }}>
+              Pick a view, log marks, and keep your pace honest.
+            </p>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+            <StatusPill label={syncLabel} tone={syncTone} />
+            <button
+              type="button"
+              onClick={startNewChallenge}
+              style={{
+                height: "44px",
+                padding: "0 20px",
+                borderRadius: "999px",
+                border: `1px solid ${ink}`,
+                background: "#ffffff",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              New challenge
+            </button>
+            <button
+              type="button"
+              onClick={startNew}
+              style={{
+                height: "44px",
+                padding: "0 20px",
+                borderRadius: "999px",
+                border: `1px solid ${ink}`,
+                background: "#ffffff",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Add entry
+            </button>
+          </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <StatusPill label={syncLabel} tone={syncTone} />
-          <button
-            type="button"
-            onClick={startNew}
-            style={{
-              height: "44px",
-              padding: "0 24px",
-              borderRadius: "999px",
-              border: `1px solid ${ink}`,
-              background: "#ffffff",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            Add entry
-          </button>
-        </div>
+        <nav style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          {[
+            { id: "entries", label: "Entries" },
+            { id: "overview", label: "Overview" },
+            { id: "community", label: "Community" },
+          ].map((item) => {
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveTab(item.id as typeof activeTab)}
+                style={{
+                  height: "36px",
+                  padding: "0 18px",
+                  borderRadius: "999px",
+                  border: `1px solid ${isActive ? ink : surfaceEdge}`,
+                  background: isActive ? "#fff5f5" : "#ffffff",
+                  color: isActive ? accent : ink,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </nav>
       </header>
 
       {error ? (
@@ -1960,6 +2402,18 @@ export default function EntriesClient() {
         </div>
       ) : null}
 
+      {showChallengeForm ? (
+        <ChallengeForm
+          draft={challengeDraft}
+          onChange={setChallengeDraft}
+          onSave={handleSaveChallenge}
+          onCancel={() => setShowChallengeForm(false)}
+          saving={saving}
+        />
+      ) : null}
+
+      {activeTab === "entries" ? (
+        <>
       {!loading && !challenges.length ? (
         <div
           style={{
@@ -1977,7 +2431,7 @@ export default function EntriesClient() {
           </p>
           <button
             type="button"
-            onClick={startNew}
+            onClick={startNewChallenge}
             style={{
               height: "40px",
               padding: "0 20px",
@@ -2091,7 +2545,11 @@ export default function EntriesClient() {
           <StatusCard label="Most active day" value={overallStats.mostActiveDay.count ? formatDisplayDate(overallStats.mostActiveDay.date) : "—"} />
         </div>
       </section>
+        </>
+      ) : null}
 
+      {activeTab === "overview" ? (
+        <>
       <section style={{ display: "grid", gap: "16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
           <div>
@@ -2302,6 +2760,7 @@ export default function EntriesClient() {
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
             <label style={{ fontSize: "12px", color: muted }}>Filter challenge</label>
             <select
+              aria-label="Filter challenge"
               value={draft.challengeId}
               onChange={(event) => setDraft({ ...draft, challengeId: event.target.value })}
               style={{
@@ -2385,7 +2844,11 @@ export default function EntriesClient() {
             ))}
         </div>
       </section>
+        </>
+      ) : null}
 
+      {activeTab === "community" ? (
+        <>
       <section
         style={{
           display: "grid",
@@ -2481,6 +2944,8 @@ export default function EntriesClient() {
           </div>
         ) : null}
       </section>
+        </>
+      ) : null}
 
       {offlineQueue.length ? (
         <div

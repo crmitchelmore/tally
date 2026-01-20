@@ -1,6 +1,12 @@
 import SwiftUI
 import TallyFeatureAPIClient
 
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
 struct ChallengeCardView: View {
     let challenge: Challenge
     let stats: ChallengeStats
@@ -39,7 +45,7 @@ struct ChallengeCardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
                 .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
         )
     }
@@ -77,11 +83,31 @@ struct ProgressRing: View {
             let width = proxy.size.width
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(Color(.systemGray6))
+                    .fill(mutedFill)
                 Capsule()
                     .fill(Color(red: 0.7, green: 0.12, blue: 0.14))
                     .frame(width: width * CGFloat(progress))
             }
         }
     }
+}
+
+private var surfaceColor: Color {
+#if canImport(UIKit)
+    return Color(uiColor: .systemBackground)
+#elseif canImport(AppKit)
+    return Color(nsColor: .windowBackgroundColor)
+#else
+    return Color.white
+#endif
+}
+
+private var mutedFill: Color {
+#if canImport(UIKit)
+    return Color(uiColor: .systemGray6)
+#elseif canImport(AppKit)
+    return Color(nsColor: .controlBackgroundColor)
+#else
+    return Color.gray.opacity(0.1)
+#endif
 }

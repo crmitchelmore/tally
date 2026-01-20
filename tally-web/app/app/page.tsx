@@ -5,8 +5,8 @@ import EntriesClient from "../ui/entries/entries-client";
 
 export default async function AppShell() {
   const user = await currentUser();
-  if (!user) {
-    return (
+   if (!user) {
+     return (
       <main
         style={{
           minHeight: "100vh",
@@ -100,23 +100,23 @@ export default async function AppShell() {
       </main>
     );
   }
-  return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "flex-start",
-        gap: "24px",
-        padding: "48px 24px",
-      }}
-    >
-      <ProvisionUser />
-      <EntriesClient />
-      <Link
-        href="/"
-        style={{
+   return (
+     <main
+       style={{
+         minHeight: "100vh",
+         display: "flex",
+         flexDirection: "column",
+         alignItems: "center",
+         justifyContent: "flex-start",
+         gap: "16px",
+         padding: "32px 24px 48px",
+       }}
+     >
+       <ProvisionUser />
+       <EntriesClient />
+       <Link
+         href="/"
+         style={{
           color: "#b21f24",
           textDecoration: "none",
           fontWeight: 600,

@@ -1,12 +1,11 @@
 import type { NextFetchEvent, NextRequest } from "next/server";
 
-const hasClerkEnv =
-  !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
-  !!process.env.CLERK_SECRET_KEY;
+const clerkPublishableKey =
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? process.env.CLERK_PUBLISHABLE_KEY;
+const hasClerkEnv = !!clerkPublishableKey && !!process.env.CLERK_SECRET_KEY;
 
 const publicRouteMatchers = [
   /^\/$/,
-  /^\/app(?:\/.*)?$/,
   /^\/sign-in(?:\/.*)?$/,
   /^\/sign-up(?:\/.*)?$/,
   /^\/__clerk(?:\/.*)?$/,

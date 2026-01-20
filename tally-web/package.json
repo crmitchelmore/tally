@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "preinstall": "node -e \"const ua=process.env.npm_config_user_agent||''; if(!ua.startsWith('bun')){console.error('Use bun for tally-web (bun install / bun run ...)'); process.exit(1);}\"",
     "test": "node ./middleware.test.mjs",
     "test:e2e": "playwright test"
   },

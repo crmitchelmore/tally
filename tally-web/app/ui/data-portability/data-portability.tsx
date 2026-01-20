@@ -473,6 +473,7 @@ export default function DataPortability() {
           <button
             type="button"
             onClick={() => exportData("json")}
+            aria-label="Export JSON"
             style={{
               height: "40px",
               padding: "0 18px",
@@ -489,6 +490,7 @@ export default function DataPortability() {
           <button
             type="button"
             onClick={() => exportData("csv")}
+            aria-label="Export CSV"
             style={{
               height: "40px",
               padding: "0 18px",
@@ -519,6 +521,7 @@ export default function DataPortability() {
             ref={fileRef}
             type="file"
             accept=".json,.csv,application/json,text/csv"
+            aria-label="Import backup file"
             onChange={(event) => {
               const file = event.target.files?.[0];
               if (file) void handleFile(file);
@@ -548,6 +551,7 @@ export default function DataPortability() {
           <button
             type="button"
             onClick={() => setConfirmOpen(true)}
+            aria-label="Clear all data"
             style={{
               height: "36px",
               padding: "0 16px",

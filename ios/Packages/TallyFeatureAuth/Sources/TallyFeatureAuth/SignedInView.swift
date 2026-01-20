@@ -24,7 +24,7 @@ public struct SignedInView: View {
             .padding()
             .background {
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(Color(.systemBackground))
+                    .fill(surfaceColor)
                     .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
             }
 
@@ -42,6 +42,16 @@ public struct SignedInView: View {
         }
         .padding()
     }
+}
+
+private var surfaceColor: Color {
+#if canImport(UIKit)
+    return Color(uiColor: .systemBackground)
+#elseif canImport(AppKit)
+    return Color(nsColor: .windowBackgroundColor)
+#else
+    return Color.white
+#endif
 }
 
 #Preview {

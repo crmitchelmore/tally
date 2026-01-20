@@ -6,7 +6,8 @@ let package = Package(
     name: "TallyFeatureEntries",
     defaultLocalization: "en",
     platforms: [
-        .iOS(.v17)
+        .iOS(.v17),
+        .macOS(.v13)
     ],
     products: [
         .library(

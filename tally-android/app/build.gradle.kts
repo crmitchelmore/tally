@@ -23,6 +23,7 @@ android {
 
     val clerkPublishableKey = (System.getenv("TALLY_CLERK_PUBLISHABLE_KEY")
       ?: System.getenv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY")
+      ?: System.getenv("CLERK_PUBLISHABLE_KEY")
       ?: project.findProperty("TALLY_CLERK_PUBLISHABLE_KEY") as String?)
     if (clerkPublishableKey.isNullOrEmpty() && !isCI) {
       throw GradleException("Missing Clerk publishable key (set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY env or TALLY_CLERK_PUBLISHABLE_KEY gradle.properties)")
@@ -32,6 +33,7 @@ android {
 
     val convexDeployment = (System.getenv("TALLY_CONVEX_DEPLOYMENT")
       ?: System.getenv("CONVEX_DEPLOYMENT")
+      ?: System.getenv("NEXT_PUBLIC_CONVEX_DEPLOYMENT")
       ?: project.findProperty("TALLY_CONVEX_DEPLOYMENT") as String?)
     if (convexDeployment.isNullOrEmpty() && !isCI) {
       throw GradleException("Missing Convex deployment (set CONVEX_DEPLOYMENT env or TALLY_CONVEX_DEPLOYMENT gradle.properties)")
@@ -68,6 +70,12 @@ android {
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+  }
+
+  packaging {
+    resources {
+      excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+    }
   }
 }
 

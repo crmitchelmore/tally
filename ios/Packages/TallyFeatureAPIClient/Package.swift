@@ -6,7 +6,8 @@ let package = Package(
     name: "TallyFeatureAPIClient",
     defaultLocalization: "en",
     platforms: [
-        .iOS(.v17)
+        .iOS(.v17),
+        .macOS(.v12)
     ],
     products: [
         .library(

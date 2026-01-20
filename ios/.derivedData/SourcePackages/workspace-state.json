@@ -1,0 +1,115 @@
+{
+  "object" : {
+    "artifacts" : [
+
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "clerk-ios",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/clerk/clerk-ios",
+          "name" : "Clerk"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "8d16727fbe58609e18759e3020488b840201c83d",
+            "version" : "0.71.4"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "clerk-ios"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "factory",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/hmlongco/Factory",
+          "name" : "Factory"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "ccc898f21992ebc130bc04cc197460a5ae230bcf",
+            "version" : "2.5.3"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "Factory"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "get",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/kean/Get",
+          "name" : "Get"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "31249885da1052872e0ac91a2943f62567c0d96d",
+            "version" : "2.2.1"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "Get"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "kingfisher",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/onevcat/Kingfisher.git",
+          "name" : "Kingfisher"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "d30a5fad881137e2267f96a8e3fc35c58999bb94",
+            "version" : "8.6.2"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "Kingfisher"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "phonenumberkit",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/marmelroy/PhoneNumberKit",
+          "name" : "PhoneNumberKit"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "8c369005948985d1c6fb396716a3f883d30639ab",
+            "version" : "4.2.3"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "PhoneNumberKit"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "simplekeychain",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/auth0/SimpleKeychain",
+          "name" : "SimpleKeychain"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "776c4a6db74d5c6c143974be91c383680d468630",
+            "version" : "1.3.0"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "SimpleKeychain"
+      }
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}

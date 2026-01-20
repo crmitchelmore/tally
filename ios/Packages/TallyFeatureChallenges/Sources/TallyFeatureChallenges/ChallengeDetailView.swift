@@ -1,6 +1,13 @@
 import SwiftUI
 import TallyFeatureAPIClient
 
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
+@available(iOS 17, macOS 13, *)
 struct ChallengeDetailView: View {
     let challenge: Challenge
     let entries: [Entry]
@@ -26,6 +33,7 @@ struct ChallengeDetailView: View {
         }
         .navigationTitle(challenge.name)
         .toolbar {
+            #if canImport(UIKit)
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Edit") { isPresentingEdit = true }
             }
@@ -37,6 +45,19 @@ struct ChallengeDetailView: View {
                     Text("Delete")
                 }
             }
+            #else
+            ToolbarItem(placement: .automatic) {
+                Button("Edit") { isPresentingEdit = true }
+            }
+            ToolbarItem(placement: .automatic) {
+                Button("Archive") { isPresentingArchive = true }
+            }
+            ToolbarItem(placement: .automatic) {
+                Button(role: .destructive) { isPresentingDelete = true } label: {
+                    Text("Delete")
+                }
+            }
+            #endif
         }
         .sheet(isPresented: $isPresentingEdit) {
             ChallengeFormView(mode: .edit(challenge)) { draft in
@@ -80,7 +101,7 @@ struct ChallengeDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
                 .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
         )
     }
@@ -104,7 +125,7 @@ struct ChallengeDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
                 .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
         )
     }
@@ -133,7 +154,7 @@ struct ChallengeDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
                 .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
         )
     }
@@ -171,7 +192,17 @@ private struct StatTile: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
         )
     }
+}
+
+private var surfaceColor: Color {
+#if canImport(UIKit)
+    return Color(uiColor: .systemBackground)
+#elseif canImport(AppKit)
+    return Color(nsColor: .windowBackgroundColor)
+#else
+    return Color.white
+#endif
 }

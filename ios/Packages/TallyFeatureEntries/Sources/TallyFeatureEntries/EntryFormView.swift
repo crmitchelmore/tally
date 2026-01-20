@@ -1,7 +1,10 @@
 import SwiftUI
 import TallyCore
 import TallyFeatureAPIClient
+
+#if canImport(UIKit)
 import UIKit
+#endif
 
 public struct EntryFormData: Equatable, Sendable {
     public let challengeId: String
@@ -12,6 +15,7 @@ public struct EntryFormData: Equatable, Sendable {
     public let feeling: String?
 }
 
+@available(iOS 17, macOS 13, *)
 public struct EntryFormView: View {
     public enum Mode {
         case create(challengeId: String)
@@ -51,8 +55,12 @@ public struct EntryFormView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     } else {
+                        #if canImport(UIKit)
                         TextField("Count", text: $count)
                             .keyboardType(.numberPad)
+                        #else
+                        TextField("Count", text: $count)
+                        #endif
                     }
                 }
 
@@ -77,6 +85,7 @@ public struct EntryFormView: View {
             }
             .navigationTitle(modeTitle)
             .toolbar {
+                #if canImport(UIKit)
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") { dismiss() }
                 }
@@ -86,6 +95,17 @@ public struct EntryFormView: View {
                     }
                     .disabled(!isValid)
                 }
+                #else
+                ToolbarItem(placement: .automatic) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .automatic) {
+                    Button("Save") {
+                        Task { await save() }
+                    }
+                    .disabled(!isValid)
+                }
+                #endif
             }
         }
         .onAppear(perform: loadFromMode)
@@ -125,8 +145,10 @@ public struct EntryFormView: View {
     }
 
     private func save() async {
+        #if canImport(UIKit)
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
+        #endif
         await onSave(EntryFormData(
             challengeId: challengeId,
             date: isoDate(date),

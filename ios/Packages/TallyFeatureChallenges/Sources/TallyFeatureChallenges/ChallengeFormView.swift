@@ -1,6 +1,13 @@
 import SwiftUI
 import TallyFeatureAPIClient
 
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
+@available(iOS 17, macOS 13, *)
 struct ChallengeFormView: View {
     enum Mode {
         case create
@@ -27,7 +34,9 @@ struct ChallengeFormView: View {
                 Section(header: Text("Basics")) {
                     TextField("Name", text: $name)
                     TextField("Target", text: $targetNumber)
+                        #if canImport(UIKit)
                         .keyboardType(.numberPad)
+                        #endif
                     Toggle("Public", isOn: $isPublic)
                 }
 
@@ -62,6 +71,7 @@ struct ChallengeFormView: View {
             }
             .navigationTitle(modeTitle)
             .toolbar {
+                #if canImport(UIKit)
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") { dismiss() }
                 }
@@ -74,6 +84,20 @@ struct ChallengeFormView: View {
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || Int(targetNumber) == nil)
                 }
+                #else
+                ToolbarItem(placement: .automatic) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .automatic) {
+                    Button("Save") {
+                        Task {
+                            await onSave(makeDraft())
+                            dismiss()
+                        }
+                    }
+                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || Int(targetNumber) == nil)
+                }
+                #endif
             }
         }
         .onAppear(perform: loadFromMode)

@@ -7,6 +7,8 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.clerk.api.Clerk
+import com.clerk.api.network.serialization.onFailure
+import com.clerk.api.network.serialization.onSuccess
 import com.tally.core.auth.AuthEnvironment
 import com.tally.core.auth.AuthRepository
 import com.tally.core.auth.SyncState

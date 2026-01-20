@@ -3,6 +3,13 @@ import TallyCore
 import TallyFeatureAPIClient
 import TallyFeatureEntries
 
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
+@available(iOS 17, macOS 13, *)
 public struct ChallengesView<EntriesStoreType: EntriesStoreProtocol>: View {
     @ObservedObject private var store: ChallengesStore
     private let entriesStore: EntriesStoreType
@@ -39,6 +46,7 @@ public struct ChallengesView<EntriesStoreType: EntriesStoreProtocol>: View {
             }
             .navigationTitle("Challenges")
             .toolbar {
+                #if canImport(UIKit)
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         isPresentingCreate = true
@@ -59,6 +67,28 @@ public struct ChallengesView<EntriesStoreType: EntriesStoreProtocol>: View {
                         Task { await onSignOut() }
                     }
                 }
+                #else
+                ToolbarItem(placement: .automatic) {
+                    Button {
+                        isPresentingCreate = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+                ToolbarItem(placement: .automatic) {
+                    Button {
+                        entriesChallengeId = store.challenges.first?.id
+                    } label: {
+                        Image(systemName: "square.and.pencil")
+                    }
+                    .disabled(store.challenges.isEmpty)
+                }
+                ToolbarItem(placement: .automatic) {
+                    Button("Sign out") {
+                        Task { await onSignOut() }
+                    }
+                }
+                #endif
             }
         }
         .task {
@@ -105,7 +135,7 @@ public struct ChallengesView<EntriesStoreType: EntriesStoreProtocol>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
                 .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
         )
     }
@@ -133,7 +163,7 @@ public struct ChallengesView<EntriesStoreType: EntriesStoreProtocol>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
                 .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
         )
     }
@@ -150,7 +180,7 @@ public struct ChallengesView<EntriesStoreType: EntriesStoreProtocol>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
                 .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
         )
     }
@@ -171,7 +201,7 @@ public struct ChallengesView<EntriesStoreType: EntriesStoreProtocol>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(surfaceColor)
                 .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
         )
     }
@@ -222,6 +252,16 @@ public struct ChallengesView<EntriesStoreType: EntriesStoreProtocol>: View {
         )
     }
 
+}
+
+private var surfaceColor: Color {
+#if canImport(UIKit)
+    return Color(uiColor: .systemBackground)
+#elseif canImport(AppKit)
+    return Color(nsColor: .windowBackgroundColor)
+#else
+    return Color.white
+#endif
 }
 
 #Preview {

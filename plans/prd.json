@@ -59,7 +59,7 @@
       "Ensure endpoints match docs/API.md (if present)",
       "Run existing checks"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "web",

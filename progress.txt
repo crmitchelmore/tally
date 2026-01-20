@@ -50,3 +50,31 @@
 - Added img.clerk.com to next.config.mjs remotePatterns
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Web auth + user provisioning" passes=true
+
+## 2026-01-20: Web API contract (feature-api-contract.md)
+- Created _lib helpers for API routes:
+  - types.ts: User, Challenge, Entry, Follow, Stats, API request/response types
+  - auth.ts: requireAuth() helper for protected routes
+  - store.ts: In-memory CRUD operations + stats calculations
+  - validate.ts: Request validation for challenges, entries, import data
+  - response.ts: Consistent JSON response helpers (jsonOk, jsonCreated, jsonBadRequest, etc.)
+- Refactored /api/v1/auth/user to use shared helpers
+- Implemented challenge endpoints:
+  - GET/POST /api/v1/challenges (list, create with timeframe calculation)
+  - GET/PATCH/DELETE /api/v1/challenges/[id] (with ownership + public access checks)
+  - GET /api/v1/challenges/[id]/stats (pace, streaks, averages)
+- Implemented entry endpoints:
+  - GET/POST /api/v1/entries (with challenge ownership validation)
+  - GET/PATCH/DELETE /api/v1/entries/[id] (future date blocked)
+- Implemented community endpoints:
+  - GET /api/v1/public/challenges (with totalReps, progress, followerCount, owner aggregation)
+  - GET /api/v1/followed (followed challenges with aggregated data)
+  - POST/DELETE /api/v1/follow (follow/unfollow with validation)
+- Implemented data portability:
+  - GET /api/v1/data (export JSON with version)
+  - POST /api/v1/data (import with replace-all semantics)
+  - DELETE /api/v1/data (clear all user data)
+- Implemented dashboard stats:
+  - GET /api/v1/stats (totalMarks, today, bestStreak, paceStatus, personal records)
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Web API contract" passes=true

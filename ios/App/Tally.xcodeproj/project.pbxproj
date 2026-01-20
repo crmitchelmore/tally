@@ -654,7 +654,7 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/TallyFeatureChallenges;
 		};
-		"TEMP_0C0ED2B9-1B5A-4F9A-9574-D1F22F9EC326" /* XCLocalSwiftPackageReference "../Packages/TallyFeatureEntries" */ = {
+		"TEMP_1EBD3C54-9770-41E3-9086-79004C70D691" /* XCLocalSwiftPackageReference "../Packages/TallyFeatureEntries" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/TallyFeatureEntries;
 		};

@@ -54,7 +54,7 @@ public struct EntrySet: Codable, Equatable, Sendable {
     }
 }
 
-public struct Entry: Codable, Equatable, Sendable {
+public struct Entry: Codable, Equatable, Sendable, Identifiable {
     public let id: String
     public let userId: String
     public let challengeId: String

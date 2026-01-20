@@ -77,9 +77,7 @@ public final class ChallengesStore: ObservableObject {
     @Published public private(set) var lastError: String?
     @Published public private(set) var state: State = .idle
 
-    private let apiClient: APIClientProviding
-
-    public var apiClient: APIClientProviding { apiClient }
+    public let apiClient: APIClientProviding
     private let cache: ChallengesCache
     private var queue: [QueuedWrite] = []
 

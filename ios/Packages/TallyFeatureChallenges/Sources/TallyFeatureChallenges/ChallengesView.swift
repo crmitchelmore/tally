@@ -3,9 +3,9 @@ import TallyCore
 import TallyFeatureAPIClient
 import TallyFeatureEntries
 
-public struct ChallengesView: View {
+public struct ChallengesView<EntriesStoreType: EntriesStoreProtocol>: View {
     @ObservedObject private var store: ChallengesStore
-    private let entriesStore: EntriesStoreProtocol
+    private let entriesStore: EntriesStoreType
     private let onSignOut: @Sendable () async -> Void
     @State private var isPresentingCreate = false
     @State private var selectedChallengeId: String?
@@ -13,7 +13,7 @@ public struct ChallengesView: View {
 
     public init(
         store: ChallengesStore,
-        entriesStore: EntriesStoreProtocol,
+        entriesStore: EntriesStoreType,
         onSignOut: @Sendable @escaping () async -> Void
     ) {
         self.store = store
@@ -230,6 +230,10 @@ public struct ChallengesView: View {
         tokenProvider: { "token" }
     )
     let store = ChallengesStore(apiClient: client)
-    return ChallengesView(store: store, entriesStore: EntriesStore(apiClient: client), onSignOut: {})
-        .preferredColorScheme(.light)
+    return ChallengesView(
+        store: store,
+        entriesStore: EntriesStore(apiClient: client),
+        onSignOut: {}
+    )
+    .preferredColorScheme(.light)
 }

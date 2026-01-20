@@ -4,6 +4,7 @@ plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
   alias(libs.plugins.kotlin.serialization)
+  alias(libs.plugins.compose.compiler)
   id("org.jetbrains.kotlin.kapt")
 }
 
@@ -59,10 +60,6 @@ android {
     buildConfig = true
   }
 
-  composeOptions {
-    kotlinCompilerExtensionVersion = "1.5.14"
-  }
-
   kotlin {
     jvmToolchain(17)
     compilerOptions { jvmTarget.set(JvmTarget.JVM_17) }
@@ -83,9 +80,11 @@ dependencies {
   implementation(libs.compose.ui.tooling.preview)
   implementation(libs.material3)
   implementation(libs.coroutines.android)
-  implementation(libs.clerk.android.api)
   implementation(libs.workmanager.runtime)
-  implementation("com.posthog.android:posthog-android:2.0.5")
+  implementation(libs.clerk.android.api)
+  implementation("com.posthog:posthog:6.1.0")
+  implementation("com.posthog:posthog-android:3.28.1")
+  implementation("androidx.appcompat:appcompat:1.7.1")
 
   implementation(project(":core:auth"))
   implementation(project(":core:network"))

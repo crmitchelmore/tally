@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.tally.core.design.TallyHeading
+import com.tally.core.auth.SyncState
 import com.tally.core.design.TallySubtleText
 
 @Composable

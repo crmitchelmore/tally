@@ -167,7 +167,7 @@ class ApiRepository(
         mapOf(
           "challenge_id" to id,
           "entry_count" to entryCount,
-          "timeframe_unit" to challenge?.timeframeUnit?.name?.lowercase(),
+          "timeframe_unit" to challenge?.timeframeUnit?.lowercase(),
           "target_number" to challenge?.targetNumber,
           "archived" to true
         )
@@ -182,7 +182,7 @@ class ApiRepository(
         mapOf(
           "challenge_id" to id,
           "entry_count" to entryCount,
-          "timeframe_unit" to challenge?.timeframeUnit?.name?.lowercase(),
+          "timeframe_unit" to challenge?.timeframeUnit?.lowercase(),
           "target_number" to challenge?.targetNumber,
           "archived" to true
         )
@@ -199,7 +199,7 @@ class ApiRepository(
         mapOf(
           "challenge_id" to id,
           "entry_count" to entryCount,
-          "timeframe_unit" to challenge?.timeframeUnit?.name?.lowercase(),
+          "timeframe_unit" to challenge?.timeframeUnit?.lowercase(),
           "target_number" to challenge?.targetNumber,
           "archived" to true
         )
@@ -315,7 +315,7 @@ class ApiRepository(
   suspend fun deleteEntry(id: String): Result<Boolean> {
     val existing = db.entries().listAll().firstOrNull { it.id == id }
     val hasNote = existing?.note?.isNotBlank() == true
-    val hasSets = existing?.sets?.isNotEmpty() == true
+    val hasSets = existing?.setsJson?.isNotBlank() == true
     val token = tokenProvider()
     if (token.isNullOrBlank()) {
       enqueue(

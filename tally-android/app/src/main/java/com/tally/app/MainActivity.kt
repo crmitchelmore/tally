@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                   viewModel.syncQueuedWrites()
                 }
-                DashboardScreen(state = state, onSignOut = {
+                DashboardScreen(state = state as MainUiState.SignedIn, onSignOut = {
                   viewModel.signOut()
                 })
               }

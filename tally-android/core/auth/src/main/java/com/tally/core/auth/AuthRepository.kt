@@ -3,6 +3,7 @@ package com.tally.core.auth
 import com.clerk.api.Clerk
 import com.clerk.api.network.serialization.onFailure
 import com.clerk.api.network.serialization.onSuccess
+import com.clerk.api.network.serialization.errorMessage
 import com.tally.core.network.ApiClient
 import com.tally.core.network.ApiConfig
 import kotlinx.coroutines.flow.MutableStateFlow

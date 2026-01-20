@@ -3,6 +3,7 @@ pluginManagement {
     google()
     mavenCentral()
     gradlePluginPortal()
+    maven("https://github.com/clerk/clerk-android/raw/main/maven")
   }
 }
 

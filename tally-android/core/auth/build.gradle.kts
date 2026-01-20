@@ -13,7 +13,16 @@ android {
   }
 
   buildFeatures {
-    buildConfig = false
+    buildConfig = true
+  }
+
+  buildTypes {
+    debug {
+      buildConfigField("String", "CONVEX_DEPLOYMENT", "\"dev\"")
+    }
+    release {
+      buildConfigField("String", "CONVEX_DEPLOYMENT", "\"prod\"")
+    }
   }
 
   kotlin {

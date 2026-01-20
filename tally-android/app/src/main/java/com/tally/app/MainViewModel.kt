@@ -9,7 +9,7 @@ import androidx.work.WorkManager
 import com.clerk.api.Clerk
 import com.tally.core.auth.AuthEnvironment
 import com.tally.core.auth.AuthRepository
-import com.tally.core.auth.AuthState
+import com.tally.core.auth.SyncState
 import com.tally.core.auth.AppContextHolder
 import com.tally.core.network.ApiClient
 import com.tally.core.network.ApiConfig

@@ -1,5 +1,7 @@
 package com.tally.core.design
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 /**
@@ -38,4 +40,29 @@ object TallyColors {
     // Border colors
     val BorderLight = Color(0xFFE0E0E0)
     val BorderDark = Color(0xFF3A3A3A)
+
+    // Composable accessors for dynamic dark/light mode
+    @Composable
+    fun paper(): Color = if (isSystemInDarkTheme()) PaperDark else PaperLight
+
+    @Composable
+    fun inkC1(): Color = if (isSystemInDarkTheme()) InkC1Dark else InkC1Light
+
+    @Composable
+    fun inkC2(): Color = if (isSystemInDarkTheme()) InkC2Dark else InkC2Light
+
+    @Composable
+    fun inkC3(): Color = if (isSystemInDarkTheme()) InkC3Dark else InkC3Light
+
+    @Composable
+    fun accent(): Color = if (isSystemInDarkTheme()) AccentDark else AccentLight
+
+    @Composable
+    fun textSecondary(): Color = if (isSystemInDarkTheme()) TextSecondaryDark else TextSecondaryLight
+
+    @Composable
+    fun surface(): Color = if (isSystemInDarkTheme()) SurfaceDark else SurfaceLight
+
+    @Composable
+    fun border(): Color = if (isSystemInDarkTheme()) BorderDark else BorderLight
 }

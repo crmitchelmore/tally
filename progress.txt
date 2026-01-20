@@ -221,3 +221,29 @@ Time: ~2 minutes
   - CommunityScreen.kt: Placeholder for public challenges
 - Build: ./gradlew assembleDebug: BUILD SUCCESSFUL
 - PRD item "Android theme & app structure" passes=true
+
+## 2026-01-20: Android auth (Clerk) + secure token storage + /api/v1/auth/user sync
+- Created :core:auth module in tally-android/core/auth/:
+  - SecureTokenStorage.kt: EncryptedSharedPreferences for secure JWT storage
+  - User.kt: TallyUser model + AuthUserResponse for API
+  - AuthState.kt: Sealed interface (Loading/SignedIn/SignedOut/Error)
+  - AuthManager.kt: Auth state manager with token storage and API provisioning
+    - initialize() checks for existing session
+    - handleSignIn(token) stores token and provisions user via POST /api/v1/auth/user
+    - signOut() clears token and updates state
+    - getToken() retrieves token for API requests
+- Created auth UI in core/auth/src/main/java/com/tally/core/auth/ui/:
+  - SignInScreen.kt: Sign-in screen with tally mark logo and CTA (design philosophy compliant)
+  - LoadingScreen.kt: Loading state while checking auth
+  - AuthErrorScreen.kt: Error state with retry option
+  - UserProfileButton.kt: Profile icon for signed-in users
+- Updated :app module:
+  - build.gradle.kts: Added buildConfig for CLERK_PUBLISHABLE_KEY and API_BASE_URL
+  - MainActivity.kt: Auth-aware navigation (shows SignIn/Loading/Error/App based on state)
+  - TallyApp.kt: Now accepts user and onSignOut callback, shows TopAppBar with profile
+- Updated libs.versions.toml: Added androidx-security-crypto for EncryptedSharedPreferences
+- Updated settings.gradle.kts: Added :core:auth module
+- Updated TallyColors.kt: Added @Composable helper functions for dynamic dark/light mode colors
+- Build: ./gradlew assembleDebug: BUILD SUCCESSFUL
+- BLOCKED: Full Clerk Android SDK integration pending - SDK (com.clerk:clerk-android-api) not available on Maven Central/Google. Architecture is ready for SDK when available.
+- PRD item "Android auth" marked passes=false (Clerk SDK unavailable)

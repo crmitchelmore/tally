@@ -7,11 +7,14 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -25,6 +28,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.tally.app.ui.CommunityScreen
 import com.tally.app.ui.HomeScreen
+import com.tally.core.auth.TallyUser
+import com.tally.core.auth.ui.UserProfileButton
+import com.tally.core.design.TallyColors
 import kotlinx.serialization.Serializable
 
 /**
@@ -39,13 +45,31 @@ object CommunityRoute
 /**
  * Main app composable with bottom navigation.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TallyApp() {
+fun TallyApp(
+    user: TallyUser,
+    onSignOut: () -> Unit
+) {
     val navController = rememberNavController()
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text("Tally") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = TallyColors.paper()
+                ),
+                actions = {
+                    UserProfileButton(
+                        user = user,
+                        onClick = onSignOut
+                    )
+                }
+            )
+        },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(

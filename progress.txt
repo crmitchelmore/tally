@@ -172,3 +172,32 @@
 - Accessibility: focus-visible states, ARIA labels for buttons
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Web community" passes=true
+
+## 2026-01-20: Landing page hero micro-demo (feature-hero-micro-demo.md)
+- Created landing component folder (src/components/landing/):
+  - hero-micro-demo.tsx: Interactive challenge card demo with +1 button
+  - index.ts: Barrel exports
+- HeroMicroDemo component features:
+  - Interactive +1 button increments count (up to 25)
+  - Tally strokes animate with pencil-like ink draw effect (200ms)
+  - 5th stroke is the signature red diagonal slash
+  - Strokes grouped into five-gates (4 vertical + 1 diagonal)
+  - Progress bar updates with smooth transition
+  - Reset button to restart demo
+  - Completion message at 25 marks
+- Animation styles in globals.css:
+  - demo-stroke-draw: scaleY animation with bounce easing for vertical strokes
+  - demo-slash-draw: diagonal slash animation with same easing
+  - Reduced-motion fallback: instant appearance, no animation
+- Performance considerations:
+  - Lightweight client component (no heavy charting libraries)
+  - ~1.5 kB addition to First Load JS
+  - Hydrates after render (standard Next.js behavior)
+- Accessibility:
+  - ARIA labels on buttons and demo region
+  - aria-live for tally count updates
+  - Focus-visible states on all interactive elements
+  - Minimum 44×48px tap targets on +1 button
+- Updated landing page (/) to include HeroMicroDemo between copy and CTAs
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Landing page hero micro-demo" passes=true

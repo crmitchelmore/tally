@@ -119,7 +119,7 @@
       "Verify reduced-motion fallback",
       "Verify no heavy hero JS regressions"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "landing",

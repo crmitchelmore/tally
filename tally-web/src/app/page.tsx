@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { HeroMicroDemo } from "@/components/landing";
 
 export default function Home() {
   return (
     <main className="landing">
-      <section className="card">
+      <section className="card hero-card">
         <span className="eyebrow">Tally</span>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
           Make progress visible.
@@ -11,7 +12,13 @@ export default function Home() {
         <p className="mt-4 text-lg text-muted">
           A calm, tactile tracker that turns daily effort into clear momentum.
         </p>
-        <div className="actions">
+        
+        {/* Interactive micro-demo */}
+        <div className="mt-8">
+          <HeroMicroDemo />
+        </div>
+
+        <div className="actions mt-6">
           <Link className="cta" href="/app">
             Open app
           </Link>
@@ -19,7 +26,9 @@ export default function Home() {
             Preview app shell
           </Link>
         </div>
-        <div className="tally" aria-hidden="true">
+
+        {/* Static tally mark for decoration (hidden when demo is active) */}
+        <div className="tally decorative-tally" aria-hidden="true">
           <span className="stroke" />
           <span className="stroke" />
           <span className="stroke" />

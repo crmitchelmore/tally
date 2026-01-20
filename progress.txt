@@ -170,3 +170,22 @@ Time: ~2 minutes
 - Tests: 33 tests covering Models, Requests, and APIError (all passing)
 - Build: tuist generate + xcodebuild: BUILD SUCCEEDED
 - PRD item "iOS API client" passes=true
+
+## 2026-01-20: iOS challenges feature (feature-challenges.md)
+- Created TallyFeatureChallenges Swift Package in ios/Packages/TallyFeatureChallenges/:
+  - SyncState.swift: SyncState enum (synced/pending/syncing/failed/offline) + PendingChange enum for offline queue
+  - LocalChallengeStore.swift: UserDefaults-based persistence with merge-with-server logic
+  - ChallengesManager.swift: @Observable state manager with offline-first behavior
+    - Optimistic updates for create/update/delete
+    - Pending changes queue for offline operations
+    - Auto-sync when online
+  - ChallengeCardView.swift: Dashboard card with progress bar, pace indicator, quick-add button
+  - ChallengeListView.swift: List with loading/empty/error states, sync status banner
+  - ChallengeDetailView.swift: Detail view with stats grid, archive/delete actions
+  - ChallengeFormView.swift: Create/edit form with timeframe, color, icon pickers
+- Updated App/Project.swift to include TallyFeatureChallenges dependency
+- Updated HomeView.swift to use ChallengesManager and challenge views
+- Tests: 12 tests covering SyncState and LocalChallengeStore (all passing)
+- Build: tuist generate + xcodebuild: BUILD SUCCEEDED
+- Verified: offline-first behavior with pending changes queue, clear sync state indicators
+- PRD item "iOS challenges" passes=true

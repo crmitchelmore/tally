@@ -1,0 +1,582 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F524706C9CCE2A7039533E5 /* TallyFeatureAPIClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E452F31BD486FD47DA56A716 /* TallyFeatureAPIClient.framework */; };
+		1EFF3D2F96A1F20B75AC22BC /* ChallengeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC840F2E23CFA878144B1C8 /* ChallengeDetailView.swift */; };
+		2BDB5F6BDC2F4350C9F407B8 /* TallyDesign.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7CA40CCB627392D00BB5E97C /* TallyDesign.framework */; };
+		30C69BD4B1998605D55D463A /* TallyFeatureChallenges.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62F0B2F57AA7C76E1EC43CC5 /* TallyFeatureChallenges.swift */; };
+		340EFDA62B0AC6625CA1EE97 /* ChallengesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E98A1FD9C79A45DF0704D43 /* ChallengesManager.swift */; };
+		40A806FDEF5F63155A7F9DCA /* SyncState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76BE200EEDB3C3925D518F6C /* SyncState.swift */; };
+		7508EF49E0C3A8ECB0935A60 /* LocalChallengeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB4FD752C37812C94A4D9B1 /* LocalChallengeStore.swift */; };
+		8AA0E102CAE9F8D30463CCDA /* ChallengeFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAF0EE032D8F3740CAEE0B7B /* ChallengeFormView.swift */; };
+		95537127361E6F07F785140B /* ChallengeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29C418E03FC5CD8B6EA5BB43 /* ChallengeListView.swift */; };
+		C9DCDFC9D91F2D6D5231EFFA /* TallyCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A6F1581E3759DC694C2A8BA /* TallyCore.framework */; };
+		CFC909EAC8B84899B4B8F3E4 /* SyncStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8B7783E2F741E7F64CDACC /* SyncStateTests.swift */; };
+		D3F2284382E4A3D2F9D68D4B /* ChallengeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F29FEC7062998014601BBF /* ChallengeCardView.swift */; };
+		F00EFA1052F897B12802AFB3 /* LocalChallengeStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B9FD574685B796F9DA80596 /* LocalChallengeStoreTests.swift */; };
+		FABF1C16E985CC09432EBBB0 /* TallyFeatureChallenges.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45F79BE7914DE65A4793080 /* TallyFeatureChallenges.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		421A7787906FAB2D3C78CF8A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 18168D41FD68F64A962EEAF8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 900D282A34664E74678812DE;
+			remoteInfo = TallyFeatureChallenges;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		31427233CB2B360B9EC09397 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E41D69E7ECDE5A3300C3EC41 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0EB4FD752C37812C94A4D9B1 /* LocalChallengeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalChallengeStore.swift; sourceTree = "<group>"; };
+		29C418E03FC5CD8B6EA5BB43 /* ChallengeListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeListView.swift; sourceTree = "<group>"; };
+		2B9FD574685B796F9DA80596 /* LocalChallengeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalChallengeStoreTests.swift; sourceTree = "<group>"; };
+		302EF75DB6310865638AE0C8 /* TallyFeatureChallengesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TallyFeatureChallengesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F8B7783E2F741E7F64CDACC /* SyncStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStateTests.swift; sourceTree = "<group>"; };
+		62F0B2F57AA7C76E1EC43CC5 /* TallyFeatureChallenges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallyFeatureChallenges.swift; sourceTree = "<group>"; };
+		6BC840F2E23CFA878144B1C8 /* ChallengeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeDetailView.swift; sourceTree = "<group>"; };
+		6E98A1FD9C79A45DF0704D43 /* ChallengesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengesManager.swift; sourceTree = "<group>"; };
+		76BE200EEDB3C3925D518F6C /* SyncState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncState.swift; sourceTree = "<group>"; };
+		76F29FEC7062998014601BBF /* ChallengeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeCardView.swift; sourceTree = "<group>"; };
+		7CA40CCB627392D00BB5E97C /* TallyDesign.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyDesign.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9A6F1581E3759DC694C2A8BA /* TallyCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B77512E1A0DDA95D3634978E /* TallyFeatureChallenges-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyFeatureChallenges-Info.plist"; sourceTree = "<group>"; };
+		C4446CC1A503FC0B185FDC54 /* TallyFeatureChallengesTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyFeatureChallengesTests-Info.plist"; sourceTree = "<group>"; };
+		DAF0EE032D8F3740CAEE0B7B /* ChallengeFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeFormView.swift; sourceTree = "<group>"; };
+		E452F31BD486FD47DA56A716 /* TallyFeatureAPIClient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureAPIClient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F45F79BE7914DE65A4793080 /* TallyFeatureChallenges.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureChallenges.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C5AE80822A675A835240C460 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C9DCDFC9D91F2D6D5231EFFA /* TallyCore.framework in Frameworks */,
+				2BDB5F6BDC2F4350C9F407B8 /* TallyDesign.framework in Frameworks */,
+				0F524706C9CCE2A7039533E5 /* TallyFeatureAPIClient.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D40A285828F8B766AA57198F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FABF1C16E985CC09432EBBB0 /* TallyFeatureChallenges.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		071A0E6A81B417E1627A4FE5 = {
+			isa = PBXGroup;
+			children = (
+				E8FA9805A27CFFA10D489930 /* Products */,
+				A173A3E1E5EDA4A888D12E8A /* Project */,
+			);
+			sourceTree = "<group>";
+		};
+		78550375563384498251F221 /* Derived */ = {
+			isa = PBXGroup;
+			children = (
+				D60FBA18682BAFE0F228C6D4 /* InfoPlists */,
+			);
+			path = Derived;
+			sourceTree = "<group>";
+		};
+		9A5A33407EA6F0C008D1A3C0 /* TallyFeatureChallengesTests */ = {
+			isa = PBXGroup;
+			children = (
+				2B9FD574685B796F9DA80596 /* LocalChallengeStoreTests.swift */,
+				4F8B7783E2F741E7F64CDACC /* SyncStateTests.swift */,
+			);
+			path = TallyFeatureChallengesTests;
+			sourceTree = "<group>";
+		};
+		A173A3E1E5EDA4A888D12E8A /* Project */ = {
+			isa = PBXGroup;
+			children = (
+				78550375563384498251F221 /* Derived */,
+				B45F854AE45AF5B90E19A8FA /* Sources */,
+				C9E4A56194C7C6A047A2C9EF /* Tests */,
+			);
+			name = Project;
+			sourceTree = "<group>";
+		};
+		B45F854AE45AF5B90E19A8FA /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				F54C27069017488B8B960689 /* TallyFeatureChallenges */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		C9E4A56194C7C6A047A2C9EF /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				9A5A33407EA6F0C008D1A3C0 /* TallyFeatureChallengesTests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		D60FBA18682BAFE0F228C6D4 /* InfoPlists */ = {
+			isa = PBXGroup;
+			children = (
+				B77512E1A0DDA95D3634978E /* TallyFeatureChallenges-Info.plist */,
+				C4446CC1A503FC0B185FDC54 /* TallyFeatureChallengesTests-Info.plist */,
+			);
+			path = InfoPlists;
+			sourceTree = "<group>";
+		};
+		E8FA9805A27CFFA10D489930 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9A6F1581E3759DC694C2A8BA /* TallyCore.framework */,
+				7CA40CCB627392D00BB5E97C /* TallyDesign.framework */,
+				E452F31BD486FD47DA56A716 /* TallyFeatureAPIClient.framework */,
+				F45F79BE7914DE65A4793080 /* TallyFeatureChallenges.framework */,
+				302EF75DB6310865638AE0C8 /* TallyFeatureChallengesTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F54C27069017488B8B960689 /* TallyFeatureChallenges */ = {
+			isa = PBXGroup;
+			children = (
+				76F29FEC7062998014601BBF /* ChallengeCardView.swift */,
+				6BC840F2E23CFA878144B1C8 /* ChallengeDetailView.swift */,
+				DAF0EE032D8F3740CAEE0B7B /* ChallengeFormView.swift */,
+				29C418E03FC5CD8B6EA5BB43 /* ChallengeListView.swift */,
+				6E98A1FD9C79A45DF0704D43 /* ChallengesManager.swift */,
+				0EB4FD752C37812C94A4D9B1 /* LocalChallengeStore.swift */,
+				76BE200EEDB3C3925D518F6C /* SyncState.swift */,
+				62F0B2F57AA7C76E1EC43CC5 /* TallyFeatureChallenges.swift */,
+			);
+			path = TallyFeatureChallenges;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0915CD2CF23D9932C8C4199A /* TallyFeatureChallengesTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8A10ADD1FE0963F7D310628A /* Build configuration list for PBXNativeTarget "TallyFeatureChallengesTests" */;
+			buildPhases = (
+				08ECD08F8B4BD5B00E81508D /* Sources */,
+				36CADBFCA04DE39C9C711A61 /* Resources */,
+				D40A285828F8B766AA57198F /* Frameworks */,
+				31427233CB2B360B9EC09397 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FD0321D29CF87CFFDE3705BE /* PBXTargetDependency */,
+			);
+			name = TallyFeatureChallengesTests;
+			packageProductDependencies = (
+			);
+			productName = TallyFeatureChallengesTests;
+			productReference = 302EF75DB6310865638AE0C8 /* TallyFeatureChallengesTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		900D282A34664E74678812DE /* TallyFeatureChallenges */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 54B5FD7ECFB720EF1B8A20EE /* Build configuration list for PBXNativeTarget "TallyFeatureChallenges" */;
+			buildPhases = (
+				44FEB2760B5177CA1FDEAD24 /* Sources */,
+				FDB579A204DDFEF0B6509A4F /* Resources */,
+				C5AE80822A675A835240C460 /* Frameworks */,
+				E41D69E7ECDE5A3300C3EC41 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TallyFeatureChallenges;
+			packageProductDependencies = (
+			);
+			productName = TallyFeatureChallenges;
+			productReference = F45F79BE7914DE65A4793080 /* TallyFeatureChallenges.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		18168D41FD68F64A962EEAF8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 59F49AC8B7DCAC7FD964C64B /* Build configuration list for PBXProject "TallyFeatureChallenges" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 071A0E6A81B417E1627A4FE5;
+			productRefGroup = E8FA9805A27CFFA10D489930 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				900D282A34664E74678812DE /* TallyFeatureChallenges */,
+				0915CD2CF23D9932C8C4199A /* TallyFeatureChallengesTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		36CADBFCA04DE39C9C711A61 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FDB579A204DDFEF0B6509A4F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		08ECD08F8B4BD5B00E81508D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F00EFA1052F897B12802AFB3 /* LocalChallengeStoreTests.swift in Sources */,
+				CFC909EAC8B84899B4B8F3E4 /* SyncStateTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		44FEB2760B5177CA1FDEAD24 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D3F2284382E4A3D2F9D68D4B /* ChallengeCardView.swift in Sources */,
+				1EFF3D2F96A1F20B75AC22BC /* ChallengeDetailView.swift in Sources */,
+				8AA0E102CAE9F8D30463CCDA /* ChallengeFormView.swift in Sources */,
+				95537127361E6F07F785140B /* ChallengeListView.swift in Sources */,
+				340EFDA62B0AC6625CA1EE97 /* ChallengesManager.swift in Sources */,
+				7508EF49E0C3A8ECB0935A60 /* LocalChallengeStore.swift in Sources */,
+				40A806FDEF5F63155A7F9DCA /* SyncState.swift in Sources */,
+				30C69BD4B1998605D55D463A /* TallyFeatureChallenges.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FD0321D29CF87CFFDE3705BE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = TallyFeatureChallenges;
+			target = 900D282A34664E74678812DE /* TallyFeatureChallenges */;
+			targetProxy = 421A7787906FAB2D3C78CF8A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		167D1B625A041BE3615749C8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Derived/InfoPlists/TallyFeatureChallengesTests-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tally.feature.challenges.tests;
+				PRODUCT_NAME = TallyFeatureChallengesTests;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		51F088CB981CCA7F6E041764 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "Derived/InfoPlists/TallyFeatureChallenges-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tally.feature.challenges;
+				PRODUCT_NAME = TallyFeatureChallenges;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = (
+					"$(inherited)",
+					DEBUG,
+				);
+				SWIFT_COMPILATION_MODE = singlefile;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		8353B1F0735B1567ECBA4AE2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		8CB849A9F34EE3767377A023 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		E0438D153D26F9F2F3FCA305 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Derived/InfoPlists/TallyFeatureChallengesTests-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tally.feature.challenges.tests;
+				PRODUCT_NAME = TallyFeatureChallengesTests;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = (
+					"$(inherited)",
+					DEBUG,
+				);
+				SWIFT_COMPILATION_MODE = singlefile;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E20FE422098BB1AED3E55D52 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "Derived/InfoPlists/TallyFeatureChallenges-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tally.feature.challenges;
+				PRODUCT_NAME = TallyFeatureChallenges;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		54B5FD7ECFB720EF1B8A20EE /* Build configuration list for PBXNativeTarget "TallyFeatureChallenges" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				51F088CB981CCA7F6E041764 /* Debug */,
+				E20FE422098BB1AED3E55D52 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		59F49AC8B7DCAC7FD964C64B /* Build configuration list for PBXProject "TallyFeatureChallenges" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8CB849A9F34EE3767377A023 /* Debug */,
+				8353B1F0735B1567ECBA4AE2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8A10ADD1FE0963F7D310628A /* Build configuration list for PBXNativeTarget "TallyFeatureChallengesTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E0438D153D26F9F2F3FCA305 /* Debug */,
+				167D1B625A041BE3615749C8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 18168D41FD68F64A962EEAF8 /* Project object */;
+}

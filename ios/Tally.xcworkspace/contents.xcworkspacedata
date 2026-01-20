@@ -19,6 +19,9 @@
       <FileRef
          location = "group:TallyFeatureAuth/TallyFeatureAuth.xcodeproj">
       </FileRef>
+      <FileRef
+         location = "group:TallyFeatureChallenges/TallyFeatureChallenges.xcodeproj">
+      </FileRef>
    </Group>
    <Group
       location = "container:"

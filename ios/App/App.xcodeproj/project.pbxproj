@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0283E423EB3C277E2A12E108 /* TallyFeatureChallenges.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C8EC6562F91FECF24EA9DF1A /* TallyFeatureChallenges.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		36A25B908DD0111127B364DE /* TallyDesign.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A995F149EF7FFEBC7F2EFDBB /* TallyDesign.framework */; };
+		54F1EBB77D3F424ED2EC58FE /* TallyFeatureChallenges.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C8EC6562F91FECF24EA9DF1A /* TallyFeatureChallenges.framework */; };
 		604450B77C88874D48D26C8D /* PhoneNumberKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 17F65D9AD9EDDA8EB25E4A0A /* PhoneNumberKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		64A1D96432215DAA99C651E1 /* TallyDesign.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A995F149EF7FFEBC7F2EFDBB /* TallyDesign.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		69B40BAF2815D2969E4A0FB1 /* Kingfisher.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 77D69EAF942AA87F8A9468BF /* Kingfisher.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -63,6 +65,7 @@
 				64A1D96432215DAA99C651E1 /* TallyDesign.framework in Embed Frameworks */,
 				764D77813D6FBFB299008C57 /* TallyFeatureAPIClient.framework in Embed Frameworks */,
 				7D0448C557AAC8614CCF4858 /* TallyFeatureAuth.framework in Embed Frameworks */,
+				0283E423EB3C277E2A12E108 /* TallyFeatureChallenges.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -85,6 +88,7 @@
 		A995F149EF7FFEBC7F2EFDBB /* TallyDesign.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyDesign.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4B5B66D5303483821DD1CE0 /* TallyFeatureAuth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureAuth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAFF060C3D8E68253DF6AABA /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C8EC6562F91FECF24EA9DF1A /* TallyFeatureChallenges.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureChallenges.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DFB51575A475ABC13347374E /* SyncStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatusView.swift; sourceTree = "<group>"; };
 		E74CEC688AF06E6C2810EF30 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		F6BADD4378FD7BA41B6122F3 /* TallyCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -107,6 +111,7 @@
 				36A25B908DD0111127B364DE /* TallyDesign.framework in Frameworks */,
 				DE6C35D1E77C20E1AE3342EC /* TallyFeatureAPIClient.framework in Frameworks */,
 				74CF307C13D42E39BAE7F815 /* TallyFeatureAuth.framework in Frameworks */,
+				54F1EBB77D3F424ED2EC58FE /* TallyFeatureChallenges.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,6 +186,7 @@
 				A995F149EF7FFEBC7F2EFDBB /* TallyDesign.framework */,
 				1C37768CF8BDE3C3C533AC06 /* TallyFeatureAPIClient.framework */,
 				B4B5B66D5303483821DD1CE0 /* TallyFeatureAuth.framework */,
+				C8EC6562F91FECF24EA9DF1A /* TallyFeatureChallenges.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";

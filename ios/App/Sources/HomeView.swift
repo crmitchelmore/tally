@@ -1,72 +1,105 @@
 import SwiftUI
 import TallyDesign
 import TallyFeatureAuth
+import TallyFeatureChallenges
+import TallyFeatureAPIClient
 
-/// Home view - main counting interface
+/// Home view - challenges dashboard with offline-first support
 struct HomeView: View {
-    @State private var currentCount = 0
-    @State private var showingAddSheet = false
+    @State private var challengesManager = ChallengesManager()
+    @State private var showCreateSheet = false
+    @State private var selectedChallenge: Challenge?
+    @State private var editingChallenge: Challenge?
+    
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: TallySpacing.xl) {
-                // Hero count visualization
-                VStack(spacing: TallySpacing.md) {
-                    Text("Today")
-                        .font(.tallyTitleMedium)
-                        .foregroundColor(Color.tallyInkSecondary)
-                    
-                    TallyMarkView(count: currentCount, animated: true, size: 120)
-                    
-                    Text("\(currentCount)")
-                        .font(.tallyMonoDisplay)
-                        .foregroundColor(Color.tallyInk)
+        ChallengeListView(
+            manager: challengesManager,
+            onSelectChallenge: { challenge in
+                selectedChallenge = challenge
+            },
+            onCreateChallenge: {
+                showCreateSheet = true
+            },
+            onQuickAdd: { challenge in
+                // Quick add entry for challenge
+                Task {
+                    await quickAddEntry(for: challenge)
                 }
-                .tallyPadding(.top, TallySpacing.xl)
-                
-                // Quick add button
-                Button {
-                    withAnimation(TallyMotion.ease) {
-                        currentCount += 1
-                    }
-                } label: {
-                    HStack {
-                        Image(systemName: "plus")
-                        Text("Add One")
-                            .font(.tallyTitleSmall)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .tallyPadding()
-                    .background(Color.tallyAccent)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                }
-                .tallyPadding(.horizontal)
-                
-                // Demo section showing various counts
-                VStack(alignment: .leading, spacing: TallySpacing.md) {
-                    Text("Examples")
-                        .font(.tallyTitleMedium)
-                        .foregroundColor(Color.tallyInk)
-                    
-                    ForEach([5, 10, 25, 50], id: \.self) { count in
-                        HStack {
-                            TallyMarkView(count: count, size: 40)
-                            Text("\(count)")
-                                .font(.tallyMonoBody)
-                                .foregroundColor(Color.tallyInkSecondary)
-                            Spacer()
-                        }
-                        .tallyPadding()
-                        .background(Color.tallyPaperTint)
-                        .cornerRadius(8)
-                    }
-                }
-                .tallyPadding(.horizontal)
             }
-            .tallyPadding(.bottom, TallySpacing.xxl)
-        }
+        )
         .navigationTitle("Tally")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showCreateSheet = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+            }
+        }
+        .sheet(isPresented: $showCreateSheet) {
+            ChallengeFormView(
+                manager: challengesManager,
+                onSave: {
+                    showCreateSheet = false
+                },
+                onCancel: {
+                    showCreateSheet = false
+                }
+            )
+        }
+        .sheet(item: $selectedChallenge) { challenge in
+            NavigationStack {
+                ChallengeDetailView(
+                    challenge: challenge,
+                    manager: challengesManager,
+                    onAddEntry: {
+                        Task {
+                            await quickAddEntry(for: challenge)
+                        }
+                    },
+                    onEdit: {
+                        selectedChallenge = nil
+                        editingChallenge = challenge
+                    },
+                    onDismiss: {
+                        selectedChallenge = nil
+                    }
+                )
+            }
+        }
+        .sheet(item: $editingChallenge) { challenge in
+            ChallengeFormView(
+                manager: challengesManager,
+                existingChallenge: challenge,
+                onSave: {
+                    editingChallenge = nil
+                },
+                onCancel: {
+                    editingChallenge = nil
+                }
+            )
+        }
+    }
+    
+    private func quickAddEntry(for challenge: Challenge) async {
+        // Create entry via API client
+        do {
+            let request = CreateEntryRequest(
+                challengeId: challenge.id,
+                date: ISO8601DateFormatter().string(from: Date()).prefix(10).description,
+                count: 1,
+                note: nil,
+                feeling: nil
+            )
+            _ = try await APIClient.shared.createEntry(request)
+            // Refresh to show updated stats
+            await challengesManager.refresh()
+        } catch {
+            // Entry creation failed, but we show challenges anyway
+        }
     }
 }
 

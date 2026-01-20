@@ -1,0 +1,107 @@
+package com.tally.app
+
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.tally.app.ui.CommunityScreen
+import com.tally.app.ui.HomeScreen
+import kotlinx.serialization.Serializable
+
+/**
+ * Navigation routes using type-safe Kotlin Serialization.
+ */
+@Serializable
+object HomeRoute
+
+@Serializable
+object CommunityRoute
+
+/**
+ * Main app composable with bottom navigation.
+ */
+@Composable
+fun TallyApp() {
+    val navController = rememberNavController()
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = selectedTab == 0,
+                    onClick = {
+                        selectedTab = 0
+                        navController.navigate(HomeRoute) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = if (selectedTab == 0) Icons.Filled.Home else Icons.Outlined.Home,
+                            contentDescription = null
+                        )
+                    },
+                    label = { Text(stringResource(R.string.tab_home)) }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 1,
+                    onClick = {
+                        selectedTab = 1
+                        navController.navigate(CommunityRoute) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = if (selectedTab == 1) Icons.Filled.Person else Icons.Outlined.Person,
+                            contentDescription = null
+                        )
+                    },
+                    label = { Text(stringResource(R.string.tab_community)) }
+                )
+            }
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = HomeRoute,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable<HomeRoute> {
+                HomeScreen()
+            }
+            composable<CommunityRoute> {
+                CommunityScreen()
+            }
+        }
+    }
+}

@@ -189,3 +189,35 @@ Time: ~2 minutes
 - Build: tuist generate + xcodebuild: BUILD SUCCEEDED
 - Verified: offline-first behavior with pending changes queue, clear sync state indicators
 - PRD item "iOS challenges" passes=true
+
+## 2026-01-20: Android theme & app structure (feature-theme-structure.md)
+- Created Android project with multi-module Gradle structure (tally-android/):
+  - settings.gradle.kts: includes :app and :core:design modules
+  - gradle/libs.versions.toml: version catalog (AGP 8.7.3, Kotlin 2.1.0, Compose BOM 2024.12.01)
+  - build.gradle.kts: root build file with plugin aliases
+- Created :core:design module with TallyTheme and design tokens:
+  - TallyColors.kt: Paper backgrounds, ink colors (C1/C2/C3), warm red accent
+  - TallyTypography.kt: Material 3 typography scale
+  - TallySpacing.kt: 8pt-based spacing scale (xs 4dp to xxxl 64dp)
+  - TallyMotion.kt: Animation durations (stroke 120ms, feedback 220ms, panel 420ms)
+  - TallyTheme.kt: Material 3 theme with dynamic color support + LocalReduceMotion
+  - TallyMark.kt: Fractal completion tally composable using Canvas drawing
+  - SyncStatusIndicator.kt: Sync state indicator (synced/syncing/offline/pending/failed)
+- TallyMark features:
+  - 1-4: vertical strokes
+  - 5: 5-gate (4 strokes + diagonal slash in accent color)
+  - 6-24: multiple 5-gates in X layout
+  - 25: full 25-unit with C2 X overlay
+  - 26-99: 2x2 grid of 25-units
+  - 100: X + square outline (C3)
+  - 101-999: row of 100-blocks
+  - 1000+: rows with horizontal line overlay
+  - TalkBack content descriptions
+  - Respects "Remove animations" setting via LocalReduceMotion
+- Created app shell in :app module:
+  - MainActivity.kt: Entry point with edge-to-edge enabled
+  - TallyApp.kt: Scaffold + Navigation Compose with bottom nav (Home, Community)
+  - HomeScreen.kt: Interactive counter demo with TallyMark visualization
+  - CommunityScreen.kt: Placeholder for public challenges
+- Build: ./gradlew assembleDebug: BUILD SUCCESSFUL
+- PRD item "Android theme & app structure" passes=true

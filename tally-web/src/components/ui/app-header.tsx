@@ -10,7 +10,7 @@ import { TallyMark } from "./tally-mark";
 interface AppHeaderProps {
   user?: {
     name: string;
-    email: string;
+    email?: string;
     avatarUrl?: string;
   } | null;
   syncState?: "offline" | "syncing" | "synced" | "error";

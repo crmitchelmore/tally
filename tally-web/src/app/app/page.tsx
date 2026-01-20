@@ -3,28 +3,54 @@
 import Link from "next/link";
 import { TallyMark } from "@/components/ui/tally-mark";
 import { useState } from "react";
+import { useUser } from "@clerk/nextjs";
 
 export default function AppPage() {
   const [demoCount, setDemoCount] = useState(0);
+  const { isLoaded, isSignedIn, user } = useUser();
+
+  // Show signed-out CTA if not authenticated
+  if (isLoaded && !isSignedIn) {
+    return (
+      <div className="space-y-8">
+        <section className="text-center py-16">
+          <TallyMark count={5} size="lg" />
+          <h1 className="mt-6 text-3xl font-semibold tracking-tight text-ink">
+            Track what matters.
+          </h1>
+          <p className="mt-3 text-base text-muted max-w-md mx-auto">
+            Create challenges, log entries, and watch your progress unfold with
+            calm, tactile tallies.
+          </p>
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/sign-up"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-accent text-white font-semibold hover:bg-accent/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            >
+              Get started free
+            </Link>
+            <Link
+              href="/sign-in"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-border font-semibold hover:bg-ink/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            >
+              Sign in
+            </Link>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
       {/* Hero section */}
       <section className="text-center py-12">
         <h1 className="text-3xl font-semibold tracking-tight text-ink">
-          Your tallies live here.
+          Welcome back{user?.firstName ? `, ${user.firstName}` : ""}.
         </h1>
         <p className="mt-3 text-base text-muted max-w-md mx-auto">
-          Create challenges, log entries, and watch your progress unfold.
+          Your tallies are ready. Create a challenge or log progress below.
         </p>
-        <div className="mt-6">
-          <Link
-            href="/sign-in"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent text-white font-semibold hover:bg-accent/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-          >
-            Sign in to start
-          </Link>
-        </div>
       </section>
 
       {/* TallyMark demo section */}

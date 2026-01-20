@@ -30,3 +30,23 @@
 - useTheme and useReducedMotion hooks for accessibility
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Web theme & app structure" passes=true
+
+## 2026-01-20: Web auth + user provisioning (feature-auth.md)
+- Installed @clerk/nextjs (v6.36.8)
+- Created middleware.ts with clerkMiddleware:
+  - Public routes: /, /sign-in, /sign-up, /__clerk, /api/v1/public, /api/v1/auth/user
+  - API routes return 401 JSON for unauthenticated requests
+  - Pages redirect to /sign-in with redirect_url param
+  - Env guard for missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (build-time safety)
+- Created /sign-in/[[...sign-in]]/page.tsx with Clerk SignIn component + Tally styling
+- Created /sign-up/[[...sign-up]]/page.tsx with Clerk SignUp component + Tally styling
+- Created /api/v1/auth/user POST/GET endpoint for user provisioning (in-memory store)
+- Updated root layout.tsx to conditionally wrap with ClerkProvider
+- Updated /app layout to use real Clerk user via useUser/useClerk hooks
+- Updated /app page to show auth-aware content:
+  - Signed-out: CTA to sign up/sign in with TallyMark display
+  - Signed-in: Welcome message with user's first name
+- Copied .env to tally-web/.env.local with secrets
+- Added img.clerk.com to next.config.mjs remotePatterns
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Web auth + user provisioning" passes=true

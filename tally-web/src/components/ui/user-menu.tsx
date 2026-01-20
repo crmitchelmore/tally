@@ -6,7 +6,7 @@ import Image from "next/image";
 interface UserMenuProps {
   user?: {
     name: string;
-    email: string;
+    email?: string;
     avatarUrl?: string;
   } | null;
   onSignOut?: () => void;
@@ -40,9 +40,11 @@ export function UserMenu({ user, onSignOut, className = "" }: UserMenuProps) {
         <span className="text-sm font-medium text-ink dark:text-paper truncate max-w-[120px]">
           {user.name}
         </span>
-        <span className="text-xs text-muted truncate max-w-[120px]">
-          {user.email}
-        </span>
+        {user.email && (
+          <span className="text-xs text-muted truncate max-w-[120px]">
+            {user.email}
+          </span>
+        )}
       </div>
       <button
         type="button"

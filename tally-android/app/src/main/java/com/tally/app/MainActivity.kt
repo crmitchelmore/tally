@@ -1,5 +1,6 @@
 package com.tally.app
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,19 +19,23 @@ import com.tally.core.design.TallyTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    private lateinit var authManager: AuthManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        authManager = AuthManager(
+            context = applicationContext,
+            publishableKey = BuildConfig.CLERK_PUBLISHABLE_KEY,
+            apiBaseUrl = BuildConfig.API_BASE_URL
+        )
+
+        // Handle auth callback from deep link
+        handleIntent(intent)
+
         setContent {
             TallyTheme {
-                val authManager = remember {
-                    AuthManager(
-                        context = applicationContext,
-                        publishableKey = BuildConfig.CLERK_PUBLISHABLE_KEY,
-                        apiBaseUrl = BuildConfig.API_BASE_URL
-                    )
-                }
-
                 val authState by authManager.authState.collectAsStateWithLifecycle()
                 val scope = rememberCoroutineScope()
 
@@ -42,9 +47,8 @@ class MainActivity : ComponentActivity() {
                 when (val state = authState) {
                     is AuthState.Loading -> LoadingScreen()
                     is AuthState.SignedOut -> SignInScreen(
-                        onSignInClick = {
-                            // TODO: Launch Clerk OAuth flow via CustomTabs
-                            // For now, show signed-out state (full Clerk SDK integration pending)
+                        onSignInClick = { context ->
+                            authManager.launchSignIn(context)
                         }
                     )
                     is AuthState.SignedIn -> TallyApp(
@@ -59,10 +63,28 @@ class MainActivity : ComponentActivity() {
                         message = state.message,
                         onRetryClick = {
                             scope.launch {
-                                authManager.checkSession()
+                                authManager.initialize()
                             }
                         }
                     )
+                }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        // Handle deep link: tally://auth/callback?token=xxx
+        val uri = intent?.data ?: return
+        if (uri.scheme == "tally" && uri.host == "auth" && uri.path == "/callback") {
+            val token = uri.getQueryParameter("token")
+            if (token != null) {
+                kotlinx.coroutines.MainScope().launch {
+                    authManager.handleAuthCallback(token)
                 }
             }
         }

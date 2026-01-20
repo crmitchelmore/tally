@@ -54,4 +54,7 @@ dependencies {
 
     // EncryptedSharedPreferences for secure token storage
     implementation(libs.androidx.security.crypto)
+
+    // CustomTabs for web-based OAuth flow
+    implementation(libs.androidx.browser)
 }

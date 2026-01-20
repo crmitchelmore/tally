@@ -1,6 +1,9 @@
 package com.tally.core.auth
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.browser.customtabs.CustomTabsIntent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,12 +14,9 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Manages authentication state.
- * Uses web-based OAuth flow via CustomTabs (Clerk SDK integration pending).
- * 
- * Note: Full Clerk Android SDK integration is blocked pending SDK availability
- * on Maven Central. This implementation provides the auth architecture and 
- * secure token storage ready for SDK integration.
+ * Manages authentication state using Clerk web-based OAuth via CustomTabs.
+ * Stores JWT securely in EncryptedSharedPreferences for offline access.
+ * Calls POST /api/v1/auth/user after successful auth to provision user in backend.
  */
 class AuthManager(
     private val context: Context,
@@ -38,7 +38,7 @@ class AuthManager(
         if (isInitialized) return
         isInitialized = true
 
-        // Check for existing token
+        // Check for existing stored token (offline support)
         checkSession()
     }
 
@@ -48,12 +48,12 @@ class AuthManager(
     suspend fun checkSession() {
         val storedToken = tokenStorage.getToken()
         if (storedToken != null) {
-            // Validate token by calling API
+            // Validate by calling API
             val user = provisionUser(storedToken)
             if (user != null) {
                 _authState.value = AuthState.SignedIn(user, storedToken)
             } else {
-                // Token invalid, clear and show sign-out
+                // Token invalid, clear it
                 tokenStorage.clearToken()
                 _authState.value = AuthState.SignedOut
             }
@@ -63,10 +63,22 @@ class AuthManager(
     }
 
     /**
-     * Handle successful sign in with token.
-     * Called after OAuth flow completes.
+     * Launch Clerk OAuth sign-in via CustomTabs.
+     * The web app will handle the OAuth flow and redirect back with a token.
      */
-    suspend fun handleSignIn(token: String) {
+    fun launchSignIn(context: Context) {
+        val signInUrl = "$apiBaseUrl/sign-in?redirect_url=tally://auth/callback"
+        val customTabsIntent = CustomTabsIntent.Builder()
+            .setShowTitle(true)
+            .build()
+        customTabsIntent.launchUrl(context, Uri.parse(signInUrl))
+    }
+
+    /**
+     * Handle deep link callback with auth token.
+     * Called when app receives tally://auth/callback?token=xxx
+     */
+    suspend fun handleAuthCallback(token: String) {
         // Store token securely
         tokenStorage.saveToken(token)
 
@@ -93,12 +105,13 @@ class AuthManager(
     fun getToken(): String? = tokenStorage.getToken()
 
     /**
-     * Get the OAuth sign-in URL for Clerk.
-     * Opens in CustomTabs browser.
+     * Refresh the session token.
      */
-    fun getSignInUrl(): String {
-        // Clerk hosted sign-in page with redirect back to app
-        return "$apiBaseUrl/sign-in?redirect_url=tally://auth/callback"
+    suspend fun refreshToken(): String? {
+        // Re-validate current token
+        val token = tokenStorage.getToken() ?: return null
+        val user = provisionUser(token)
+        return if (user != null) token else null
     }
 
     /**
@@ -129,14 +142,5 @@ class AuthManager(
         } catch (e: Exception) {
             null
         }
-    }
-
-    /**
-     * Refresh the session token.
-     */
-    suspend fun refreshToken(): String? {
-        // Token refresh would be handled by Clerk SDK
-        // For now, return existing token
-        return tokenStorage.getToken()
     }
 }

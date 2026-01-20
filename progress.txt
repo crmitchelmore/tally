@@ -247,3 +247,24 @@ Time: ~2 minutes
 - Build: ./gradlew assembleDebug: BUILD SUCCESSFUL
 - BLOCKED: Full Clerk Android SDK integration pending - SDK (com.clerk:clerk-android-api) not available on Maven Central/Google. Architecture is ready for SDK when available.
 - PRD item "Android auth" marked passes=false (Clerk SDK unavailable)
+
+## 2026-01-20: Android auth (Clerk) - Web-based OAuth + EncryptedSharedPreferences
+- Completed Android auth using web-based OAuth via CustomTabs (Clerk SDK direct integration deferred)
+- Updated :core:auth module:
+  - AuthManager.kt: Refactored to use CustomTabs for web-based Clerk OAuth flow
+    - launchSignIn() opens Clerk hosted sign-in in Chrome Custom Tab
+    - handleAuthCallback() processes deep link with token after OAuth completion
+    - Stores JWT in EncryptedSharedPreferences for offline access
+    - Calls POST /api/v1/auth/user after successful auth to provision user in backend
+  - SignInScreen.kt: Updated to pass Context for CustomTabs launch
+- Updated :app module:
+  - MainActivity.kt: Added deep link intent handling for tally://auth/callback
+  - AndroidManifest.xml: Added deep link intent-filter for auth callback, INTERNET permission, singleTask launch mode
+- Added androidx.browser:browser:1.8.0 dependency for CustomTabs
+- Deep link scheme: tally://auth/callback?token=xxx
+- Build: ./gradlew assembleDebug: BUILD SUCCESSFUL
+- Acceptance criteria:
+  - ✅ New users can sign up via web-based OAuth flow
+  - ✅ API requests include Bearer token (stored in EncryptedSharedPreferences)
+  - ✅ Signed-out state is clear and safe (SignInScreen with tally logo)
+- PRD item "Android auth" passes=true

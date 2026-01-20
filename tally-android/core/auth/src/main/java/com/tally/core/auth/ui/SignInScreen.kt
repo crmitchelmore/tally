@@ -1,5 +1,6 @@
 package com.tally.core.auth.ui
 
+import android.content.Context
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -34,9 +36,11 @@ import com.tally.core.design.TallySpacing
  */
 @Composable
 fun SignInScreen(
-    onSignInClick: () -> Unit,
+    onSignInClick: (Context) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -76,7 +80,7 @@ fun SignInScreen(
 
         // Sign in button (primary CTA)
         Button(
-            onClick = onSignInClick,
+            onClick = { onSignInClick(context) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),

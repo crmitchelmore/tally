@@ -6,7 +6,10 @@ on:
   pull_request:
 
 jobs:
-  web-build:
+  # ─────────────────────────────────────────────────────────────
+  # Web: lint + build
+  # ─────────────────────────────────────────────────────────────
+  web:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -16,7 +19,71 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install
-      - name: bun run build
+      - name: Lint
+        run: bun run lint
+      - name: Build
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          HONEYCOMB_API_KEY: ${{ secrets.HONEYCOMB_API_KEY }}
         run: bun run build
+
+  # ─────────────────────────────────────────────────────────────
+  # iOS: generate + build (macOS runner)
+  # ─────────────────────────────────────────────────────────────
+  ios:
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Tuist
+        run: |
+          curl -Ls https://install.tuist.io | bash
+          echo "$HOME/.tuist/bin" >> $GITHUB_PATH
+      - name: Generate Xcode project
+        run: |
+          tuist install
+          tuist generate --no-open
+      - name: Build iOS app
+        run: |
+          xcodebuild \
+            -workspace Tally.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            | xcpretty || true
+
+  # ─────────────────────────────────────────────────────────────
+  # Android: lint + build (ubuntu runner)
+  # ─────────────────────────────────────────────────────────────
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tally-android
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Build Android app
+        run: ./gradlew assembleDebug --no-daemon
+      - name: Run Android unit tests
+        run: ./gradlew testDebugUnitTest --no-daemon

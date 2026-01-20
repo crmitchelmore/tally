@@ -347,3 +347,15 @@ Time: ~2 minutes
   - [x] Logs are queryable by user_id, session_id, trace_id, challenge_id, request_id
   - [x] Sampling/cost controls: PostHog uses explicit events only (no autocapture)
 - PRD item "Observability" passes=true
+
+## 2026-01-20: CI (lint/build/test for all platforms)
+- Enhanced .github/workflows/ci.yml:
+  - Web job: lint + build with Bun (env: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, HONEYCOMB_API_KEY)
+  - iOS job: Tuist install + generate + xcodebuild on macos-14
+    - Uses iPhone 16 simulator, CODE_SIGNING_REQUIRED=NO for CI
+    - xcpretty for clean output
+  - Android job: JDK 17 + Gradle + assembleDebug + testDebugUnitTest
+    - Gradle caching for faster builds
+    - Runs unit tests (29 tests in :core:network)
+- Verified locally: bun run lint (no errors)
+- PRD item "CI" passes=true

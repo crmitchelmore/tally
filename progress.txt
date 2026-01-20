@@ -201,3 +201,26 @@
 - Updated landing page (/) to include HeroMicroDemo between copy and CTAs
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Landing page hero micro-demo" passes=true
+
+## 2026-01-20: Landing page feature showcase section (feature-feature-showcase.md)
+- Created FeatureShowcase component (src/components/landing/feature-showcase.tsx):
+  - Desktop layout: accordion + media panel side-by-side (grid, 768px+ breakpoint)
+  - Mobile layout: stacked cards with media below each feature
+  - 4 features: Track anything, See real progress, Sync everywhere, Share with others
+  - Tally-styled feature icons (1-4 strokes based on index)
+  - IntersectionObserver for lazy media panel rendering
+- Added CSS styles to globals.css:
+  - .feature-showcase with max-width 1120px, generous spacing
+  - .accordion-item with hover/active states, border accent on active
+  - .accordion-panel with max-height transition (reduced-motion: none)
+  - .showcase-media-panel with placeholder tally marks
+  - .mobile-feature-card for stacked mobile layout
+  - .showcase-cta single clear CTA button
+- Updated landing page layout (flex column instead of grid center)
+- Added FeatureShowcase to landing page below hero
+- Desktop-first: accordion + media panel designed for wide screens
+- Single CTA: "Start tracking" button at bottom
+- Accessibility: ARIA labels, focus-visible states, keyboard navigable accordion
+- Reduced-motion: accordion panel transition disabled
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Landing page feature showcase section" passes=true

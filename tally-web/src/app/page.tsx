@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { HeroMicroDemo } from "@/components/landing";
+import { HeroMicroDemo, FeatureShowcase } from "@/components/landing";
 
 export default function Home() {
   return (
@@ -36,6 +36,9 @@ export default function Home() {
           <span className="slash" />
         </div>
       </section>
+
+      {/* Feature showcase section */}
+      <FeatureShowcase />
     </main>
   );
 }

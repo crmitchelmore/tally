@@ -79,7 +79,7 @@
       "Verify fast entry UX + reduced-motion support",
       "Run existing checks"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "web",

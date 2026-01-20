@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { TallyMark } from "@/components/ui/tally-mark";
 import { ActivityHeatmap } from "@/components/challenges/activity-heatmap";
-import type { Challenge, ChallengeStats, Entry } from "@/app/api/v1/_lib/types";
+import { AddEntryDialog, EntryList, DayDrilldown, EditEntryDialog } from "@/components/entries";
+import type { Challenge, ChallengeStats, Entry, CreateEntryRequest, UpdateEntryRequest } from "@/app/api/v1/_lib/types";
 
 interface ChallengeData {
   challenge: Challenge;
@@ -27,6 +28,11 @@ export default function ChallengeDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  
+  // Entry dialog state
+  const [showAddEntry, setShowAddEntry] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
+  const [drilldownDate, setDrilldownDate] = useState<string | null>(null);
 
   // Fetch challenge data
   const fetchData = useCallback(async () => {
@@ -67,6 +73,72 @@ export default function ChallengeDetailPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Add entry handler
+  const handleAddEntry = useCallback(
+    async (entryData: Omit<CreateEntryRequest, "challengeId">) => {
+      const res = await fetch("/api/v1/entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...entryData, challengeId }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to add entry");
+      }
+
+      // Refresh data to get updated stats
+      await fetchData();
+    },
+    [challengeId, fetchData]
+  );
+
+  // Edit entry handler
+  const handleEditEntry = useCallback(
+    async (id: string, entryData: UpdateEntryRequest) => {
+      const res = await fetch(`/api/v1/entries/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entryData),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to update entry");
+      }
+
+      await fetchData();
+    },
+    [fetchData]
+  );
+
+  // Delete entry handler
+  const handleDeleteEntry = useCallback(
+    async (id: string) => {
+      const res = await fetch(`/api/v1/entries/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to delete entry");
+      }
+
+      await fetchData();
+    },
+    [fetchData]
+  );
+
+  // Heatmap day click handler
+  const handleDayClick = useCallback((date: string) => {
+    setDrilldownDate(date);
+  }, []);
+
+  // Get entries for drilldown date
+  const drilldownEntries = drilldownDate && data
+    ? data.entries.filter((e) => e.date === drilldownDate)
+    : [];
 
   // Archive/unarchive
   const handleToggleArchive = async () => {
@@ -144,7 +216,7 @@ export default function ChallengeDetailPage() {
   };
 
   const paceMessages = {
-    ahead: `You're ahead of pace!`,
+    ahead: "You're ahead of pace!",
     "on-pace": "Right on track.",
     behind: `Behind by ${Math.ceil((stats.daysElapsed * challenge.target / (new Date(challenge.endDate).getTime() - new Date(challenge.startDate).getTime()) * 86400000) - stats.totalCount)} marks`,
   };
@@ -182,15 +254,23 @@ export default function ChallengeDetailPage() {
               </span>
             )}
           </div>
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="p-2 rounded-lg text-muted hover:bg-border/50 transition-colors"
-            aria-label="Settings"
-          >
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowAddEntry(true)}
+              className="px-4 py-2 rounded-xl font-medium bg-accent text-white hover:bg-accent/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            >
+              + Add Entry
+            </button>
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="p-2 rounded-lg text-muted hover:bg-border/50 transition-colors"
+              aria-label="Settings"
+            >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
             </svg>
           </button>
+        </div>
         </div>
 
         {/* Stats grid */}
@@ -244,10 +324,7 @@ export default function ChallengeDetailPage() {
           startDate={challenge.startDate}
           endDate={challenge.endDate}
           color={challenge.color}
-          onDayClick={(date, count) => {
-            // Could open a day detail modal here
-            console.log(`Day ${date}: ${count} marks`);
-          }}
+          onDayClick={handleDayClick}
         />
       </div>
 
@@ -303,6 +380,47 @@ export default function ChallengeDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Recent entries */}
+      <div className="bg-surface border border-border rounded-2xl p-6">
+        <h2 className="text-lg font-semibold text-ink mb-4">Recent Entries</h2>
+        <EntryList
+          entries={entries.slice(0, 20)}
+          onEdit={setEditingEntry}
+          onDelete={(entry) => handleDeleteEntry(entry.id)}
+        />
+      </div>
+
+      {/* Add entry dialog */}
+      <AddEntryDialog
+        challenge={challenge}
+        open={showAddEntry}
+        onClose={() => setShowAddEntry(false)}
+        onSubmit={handleAddEntry}
+      />
+
+      {/* Edit entry dialog */}
+      <EditEntryDialog
+        entry={editingEntry}
+        open={!!editingEntry}
+        onClose={() => setEditingEntry(null)}
+        onSubmit={handleEditEntry}
+        onDelete={handleDeleteEntry}
+      />
+
+      {/* Day drilldown */}
+      <DayDrilldown
+        date={drilldownDate || ""}
+        entries={drilldownEntries}
+        open={!!drilldownDate}
+        onClose={() => setDrilldownDate(null)}
+        onEdit={setEditingEntry}
+        onDelete={(entry) => handleDeleteEntry(entry.id)}
+        onAddEntry={() => {
+          setDrilldownDate(null);
+          setShowAddEntry(true);
+        }}
+      />
     </div>
   );
 }

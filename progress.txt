@@ -99,3 +99,22 @@
 - Accessibility: focus-visible states, ARIA labels, reduced-motion support
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Web challenges feature" passes=true
+
+## 2026-01-20: Web entries feature (feature-entries.md)
+- Created entries component folder (src/components/entries/):
+  - add-entry-dialog.tsx: Modal for adding entries with large tap targets, count +/- buttons, date picker (no future dates), feeling selector, note field, TallyMark preview
+  - entry-list.tsx: List of entries grouped by date with edit/delete actions
+  - day-drilldown.tsx: Modal for per-day view from heatmap click
+  - edit-entry-dialog.tsx: Modal for editing existing entries with delete option
+- Updated /app/challenges/[id]/page.tsx with entry management:
+  - "Add Entry" button in header
+  - Recent entries list with edit/delete
+  - Heatmap day click opens DayDrilldown
+  - Entry CRUD wired to API endpoints
+- Added dialog animations to globals.css:
+  - animate-dialog-in with reduced-motion fallback
+  - animate-stroke-draw for tally ink effect
+- Fast entry UX: large tap targets, immediate feedback, instant for reduced-motion
+- No confetti/emoji - ink-stroke success feedback only
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Web entries feature" passes=true

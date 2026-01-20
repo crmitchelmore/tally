@@ -8,9 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Tally — Track what matters",
-  description:
-    "A friendly, fast way to track daily progress toward your goals. Count reps, build streaks, and see momentum.",
+  title: "Tally",
+  description: "Track what matters with calm, tactile progress.",
 };
 
 export default function RootLayout({

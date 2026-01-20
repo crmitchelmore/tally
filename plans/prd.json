@@ -39,7 +39,7 @@
       "Define design tokens (OKLCH colors, typography, motion)",
       "Run existing checks"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "web",

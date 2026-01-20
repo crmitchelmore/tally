@@ -13,3 +13,20 @@
 - Deploy workflow #15 completed successfully
 - Production URL https://tally-tracker.app/ returns HTTP 200
 - PRD item "CD: deploy hello-world landing page" marked passes=true
+2026-01-20: Added minimal landing + /app shells in tally-web, aligned deploy-production workflow to always run, and verified bun run build succeeds. BLOCKED: production Vercel deploy + smoke check require external Vercel/GitHub Actions execution and secrets.
+
+## 2026-01-20: Web theme & app structure (feature-theme-structure.md)
+- Design tokens: OKLCH colors, typography, motion, spacing in src/lib/design-tokens.ts
+- CSS custom properties for light/dark theming in globals.css
+- TallyMark component (src/components/ui/tally-mark.tsx) with fractal completion system:
+  - 1-4: vertical strokes
+  - 5: 5-gate (4 strokes + diagonal slash)
+  - 6-24: multiple 5-gates
+  - 25+: simplified representations for large counts (100-blocks, 1000-rows, etc.)
+  - Animation support with prefers-reduced-motion fallback
+- App shell components: AppHeader, AppNav, SyncIndicator, ThemeToggle, UserMenu
+- App layout with persistent header and responsive navigation
+- Interactive TallyMark demo on /app page for visual verification
+- useTheme and useReducedMotion hooks for accessibility
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Web theme & app structure" passes=true

@@ -245,3 +245,21 @@
 - Reduced-motion: no animations in component (static steps)
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Landing page how-it-works section" passes=true
+
+## 2026-01-20: Landing page testimonials + stats section (feature-testimonials-stats.md)
+- Created TestimonialsStats component (src/components/landing/testimonials-stats.tsx):
+  - 3 metric cards: 25,000+ marks logged, 94% hit their pace, 12 sec avg entry time
+  - 2 testimonial quote cards with tally mark decoration
+  - Desktop: 3-column stats grid, 2-column quotes grid
+  - Mobile: stacked layout
+- Added CSS styles to globals.css:
+  - .testimonials-stats section with responsive grids
+  - .ts-stat-card with hover states, tabular-nums for values
+  - .ts-quote-card with decorative tally marks at subtle opacity
+  - High-contrast text, calm visual presentation
+- Exported from src/components/landing/index.ts
+- Added to landing page after HowItWorks section
+- Accessibility: high contrast, semantic blockquote/cite elements, hover states
+- Reduced-motion: inherits global reduced-motion rules (no section-specific animations)
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Landing page testimonials + stats section" passes=true

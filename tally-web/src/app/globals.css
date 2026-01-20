@@ -1000,3 +1000,180 @@ main.landing {
   outline: 2px solid var(--color-accent);
   outline-offset: 4px;
 }
+
+/* ============================================
+   Testimonials + Stats Section
+   ============================================ */
+
+.testimonials-stats {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+/* Stats row */
+.ts-stats-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+@media (min-width: 640px) {
+  .ts-stats-row {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+}
+
+@media (min-width: 768px) {
+  .ts-stats-row {
+    margin-bottom: 64px;
+  }
+}
+
+.ts-stat-card {
+  text-align: center;
+  padding: 24px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.ts-stat-card:hover {
+  border-color: var(--color-muted);
+  box-shadow: 0 4px 16px rgba(27, 26, 23, 0.06);
+}
+
+.dark .ts-stat-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.ts-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 768px) {
+  .ts-stat-value {
+    font-size: 2.5rem;
+  }
+}
+
+.ts-stat-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin-top: 4px;
+}
+
+.ts-stat-description {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+/* Quotes row */
+.ts-quotes-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 640px) {
+  .ts-quotes-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+}
+
+.ts-quote-card {
+  position: relative;
+  padding: 28px 24px 24px 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.ts-quote-card:hover {
+  border-color: var(--color-muted);
+  box-shadow: 0 4px 16px rgba(27, 26, 23, 0.06);
+}
+
+.dark .ts-quote-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Decorative tally mark */
+.ts-quote-tally {
+  position: absolute;
+  top: -8px;
+  left: 24px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  opacity: 0.15;
+}
+
+.ts-quote-stroke {
+  width: 2px;
+  height: 16px;
+  background: var(--color-ink);
+  border-radius: 1px;
+}
+
+.ts-quote-slash {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 20px;
+  background: var(--color-accent);
+  border-radius: 1px;
+  transform: translate(-50%, -50%) rotate(-20deg);
+}
+
+.ts-quote-text {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: var(--color-ink);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  .ts-quote-text {
+    font-size: 1.125rem;
+  }
+}
+
+.ts-quote-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ts-quote-author {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  font-style: normal;
+}
+
+.ts-quote-context {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.ts-quote-context::before {
+  content: "·";
+  margin-right: 12px;
+  color: var(--color-border);
+}

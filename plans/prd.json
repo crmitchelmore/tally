@@ -27,7 +27,7 @@
       "Add/verify deploy workflow runs on push to main",
       "Smoke-check production URL returns HTTP 200"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "web",

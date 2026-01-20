@@ -3,3 +3,13 @@
 #
 # Use one line per notable change or verification. When something needs external input,
 # write: "BLOCKED: ..." and move on.
+
+## 2026-01-20: CD landing page + /app shell (feature-cd.md)
+- Created tally-web Next.js 14 project with Bun (App Router, TypeScript, Tailwind CSS v3)
+- Landing page (/) with Tally branding, tally mark visual, CTAs
+- App shell (/app) with sign-in placeholder
+- Fixed hashFiles() workflow condition (evaluates before checkout, always empty)
+- Fixed Tailwind v3 compatibility (v4 syntax incompatible with Next.js 14)
+- Deploy workflow #15 completed successfully
+- Production URL https://tally-tracker.app/ returns HTTP 200
+- PRD item "CD: deploy hello-world landing page" marked passes=true

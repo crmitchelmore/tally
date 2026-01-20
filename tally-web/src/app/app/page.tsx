@@ -3,9 +3,17 @@
 import Link from "next/link";
 import { TallyMark } from "@/components/ui/tally-mark";
 import { ChallengeList } from "@/components/challenges";
-import { useState, useEffect, useCallback } from "react";
+import { DashboardHighlights, PersonalRecords, WeeklySummary } from "@/components/stats";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
-import type { Challenge, ChallengeStats, CreateChallengeRequest } from "@/app/api/v1/_lib/types";
+import type { 
+  Challenge, 
+  ChallengeStats, 
+  CreateChallengeRequest,
+  DashboardStats,
+  PersonalRecords as PersonalRecordsType,
+  Entry
+} from "@/app/api/v1/_lib/types";
 
 interface ChallengeWithStats {
   challenge: Challenge;
@@ -15,8 +23,31 @@ interface ChallengeWithStats {
 export default function AppPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const [challenges, setChallenges] = useState<ChallengeWithStats[]>([]);
+  const [entries, setEntries] = useState<Entry[]>([]);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [personalRecords, setPersonalRecords] = useState<PersonalRecordsType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showWeeklySummary, setShowWeeklySummary] = useState(false);
+
+  // Map challenge IDs to names for personal records display
+  const challengeNames = useMemo(() => {
+    const map = new Map<string, string>();
+    challenges.forEach(({ challenge }) => {
+      map.set(challenge.id, challenge.name);
+    });
+    return map;
+  }, [challenges]);
+
+  // Map challenges by ID for weekly summary
+  const challengesById = useMemo(() => {
+    const map = new Map<string, Challenge>();
+    challenges.forEach(({ challenge }) => {
+      map.set(challenge.id, challenge);
+    });
+    return map;
+  }, [challenges]);
 
   // Fetch challenges with stats
   const fetchChallenges = useCallback(async () => {
@@ -70,14 +101,47 @@ export default function AppPage() {
     }
   }, []);
 
-  // Load challenges on mount (only if signed in)
+  // Fetch dashboard stats and personal records
+  const fetchStats = useCallback(async () => {
+    try {
+      setStatsLoading(true);
+      const res = await fetch("/api/v1/stats");
+      if (res.ok) {
+        const data = await res.json();
+        setDashboardStats(data.dashboard);
+        setPersonalRecords(data.records);
+      }
+    } catch {
+      // Stats fetch failure is non-critical
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
+  // Fetch all entries for weekly summary
+  const fetchEntries = useCallback(async () => {
+    try {
+      const res = await fetch("/api/v1/entries");
+      if (res.ok) {
+        const data = await res.json();
+        setEntries(data.entries || []);
+      }
+    } catch {
+      // Entries fetch failure is non-critical for summary
+    }
+  }, []);
+
+  // Load data on mount (only if signed in)
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       fetchChallenges();
+      fetchStats();
+      fetchEntries();
     } else if (isLoaded && !isSignedIn) {
       setLoading(false);
+      setStatsLoading(false);
     }
-  }, [isLoaded, isSignedIn, fetchChallenges]);
+  }, [isLoaded, isSignedIn, fetchChallenges, fetchStats, fetchEntries]);
 
   // Create challenge handler
   const handleCreateChallenge = useCallback(async (data: CreateChallengeRequest) => {
@@ -92,6 +156,13 @@ export default function AppPage() {
       throw new Error(errorData.error || "Failed to create challenge");
     }
   }, []);
+
+  // Refresh handler for stats after challenge/entry changes
+  const handleRefresh = useCallback(() => {
+    fetchChallenges();
+    fetchStats();
+    fetchEntries();
+  }, [fetchChallenges, fetchStats, fetchEntries]);
 
   // Show signed-out CTA if not authenticated
   if (isLoaded && !isSignedIn) {
@@ -127,15 +198,33 @@ export default function AppPage() {
 
   return (
     <div className="space-y-8">
-      {/* Welcome section */}
-      <section className="py-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">
-          Welcome back{user?.firstName ? `, ${user.firstName}` : ""}.
-        </h1>
-        <p className="mt-1 text-base text-muted">
-          Your tallies are ready. Create a challenge or log progress below.
-        </p>
+      {/* Welcome section with weekly summary button */}
+      <section className="py-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-ink">
+            Welcome back{user?.firstName ? `, ${user.firstName}` : ""}.
+          </h1>
+          <p className="mt-1 text-base text-muted">
+            Your tallies are ready. Create a challenge or log progress below.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowWeeklySummary(true)}
+          className="flex-shrink-0 px-4 py-2 rounded-xl border border-border text-sm font-medium text-ink hover:bg-border/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+        >
+          Weekly Summary
+        </button>
       </section>
+
+      {/* Dashboard highlights */}
+      <DashboardHighlights stats={dashboardStats} loading={statsLoading} />
+
+      {/* Personal records */}
+      <PersonalRecords 
+        records={personalRecords} 
+        loading={statsLoading} 
+        challengeNames={challengeNames}
+      />
 
       {/* Challenges list */}
       <ChallengeList
@@ -143,7 +232,15 @@ export default function AppPage() {
         loading={loading}
         error={error}
         onCreateChallenge={handleCreateChallenge}
-        onRefresh={fetchChallenges}
+        onRefresh={handleRefresh}
+      />
+
+      {/* Weekly summary modal */}
+      <WeeklySummary
+        entries={entries}
+        challenges={challengesById}
+        open={showWeeklySummary}
+        onClose={() => setShowWeeklySummary(false)}
       />
     </div>
   );

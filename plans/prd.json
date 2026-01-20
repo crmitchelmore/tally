@@ -89,7 +89,7 @@
       "Verify computed stats match feature spec",
       "Run existing checks"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "web",

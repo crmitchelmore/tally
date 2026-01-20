@@ -118,3 +118,19 @@
 - No confetti/emoji - ink-stroke success feedback only
 - Build and lint pass (bun run build, bun run lint)
 - PRD item "Web entries feature" passes=true
+
+## 2026-01-20: Web stats feature (feature-stats.md)
+- Created stats component folder (src/components/stats/):
+  - dashboard-highlights.tsx: Total marks, today count, best streak, overall pace status
+  - personal-records.tsx: Best single day, longest streak, highest daily avg, most active days, biggest entry
+  - weekly-summary.tsx: Modal with week navigation, daily breakdown bars, by-challenge breakdown
+- Updated /app/page.tsx to include stats:
+  - Dashboard highlights above challenges list
+  - Personal records section
+  - Weekly Summary button + modal with week navigation
+  - Fetch stats/entries on mount, refresh after changes
+- All stats computed correctly via /api/v1/stats endpoint
+- Activity heatmap updates after entry changes (existing from challenges feature)
+- Weekly summary matches selected week with navigation
+- Build and lint pass (bun run build, bun run lint)
+- PRD item "Web stats feature" passes=true

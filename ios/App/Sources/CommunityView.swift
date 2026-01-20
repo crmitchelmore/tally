@@ -1,5 +1,6 @@
 import SwiftUI
 import TallyDesign
+import TallyFeatureAuth
 
 /// Community view - social features placeholder
 struct CommunityView: View {

@@ -201,7 +201,7 @@
       "Ensure Keychain token storage",
       "Verify signed-out vs signed-in navigation"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "ios",

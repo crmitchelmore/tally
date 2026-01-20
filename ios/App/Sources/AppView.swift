@@ -1,5 +1,6 @@
 import SwiftUI
 import TallyDesign
+import TallyFeatureAuth
 
 /// Main app view with tab-based navigation
 struct AppView: View {
@@ -15,6 +16,11 @@ struct AppView: View {
             TabView(selection: $selectedTab) {
                 NavigationStack {
                     HomeView()
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                UserProfileButton()
+                            }
+                        }
                 }
                 .tabItem {
                     Label("Home", systemImage: "house.fill")
@@ -23,6 +29,11 @@ struct AppView: View {
                 
                 NavigationStack {
                     CommunityView()
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                UserProfileButton()
+                            }
+                        }
                 }
                 .tabItem {
                     Label("Community", systemImage: "person.2.fill")

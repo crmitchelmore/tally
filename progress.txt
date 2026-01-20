@@ -128,3 +128,28 @@ Time: ~2 minutes
 - Tuist generate succeeds (Workspace + TallyDesign + App projects)
 - xcodebuild -workspace Tally.xcworkspace -scheme App -configuration Debug build: BUILD SUCCEEDED
 - PRD item "iOS theme & app structure" passes=true
+
+## 2026-01-20: iOS auth (Clerk) + secure token storage + /api/v1/auth/user sync
+- Created TallyCore Swift Package in ios/Packages/TallyCore/:
+  - User.swift: TallyUser model for authenticated user data
+  - KeychainService.swift: Secure token storage using iOS Keychain (kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly)
+  - Configuration.swift: App configuration for Clerk publishable key and API base URL
+- Created TallyFeatureAuth Swift Package in ios/Packages/TallyFeatureAuth/:
+  - AuthManager.swift: @Observable authentication state manager with Clerk SDK integration
+    - configure() loads Clerk with publishable key
+    - updateAuthState() syncs user data and stores JWT in Keychain
+    - signOut() clears session and Keychain token
+    - Calls POST /api/v1/auth/user after successful auth to provision user in backend
+  - SignInView.swift: Sign-in screen with tally mark logo, "Sign in" CTA, Clerk AuthView sheet
+  - AuthRootView.swift: Conditional rendering based on auth state (loading/signed-in/signed-out)
+  - UserProfileButton.swift: Profile avatar button that opens Clerk UserProfileView
+- Added Clerk iOS SDK dependency in ios/Tuist/Package.swift
+- Updated App/Project.swift:
+  - Added TallyCore and TallyFeatureAuth dependencies
+  - Added Clerk external dependency
+  - Added CLERK_PUBLISHABLE_KEY and API_BASE_URL build settings and Info.plist entries
+- Updated TallyApp.swift: Wrapped AppView in AuthRootView for auth state switching
+- Updated AppView.swift: Added UserProfileButton to navigation bar
+- Tests: Added KeychainServiceTests.swift and UserTests.swift for TallyCore
+- Build: tuist install + tuist generate + xcodebuild: BUILD SUCCEEDED
+- PRD item "iOS auth (Clerk) + secure token storage + /api/v1/auth/user sync" passes=true

@@ -42,6 +42,118 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DB7E62782FF682DA1A71EBAA"
+               BuildableName = "Clerk.framework"
+               BlueprintName = "Clerk"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/Clerk/Clerk.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8A629030D44A72ABF6BBE25F"
+               BuildableName = "FactoryKit.framework"
+               BlueprintName = "FactoryKit"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/Factory/Factory.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DB213071CE8918540366976D"
+               BuildableName = "Get.framework"
+               BlueprintName = "Get"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/Get/Get.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B3B395FD6136F57D630138BD"
+               BuildableName = "Kingfisher.framework"
+               BlueprintName = "Kingfisher"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/Kingfisher/Kingfisher.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "1741F01BD3237B2ED5E79CAA"
+               BuildableName = "PhoneNumberKit.framework"
+               BlueprintName = "PhoneNumberKit"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/PhoneNumberKit/PhoneNumberKit.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "0DAE202318148CD8DC44FCAF"
+               BuildableName = "SimpleKeychain.framework"
+               BlueprintName = "SimpleKeychain"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/SimpleKeychain/SimpleKeychain.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "A3FFA5911F3A2ED17CA47C5F"
+               BuildableName = "TallyCore.framework"
+               BlueprintName = "TallyCore"
+               ReferencedContainer = "container:Packages/TallyCore/TallyCore.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3554CE05CCFDD59F5B343BB7"
+               BuildableName = "TallyCoreTests.xctest"
+               BlueprintName = "TallyCoreTests"
+               ReferencedContainer = "container:Packages/TallyCore/TallyCore.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "03F5A8A28E87D2F6C0072FD7"
                BuildableName = "TallyDesign.framework"
                BlueprintName = "TallyDesign"
@@ -60,6 +172,34 @@
                BuildableName = "TallyDesignTests.xctest"
                BlueprintName = "TallyDesignTests"
                ReferencedContainer = "container:Packages/TallyDesign/TallyDesign.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "808882C0428B667441CF1234"
+               BuildableName = "TallyFeatureAuth.framework"
+               BlueprintName = "TallyFeatureAuth"
+               ReferencedContainer = "container:Packages/TallyFeatureAuth/TallyFeatureAuth.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3B54212E08B34469ABA73B45"
+               BuildableName = "TallyFeatureAuthTests.xctest"
+               BlueprintName = "TallyFeatureAuthTests"
+               ReferencedContainer = "container:Packages/TallyFeatureAuth/TallyFeatureAuth.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -86,10 +226,32 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3554CE05CCFDD59F5B343BB7"
+               BuildableName = "TallyCoreTests.xctest"
+               BlueprintName = "TallyCoreTests"
+               ReferencedContainer = "container:Packages/TallyCore/TallyCore.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "9A984C46948A6D66009C7846"
                BuildableName = "TallyDesignTests.xctest"
                BlueprintName = "TallyDesignTests"
                ReferencedContainer = "container:Packages/TallyDesign/TallyDesign.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3B54212E08B34469ABA73B45"
+               BuildableName = "TallyFeatureAuthTests.xctest"
+               BlueprintName = "TallyFeatureAuthTests"
+               ReferencedContainer = "container:Packages/TallyFeatureAuth/TallyFeatureAuth.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>

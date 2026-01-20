@@ -1,5 +1,6 @@
 import SwiftUI
 import TallyDesign
+import TallyFeatureAuth
 
 /// Home view - main counting interface
 struct HomeView: View {
@@ -66,16 +67,6 @@ struct HomeView: View {
             .tallyPadding(.bottom, TallySpacing.xxl)
         }
         .navigationTitle("Tally")
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    // Settings action
-                } label: {
-                    Image(systemName: "gear")
-                        .foregroundColor(Color.tallyInk)
-                }
-            }
-        }
     }
 }
 

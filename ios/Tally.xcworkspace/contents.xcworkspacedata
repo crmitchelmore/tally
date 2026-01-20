@@ -8,7 +8,35 @@
       location = "group:Packages"
       name = "Packages">
       <FileRef
+         location = "group:TallyCore/TallyCore.xcodeproj">
+      </FileRef>
+      <FileRef
          location = "group:TallyDesign/TallyDesign.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:TallyFeatureAuth/TallyFeatureAuth.xcodeproj">
+      </FileRef>
+   </Group>
+   <Group
+      location = "container:"
+      name = "Dependencies">
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/Clerk/Clerk.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/Factory/Factory.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/Get/Get.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/Kingfisher/Kingfisher.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/PhoneNumberKit/PhoneNumberKit.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/SimpleKeychain/SimpleKeychain.xcodeproj">
       </FileRef>
    </Group>
 </Workspace>

@@ -7,7 +7,6 @@ on:
 
 jobs:
   web-build:
-    if: ${{ hashFiles('tally-web/package.json') != '' }}
     runs-on: ubuntu-latest
     defaults:
       run:

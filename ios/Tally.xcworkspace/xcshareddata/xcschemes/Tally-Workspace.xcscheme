@@ -182,6 +182,34 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "252033FC612DE94148FB5B26"
+               BuildableName = "TallyFeatureAPIClient.framework"
+               BlueprintName = "TallyFeatureAPIClient"
+               ReferencedContainer = "container:Packages/TallyFeatureAPIClient/TallyFeatureAPIClient.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "825B30B16D7534E1567B5670"
+               BuildableName = "TallyFeatureAPIClientTests.xctest"
+               BlueprintName = "TallyFeatureAPIClientTests"
+               ReferencedContainer = "container:Packages/TallyFeatureAPIClient/TallyFeatureAPIClient.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "808882C0428B667441CF1234"
                BuildableName = "TallyFeatureAuth.framework"
                BlueprintName = "TallyFeatureAuth"
@@ -241,6 +269,17 @@
                BuildableName = "TallyDesignTests.xctest"
                BlueprintName = "TallyDesignTests"
                ReferencedContainer = "container:Packages/TallyDesign/TallyDesign.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "825B30B16D7534E1567B5670"
+               BuildableName = "TallyFeatureAPIClientTests.xctest"
+               BlueprintName = "TallyFeatureAPIClientTests"
+               ReferencedContainer = "container:Packages/TallyFeatureAPIClient/TallyFeatureAPIClient.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference

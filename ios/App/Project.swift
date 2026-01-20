@@ -38,6 +38,7 @@ let project = Project(
                 .project(target: "TallyDesign", path: "../Packages/TallyDesign"),
                 .project(target: "TallyCore", path: "../Packages/TallyCore"),
                 .project(target: "TallyFeatureAuth", path: "../Packages/TallyFeatureAuth"),
+                .project(target: "TallyFeatureAPIClient", path: "../Packages/TallyFeatureAPIClient"),
                 .external(name: "Clerk")
             ],
             settings: .settings(

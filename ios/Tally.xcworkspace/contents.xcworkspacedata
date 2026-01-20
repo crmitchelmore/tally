@@ -14,6 +14,9 @@
          location = "group:TallyDesign/TallyDesign.xcodeproj">
       </FileRef>
       <FileRef
+         location = "group:TallyFeatureAPIClient/TallyFeatureAPIClient.xcodeproj">
+      </FileRef>
+      <FileRef
          location = "group:TallyFeatureAuth/TallyFeatureAuth.xcodeproj">
       </FileRef>
    </Group>

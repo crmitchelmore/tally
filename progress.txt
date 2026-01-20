@@ -153,3 +153,20 @@ Time: ~2 minutes
 - Tests: Added KeychainServiceTests.swift and UserTests.swift for TallyCore
 - Build: tuist install + tuist generate + xcodebuild: BUILD SUCCEEDED
 - PRD item "iOS auth (Clerk) + secure token storage + /api/v1/auth/user sync" passes=true
+
+## 2026-01-20: iOS API client (feature-api-client.md)
+- Created TallyFeatureAPIClient Swift Package in ios/Packages/TallyFeatureAPIClient/:
+  - Models.swift: Challenge, Entry, ChallengeStats, DashboardStats, PersonalRecords, WeeklySummary (matching web API types)
+  - Requests.swift: CreateChallengeRequest, UpdateChallengeRequest, CreateEntryRequest, UpdateEntryRequest
+  - Responses.swift: API response wrappers (ChallengesResponse, EntryResponse, etc.)
+  - APIError.swift: Error types with isRecoverable/requiresReauth properties
+  - APIClient.swift: Actor-based HTTP client with Bearer auth via KeychainService
+    - Challenges API: list, get, create, update, archive, delete
+    - Entries API: list (filter by challengeId/date), get, create, update, delete
+    - Stats API: getChallengeStats, getDashboardStats, getPersonalRecords, getWeeklySummary
+    - Uses snake_case JSON encoding/decoding to match server API
+- Added Project.swift for Tuist integration (depends on TallyCore)
+- Updated App/Project.swift to include TallyFeatureAPIClient dependency
+- Tests: 33 tests covering Models, Requests, and APIError (all passing)
+- Build: tuist generate + xcodebuild: BUILD SUCCEEDED
+- PRD item "iOS API client" passes=true

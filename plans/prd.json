@@ -31,6 +31,18 @@
   },
   {
     "category": "web",
+    "description": "Web theme & app structure (design system, TallyMark component, app shell)",
+    "steps": [
+      "Follow plans/web-api/feature-theme-structure.md",
+      "Build TallyMark component with fractal completion system",
+      "Establish app shell with Next.js App Router patterns",
+      "Define design tokens (OKLCH colors, typography, motion)",
+      "Run existing checks"
+    ],
+    "passes": false
+  },
+  {
+    "category": "web",
     "description": "Web auth + user provisioning (Clerk + /api/v1/auth/user)",
     "steps": [
       "Follow plans/web-api/feature-auth.md",
@@ -44,7 +56,7 @@
     "description": "Web API contract: implement /api/v1 endpoints per docs and plans/web-api/feature-api-contract.md",
     "steps": [
       "Follow plans/web-api/feature-api-contract.md",
-      "Ensure endpoints match feature-map.md + docs/API.md (if present)",
+      "Ensure endpoints match docs/API.md (if present)",
       "Run existing checks"
     ],
     "passes": false
@@ -74,7 +86,7 @@
     "description": "Web stats feature (pace, streaks, charts, weekly summary)",
     "steps": [
       "Follow plans/web-api/feature-stats.md",
-      "Verify computed stats match feature-map.md",
+      "Verify computed stats match feature spec",
       "Run existing checks"
     ],
     "passes": false
@@ -171,6 +183,18 @@
   },
   {
     "category": "ios",
+    "description": "iOS theme & app structure (design system, TallyMarkView, app shell)",
+    "steps": [
+      "Follow plans/ios/feature-theme-structure.md",
+      "Build TallyMarkView with fractal completion system",
+      "Establish app shell with NavigationStack + TabView",
+      "Define design tokens in TallyDesign Swift Package",
+      "Run existing checks"
+    ],
+    "passes": false
+  },
+  {
+    "category": "ios",
     "description": "iOS auth (Clerk) + secure token storage + /api/v1/auth/user sync",
     "steps": [
       "Follow plans/ios/feature-auth.md",
@@ -196,6 +220,18 @@
       "Follow plans/ios/feature-challenges.md",
       "Verify offline-first behavior and clear sync state",
       "Run existing iOS tests"
+    ],
+    "passes": false
+  },
+  {
+    "category": "android",
+    "description": "Android theme & app structure (design system, TallyMark composable, app shell)",
+    "steps": [
+      "Follow plans/android/feature-theme-structure.md",
+      "Build TallyMark composable with fractal completion system",
+      "Establish app shell with Navigation Compose + bottom nav",
+      "Define design tokens in :core:design module (Material 3)",
+      "Run existing checks"
     ],
     "passes": false
   },

@@ -108,6 +108,8 @@ This skill guides the entire cycle: design, build, test (behavioral, unit, UI, E
 - [ ] Plan overview (plans/web-api/README.md)
   - [ ] Verify scope and assumptions.
   - [ ] Update Copilot instructions and cross-platform plans with learnings after feature changes.
+- [ ] Feature: Theme & structure (plans/web-api/feature-theme-structure.md)
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: API client (plans/web-api/feature-api-client.md)
   - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Auth (plans/web-api/feature-auth.md)
@@ -127,6 +129,8 @@ This skill guides the entire cycle: design, build, test (behavioral, unit, UI, E
 - [ ] Plan overview (plans/ios/README.md)
   - [ ] Verify scope and assumptions.
   - [ ] Update Copilot instructions and cross-platform plans with learnings after feature changes.
+- [ ] Feature: Theme & structure (plans/ios/feature-theme-structure.md)
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: API client (plans/ios/feature-api-client.md)
   - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Auth (plans/ios/feature-auth.md)
@@ -152,6 +156,8 @@ This skill guides the entire cycle: design, build, test (behavioral, unit, UI, E
 - [ ] Plan overview (plans/android/README.md)
   - [ ] Verify scope and assumptions.
   - [ ] Update Copilot instructions and cross-platform plans with learnings after feature changes.
+- [ ] Feature: Theme & structure (plans/android/feature-theme-structure.md)
+  - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: API contract (plans/android/feature-api-contract.md)
   - [ ] Use .github/skills/implement-requirement-and-verify.md
 - [ ] Feature: Auth (plans/android/feature-auth.md)

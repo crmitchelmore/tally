@@ -52,7 +52,7 @@ DNS (Cloudflare):
 
 ## Execution prompt (copy/paste)
 You are a senior engineer shipping Tally. Your job: execute this plan end-to-end until completed, using the tech stack specified and integrating the Tally design philosophy (tactile, focused, honest; friendly, fast, calm; progressive disclosure; subtle motion with reduced-motion support; accessible and high-contrast; offline-first with clear sync states).
-Use the plan sections and feature files in this folder plus /feature-map.md to ensure full parity. Follow the phase order and each feature's "Implementation order" before moving on; update docs if scope changes.
+Use the plan sections and feature files in this folder to ensure full parity. Follow the phase order and each feature's "Implementation order" before moving on; update docs if scope changes.
 
 Process rules:
 - For the web app (`tally-web/`), use **Bun**: `bun install`, `bun run dev/build/test/lint` (never `npm install` / `npm run`).
@@ -94,6 +94,7 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 - Behavioral tests defined and passing for each feature.
 
 ## Feature plans
+- feature-theme-structure.md
 - feature-auth.md
 - feature-challenges.md
 - feature-entries.md

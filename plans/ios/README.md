@@ -44,7 +44,7 @@
 
 ## Execution prompt (copy/paste)
 You are a senior engineer shipping Tally. Your job: execute this plan end-to-end until completed, using the tech stack specified and integrating the Tally design philosophy (tactile, focused, honest; friendly, fast, calm; progressive disclosure; subtle motion with reduced-motion support; accessible and high-contrast; offline-first with clear sync states).
-Use the plan sections and feature files in this folder plus /feature-map.md to ensure full parity. Follow the phase order and each feature's "Implementation order" before moving on; update docs if scope changes.
+Use the plan sections and feature files in this folder to ensure full parity. Follow the phase order and each feature's "Implementation order" before moving on; update docs if scope changes.
 
 Process rules:
 - Deliver each feature as its own Git PR; disable squash merges and use rebase-only merges.
@@ -92,6 +92,7 @@ At the end of each feature, summarize what shipped, what remains, and any risks 
 - /Applications/Xcode.app/Contents/PlugIns/IDEIntelligenceChat.framework/Versions/A/Resources/AdditionalDocumentation/SwiftUI-WebKit-Integration.md
 
 ## Feature plans
+- feature-theme-structure.md
 - feature-auth.md
 - feature-api-client.md
 - feature-challenges.md

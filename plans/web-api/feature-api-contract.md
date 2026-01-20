@@ -13,6 +13,7 @@ Provide a stable HTTP API for mobile clients.
 - Next.js Route Handlers: https://nextjs.org/docs/app/building-your-application/routing/route-handlers
 - Convex HTTP actions: https://docs.convex.dev/functions/http-actions
 - Convex HTTP API: https://docs.convex.dev/http-api/
+- Use the convex cli to manage schema and configuration
 
 ## Acceptance criteria
 - Endpoints match docs/API.md.

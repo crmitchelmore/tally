@@ -9,6 +9,11 @@ const nextConfig = {
       },
     ],
   },
+  env: {
+    // Override CLERK_PROXY_URL to empty string to disable proxy
+    // (Vercel may have this set with a trailing newline causing issues)
+    CLERK_PROXY_URL: "",
+  },
 };
 
 export default nextConfig;

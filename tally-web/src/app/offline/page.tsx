@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { TallyMark } from "@/components/ui/tally-mark";
 import { CreateChallengeDialog } from "@/components/challenges/create-challenge-dialog";
+import { AddEntryDialog } from "@/components/challenges/add-entry-dialog";
 import type { Challenge, ChallengeStats, CreateChallengeRequest } from "@/app/api/v1/_lib/types";
 import {
   getOfflineChallenges,
@@ -25,6 +26,7 @@ export default function OfflineAppPage() {
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
+  const [entryDialogChallenge, setEntryDialogChallenge] = useState<Challenge | null>(null);
 
   // Mark as offline mode on mount
   useEffect(() => {
@@ -53,6 +55,17 @@ export default function OfflineAppPage() {
 
   const handleAddEntry = useCallback((challengeId: string, count: number = 1) => {
     createOfflineEntry(challengeId, count);
+    loadChallenges();
+  }, [loadChallenges]);
+
+  const handleEntryDialogSubmit = useCallback((challengeId: string, count: number, sets?: number[]) => {
+    createOfflineEntry(challengeId, count);
+    loadChallenges();
+  }, [loadChallenges]);
+
+  const handleQuickAdd = useCallback((e: React.MouseEvent, challenge: Challenge) => {
+    e.stopPropagation();
+    createOfflineEntry(challenge.id, challenge.defaultIncrement || 1);
     loadChallenges();
   }, [loadChallenges]);
 
@@ -163,16 +176,27 @@ export default function OfflineAppPage() {
               </div>
 
               {/* Quick add */}
-              <div className="flex flex-wrap gap-2">
-                {[1, 5, 10, 25].map(n => (
-                  <button
-                    key={n}
-                    onClick={() => handleAddEntry(selected.challenge.id, n)}
-                    className="px-4 py-2 rounded-lg bg-accent text-white font-medium hover:bg-accent/90 transition-colors"
-                  >
-                    +{n}
-                  </button>
-                ))}
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  {[1, 5, 10, 25].map(n => {
+                    const amount = n * (selected.challenge.defaultIncrement || 1);
+                    return (
+                      <button
+                        key={n}
+                        onClick={() => handleAddEntry(selected.challenge.id, amount)}
+                        className="px-4 py-2 rounded-lg bg-accent text-white font-medium hover:bg-accent/90 transition-colors"
+                      >
+                        +{amount} {selected.challenge.unitLabel || ""}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => setEntryDialogChallenge(selected.challenge)}
+                  className="text-sm text-accent hover:underline"
+                >
+                  {selected.challenge.countType === "sets" ? "Add sets..." : "Add custom amount..."}
+                </button>
               </div>
             </div>
           </div>
@@ -203,32 +227,48 @@ export default function OfflineAppPage() {
                 {challenges.map(({ challenge, stats }) => {
                   const progress = Math.min(100, Math.round((stats.totalCount / challenge.target) * 100));
                   return (
-                    <button
+                    <div
                       key={challenge.id}
-                      onClick={() => setSelectedChallenge(challenge.id)}
-                      className="w-full text-left p-4 rounded-xl border border-border hover:bg-surface transition-colors"
+                      className="relative p-4 rounded-xl border border-border hover:bg-surface transition-colors"
                       style={{ borderLeftColor: challenge.color, borderLeftWidth: 4 }}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-ink">{challenge.name}</h3>
-                        <span className="text-sm tabular-nums text-muted">
-                          {stats.totalCount.toLocaleString()} / {challenge.target.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="h-2 bg-border rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full"
-                          style={{
-                            width: `${progress}%`,
-                            backgroundColor: challenge.color,
-                          }}
-                        />
-                      </div>
-                      <div className="flex justify-between mt-2 text-xs text-muted">
-                        <span>{progress}%</span>
-                        <span>{stats.daysRemaining} days left</span>
-                      </div>
-                    </button>
+                      <button
+                        onClick={() => setSelectedChallenge(challenge.id)}
+                        className="w-full text-left"
+                      >
+                        <div className="flex items-center justify-between mb-2 pr-14">
+                          <h3 className="font-semibold text-ink">{challenge.name}</h3>
+                          <span className="text-sm tabular-nums text-muted">
+                            {stats.totalCount.toLocaleString()} / {challenge.target.toLocaleString()} {challenge.unitLabel || ""}
+                          </span>
+                        </div>
+                        <div className="h-2 bg-border rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${progress}%`,
+                              backgroundColor: challenge.color,
+                            }}
+                          />
+                        </div>
+                        <div className="flex justify-between mt-2 text-xs text-muted">
+                          <span>{progress}%</span>
+                          <span>{stats.daysRemaining} days left</span>
+                        </div>
+                      </button>
+                      
+                      {/* Quick add button */}
+                      <button
+                        onClick={(e) => handleQuickAdd(e, challenge)}
+                        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center hover:bg-accent/90 transition-colors shadow-sm"
+                        aria-label={`Add ${challenge.defaultIncrement || 1} ${challenge.unitLabel || "reps"}`}
+                        title={`+${challenge.defaultIncrement || 1} ${challenge.unitLabel || ""}`}
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                        </svg>
+                      </button>
+                    </div>
                   );
                 })}
 
@@ -265,6 +305,14 @@ export default function OfflineAppPage() {
         open={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
         onSubmit={handleCreateChallenge}
+      />
+
+      {/* Add entry dialog */}
+      <AddEntryDialog
+        open={entryDialogChallenge !== null}
+        challenge={entryDialogChallenge}
+        onClose={() => setEntryDialogChallenge(null)}
+        onSubmit={handleEntryDialogSubmit}
       />
     </div>
   );

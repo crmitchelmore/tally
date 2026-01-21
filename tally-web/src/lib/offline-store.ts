@@ -76,6 +76,9 @@ export function createOfflineChallenge(data: CreateChallengeRequest): Challenge 
     icon: data.icon || "tally",
     isPublic: false, // Offline challenges are always private
     isArchived: false,
+    countType: data.countType || "simple",
+    unitLabel: data.unitLabel || "reps",
+    defaultIncrement: data.defaultIncrement || 1,
     createdAt: now,
     updatedAt: now,
   };

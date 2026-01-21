@@ -34,6 +34,10 @@ export default defineSchema({
     icon: v.string(),
     isPublic: v.boolean(),
     isArchived: v.boolean(),
+    // Count configuration (optional for backward compatibility)
+    countType: v.optional(v.union(v.literal("simple"), v.literal("sets"), v.literal("custom"))),
+    unitLabel: v.optional(v.string()),
+    defaultIncrement: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()), // Optional for migration
   })
@@ -47,6 +51,7 @@ export default defineSchema({
     challengeId: v.string(),
     date: v.string(), // ISO date (YYYY-MM-DD)
     count: v.number(),
+    sets: v.optional(v.array(v.number())), // Optional sets breakdown
     note: v.optional(v.string()),
     feeling: v.optional(v.union(
       v.literal("great"),

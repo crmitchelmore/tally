@@ -136,13 +136,13 @@ private fun DrawScope.drawTally(
         count <= 4 -> drawStrokes(count, c1, strokeWidth, progress)
         count == 5 -> drawFiveGate(c1, accent, strokeWidth, progress)
         count <= 24 -> drawMultipleFiveGates(count, c1, accent, strokeWidth, progress)
-        count == 25 -> drawTwentyFiveUnit(c1, c2, accent, strokeWidth, progress, showOverlay = true)
-        count <= 99 -> draw26To99(count, c1, c2, accent, strokeWidth, progress)
-        count == 100 -> draw100Cap(c2, c3, strokeWidth)
-        count <= 999 -> draw101To999(count, c1, c2, c3, accent, strokeWidth, progress)
-        count == 1000 -> draw1000Cap(c3, c1, strokeWidth)
-        count <= 9999 -> draw1001To9999(count, c1, c2, c3, accent, strokeWidth, progress)
-        else -> draw10000Plus(count, c1, c2, c3, strokeWidth)
+        count == 25 -> drawTwentyFiveUnit(c1, accent, accent, strokeWidth, progress, showOverlay = true)
+        count <= 99 -> draw26To99(count, c1, accent, accent, strokeWidth, progress)
+        count == 100 -> draw100Cap(accent, c3, strokeWidth)
+        count <= 999 -> draw101To999(count, c1, accent, c3, accent, strokeWidth, progress)
+        count == 1000 -> draw1000Cap(c3, accent, strokeWidth)
+        count <= 9999 -> draw1001To9999(count, c1, accent, c3, accent, strokeWidth, progress)
+        else -> draw10000Plus(count, c1, accent, c3, strokeWidth)
     }
 }
 
@@ -329,7 +329,7 @@ private fun DrawScope.drawMiniGate(
  */
 private fun DrawScope.drawTwentyFiveUnit(
     c1: Color,
-    c2: Color,
+    xColor: Color,  // Color for X overlay (accent)
     accent: Color,
     strokeWidth: Float,
     progress: Float,
@@ -338,21 +338,21 @@ private fun DrawScope.drawTwentyFiveUnit(
     // Draw 5 complete 5-gates
     drawMultipleFiveGates(25, c1, accent, strokeWidth, progress)
 
-    // Draw X overlay in C2 if complete
+    // Draw X overlay in accent color if complete
     if (showOverlay) {
         val w = size.width
         val h = size.height
         val padding = w * 0.1f
 
         drawLine(
-            color = c2,
+            color = xColor,
             start = Offset(padding, padding),
             end = Offset(w - padding, h - padding),
             strokeWidth = strokeWidth * 1.5f,
             cap = StrokeCap.Round
         )
         drawLine(
-            color = c2,
+            color = xColor,
             start = Offset(w - padding, padding),
             end = Offset(padding, h - padding),
             strokeWidth = strokeWidth * 1.5f,
@@ -367,7 +367,7 @@ private fun DrawScope.drawTwentyFiveUnit(
 private fun DrawScope.draw26To99(
     count: Int,
     c1: Color,
-    c2: Color,
+    xColor: Color,  // Color for X marks (accent)
     accent: Color,
     strokeWidth: Float,
     progress: Float
@@ -389,13 +389,13 @@ private fun DrawScope.draw26To99(
 
     for (i in 0 until full25s.coerceAtMost(4)) {
         translate(left = positions[i].x, top = positions[i].y) {
-            drawMini25(c1, c2, accent, strokeWidth * 0.5f, cellSize, 25, true)
+            drawMini25(c1, xColor, accent, strokeWidth * 0.5f, cellSize, 25, true)
         }
     }
 
     if (remaining > 0 && full25s < 4) {
         translate(left = positions[full25s].x, top = positions[full25s].y) {
-            drawMini25(c1, c2, accent, strokeWidth * 0.5f, cellSize, remaining, false)
+            drawMini25(c1, xColor, accent, strokeWidth * 0.5f, cellSize, remaining, false)
         }
     }
 }
@@ -405,7 +405,7 @@ private fun DrawScope.draw26To99(
  */
 private fun DrawScope.drawMini25(
     c1: Color,
-    c2: Color,
+    xColor: Color,  // Color for X overlay (accent)
     accent: Color,
     strokeWidth: Float,
     unitSize: Float,
@@ -448,14 +448,14 @@ private fun DrawScope.drawMini25(
     if (showOverlay && count >= 25) {
         val padding = unitSize * 0.1f
         drawLine(
-            color = c2,
+            color = xColor,
             start = Offset(padding, padding),
             end = Offset(unitSize - padding, unitSize - padding),
             strokeWidth = strokeWidth * 1.5f,
             cap = StrokeCap.Round
         )
         drawLine(
-            color = c2,
+            color = xColor,
             start = Offset(unitSize - padding, padding),
             end = Offset(padding, unitSize - padding),
             strokeWidth = strokeWidth * 1.5f,
@@ -468,7 +468,7 @@ private fun DrawScope.drawMini25(
  * Draws 100 cap: Square outline with 4 Xs inside (each X = 25, so 4×25 = 100).
  */
 private fun DrawScope.draw100Cap(
-    c2: Color,
+    xColor: Color,  // Color for X marks (accent)
     c3: Color,
     strokeWidth: Float
 ) {
@@ -477,7 +477,7 @@ private fun DrawScope.draw100Cap(
     val padding = w * 0.1f
     val innerSize = w - 2 * padding
 
-    // Square outline in C3
+    // Square outline in C3 (muted)
     drawRect(
         color = c3,
         topLeft = Offset(padding, padding),
@@ -485,7 +485,7 @@ private fun DrawScope.draw100Cap(
         style = Stroke(width = strokeWidth * 1.5f, join = StrokeJoin.Round)
     )
 
-    // Draw 4 Xs in 2x2 grid inside the box
+    // Draw 4 Xs in 2x2 grid inside the box (accent color)
     val xSize = innerSize * 0.3f
     val positions = listOf(
         Offset(0.25f, 0.25f), // Top-left
@@ -500,14 +500,14 @@ private fun DrawScope.draw100Cap(
         val halfX = xSize / 2
 
         drawLine(
-            color = c2,
+            color = xColor,
             start = Offset(centerX - halfX, centerY - halfX),
             end = Offset(centerX + halfX, centerY + halfX),
             strokeWidth = strokeWidth,
             cap = StrokeCap.Round
         )
         drawLine(
-            color = c2,
+            color = xColor,
             start = Offset(centerX + halfX, centerY - halfX),
             end = Offset(centerX - halfX, centerY + halfX),
             strokeWidth = strokeWidth,
@@ -522,7 +522,7 @@ private fun DrawScope.draw100Cap(
 private fun DrawScope.draw101To999(
     count: Int,
     c1: Color,
-    c2: Color,
+    xColor: Color,  // Color for X marks (accent)
     c3: Color,
     accent: Color,
     strokeWidth: Float,
@@ -540,14 +540,14 @@ private fun DrawScope.draw101To999(
 
     for (i in 0 until full100s.coerceAtMost(10)) {
         translate(left = startX + i * blockSize, top = (h - blockSize) / 2) {
-            drawMini100(c2, c3, strokeWidth * 0.5f, blockSize)
+            drawMini100(xColor, c3, strokeWidth * 0.5f, blockSize)
         }
     }
 
     if (remaining > 0 && full100s < 10) {
         translate(left = startX + full100s * blockSize, top = (h - blockSize) / 2) {
             // Show partial block as 2x2 grid
-            draw26To99Mini(remaining, c1, c2, accent, strokeWidth * 0.4f, blockSize)
+            draw26To99Mini(remaining, c1, xColor, accent, strokeWidth * 0.4f, blockSize)
         }
     }
 }
@@ -556,7 +556,7 @@ private fun DrawScope.draw101To999(
  * Draws a mini 100 block (square with 4 Xs inside).
  */
 private fun DrawScope.drawMini100(
-    c2: Color,
+    xColor: Color,  // Color for X marks (accent)
     c3: Color,
     strokeWidth: Float,
     blockSize: Float
@@ -564,7 +564,7 @@ private fun DrawScope.drawMini100(
     val padding = blockSize * 0.1f
     val innerSize = blockSize - 2 * padding
 
-    // Square outline
+    // Square outline (muted)
     drawRect(
         color = c3,
         topLeft = Offset(padding, padding),
@@ -572,7 +572,7 @@ private fun DrawScope.drawMini100(
         style = Stroke(width = strokeWidth * 1.2f, join = StrokeJoin.Round)
     )
 
-    // Draw 4 Xs in 2x2 grid
+    // Draw 4 Xs in 2x2 grid (accent color)
     val xSize = innerSize * 0.25f
     val positions = listOf(
         Offset(0.25f, 0.25f),
@@ -587,14 +587,14 @@ private fun DrawScope.drawMini100(
         val halfX = xSize / 2
 
         drawLine(
-            color = c2,
+            color = xColor,
             start = Offset(centerX - halfX, centerY - halfX),
             end = Offset(centerX + halfX, centerY + halfX),
             strokeWidth = strokeWidth * 0.8f,
             cap = StrokeCap.Round
         )
         drawLine(
-            color = c2,
+            color = xColor,
             start = Offset(centerX + halfX, centerY - halfX),
             end = Offset(centerX - halfX, centerY + halfX),
             strokeWidth = strokeWidth * 0.8f,
@@ -609,7 +609,7 @@ private fun DrawScope.drawMini100(
 private fun DrawScope.draw26To99Mini(
     count: Int,
     c1: Color,
-    c2: Color,
+    xColor: Color,  // Color for X marks (accent)
     accent: Color,
     strokeWidth: Float,
     containerSize: Float
@@ -629,23 +629,23 @@ private fun DrawScope.draw26To99Mini(
 
     for (i in 0 until full25s.coerceAtMost(4)) {
         translate(left = positions[i].x, top = positions[i].y) {
-            drawMini25(c1, c2, accent, strokeWidth * 0.5f, cellSize, 25, true)
+            drawMini25(c1, xColor, accent, strokeWidth * 0.5f, cellSize, 25, true)
         }
     }
 
     if (remaining > 0 && full25s < 4) {
         translate(left = positions[full25s].x, top = positions[full25s].y) {
-            drawMini25(c1, c2, accent, strokeWidth * 0.5f, cellSize, remaining, false)
+            drawMini25(c1, xColor, accent, strokeWidth * 0.5f, cellSize, remaining, false)
         }
     }
 }
 
 /**
- * Draws 1000 cap: 10 squares + horizontal line.
+ * Draws 1000 cap: 10 squares + horizontal line (accent color).
  */
 private fun DrawScope.draw1000Cap(
     c3: Color,
-    c1: Color,
+    accent: Color,
     strokeWidth: Float
 ) {
     val w = size.width
@@ -666,9 +666,9 @@ private fun DrawScope.draw1000Cap(
         )
     }
 
-    // Horizontal line through all
+    // Horizontal line through all (accent color)
     drawLine(
-        color = c1,
+        color = accent,
         start = Offset(0f, h / 2),
         end = Offset(w, h / 2),
         strokeWidth = strokeWidth * 1.5f,
@@ -682,7 +682,7 @@ private fun DrawScope.draw1000Cap(
 private fun DrawScope.draw1001To9999(
     count: Int,
     c1: Color,
-    c2: Color,
+    xColor: Color,  // Color for X marks (accent)
     c3: Color,
     accent: Color,
     strokeWidth: Float,
@@ -698,7 +698,7 @@ private fun DrawScope.draw1001To9999(
 
     for (i in 0 until full1000s.coerceAtMost(10)) {
         translate(left = 0f, top = i * rowHeight) {
-            drawMini1000Row(c3, c1, strokeWidth * 0.4f, w, rowHeight)
+            drawMini1000Row(c3, accent, strokeWidth * 0.4f, w, rowHeight)
         }
     }
 
@@ -708,7 +708,7 @@ private fun DrawScope.draw1001To9999(
             val blockSize = w / 10f
             for (j in 0 until full100s.coerceAtMost(10)) {
                 translate(left = j * blockSize, top = 0f) {
-                    drawMini100(c2, c3, strokeWidth * 0.3f, blockSize.coerceAtMost(rowHeight))
+                    drawMini100(xColor, c3, strokeWidth * 0.3f, blockSize.coerceAtMost(rowHeight))
                 }
             }
         }
@@ -720,7 +720,7 @@ private fun DrawScope.draw1001To9999(
  */
 private fun DrawScope.drawMini1000Row(
     c3: Color,
-    c1: Color,
+    accent: Color,  // Color for horizontal line (accent)
     strokeWidth: Float,
     rowWidth: Float,
     rowHeight: Float
@@ -740,8 +740,9 @@ private fun DrawScope.drawMini1000Row(
         )
     }
 
+    // Horizontal line in accent color
     drawLine(
-        color = c1,
+        color = accent,
         start = Offset(0f, rowHeight / 2),
         end = Offset(rowWidth, rowHeight / 2),
         strokeWidth = strokeWidth * 1.2f,
@@ -755,7 +756,7 @@ private fun DrawScope.drawMini1000Row(
 private fun DrawScope.draw10000Plus(
     count: Int,
     c1: Color,
-    c2: Color,
+    accent: Color,  // Color for diagonal and lines (accent)
     c3: Color,
     strokeWidth: Float
 ) {
@@ -781,11 +782,11 @@ private fun DrawScope.draw10000Plus(
         }
     }
 
-    // Horizontal lines through each row
+    // Horizontal lines through each row (accent color)
     for (row in 0 until 10) {
         val y = offsetY + row * cellSize + cellSize / 2
         drawLine(
-            color = c1,
+            color = accent,
             start = Offset(offsetX, y),
             end = Offset(offsetX + 10 * cellSize, y),
             strokeWidth = strokeWidth * 0.6f,
@@ -796,7 +797,7 @@ private fun DrawScope.draw10000Plus(
     // Diagonal closure stroke (at exactly 10000)
     if (count == 10000) {
         drawLine(
-            color = c2,
+            color = accent,
             start = Offset(offsetX, offsetY),
             end = Offset(offsetX + 10 * cellSize, offsetY + 10 * cellSize),
             strokeWidth = strokeWidth * 2f,

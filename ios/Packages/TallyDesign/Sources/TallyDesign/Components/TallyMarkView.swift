@@ -176,7 +176,7 @@ public struct TallyMarkView: View {
         // Draw full X layout
         drawXLayout(in: context, bounds: bounds, count: 24)
         
-        // Draw X overlay (C2 color)
+        // Draw X overlay (accent color for the 25th mark)
         let inset = bounds.width * 0.1
         let xPath = Path { p in
             // Top-left to bottom-right
@@ -186,7 +186,7 @@ public struct TallyMarkView: View {
             p.move(to: CGPoint(x: bounds.width - inset, y: inset))
             p.addLine(to: CGPoint(x: inset, y: bounds.height - inset))
         }
-        context.stroke(xPath, with: .color(.tallyInkSecondary), lineWidth: 4.0)
+        context.stroke(xPath, with: .color(.tallyAccent), lineWidth: 4.0)
     }
     
     private func drawGridLayout(in context: GraphicsContext, bounds: CGRect, count: Int) {
@@ -237,7 +237,7 @@ public struct TallyMarkView: View {
         }
         context.stroke(squarePath, with: .color(.tallyInkTertiary), lineWidth: 2.5)
         
-        // Draw 4 Xs in 2x2 grid inside the box
+        // Draw 4 Xs in 2x2 grid inside the box (accent color)
         let positions: [(x: CGFloat, y: CGFloat)] = [
             (0.25, 0.25), // Top-left
             (0.75, 0.25), // Top-right
@@ -258,7 +258,7 @@ public struct TallyMarkView: View {
                 p.move(to: CGPoint(x: centerX + halfX, y: centerY - halfX))
                 p.addLine(to: CGPoint(x: centerX - halfX, y: centerY + halfX))
             }
-            context.stroke(xPath, with: .color(.tallyInkSecondary), lineWidth: 2.0)
+            context.stroke(xPath, with: .color(.tallyAccent), lineWidth: 2.0)
         }
     }
     
@@ -305,12 +305,12 @@ public struct TallyMarkView: View {
             context.stroke(squarePath, with: .color(.tallyInkTertiary), lineWidth: 2.0)
         }
         
-        // Draw horizontal line through all (C1)
+        // Draw horizontal line through all (accent color)
         let linePath = Path { p in
             p.move(to: CGPoint(x: 0, y: bounds.height / 2))
             p.addLine(to: CGPoint(x: bounds.width, y: bounds.height / 2))
         }
-        context.stroke(linePath, with: .color(.tallyInk), lineWidth: 3.0)
+        context.stroke(linePath, with: .color(.tallyAccent), lineWidth: 3.0)
     }
     
     private func drawThousandStack(in context: GraphicsContext, bounds: CGRect, count: Int) {

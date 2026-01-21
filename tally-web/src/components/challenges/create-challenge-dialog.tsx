@@ -21,14 +21,14 @@ const PRESET_COLORS = [
 ];
 
 const PRESET_ICONS = [
-  { value: "tally", label: "Tally" },
-  { value: "run", label: "Running" },
-  { value: "book", label: "Reading" },
-  { value: "pen", label: "Writing" },
-  { value: "code", label: "Code" },
-  { value: "music", label: "Music" },
-  { value: "heart", label: "Health" },
-  { value: "star", label: "Goal" },
+  { value: "tally", label: "Tally", emoji: "📊" },
+  { value: "run", label: "Running", emoji: "🏃" },
+  { value: "book", label: "Reading", emoji: "📚" },
+  { value: "pen", label: "Writing", emoji: "✍️" },
+  { value: "code", label: "Code", emoji: "💻" },
+  { value: "music", label: "Music", emoji: "🎵" },
+  { value: "heart", label: "Health", emoji: "❤️" },
+  { value: "star", label: "Goal", emoji: "⭐" },
 ];
 
 const UNIT_OPTIONS = [
@@ -454,7 +454,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
                   type="button"
                   onClick={() => setIcon(i.value)}
                   className={`
-                    px-3 py-1.5 rounded-lg text-sm border transition-colors
+                    px-3 py-1.5 rounded-lg text-sm border transition-colors flex items-center gap-1.5
                     ${icon === i.value
                       ? "bg-accent text-white border-accent"
                       : "bg-paper border-border text-ink hover:bg-border/50"
@@ -462,7 +462,8 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
                   `}
                   aria-pressed={icon === i.value}
                 >
-                  {i.label}
+                  <span>{i.emoji}</span>
+                  <span>{i.label}</span>
                 </button>
               ))}
             </div>

@@ -14,6 +14,18 @@ const nextConfig = {
     // (Vercel may have this set with a trailing newline causing issues)
     CLERK_PROXY_URL: "",
   },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        // Proxy clerk.tally-tracker.app/* to Clerk's frontend API
+        {
+          source: "/:path*",
+          has: [{ type: "host", value: "clerk.tally-tracker.app" }],
+          destination: "https://frontend-api.clerk.services/:path*",
+        },
+      ],
+    };
+  },
 };
 
 export default nextConfig;

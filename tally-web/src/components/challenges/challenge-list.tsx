@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { ChallengeCard } from "./challenge-card";
 import { CreateChallengeDialog } from "./create-challenge-dialog";
-import { AddEntryDialog } from "./add-entry-dialog";
 import type { Challenge, ChallengeStats, CreateChallengeRequest } from "@/app/api/v1/_lib/types";
 
 interface ChallengeWithStats {
@@ -30,43 +30,18 @@ export function ChallengeList({
   onCreateChallenge,
   onRefresh,
 }: ChallengeListProps) {
+  const router = useRouter();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [entryDialogOpen, setEntryDialogOpen] = useState(false);
-  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
 
   const handleCreate = useCallback(async (data: CreateChallengeRequest) => {
     await onCreateChallenge(data);
     onRefresh?.();
   }, [onCreateChallenge, onRefresh]);
 
+  // Navigate to challenge detail page to add entry (uses the full entry view)
   const handleQuickAdd = useCallback((challengeId: string) => {
-    const found = challenges.find((c) => c.challenge.id === challengeId);
-    if (found) {
-      setSelectedChallenge(found.challenge);
-      setEntryDialogOpen(true);
-    }
-  }, [challenges]);
-
-  const handleEntrySubmit = useCallback(async (challengeId: string, count: number, sets?: number[]) => {
-    try {
-      const today = new Date().toISOString().split("T")[0];
-      await fetch("/api/v1/entries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          challengeId,
-          date: today,
-          count,
-          sets,
-        }),
-      });
-      setEntryDialogOpen(false);
-      setSelectedChallenge(null);
-      onRefresh?.();
-    } catch (err) {
-      console.error("Failed to add entry:", err);
-    }
-  }, [onRefresh]);
+    router.push(`/app/challenges/${challengeId}?addEntry=true`);
+  }, [router]);
 
   // Error state
   if (error) {
@@ -198,16 +173,6 @@ export function ChallengeList({
         open={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
         onSubmit={handleCreate}
-      />
-
-      <AddEntryDialog
-        open={entryDialogOpen}
-        challenge={selectedChallenge}
-        onClose={() => {
-          setEntryDialogOpen(false);
-          setSelectedChallenge(null);
-        }}
-        onSubmit={handleEntrySubmit}
       />
     </div>
   );

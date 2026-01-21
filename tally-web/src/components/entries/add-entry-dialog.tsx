@@ -12,10 +12,10 @@ export interface AddEntryDialogProps {
 }
 
 const FEELINGS = [
-  { value: "great", label: "Great", icon: "✦" },
-  { value: "good", label: "Good", icon: "○" },
-  { value: "okay", label: "Okay", icon: "·" },
-  { value: "tough", label: "Tough", icon: "—" },
+  { value: "great", label: "Great", emoji: "🔥" },
+  { value: "good", label: "Good", emoji: "😊" },
+  { value: "okay", label: "Okay", emoji: "😐" },
+  { value: "tough", label: "Tough", emoji: "😤" },
 ] as const;
 
 /**
@@ -286,7 +286,7 @@ export function AddEntryDialog({
                     }
                   `}
                 >
-                  <span className="block text-lg">{f.icon}</span>
+                  <span className="block text-2xl">{f.emoji}</span>
                   <span className="block text-xs mt-1">{f.label}</span>
                 </button>
               ))}

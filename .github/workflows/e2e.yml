@@ -8,6 +8,7 @@ on:
 
 env:
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+  CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
 
 jobs:
   web-e2e:
@@ -39,6 +40,8 @@ jobs:
       - name: Run Playwright tests
         working-directory: tally-web
         run: bun run test:e2e
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
 
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -60,14 +63,15 @@ jobs:
         with:
           xcode-version: latest-stable
 
+      - name: Install mise
+        uses: jdx/mise-action@v2
+
       - name: Install Tuist
-        run: |
-          curl -Ls https://install.tuist.io | bash
-          echo "$HOME/.tuist/bin" >> $GITHUB_PATH
+        run: mise install tuist
 
       - name: Generate Xcode project
         working-directory: ios
-        run: tuist generate --no-open
+        run: mise exec -- tuist generate --no-open
         env:
           CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           API_BASE_URL: https://tally-tracker.app
@@ -75,7 +79,7 @@ jobs:
       - name: Run UI tests
         working-directory: ios
         run: |
-          xcodebuild test \
+          mise exec -- xcodebuild test \
             -workspace Tally.xcworkspace \
             -scheme App \
             -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \

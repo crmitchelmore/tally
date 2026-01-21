@@ -20,6 +20,7 @@ import android.util.Log
 import com.posthog.PostHog
 import com.posthog.android.PostHogAndroid
 import com.posthog.android.PostHogAndroidConfig
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -95,14 +96,14 @@ enum class TelemetryOutcome(val value: String) {
 data class CommonProperties(
     val platform: String = "android",
     val env: String = TelemetryConfig.environment,
-    val appVersion: String = TelemetryConfig.appVersion,
-    val buildNumber: String = TelemetryConfig.buildNumber,
-    val userId: String? = null,
-    val isSignedIn: Boolean = userId != null,
-    val sessionId: String? = null,
-    val traceId: String? = null,
-    val spanId: String? = null,
-    val requestId: String? = null
+    @SerialName("app_version") val appVersion: String = TelemetryConfig.appVersion,
+    @SerialName("build_number") val buildNumber: String = TelemetryConfig.buildNumber,
+    @SerialName("user_id") val userId: String? = null,
+    @SerialName("is_signed_in") val isSignedIn: Boolean = userId != null,
+    @SerialName("session_id") val sessionId: String? = null,
+    @SerialName("trace_id") val traceId: String? = null,
+    @SerialName("span_id") val spanId: String? = null,
+    @SerialName("request_id") val requestId: String? = null
 )
 
 /**
@@ -110,13 +111,13 @@ data class CommonProperties(
  */
 @Serializable
 data class DomainProperties(
-    val challengeId: String? = null,
-    val timeframeUnit: String? = null,
-    val targetNumber: Int? = null,
-    val entryId: String? = null,
-    val entryCount: Int? = null,
-    val hasNote: Boolean? = null,
-    val hasSets: Boolean? = null,
+    @SerialName("challenge_id") val challengeId: String? = null,
+    @SerialName("timeframe_unit") val timeframeUnit: String? = null,
+    @SerialName("target_number") val targetNumber: Int? = null,
+    @SerialName("entry_id") val entryId: String? = null,
+    @SerialName("entry_count") val entryCount: Int? = null,
+    @SerialName("has_note") val hasNote: Boolean? = null,
+    @SerialName("has_sets") val hasSets: Boolean? = null,
     val feeling: String? = null
 )
 
@@ -127,13 +128,13 @@ data class DomainProperties(
 data class RequestProperties(
     val method: String? = null,
     val path: String? = null,
-    val statusCode: Int? = null,
-    val durationMs: Long? = null,
+    @SerialName("status_code") val statusCode: Int? = null,
+    @SerialName("duration_ms") val durationMs: Long? = null,
     val outcome: String? = null, // TelemetryOutcome.value
-    val errorType: String? = null,
-    val errorCode: String? = null,
-    val errorMessage: String? = null,
-    val errorRetriable: Boolean? = null
+    @SerialName("error_type") val errorType: String? = null,
+    @SerialName("error_code") val errorCode: String? = null,
+    @SerialName("error_message") val errorMessage: String? = null,
+    @SerialName("error_retriable") val errorRetriable: Boolean? = null
 )
 
 // MARK: - Wide Event

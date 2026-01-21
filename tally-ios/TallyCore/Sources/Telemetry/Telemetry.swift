@@ -205,6 +205,9 @@ public struct WideEvent: Codable {
     public let domain: DomainProperties?
     public let request: RequestProperties?
     
+    /// Shared date formatter for efficiency (ISO8601DateFormatter is expensive to create)
+    private static let isoDateFormatter = ISO8601DateFormatter()
+    
     public init(
         event: TelemetryEvent,
         common: CommonProperties,
@@ -212,7 +215,7 @@ public struct WideEvent: Codable {
         request: RequestProperties? = nil
     ) {
         self.event = event
-        self.timestamp = ISO8601DateFormatter().string(from: Date())
+        self.timestamp = Self.isoDateFormatter.string(from: Date())
         self.common = common
         self.domain = domain
         self.request = request

@@ -151,8 +151,8 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
           </button>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+        {/* Body - reduced spacing for better fit */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {/* Error */}
           {error && (
             <div className="p-3 bg-error/10 border border-error/20 rounded-lg text-error text-sm">
@@ -162,7 +162,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
 
           {/* Name */}
           <div>
-            <label htmlFor="challenge-name" className="block text-sm font-medium text-ink mb-1.5">
+            <label htmlFor="challenge-name" className="block text-sm font-medium text-ink mb-1">
               Name
             </label>
             <input
@@ -175,7 +175,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Push-ups 2026"
               className="
-                w-full px-3 py-2.5 rounded-lg
+                w-full px-3 py-2 rounded-lg
                 bg-paper border border-border
                 text-ink placeholder:text-muted/60
                 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
@@ -185,7 +185,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
 
           {/* Target */}
           <div>
-            <label htmlFor="challenge-target" className="block text-sm font-medium text-ink mb-1.5">
+            <label htmlFor="challenge-target" className="block text-sm font-medium text-ink mb-1">
               Target
             </label>
             <input
@@ -198,7 +198,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
               onChange={(e) => setTarget(e.target.value)}
               placeholder="e.g., 10000"
               className="
-                w-full px-3 py-2.5 rounded-lg
+                w-full px-3 py-2 rounded-lg
                 bg-paper border border-border
                 text-ink placeholder:text-muted/60 tabular-nums
                 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
@@ -208,7 +208,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
 
           {/* Timeframe */}
           <div>
-            <label className="block text-sm font-medium text-ink mb-1.5">Timeframe</label>
+            <label className="block text-sm font-medium text-ink mb-1">Timeframe</label>
             <div className="flex gap-2">
               {(["year", "month", "custom"] as const).map((tf) => (
                 <button
@@ -273,7 +273,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
 
           {/* Color */}
           <div>
-            <label className="block text-sm font-medium text-ink mb-1.5">Color</label>
+            <label className="block text-sm font-medium text-ink mb-1">Color</label>
             <div className="flex gap-2 flex-wrap">
               {PRESET_COLORS.map((c) => (
                 <button
@@ -294,7 +294,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
 
           {/* Icon */}
           <div>
-            <label className="block text-sm font-medium text-ink mb-1.5">Icon</label>
+            <label className="block text-sm font-medium text-ink mb-1">Icon</label>
             <div className="flex gap-2 flex-wrap">
               {PRESET_ICONS.map((i) => (
                 <button

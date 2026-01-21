@@ -67,11 +67,16 @@ jobs:
         uses: jdx/mise-action@v2
 
       - name: Install Tuist
-        run: mise install tuist
+        run: |
+          mise use -g tuist@latest
+          eval "$(mise activate bash)"
+          tuist version
 
       - name: Generate Xcode project
         working-directory: ios
-        run: mise exec -- tuist generate --no-open
+        run: |
+          eval "$(mise activate bash)"
+          tuist generate --no-open
         env:
           CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           API_BASE_URL: https://tally-tracker.app
@@ -79,7 +84,8 @@ jobs:
       - name: Run UI tests
         working-directory: ios
         run: |
-          mise exec -- xcodebuild test \
+          eval "$(mise activate bash)"
+          xcodebuild test \
             -workspace Tally.xcworkspace \
             -scheme App \
             -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \

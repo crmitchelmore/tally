@@ -15,6 +15,14 @@ enum class TimeframeType {
     @SerialName("custom") CUSTOM
 }
 
+// Count type for challenges
+@Serializable
+enum class CountType {
+    @SerialName("simple") SIMPLE,
+    @SerialName("sets") SETS,
+    @SerialName("custom") CUSTOM
+}
+
 // Feeling types for entries
 @Serializable
 enum class Feeling {
@@ -49,9 +57,18 @@ data class Challenge(
     val icon: String,
     @SerialName("is_public") val isPublic: Boolean,
     @SerialName("is_archived") val isArchived: Boolean,
+    // Count configuration (optional for backward compatibility)
+    @SerialName("count_type") val countType: CountType? = null,
+    @SerialName("unit_label") val unitLabel: String? = null,
+    @SerialName("default_increment") val defaultIncrement: Int? = null,
     @SerialName("created_at") val createdAt: String,
     @SerialName("updated_at") val updatedAt: String
-)
+) {
+    // Convenience properties with defaults
+    val resolvedCountType: CountType get() = countType ?: CountType.SIMPLE
+    val resolvedUnitLabel: String get() = unitLabel ?: "reps"
+    val resolvedDefaultIncrement: Int get() = defaultIncrement ?: 1
+}
 
 /**
  * Entry model
@@ -63,6 +80,7 @@ data class Entry(
     @SerialName("challenge_id") val challengeId: String,
     val date: String,
     val count: Int,
+    val sets: List<Int>? = null,
     val note: String? = null,
     val feeling: Feeling? = null,
     @SerialName("created_at") val createdAt: String,

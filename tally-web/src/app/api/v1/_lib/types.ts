@@ -15,6 +15,21 @@ export interface User {
 // Challenge timeframe types
 export type TimeframeType = "year" | "month" | "custom";
 
+// Count type for challenges
+export type CountType = "simple" | "sets" | "custom";
+
+// Common unit presets
+export const UNIT_PRESETS = [
+  { value: "reps", label: "Reps" },
+  { value: "minutes", label: "Minutes" },
+  { value: "pages", label: "Pages" },
+  { value: "km", label: "Kilometers" },
+  { value: "miles", label: "Miles" },
+  { value: "hours", label: "Hours" },
+  { value: "items", label: "Items" },
+  { value: "sessions", label: "Sessions" },
+] as const;
+
 // Challenge
 export interface Challenge {
   id: string;
@@ -28,17 +43,23 @@ export interface Challenge {
   icon: string;
   isPublic: boolean;
   isArchived: boolean;
+  // Count configuration (optional for backward compatibility)
+  countType?: CountType;
+  unitLabel?: string; // e.g., "reps", "minutes", "pages"
+  defaultIncrement?: number; // quick-add increment (e.g., 1, 5, 10)
   createdAt: string;
   updatedAt: string;
 }
 
-// Entry
+// Entry - supports both simple count and sets/reps
 export interface Entry {
   id: string;
   userId: string;
   challengeId: string;
   date: string; // ISO date (YYYY-MM-DD)
   count: number;
+  // Optional sets breakdown (for sets/reps count type)
+  sets?: number[]; // e.g., [20, 15, 12] for 3 sets
   note?: string;
   feeling?: "great" | "good" | "okay" | "tough";
   createdAt: string;
@@ -63,6 +84,10 @@ export interface CreateChallengeRequest {
   color?: string;
   icon?: string;
   isPublic?: boolean;
+  // Count configuration
+  countType?: CountType;
+  unitLabel?: string;
+  defaultIncrement?: number;
 }
 
 export interface UpdateChallengeRequest {
@@ -78,6 +103,7 @@ export interface CreateEntryRequest {
   challengeId: string;
   date: string;
   count: number;
+  sets?: number[]; // Optional sets breakdown
   note?: string;
   feeling?: "great" | "good" | "okay" | "tough";
 }

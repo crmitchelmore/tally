@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import type { TimeframeType, CreateChallengeRequest } from "@/app/api/v1/_lib/types";
+import type { TimeframeType, CountType, CreateChallengeRequest, UNIT_PRESETS } from "@/app/api/v1/_lib/types";
 
 export interface CreateChallengeDialogProps {
   open: boolean;
@@ -31,6 +31,19 @@ const PRESET_ICONS = [
   { value: "star", label: "Goal" },
 ];
 
+const UNIT_OPTIONS = [
+  { value: "reps", label: "Reps" },
+  { value: "minutes", label: "Minutes" },
+  { value: "pages", label: "Pages" },
+  { value: "km", label: "Kilometers" },
+  { value: "miles", label: "Miles" },
+  { value: "hours", label: "Hours" },
+  { value: "items", label: "Items" },
+  { value: "sessions", label: "Sessions" },
+];
+
+const INCREMENT_OPTIONS = [1, 5, 10, 25, 50, 100];
+
 /**
  * Modal dialog for creating a new challenge.
  * Uses div-based modal for Safari compatibility (native dialog has issues).
@@ -47,6 +60,12 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
   const [isPublic, setIsPublic] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Count configuration
+  const [countType, setCountType] = useState<CountType>("simple");
+  const [unitLabel, setUnitLabel] = useState("reps");
+  const [customUnit, setCustomUnit] = useState("");
+  const [defaultIncrement, setDefaultIncrement] = useState(1);
   
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -93,6 +112,10 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
       setColor(PRESET_COLORS[0]);
       setIcon("tally");
       setIsPublic(false);
+      setCountType("simple");
+      setUnitLabel("reps");
+      setCustomUnit("");
+      setDefaultIncrement(1);
       setError(null);
     }
   }, [open]);
@@ -103,6 +126,8 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
     setSubmitting(true);
 
     try {
+      const finalUnitLabel = unitLabel === "custom" ? customUnit.trim() || "items" : unitLabel;
+      
       const data: CreateChallengeRequest = {
         name: name.trim(),
         target: parseInt(target, 10),
@@ -110,6 +135,9 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
         color,
         icon,
         isPublic,
+        countType,
+        unitLabel: finalUnitLabel,
+        defaultIncrement,
       };
 
       if (timeframeType === "custom") {
@@ -124,7 +152,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
     } finally {
       setSubmitting(false);
     }
-  }, [name, target, timeframeType, customStart, customEnd, color, icon, isPublic, onSubmit, onClose]);
+  }, [name, target, timeframeType, customStart, customEnd, color, icon, isPublic, countType, unitLabel, customUnit, defaultIncrement, onSubmit, onClose]);
 
   if (!open) return null;
 
@@ -285,6 +313,114 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Count Type */}
+          <div>
+            <label className="block text-sm font-medium text-ink mb-1">How will you count?</label>
+            <div className="flex gap-2">
+              {([
+                { value: "simple", label: "Simple Count", desc: "Just tap to add" },
+                { value: "sets", label: "Sets & Reps", desc: "Track sets separately" },
+              ] as const).map((ct) => (
+                <button
+                  key={ct.value}
+                  type="button"
+                  onClick={() => setCountType(ct.value)}
+                  className={`
+                    flex-1 px-3 py-2 rounded-lg text-sm font-medium text-left
+                    border transition-colors
+                    ${countType === ct.value
+                      ? "bg-accent text-white border-accent"
+                      : "bg-paper border-border text-ink hover:bg-border/50"
+                    }
+                  `}
+                >
+                  <div>{ct.label}</div>
+                  <div className={`text-xs mt-0.5 ${countType === ct.value ? "text-white/80" : "text-muted"}`}>
+                    {ct.desc}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Unit Label */}
+          <div>
+            <label className="block text-sm font-medium text-ink mb-1">What are you counting?</label>
+            <div className="flex gap-2 flex-wrap">
+              {UNIT_OPTIONS.map((u) => (
+                <button
+                  key={u.value}
+                  type="button"
+                  onClick={() => setUnitLabel(u.value)}
+                  className={`
+                    px-3 py-1.5 rounded-lg text-sm border transition-colors
+                    ${unitLabel === u.value
+                      ? "bg-accent text-white border-accent"
+                      : "bg-paper border-border text-ink hover:bg-border/50"
+                    }
+                  `}
+                  aria-pressed={unitLabel === u.value}
+                >
+                  {u.label}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setUnitLabel("custom")}
+                className={`
+                  px-3 py-1.5 rounded-lg text-sm border transition-colors
+                  ${unitLabel === "custom"
+                    ? "bg-accent text-white border-accent"
+                    : "bg-paper border-border text-ink hover:bg-border/50"
+                  }
+                `}
+                aria-pressed={unitLabel === "custom"}
+              >
+                Custom...
+              </button>
+            </div>
+            {unitLabel === "custom" && (
+              <input
+                type="text"
+                value={customUnit}
+                onChange={(e) => setCustomUnit(e.target.value)}
+                placeholder="e.g., glasses of water"
+                maxLength={30}
+                className="
+                  mt-2 w-full px-3 py-2 rounded-lg text-sm
+                  bg-paper border border-border text-ink
+                  placeholder:text-muted/60
+                  focus:outline-none focus:ring-2 focus:ring-accent
+                "
+              />
+            )}
+          </div>
+
+          {/* Quick Add Increment */}
+          <div>
+            <label className="block text-sm font-medium text-ink mb-1">Quick add amount</label>
+            <p className="text-xs text-muted mb-2">Default increment when you tap the + button</p>
+            <div className="flex gap-2 flex-wrap">
+              {INCREMENT_OPTIONS.map((inc) => (
+                <button
+                  key={inc}
+                  type="button"
+                  onClick={() => setDefaultIncrement(inc)}
+                  className={`
+                    w-12 h-10 rounded-lg text-sm font-medium border transition-colors
+                    ${defaultIncrement === inc
+                      ? "bg-accent text-white border-accent"
+                      : "bg-paper border-border text-ink hover:bg-border/50"
+                    }
+                  `}
+                  aria-pressed={defaultIncrement === inc}
+                >
+                  +{inc}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Color */}

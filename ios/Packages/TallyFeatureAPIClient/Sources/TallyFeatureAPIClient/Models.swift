@@ -7,6 +7,13 @@ public enum TimeframeType: String, Codable, Sendable {
     case custom
 }
 
+/// Count type for challenges
+public enum CountType: String, Codable, Sendable {
+    case simple
+    case sets
+    case custom
+}
+
 /// Feeling type for entries
 public enum Feeling: String, Codable, Sendable {
     case great
@@ -28,8 +35,17 @@ public struct Challenge: Codable, Identifiable, Sendable, Equatable {
     public let icon: String
     public let isPublic: Bool
     public let isArchived: Bool
+    // Count configuration (optional for backward compatibility)
+    public let countType: CountType?
+    public let unitLabel: String?
+    public let defaultIncrement: Int?
     public let createdAt: String
     public let updatedAt: String
+    
+    // Convenience computed properties with defaults
+    public var resolvedCountType: CountType { countType ?? .simple }
+    public var resolvedUnitLabel: String { unitLabel ?? "reps" }
+    public var resolvedDefaultIncrement: Int { defaultIncrement ?? 1 }
     
     public init(
         id: String,
@@ -43,6 +59,9 @@ public struct Challenge: Codable, Identifiable, Sendable, Equatable {
         icon: String,
         isPublic: Bool,
         isArchived: Bool,
+        countType: CountType? = nil,
+        unitLabel: String? = nil,
+        defaultIncrement: Int? = nil,
         createdAt: String,
         updatedAt: String
     ) {
@@ -57,6 +76,9 @@ public struct Challenge: Codable, Identifiable, Sendable, Equatable {
         self.icon = icon
         self.isPublic = isPublic
         self.isArchived = isArchived
+        self.countType = countType
+        self.unitLabel = unitLabel
+        self.defaultIncrement = defaultIncrement
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -69,6 +91,7 @@ public struct Entry: Codable, Identifiable, Sendable, Equatable {
     public let challengeId: String
     public let date: String
     public let count: Int
+    public let sets: [Int]?
     public let note: String?
     public let feeling: Feeling?
     public let createdAt: String
@@ -80,6 +103,7 @@ public struct Entry: Codable, Identifiable, Sendable, Equatable {
         challengeId: String,
         date: String,
         count: Int,
+        sets: [Int]? = nil,
         note: String? = nil,
         feeling: Feeling? = nil,
         createdAt: String,
@@ -90,6 +114,7 @@ public struct Entry: Codable, Identifiable, Sendable, Equatable {
         self.challengeId = challengeId
         self.date = date
         self.count = count
+        self.sets = sets
         self.note = note
         self.feeling = feeling
         self.createdAt = createdAt

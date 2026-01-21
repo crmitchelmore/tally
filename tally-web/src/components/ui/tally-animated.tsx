@@ -84,6 +84,9 @@ export const TallyAnimated = memo(function TallyAnimated({
   
   const strokeColor = color || "currentColor";
   const hasAnimation = animatingStrokes.length > 0;
+  
+  // Has remainder after thousands
+  const hasRemainder = hundreds > 0 || twentyFives > 0 || fives > 0 || ones > 0;
 
   return (
     <div 
@@ -91,12 +94,12 @@ export const TallyAnimated = memo(function TallyAnimated({
       role="img"
       aria-label={`${count} tallies${maxCount ? ` of ${maxCount}` : ""}`}
     >
-      {/* Tally marks container */}
+      {/* Tally marks container - column layout for thousands */}
       <div 
-        className="inline-flex items-end flex-wrap" 
-        style={{ gap: sizes.gap * 3 }}
+        className="inline-flex flex-col items-start" 
+        style={{ gap: sizes.gap }}
       >
-        {/* Thousands: horizontal line through boxes */}
+        {/* Thousands: each 1000 is a row of 10 boxes with line through */}
         {Array.from({ length: thousands }).map((_, i) => (
           <ThousandBlock 
             key={`k-${i}`} 
@@ -106,57 +109,65 @@ export const TallyAnimated = memo(function TallyAnimated({
           />
         ))}
         
-        {/* Hundreds: filled box with X */}
-        {Array.from({ length: hundreds }).map((_, i) => (
-          <HundredBox 
-            key={`h-${i}`} 
-            sizes={sizes} 
-            color={strokeColor}
-            animating={hasAnimation && i === hundreds - 1 && animatingStrokes.some(s => s.type === "box")}
-          />
-        ))}
-        
-        {/* Twenty-fives: X mark */}
-        {Array.from({ length: twentyFives }).map((_, i) => (
-          <TwentyFiveX 
-            key={`x-${i}`} 
-            sizes={sizes} 
-            color={strokeColor}
-            animating={hasAnimation && i === twentyFives - 1 && animatingStrokes.some(s => s.type === "x")}
-          />
-        ))}
-        
-        {/* Fives: standard 5-gates with visual gap between each */}
-        {fives > 0 && (
-          <div className="inline-flex items-end" style={{ gap: sizes.gap * 2.5 }}>
-            {Array.from({ length: fives }).map((_, i) => (
-              <FiveGate 
-                key={`f-${i}`} 
+        {/* Remainder row */}
+        {(hasRemainder || count === 0) && (
+          <div 
+            className="inline-flex items-end flex-wrap" 
+            style={{ gap: sizes.gap * 3 }}
+          >
+            {/* Hundreds: filled box with 4 Xs */}
+            {Array.from({ length: hundreds }).map((_, i) => (
+              <HundredBox 
+                key={`h-${i}`} 
                 sizes={sizes} 
                 color={strokeColor}
-                slashAnimating={hasAnimation && i === fives - 1 && animatingStrokes.some(s => s.type === "slash")}
+                animating={hasAnimation && i === hundreds - 1 && animatingStrokes.some(s => s.type === "box")}
               />
             ))}
-          </div>
-        )}
-        
-        {/* Ones: vertical strokes */}
-        {ones > 0 && (
-          <div className="inline-flex items-end" style={{ gap: sizes.gap }}>
-            {Array.from({ length: ones }).map((_, i) => (
-              <Stroke 
-                key={`s-${i}`} 
+            
+            {/* Twenty-fives: X mark */}
+            {Array.from({ length: twentyFives }).map((_, i) => (
+              <TwentyFiveX 
+                key={`x-${i}`} 
                 sizes={sizes} 
                 color={strokeColor}
-                animating={hasAnimation && i === ones - 1 && animatingStrokes.some(s => s.type === "stroke")}
+                animating={hasAnimation && i === twentyFives - 1 && animatingStrokes.some(s => s.type === "x")}
               />
             ))}
+            
+            {/* Fives: standard 5-gates with visual gap between each */}
+            {fives > 0 && (
+              <div className="inline-flex items-end" style={{ gap: sizes.gap * 2.5 }}>
+                {Array.from({ length: fives }).map((_, i) => (
+                  <FiveGate 
+                    key={`f-${i}`} 
+                    sizes={sizes} 
+                    color={strokeColor}
+                    slashAnimating={hasAnimation && i === fives - 1 && animatingStrokes.some(s => s.type === "slash")}
+                  />
+                ))}
+              </div>
+            )}
+            
+            {/* Ones: vertical strokes */}
+            {ones > 0 && (
+              <div className="inline-flex items-end" style={{ gap: sizes.gap }}>
+                {Array.from({ length: ones }).map((_, i) => (
+                  <Stroke 
+                    key={`s-${i}`} 
+                    sizes={sizes} 
+                    color={strokeColor}
+                    animating={hasAnimation && i === ones - 1 && animatingStrokes.some(s => s.type === "stroke")}
+                  />
+                ))}
+              </div>
+            )}
+            
+            {/* Placeholder when count is 0 */}
+            {count === 0 && (
+              <span className="text-muted text-sm">Add your first tally</span>
+            )}
           </div>
-        )}
-        
-        {/* Placeholder when count is 0 */}
-        {count === 0 && (
-          <span className="text-muted text-sm">Add your first tally</span>
         )}
       </div>
     </div>
@@ -348,7 +359,7 @@ function HundredBox({
   );
 }
 
-/** 1000-unit: Row of boxes (muted) with horizontal line through (accent) */
+/** 1000-unit: Row of 10 boxes (muted) with horizontal line through (accent) */
 function ThousandBlock({ 
   sizes, 
   color,
@@ -358,15 +369,15 @@ function ThousandBlock({
   color: string;
   animating?: boolean;
 }) {
-  const boxSize = sizes.boxSize * 0.8;
-  const rowWidth = boxSize * 5 + sizes.gap * 2;
+  const boxSize = sizes.boxSize * 0.6;
+  const rowWidth = boxSize * 10 + sizes.gap * 9;
   const mutedColor = "var(--color-muted)";
   const accentColor = "var(--color-accent)";
   
   return (
     <div className={`relative ${animating ? "animate-line-draw" : ""}`}>
       <div className="flex" style={{ gap: sizes.gap / 2 }}>
-        {Array.from({ length: 5 }).map((_, i) => (
+        {Array.from({ length: 10 }).map((_, i) => (
           <div
             key={i}
             className="border rounded-sm"

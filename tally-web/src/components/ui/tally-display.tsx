@@ -56,45 +56,56 @@ export const TallyDisplay = memo(function TallyDisplay({
 
   // For 26-99, show Xs in grid positions as if filling a 100-box
   const showXsInGrid = twentyFives > 0 && twentyFives < 4;
+  
+  // Has remainder after thousands
+  const hasRemainder = hundreds > 0 || twentyFives > 0 || fives > 0 || ones > 0;
 
   return (
     <div 
-      className={`inline-flex items-end flex-wrap ${className}`} 
-      style={{ gap: sizes.gap * 2 }}
+      className={`inline-flex flex-col items-start ${className}`} 
+      style={{ gap: sizes.gap }}
       role="img"
       aria-label={`${count} tallies`}
     >
-      {/* Thousands: horizontal line through boxes */}
+      {/* Thousands: each 1000 is a row of 10 boxes with line through, stacked vertically */}
       {Array.from({ length: thousands }).map((_, i) => (
         <ThousandBlock key={`k-${i}`} sizes={sizes} c1={c1} c3={c3} />
       ))}
       
-      {/* Hundreds: box with 4 Xs */}
-      {Array.from({ length: hundreds }).map((_, i) => (
-        <HundredBox key={`h-${i}`} sizes={sizes} c2={c2} c3={c3} />
-      ))}
-      
-      {/* Twenty-fives: X marks in grid layout (like filling a box) */}
-      {showXsInGrid ? (
-        <XsInGridLayout sizes={sizes} count={twentyFives} c2={c2} />
-      ) : (
-        // Full 4 Xs shown as individual marks
-        Array.from({ length: twentyFives }).map((_, i) => (
-          <TwentyFiveX key={`x-${i}`} sizes={sizes} color={c2} />
-        ))
-      )}
-      
-      {/* Fives: standard 5-gates */}
-      {Array.from({ length: fives }).map((_, i) => (
-        <FiveGate key={`f-${i}`} sizes={sizes} c1={c1} c2={c2} />
-      ))}
-      
-      {/* Ones: vertical strokes */}
-      {ones > 0 && (
-        <div className="inline-flex items-end" style={{ gap: sizes.gap }}>
-          {Array.from({ length: ones }).map((_, i) => (
-            <Stroke key={`s-${i}`} sizes={sizes} color={c1} />
+      {/* Remainder row: hundreds, 25s, 5s, 1s */}
+      {hasRemainder && (
+        <div 
+          className="inline-flex items-end flex-wrap" 
+          style={{ gap: sizes.gap * 2 }}
+        >
+          {/* Hundreds: box with 4 Xs */}
+          {Array.from({ length: hundreds }).map((_, i) => (
+            <HundredBox key={`h-${i}`} sizes={sizes} c2={c2} c3={c3} />
           ))}
+          
+          {/* Twenty-fives: X marks in grid layout (like filling a box) */}
+          {showXsInGrid ? (
+            <XsInGridLayout sizes={sizes} count={twentyFives} c2={c2} />
+          ) : (
+            // Full 4 Xs shown as individual marks
+            Array.from({ length: twentyFives }).map((_, i) => (
+              <TwentyFiveX key={`x-${i}`} sizes={sizes} color={c2} />
+            ))
+          )}
+          
+          {/* Fives: standard 5-gates */}
+          {Array.from({ length: fives }).map((_, i) => (
+            <FiveGate key={`f-${i}`} sizes={sizes} c1={c1} c2={c2} />
+          ))}
+          
+          {/* Ones: vertical strokes */}
+          {ones > 0 && (
+            <div className="inline-flex items-end" style={{ gap: sizes.gap }}>
+              {Array.from({ length: ones }).map((_, i) => (
+                <Stroke key={`s-${i}`} sizes={sizes} color={c1} />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -338,7 +349,7 @@ function HundredBox({
   );
 }
 
-/** 1000-unit: Row of boxes with horizontal line through */
+/** 1000-unit: Row of 10 boxes with horizontal line through */
 function ThousandBlock({ 
   sizes, 
   c1,
@@ -348,14 +359,14 @@ function ThousandBlock({
   c1: string;
   c3: string;
 }) {
-  const boxSize = sizes.boxSize * 0.8;
-  const rowWidth = boxSize * 5 + sizes.gap * 4;
+  const boxSize = sizes.boxSize * 0.6;
+  const rowWidth = boxSize * 10 + sizes.gap * 9;
   
   return (
     <div className="relative">
-      {/* Row of 5 mini boxes in C3 */}
+      {/* Row of 10 mini boxes in C3 */}
       <div className="flex" style={{ gap: sizes.gap / 2 }}>
-        {Array.from({ length: 5 }).map((_, i) => (
+        {Array.from({ length: 10 }).map((_, i) => (
           <div
             key={i}
             className="border rounded-sm"

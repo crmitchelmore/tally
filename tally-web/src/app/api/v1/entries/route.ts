@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         return authResult.response;
       }
 
-      const user = getUserByClerkId(authResult.userId);
+      const user = await getUserByClerkId(authResult.userId);
       span.setAttribute("user.id", user?.id || authResult.userId);
 
       const { searchParams } = new URL(request.url);
@@ -54,16 +54,16 @@ export async function GET(request: NextRequest) {
 
       if (challengeId) {
         // Check challenge ownership
-        const challenge = getChallengeById(challengeId);
+        const challenge = await getChallengeById(challengeId);
         if (!challenge) {
           return jsonNotFound("Challenge not found");
         }
         if (challenge.userId !== authResult.userId && !challenge.isPublic) {
           return jsonForbidden("Access denied");
         }
-        entries = getEntriesByChallenge(challengeId);
+        entries = await getEntriesByChallenge(challengeId);
       } else {
-        entries = getEntriesByUser(authResult.userId);
+        entries = await getEntriesByUser(authResult.userId);
       }
 
       // Filter by date if provided
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
         return authResult.response;
       }
 
-      const user = getUserByClerkId(authResult.userId);
+      const user = await getUserByClerkId(authResult.userId);
       const userId = user?.id || authResult.userId;
       span.setAttribute("user.id", userId);
 
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Verify challenge exists and user owns it
-      const challenge = getChallengeById(body.challengeId);
+      const challenge = await getChallengeById(body.challengeId);
       if (!challenge) {
         return jsonNotFound("Challenge not found");
       }
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
         return jsonForbidden("Cannot add entries to challenges you don't own");
       }
 
-      const entry = createEntry(authResult.userId, {
+      const entry = await createEntry(authResult.userId, {
         challengeId: body.challengeId,
         date: body.date,
         count: body.count,

@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const entry = getEntryById(id);
+    const entry = await getEntryById(id);
 
     if (!entry) {
       return jsonNotFound("Entry not found");
@@ -51,7 +51,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const entry = getEntryById(id);
+    const entry = await getEntryById(id);
 
     if (!entry) {
       return jsonNotFound("Entry not found");
@@ -75,7 +75,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (body.note !== undefined) entry.note = body.note || undefined;
     if (body.feeling !== undefined) entry.feeling = body.feeling || undefined;
 
-    const updated = updateEntry(entry);
+    const updated = await updateEntry(entry);
 
     return jsonOk({ entry: updated });
   } catch (error) {
@@ -92,7 +92,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const entry = getEntryById(id);
+    const entry = await getEntryById(id);
 
     if (!entry) {
       return jsonNotFound("Entry not found");
@@ -103,7 +103,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return jsonForbidden("Access denied");
     }
 
-    deleteEntry(id);
+    await deleteEntry(id);
 
     return jsonOk({ success: true });
   } catch (error) {

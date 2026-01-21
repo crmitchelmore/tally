@@ -15,8 +15,8 @@ export async function GET() {
       return authResult.response;
     }
 
-    const dashboardStats = calculateDashboardStats(authResult.userId);
-    const personalRecords = calculatePersonalRecords(authResult.userId);
+    const dashboardStats = await calculateDashboardStats(authResult.userId);
+    const personalRecords = await calculatePersonalRecords(authResult.userId);
 
     return jsonOk({
       dashboard: dashboardStats,

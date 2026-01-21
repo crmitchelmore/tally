@@ -21,7 +21,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const challenge = getChallengeById(id);
+    const challenge = await getChallengeById(id);
 
     if (!challenge) {
       return jsonNotFound("Challenge not found");
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return jsonForbidden("Access denied");
     }
 
-    const stats = calculateChallengeStats(challenge);
+    const stats = await calculateChallengeStats(challenge);
 
     return jsonOk({ stats });
   } catch (error) {

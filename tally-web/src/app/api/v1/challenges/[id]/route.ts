@@ -29,7 +29,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const challenge = getChallengeById(id);
+    const challenge = await getChallengeById(id);
 
     if (!challenge) {
       return jsonNotFound("Challenge not found");
@@ -55,7 +55,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const challenge = getChallengeById(id);
+    const challenge = await getChallengeById(id);
 
     if (!challenge) {
       return jsonNotFound("Challenge not found");
@@ -81,7 +81,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (body.isPublic !== undefined) challenge.isPublic = body.isPublic;
     if (body.isArchived !== undefined) challenge.isArchived = body.isArchived;
 
-    const updated = updateChallenge(challenge);
+    const updated = await updateChallenge(challenge);
 
     return jsonOk({ challenge: updated });
   } catch (error) {
@@ -98,7 +98,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const challenge = getChallengeById(id);
+    const challenge = await getChallengeById(id);
 
     if (!challenge) {
       return jsonNotFound("Challenge not found");
@@ -109,7 +109,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return jsonForbidden("Access denied");
     }
 
-    deleteChallenge(id);
+    await deleteChallenge(id);
 
     return jsonOk({ success: true });
   } catch (error) {

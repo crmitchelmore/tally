@@ -1,5 +1,7 @@
 /**
- * In-memory data store for API v1 (will be replaced with Convex later)
+ * Data store for API v1 - now using Convex backend
+ * This file provides a compatibility layer between the original in-memory API
+ * and the new Convex backend.
  */
 import type {
   User,
@@ -10,181 +12,147 @@ import type {
   DashboardStats,
   PersonalRecords,
 } from "./types";
+import {
+  convexUsers,
+  convexChallenges,
+  convexEntries,
+  convexFollows,
+} from "./convex-server";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 
-// In-memory stores
-export const users = new Map<string, User>();
-export const challenges = new Map<string, Challenge>();
-export const entries = new Map<string, Entry>();
-export const follows = new Map<string, Follow>();
-
-// ID generation
+// ID generation (for backward compatibility - Convex generates its own IDs)
 export function generateId(prefix: string): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
 // User operations
-export function getUserByClerkId(clerkId: string): User | undefined {
-  return Array.from(users.values()).find((u) => u.clerkId === clerkId);
+export async function getUserByClerkId(clerkId: string): Promise<User | undefined> {
+  const user = await convexUsers.getByClerkId(clerkId);
+  return user || undefined;
 }
 
-export function createUser(clerkId: string, email: string, name: string): User {
-  const user: User = {
-    id: generateId("user"),
-    clerkId,
-    email,
-    name,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  users.set(user.id, user);
-  return user;
+export async function createUser(clerkId: string, email: string, name: string): Promise<User> {
+  return await convexUsers.create({ clerkId, email, name });
 }
 
-export function updateUser(user: User): User {
-  user.updatedAt = new Date().toISOString();
-  users.set(user.id, user);
-  return user;
+export async function updateUser(user: User): Promise<User> {
+  return await convexUsers.update({
+    id: user.id as Id<"users">,
+    email: user.email,
+    name: user.name,
+  });
 }
 
 // Challenge operations
-export function getChallengesByUserId(userId: string): Challenge[] {
-  return Array.from(challenges.values()).filter((c) => c.userId === userId);
+export async function getChallengesByUserId(userId: string): Promise<Challenge[]> {
+  return await convexChallenges.listByUser(userId);
 }
 
-export function getActiveChallenges(userId: string): Challenge[] {
-  const now = new Date().toISOString().split("T")[0];
-  return getChallengesByUserId(userId).filter(
-    (c) => !c.isArchived && c.endDate >= now
-  );
+export async function getActiveChallenges(userId: string): Promise<Challenge[]> {
+  return await convexChallenges.listActive(userId);
 }
 
-export function getChallengeById(id: string): Challenge | undefined {
-  return challenges.get(id);
+export async function getChallengeById(id: string): Promise<Challenge | undefined> {
+  const challenge = await convexChallenges.get(id as Id<"challenges">);
+  return challenge || undefined;
 }
 
-export function createChallenge(
+export async function createChallenge(
   userId: string,
   data: Omit<Challenge, "id" | "userId" | "isArchived" | "createdAt" | "updatedAt">
-): Challenge {
-  const challenge: Challenge = {
-    id: generateId("ch"),
+): Promise<Challenge> {
+  return await convexChallenges.create({
     userId,
     ...data,
-    isArchived: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  challenges.set(challenge.id, challenge);
-  return challenge;
+  });
 }
 
-export function updateChallenge(challenge: Challenge): Challenge {
-  challenge.updatedAt = new Date().toISOString();
-  challenges.set(challenge.id, challenge);
-  return challenge;
+export async function updateChallenge(challenge: Challenge): Promise<Challenge> {
+  return await convexChallenges.update({
+    id: challenge.id as Id<"challenges">,
+    name: challenge.name,
+    target: challenge.target,
+    color: challenge.color,
+    icon: challenge.icon,
+    isPublic: challenge.isPublic,
+    isArchived: challenge.isArchived,
+  });
 }
 
-export function deleteChallenge(id: string): boolean {
-  // Also delete related entries and follows
-  Array.from(entries.values())
-    .filter((e) => e.challengeId === id)
-    .forEach((e) => entries.delete(e.id));
-  Array.from(follows.values())
-    .filter((f) => f.challengeId === id)
-    .forEach((f) => follows.delete(f.id));
-  return challenges.delete(id);
+export async function deleteChallenge(id: string): Promise<boolean> {
+  await convexChallenges.remove(id as Id<"challenges">);
+  return true;
 }
 
 // Entry operations
-export function getEntriesByChallenge(challengeId: string): Entry[] {
-  return Array.from(entries.values())
-    .filter((e) => e.challengeId === challengeId)
-    .sort((a, b) => b.date.localeCompare(a.date));
+export async function getEntriesByChallenge(challengeId: string): Promise<Entry[]> {
+  return await convexEntries.listByChallenge(challengeId);
 }
 
-export function getEntriesByUser(userId: string): Entry[] {
-  return Array.from(entries.values())
-    .filter((e) => e.userId === userId)
-    .sort((a, b) => b.date.localeCompare(a.date));
+export async function getEntriesByUser(userId: string): Promise<Entry[]> {
+  return await convexEntries.listByUser(userId);
 }
 
-export function getEntryById(id: string): Entry | undefined {
-  return entries.get(id);
+export async function getEntryById(id: string): Promise<Entry | undefined> {
+  const entry = await convexEntries.get(id as Id<"entries">);
+  return entry || undefined;
 }
 
-export function createEntry(
+export async function createEntry(
   userId: string,
   data: Omit<Entry, "id" | "userId" | "createdAt" | "updatedAt">
-): Entry {
-  const entry: Entry = {
-    id: generateId("entry"),
+): Promise<Entry> {
+  return await convexEntries.create({
     userId,
     ...data,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  entries.set(entry.id, entry);
-  return entry;
+  });
 }
 
-export function updateEntry(entry: Entry): Entry {
-  entry.updatedAt = new Date().toISOString();
-  entries.set(entry.id, entry);
-  return entry;
+export async function updateEntry(entry: Entry): Promise<Entry> {
+  return await convexEntries.update({
+    id: entry.id as Id<"entries">,
+    date: entry.date,
+    count: entry.count,
+    note: entry.note,
+    feeling: entry.feeling,
+  });
 }
 
-export function deleteEntry(id: string): boolean {
-  return entries.delete(id);
+export async function deleteEntry(id: string): Promise<boolean> {
+  await convexEntries.remove(id as Id<"entries">);
+  return true;
 }
 
 // Follow operations
-export function getFollowsByUser(userId: string): Follow[] {
-  return Array.from(follows.values()).filter((f) => f.userId === userId);
+export async function getFollowsByUser(userId: string): Promise<Follow[]> {
+  return await convexFollows.listByUser(userId);
 }
 
-export function getFollowerCount(challengeId: string): number {
-  return Array.from(follows.values()).filter((f) => f.challengeId === challengeId)
-    .length;
+export async function getFollowerCount(challengeId: string): Promise<number> {
+  return await convexFollows.getFollowerCount(challengeId);
 }
 
-export function isFollowing(userId: string, challengeId: string): boolean {
-  return Array.from(follows.values()).some(
-    (f) => f.userId === userId && f.challengeId === challengeId
-  );
+export async function isFollowing(userId: string, challengeId: string): Promise<boolean> {
+  return await convexFollows.isFollowing(userId, challengeId);
 }
 
-export function createFollow(userId: string, challengeId: string): Follow {
-  const follow: Follow = {
-    id: generateId("follow"),
-    userId,
-    challengeId,
-    createdAt: new Date().toISOString(),
-  };
-  follows.set(follow.id, follow);
-  return follow;
+export async function createFollow(userId: string, challengeId: string): Promise<Follow> {
+  return await convexFollows.follow(userId, challengeId);
 }
 
-export function deleteFollow(userId: string, challengeId: string): boolean {
-  const follow = Array.from(follows.values()).find(
-    (f) => f.userId === userId && f.challengeId === challengeId
-  );
-  if (follow) {
-    return follows.delete(follow.id);
-  }
-  return false;
+export async function deleteFollow(userId: string, challengeId: string): Promise<boolean> {
+  const result = await convexFollows.unfollow(userId, challengeId);
+  return result.success;
 }
 
 // Public challenges (for community)
-export function getPublicChallenges(): Challenge[] {
-  const now = new Date().toISOString().split("T")[0];
-  return Array.from(challenges.values()).filter(
-    (c) => c.isPublic && !c.isArchived && c.endDate >= now
-  );
+export async function getPublicChallenges(): Promise<Challenge[]> {
+  return await convexChallenges.listPublic();
 }
 
-// Stats calculation
-export function calculateChallengeStats(challenge: Challenge): ChallengeStats {
-  const challengeEntries = getEntriesByChallenge(challenge.id);
+// Stats calculation (updated to async for Convex)
+export async function calculateChallengeStats(challenge: Challenge): Promise<ChallengeStats> {
+  const challengeEntries = await getEntriesByChallenge(challenge.id);
   const totalCount = challengeEntries.reduce((sum, e) => sum + e.count, 0);
 
   const startDate = new Date(challenge.startDate);
@@ -278,9 +246,9 @@ export function calculateChallengeStats(challenge: Challenge): ChallengeStats {
   };
 }
 
-export function calculateDashboardStats(userId: string): DashboardStats {
-  const userChallenges = getActiveChallenges(userId);
-  const userEntries = getEntriesByUser(userId);
+export async function calculateDashboardStats(userId: string): Promise<DashboardStats> {
+  const userChallenges = await getActiveChallenges(userId);
+  const userEntries = await getEntriesByUser(userId);
   const today = new Date().toISOString().split("T")[0];
 
   const totalMarks = userEntries.reduce((sum, e) => sum + e.count, 0);
@@ -290,22 +258,25 @@ export function calculateDashboardStats(userId: string): DashboardStats {
 
   // Best streak across all challenges
   let bestStreak = 0;
-  userChallenges.forEach((c) => {
-    const stats = calculateChallengeStats(c);
+  for (const c of userChallenges) {
+    const stats = await calculateChallengeStats(c);
     if (stats.streakBest > bestStreak) bestStreak = stats.streakBest;
-  });
+  }
 
   // Overall pace status
   let paceStatus: "ahead" | "on-pace" | "behind" | "none" = "none";
   if (userChallenges.length > 0) {
-    const paceScores: number[] = userChallenges.map((c) => {
-      const stats = calculateChallengeStats(c);
-      return stats.paceStatus === "ahead"
-        ? 1
-        : stats.paceStatus === "behind"
-        ? -1
-        : 0;
-    });
+    const paceScores: number[] = [];
+    for (const c of userChallenges) {
+      const stats = await calculateChallengeStats(c);
+      paceScores.push(
+        stats.paceStatus === "ahead"
+          ? 1
+          : stats.paceStatus === "behind"
+          ? -1
+          : 0
+      );
+    }
     const avgPace =
       paceScores.reduce((a, b) => a + b, 0) / paceScores.length;
     if (avgPace > 0.3) paceStatus = "ahead";
@@ -316,9 +287,9 @@ export function calculateDashboardStats(userId: string): DashboardStats {
   return { totalMarks, today: todayCount, bestStreak, overallPaceStatus: paceStatus };
 }
 
-export function calculatePersonalRecords(userId: string): PersonalRecords {
-  const userEntries = getEntriesByUser(userId);
-  const userChallenges = getChallengesByUserId(userId);
+export async function calculatePersonalRecords(userId: string): Promise<PersonalRecords> {
+  const userEntries = await getEntriesByUser(userId);
+  const userChallenges = await getChallengesByUserId(userId);
 
   // Best single day (total across all challenges)
   const dayTotals = new Map<string, number>();
@@ -335,15 +306,15 @@ export function calculatePersonalRecords(userId: string): PersonalRecords {
 
   // Longest streak (across any challenge)
   let longestStreak = 0;
-  userChallenges.forEach((c) => {
-    const stats = calculateChallengeStats(c);
+  for (const c of userChallenges) {
+    const stats = await calculateChallengeStats(c);
     if (stats.streakBest > longestStreak) longestStreak = stats.streakBest;
-  });
+  }
 
   // Highest daily average (per challenge)
   let highestDailyAverage: { challengeId: string; average: number } | null = null;
-  userChallenges.forEach((c) => {
-    const stats = calculateChallengeStats(c);
+  for (const c of userChallenges) {
+    const stats = await calculateChallengeStats(c);
     if (
       !highestDailyAverage ||
       stats.dailyAverage > highestDailyAverage.average
@@ -353,7 +324,7 @@ export function calculatePersonalRecords(userId: string): PersonalRecords {
         average: stats.dailyAverage,
       };
     }
-  });
+  }
 
   // Most active days
   const mostActiveDays = dayTotals.size;
@@ -391,9 +362,9 @@ export interface ExportData {
   entries: Entry[];
 }
 
-export function exportUserData(userId: string): ExportData {
-  const userChallenges = getChallengesByUserId(userId);
-  const userEntries = getEntriesByUser(userId);
+export async function exportUserData(userId: string): Promise<ExportData> {
+  const userChallenges = await getChallengesByUserId(userId);
+  const userEntries = await getEntriesByUser(userId);
 
   return {
     version: "1.0",
@@ -403,12 +374,12 @@ export function exportUserData(userId: string): ExportData {
   };
 }
 
-export function importUserData(
+export async function importUserData(
   userId: string,
   data: ExportData
-): { challenges: number; entries: number } {
+): Promise<{ challenges: number; entries: number }> {
   // Clear existing data
-  clearUserData(userId);
+  await clearUserData(userId);
 
   // Create ID mapping for challenges
   const challengeIdMap = new Map<string, string>();
@@ -416,7 +387,7 @@ export function importUserData(
   // Import challenges
   let challengeCount = 0;
   for (const c of data.challenges) {
-    const newChallenge = createChallenge(userId, {
+    const newChallenge = await createChallenge(userId, {
       name: c.name,
       target: c.target,
       timeframeType: c.timeframeType,
@@ -435,7 +406,7 @@ export function importUserData(
   for (const e of data.entries) {
     const newChallengeId = challengeIdMap.get(e.challengeId);
     if (newChallengeId) {
-      createEntry(userId, {
+      await createEntry(userId, {
         challengeId: newChallengeId,
         date: e.date,
         count: e.count,
@@ -449,22 +420,30 @@ export function importUserData(
   return { challenges: challengeCount, entries: entryCount };
 }
 
-export function clearUserData(userId: string): {
+export async function clearUserData(userId: string): Promise<{
   challenges: number;
   entries: number;
   follows: number;
-} {
-  // Delete challenges
-  const userChallenges = getChallengesByUserId(userId);
-  userChallenges.forEach((c) => challenges.delete(c.id));
+}> {
+  // Get all user data
+  const userChallenges = await getChallengesByUserId(userId);
+  const userEntries = await getEntriesByUser(userId);
+  const userFollows = await getFollowsByUser(userId);
 
-  // Delete entries
-  const userEntries = getEntriesByUser(userId);
-  userEntries.forEach((e) => entries.delete(e.id));
+  // Delete challenges (which also deletes related entries and follows)
+  for (const c of userChallenges) {
+    await deleteChallenge(c.id);
+  }
 
-  // Delete follows
-  const userFollows = getFollowsByUser(userId);
-  userFollows.forEach((f) => follows.delete(f.id));
+  // Delete any remaining entries (shouldn't be any, but just in case)
+  for (const e of userEntries) {
+    await deleteEntry(e.id);
+  }
+
+  // Delete any remaining follows (shouldn't be any, but just in case)
+  for (const f of userFollows) {
+    await deleteFollow(userId, f.challengeId);
+  }
 
   return {
     challenges: userChallenges.length,

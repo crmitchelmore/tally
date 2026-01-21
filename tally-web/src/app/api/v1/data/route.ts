@@ -34,14 +34,14 @@ export async function GET() {
         return authResult.response;
       }
 
-      const user = getUserByClerkId(authResult.userId);
+      const user = await getUserByClerkId(authResult.userId);
       const userId = user?.id || authResult.userId;
       span.setAttribute("user.id", userId);
 
       // Capture export started
       await captureEvent("data_export_started", { userId, requestId });
 
-      const data = exportUserData(authResult.userId);
+      const data = await exportUserData(authResult.userId);
 
       span.setAttribute("export.challenges_count", data.challenges.length);
       span.setAttribute("export.entries_count", data.entries.length);
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         return authResult.response;
       }
 
-      const user = getUserByClerkId(authResult.userId);
+      const user = await getUserByClerkId(authResult.userId);
       const userId = user?.id || authResult.userId;
       span.setAttribute("user.id", userId);
 
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       // Capture import started
       await captureEvent("data_import_started", { userId, requestId });
 
-      const result = importUserData(authResult.userId, body);
+      const result = await importUserData(authResult.userId, body);
 
       span.setAttribute("import.challenges_count", result.challenges);
       span.setAttribute("import.entries_count", result.entries);
@@ -112,11 +112,11 @@ export async function DELETE() {
         return authResult.response;
       }
 
-      const user = getUserByClerkId(authResult.userId);
+      const user = await getUserByClerkId(authResult.userId);
       const userId = user?.id || authResult.userId;
       span.setAttribute("user.id", userId);
 
-      const result = clearUserData(authResult.userId);
+      const result = await clearUserData(authResult.userId);
 
       span.setAttribute("deleted.challenges_count", result.challenges);
       span.setAttribute("deleted.entries_count", result.entries);

@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       return jsonBadRequest("challengeId is required");
     }
 
-    const challenge = getChallengeById(body.challengeId);
+    const challenge = await getChallengeById(body.challengeId);
     if (!challenge) {
       return jsonNotFound("Challenge not found");
     }
@@ -47,11 +47,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if already following
-    if (isFollowing(authResult.userId, body.challengeId)) {
+    if (await isFollowing(authResult.userId, body.challengeId)) {
       return jsonOk({ success: true, message: "Already following" });
     }
 
-    createFollow(authResult.userId, body.challengeId);
+    await createFollow(authResult.userId, body.challengeId);
 
     return jsonCreated({ success: true });
   } catch (error) {
@@ -73,7 +73,7 @@ export async function DELETE(request: NextRequest) {
       return jsonBadRequest("challengeId is required");
     }
 
-    const deleted = deleteFollow(authResult.userId, body.challengeId);
+    const deleted = await deleteFollow(authResult.userId, body.challengeId);
 
     return jsonOk({ success: true, removed: deleted });
   } catch (error) {

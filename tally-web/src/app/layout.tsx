@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { TelemetryProvider } from "@/components/TelemetryProvider";
+import { ConvexClientProvider } from "@/lib/convex";
 import "./globals.css";
 
 const inter = Inter({
@@ -39,14 +40,20 @@ export default function RootLayout({
     </body>
   );
 
+  const withConvex = (
+    <ConvexClientProvider>
+      {body}
+    </ConvexClientProvider>
+  );
+
   return (
     <html lang="en">
       {hasClerkKeys ? (
         <ClerkProvider>
-          {body}
+          {withConvex}
         </ClerkProvider>
       ) : (
-        body
+        withConvex
       )}
     </html>
   );

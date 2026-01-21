@@ -37,13 +37,13 @@ export async function POST() {
       }
 
       // Check if user already exists
-      const existingUser = getUserByClerkId(clerkId);
+      const existingUser = await getUserByClerkId(clerkId);
       
       if (existingUser) {
         // Update user info
         existingUser.email = clerkUser.emailAddresses[0]?.emailAddress ?? "";
         existingUser.name = `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || "Anonymous";
-        updateUser(existingUser);
+        await updateUser(existingUser);
         
         span.setAttribute("user.id", existingUser.id);
         span.setAttribute("user.is_new", false);
@@ -52,7 +52,7 @@ export async function POST() {
       }
 
       // Create new user
-      const newUser = createUser(
+      const newUser = await createUser(
         clerkId,
         clerkUser.emailAddresses[0]?.emailAddress ?? "",
         `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || "Anonymous"
@@ -82,7 +82,7 @@ export async function GET() {
       return authResult.response;
     }
 
-    const user = getUserByClerkId(authResult.userId);
+    const user = await getUserByClerkId(authResult.userId);
     
     if (!user) {
       return jsonNotFound("User not found");

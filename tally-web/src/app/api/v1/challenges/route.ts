@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
         return authResult.response;
       }
 
-      const user = getUserByClerkId(authResult.userId);
+      const user = await getUserByClerkId(authResult.userId);
       span.setAttribute("user.id", user?.id || authResult.userId);
 
       const { searchParams } = new URL(request.url);
@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
       span.setAttribute("include_archived", includeArchived);
 
       const challenges = includeArchived
-        ? getChallengesByUserId(authResult.userId)
-        : getActiveChallenges(authResult.userId);
+        ? await getChallengesByUserId(authResult.userId)
+        : await getActiveChallenges(authResult.userId);
 
       span.setAttribute("challenges.count", challenges.length);
 
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         return authResult.response;
       }
 
-      const user = getUserByClerkId(authResult.userId);
+      const user = await getUserByClerkId(authResult.userId);
       const userId = user?.id || authResult.userId;
       span.setAttribute("user.id", userId);
 
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
         body.endDate
       );
 
-      const challenge = createChallenge(authResult.userId, {
+      const challenge = await createChallenge(authResult.userId, {
         name: body.name.trim(),
         target: body.target,
         timeframeType: body.timeframeType as TimeframeType,

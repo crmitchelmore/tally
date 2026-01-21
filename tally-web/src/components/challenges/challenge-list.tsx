@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { ChallengeCard } from "./challenge-card";
 import { CreateChallengeDialog } from "./create-challenge-dialog";
+import { AddEntryDialog } from "./add-entry-dialog";
 import type { Challenge, ChallengeStats, CreateChallengeRequest } from "@/app/api/v1/_lib/types";
 
 interface ChallengeWithStats {
@@ -30,11 +31,42 @@ export function ChallengeList({
   onRefresh,
 }: ChallengeListProps) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [entryDialogOpen, setEntryDialogOpen] = useState(false);
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
 
   const handleCreate = useCallback(async (data: CreateChallengeRequest) => {
     await onCreateChallenge(data);
     onRefresh?.();
   }, [onCreateChallenge, onRefresh]);
+
+  const handleQuickAdd = useCallback((challengeId: string) => {
+    const found = challenges.find((c) => c.challenge.id === challengeId);
+    if (found) {
+      setSelectedChallenge(found.challenge);
+      setEntryDialogOpen(true);
+    }
+  }, [challenges]);
+
+  const handleEntrySubmit = useCallback(async (challengeId: string, count: number, sets?: number[]) => {
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      await fetch("/api/v1/entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          challengeId,
+          date: today,
+          count,
+          sets,
+        }),
+      });
+      setEntryDialogOpen(false);
+      setSelectedChallenge(null);
+      onRefresh?.();
+    } catch (err) {
+      console.error("Failed to add entry:", err);
+    }
+  }, [onRefresh]);
 
   // Error state
   if (error) {
@@ -153,7 +185,12 @@ export function ChallengeList({
       {/* Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {challenges.map(({ challenge, stats }) => (
-          <ChallengeCard key={challenge.id} challenge={challenge} stats={stats} />
+          <ChallengeCard 
+            key={challenge.id} 
+            challenge={challenge} 
+            stats={stats}
+            onQuickAdd={handleQuickAdd}
+          />
         ))}
       </div>
 
@@ -161,6 +198,16 @@ export function ChallengeList({
         open={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
         onSubmit={handleCreate}
+      />
+
+      <AddEntryDialog
+        open={entryDialogOpen}
+        challenge={selectedChallenge}
+        onClose={() => {
+          setEntryDialogOpen(false);
+          setSelectedChallenge(null);
+        }}
+        onSubmit={handleEntrySubmit}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { TallyAnimated } from "@/components/ui/tally-animated";
 import type { Challenge, CountType } from "@/app/api/v1/_lib/types";
 
 export interface AddEntryDialogProps {
@@ -13,11 +14,13 @@ export interface AddEntryDialogProps {
 /**
  * Dialog for adding entries to a challenge.
  * Supports simple count and sets/reps modes.
+ * Shows animated tally marks as feedback.
  */
 export function AddEntryDialog({ open, challenge, onClose, onSubmit }: AddEntryDialogProps) {
   const [count, setCount] = useState("");
   const [sets, setSets] = useState<string[]>([""]);
   const [submitting, setSubmitting] = useState(false);
+  const [previewCount, setPreviewCount] = useState(0);
   
   const countInputRef = useRef<HTMLInputElement>(null);
   const firstSetRef = useRef<HTMLInputElement>(null);
@@ -67,6 +70,7 @@ export function AddEntryDialog({ open, challenge, onClose, onSubmit }: AddEntryD
     if (open) {
       setCount("");
       setSets([""]);
+      setPreviewCount(0);
     }
   }, [open]);
 
@@ -90,7 +94,7 @@ export function AddEntryDialog({ open, challenge, onClose, onSubmit }: AddEntryD
     
     setSubmitting(true);
     
-    if (challenge.countType === "sets") {
+    if (countType === "sets") {
       const setsArray = sets.map(s => parseInt(s, 10) || 0).filter(n => n > 0);
       const total = setsArray.reduce((sum, n) => sum + n, 0);
       if (total > 0) {
@@ -105,12 +109,17 @@ export function AddEntryDialog({ open, challenge, onClose, onSubmit }: AddEntryD
     
     setSubmitting(false);
     onClose();
-  }, [challenge, count, sets, onSubmit, onClose]);
+  }, [challenge, count, sets, countType, onSubmit, onClose]);
 
   const handleQuickAdd = useCallback((amount: number) => {
     if (!challenge) return;
-    onSubmit(challenge.id, amount);
-    onClose();
+    // Update preview for animation
+    setPreviewCount(prev => prev + amount);
+    // Small delay to show animation before closing
+    setTimeout(() => {
+      onSubmit(challenge.id, amount);
+      onClose();
+    }, 300);
   }, [challenge, onSubmit, onClose]);
 
   if (!open || !challenge) return null;
@@ -156,6 +165,17 @@ export function AddEntryDialog({ open, challenge, onClose, onSubmit }: AddEntryD
 
             {/* Body */}
             <div className="px-6 py-5 space-y-5">
+              {/* Animated tally preview */}
+              {previewCount > 0 && (
+                <div className="flex justify-center py-4 border-b border-border">
+                  <TallyAnimated 
+                    count={previewCount} 
+                    size="lg" 
+                    color={challenge.color}
+                  />
+                </div>
+              )}
+              
               {/* Quick add buttons */}
               <div>
                 <label className="block text-sm font-medium text-ink mb-2">Quick Add</label>

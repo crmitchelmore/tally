@@ -24,6 +24,7 @@ jobs:
       - name: Build
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
           HONEYCOMB_API_KEY: ${{ secrets.HONEYCOMB_API_KEY }}
         run: bun run build
 
@@ -37,12 +38,13 @@ jobs:
         working-directory: ios
     steps:
       - uses: actions/checkout@v4
-      - name: Install Tuist
-        run: |
-          curl -Ls https://install.tuist.io | bash
-          echo "$HOME/.tuist/bin" >> $GITHUB_PATH
+      - name: Install Tuist via mise
+        uses: jdx/mise-action@v2
+        with:
+          install_args: tuist@4.32.0
       - name: Generate Xcode project
         run: |
+          mise use -g tuist@4.32.0
           tuist install
           tuist generate --no-open
       - name: Build iOS app

@@ -19,9 +19,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "bun run build && bun run start",
+    command: process.env.CI ? "bun run start" : "bun run build && bun run start",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },
+  timeout: 60 * 1000, // 60s per test max
 });

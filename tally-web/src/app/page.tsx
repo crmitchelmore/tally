@@ -22,8 +22,8 @@ export default function Home() {
           <Link className="cta" href="/app">
             Open app
           </Link>
-          <Link className="link" href="/app">
-            Preview app shell
+          <Link className="link" href="/offline">
+            Try without account
           </Link>
         </div>
 

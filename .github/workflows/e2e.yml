@@ -76,6 +76,7 @@ jobs:
         working-directory: ios
         run: |
           eval "$(mise activate bash)"
+          tuist install
           tuist generate --no-open
         env:
           CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}

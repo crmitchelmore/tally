@@ -33,6 +33,7 @@ const PRESET_ICONS = [
 
 /**
  * Modal dialog for creating a new challenge.
+ * Uses div-based modal for Safari compatibility (native dialog has issues).
  * Follows design philosophy: minimal inputs, strong defaults, fast feedback.
  */
 export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallengeDialogProps) {
@@ -47,35 +48,39 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
-  // Manage dialog open/close
+  // Focus name input on open
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
     if (open) {
-      dialog.showModal();
-      nameInputRef.current?.focus();
-    } else {
-      dialog.close();
+      // Small delay to ensure modal is rendered
+      const timer = setTimeout(() => nameInputRef.current?.focus(), 50);
+      return () => clearTimeout(timer);
     }
   }, [open]);
 
   // Handle escape key
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
+    if (!open) return;
 
-    const handleCancel = (e: Event) => {
-      e.preventDefault();
-      onClose();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
     };
 
-    dialog.addEventListener("cancel", handleCancel);
-    return () => dialog.removeEventListener("cancel", handleCancel);
-  }, [onClose]);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
+
+  // Prevent body scroll when open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [open]);
 
   // Reset form on open
   useEffect(() => {
@@ -124,18 +129,29 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
   if (!open) return null;
 
   return (
-    <dialog
-      ref={dialogRef}
-      className="
-        fixed inset-0 m-auto p-0
-        w-full max-w-lg max-h-[90vh]
-        bg-surface border border-border rounded-2xl shadow-lg
-        backdrop:bg-ink/50
-        overflow-hidden
-      "
-      aria-labelledby="create-challenge-title"
-    >
-      <form onSubmit={handleSubmit} className="flex flex-col h-full">
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-ink/50 z-40"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      {/* Modal */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-challenge-title"
+        className="
+          fixed inset-0 z-50 flex items-center justify-center p-4
+          pointer-events-none
+        "
+      >
+        <div className="
+          w-full max-w-lg max-h-[90vh]
+          bg-surface border border-border rounded-2xl shadow-lg
+          overflow-hidden pointer-events-auto
+        ">
+          <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[90vh]">
         {/* Header */}
         <div className="px-6 py-4 border-b border-border flex items-center justify-between">
           <h2 id="create-challenge-title" className="text-lg font-semibold text-ink">
@@ -363,8 +379,10 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
             {submitting ? "Creating..." : "Create Challenge"}
           </button>
         </div>
-      </form>
-    </dialog>
+          </form>
+        </div>
+      </div>
+    </>
   );
 }
 

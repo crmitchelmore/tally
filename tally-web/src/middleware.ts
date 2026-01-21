@@ -14,6 +14,7 @@ function ensureNavigator(req: NextRequest) {
 // Public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
   "/",
+  "/offline(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/__clerk(.*)",

@@ -15,6 +15,9 @@ sealed interface AuthState {
 
     /** User is not signed in. */
     data object SignedOut : AuthState
+    
+    /** User chose offline/local-only mode. */
+    data object OfflineMode : AuthState
 
     /** Authentication error occurred. */
     data class Error(val message: String) : AuthState

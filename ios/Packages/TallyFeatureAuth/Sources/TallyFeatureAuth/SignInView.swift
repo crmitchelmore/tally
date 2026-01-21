@@ -6,6 +6,7 @@ import Clerk
 /// Sign-in screen for unauthenticated users
 public struct SignInView: View {
     @Environment(\.clerk) private var clerk
+    @Bindable private var authManager = AuthManager.shared
     @State private var showAuthView = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
@@ -53,7 +54,24 @@ public struct SignInView: View {
                     }
                     .accessibilityHint("Opens sign in screen")
                     
-                    Text("Create challenges, track progress, stay motivated.")
+                    Button {
+                        authManager.enableOfflineMode()
+                    } label: {
+                        Text("Continue without account")
+                            .font(.tallyLabelMedium)
+                            .foregroundColor(.tallyInkSecondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, TallySpacing.md)
+                            .background(Color.tallyPaper)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.tallyInkTertiary, lineWidth: 1)
+                            )
+                            .cornerRadius(12)
+                    }
+                    .accessibilityHint("Use app offline without syncing")
+                    
+                    Text("Your data stays on this device in offline mode.")
                         .font(.tallyBodySmall)
                         .foregroundColor(.tallyInkTertiary)
                         .multilineTextAlignment(.center)

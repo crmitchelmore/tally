@@ -49,6 +49,17 @@ class MainActivity : ComponentActivity() {
                     is AuthState.SignedOut -> SignInScreen(
                         onSignInClick = { context ->
                             authManager.launchSignIn(context)
+                        },
+                        onContinueWithoutAccount = {
+                            authManager.enableOfflineMode()
+                        }
+                    )
+                    is AuthState.OfflineMode -> TallyApp(
+                        user = null,
+                        onSignOut = {
+                            scope.launch {
+                                authManager.signOut()
+                            }
                         }
                     )
                     is AuthState.SignedIn -> TallyApp(

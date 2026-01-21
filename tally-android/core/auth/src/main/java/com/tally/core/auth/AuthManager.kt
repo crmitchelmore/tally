@@ -25,11 +25,16 @@ class AuthManager(
 ) {
     private val tokenStorage = SecureTokenStorage(context)
     private val json = Json { ignoreUnknownKeys = true }
+    private val prefs = context.getSharedPreferences("tally_auth_prefs", Context.MODE_PRIVATE)
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
     private var isInitialized = false
+    
+    companion object {
+        private const val KEY_OFFLINE_MODE = "offline_mode_enabled"
+    }
 
     /**
      * Initialize auth and check for existing session.
@@ -37,8 +42,37 @@ class AuthManager(
     suspend fun initialize() {
         if (isInitialized) return
         isInitialized = true
+        
+        // Check if user previously chose offline mode
+        if (isOfflineModeEnabled()) {
+            _authState.value = AuthState.OfflineMode
+            return
+        }
 
         // Check for existing stored token (offline support)
+        checkSession()
+    }
+    
+    /**
+     * Check if offline mode is enabled.
+     */
+    fun isOfflineModeEnabled(): Boolean {
+        return prefs.getBoolean(KEY_OFFLINE_MODE, false)
+    }
+    
+    /**
+     * Enable offline/local-only mode (user choice).
+     */
+    fun enableOfflineMode() {
+        prefs.edit().putBoolean(KEY_OFFLINE_MODE, true).apply()
+        _authState.value = AuthState.OfflineMode
+    }
+    
+    /**
+     * Disable offline mode and return to sign-in.
+     */
+    suspend fun disableOfflineMode() {
+        prefs.edit().putBoolean(KEY_OFFLINE_MODE, false).apply()
         checkSession()
     }
 
@@ -96,6 +130,7 @@ class AuthManager(
      */
     suspend fun signOut() {
         tokenStorage.clearToken()
+        prefs.edit().putBoolean(KEY_OFFLINE_MODE, false).apply()
         _authState.value = AuthState.SignedOut
     }
 

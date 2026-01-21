@@ -42,6 +42,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C460F2384F904D87838B32F7"
+               BuildableName = "AppUITests.xctest"
+               BlueprintName = "AppUITests"
+               ReferencedContainer = "container:App/App.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "DB7E62782FF682DA1A71EBAA"
                BuildableName = "Clerk.framework"
                BlueprintName = "Clerk"
@@ -274,6 +288,17 @@
                BlueprintIdentifier = "99DCC7BD0ABB09C467644299"
                BuildableName = "AppTests.xctest"
                BlueprintName = "AppTests"
+               ReferencedContainer = "container:App/App.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C460F2384F904D87838B32F7"
+               BuildableName = "AppUITests.xctest"
+               BlueprintName = "AppUITests"
                ReferencedContainer = "container:App/App.xcodeproj">
             </BuildableReference>
          </TestableReference>

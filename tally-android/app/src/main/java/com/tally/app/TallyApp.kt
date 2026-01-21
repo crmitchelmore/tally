@@ -48,7 +48,7 @@ object CommunityRoute
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TallyApp(
-    user: TallyUser,
+    user: TallyUser?,
     onSignOut: () -> Unit
 ) {
     val navController = rememberNavController()

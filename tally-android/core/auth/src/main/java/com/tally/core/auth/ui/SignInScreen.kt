@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -37,6 +39,7 @@ import com.tally.core.design.TallySpacing
 @Composable
 fun SignInScreen(
     onSignInClick: (Context) -> Unit,
+    onContinueWithoutAccount: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -95,11 +98,31 @@ fun SignInScreen(
             )
         }
 
+        Spacer(modifier = Modifier.height(TallySpacing.md))
+        
+        // Continue without account (secondary)
+        OutlinedButton(
+            onClick = onContinueWithoutAccount,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = TallyColors.inkC2()
+            )
+        ) {
+            Text(
+                text = "Continue without account",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
         Spacer(modifier = Modifier.height(TallySpacing.lg))
 
         // Secondary text
         Text(
-            text = "Sign in to sync your progress across devices",
+            text = "Your data stays on this device in offline mode.",
             style = MaterialTheme.typography.bodyMedium,
             color = TallyColors.inkC3(),
             textAlign = TextAlign.Center

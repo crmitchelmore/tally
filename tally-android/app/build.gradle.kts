@@ -18,9 +18,14 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Clerk and API configuration from build config
-        buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"${System.getenv("CLERK_PUBLISHABLE_KEY") ?: ""}\"")
-        buildConfigField("String", "API_BASE_URL", "\"${System.getenv("API_BASE_URL") ?: "https://tally-tracker.app"}\"")
+        // Clerk and API configuration - use env var or fallback to production key
+        val clerkKey = System.getenv("CLERK_PUBLISHABLE_KEY")?.takeIf { it.isNotEmpty() } 
+            ?: "pk_live_Y2xlcmsudGFsbHktdHJhY2tlci5hcHAk"
+        val apiUrl = System.getenv("API_BASE_URL")?.takeIf { it.isNotEmpty() }
+            ?: "https://tally-tracker.app"
+        
+        buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"$clerkKey\"")
+        buildConfigField("String", "API_BASE_URL", "\"$apiUrl\"")
     }
 
     buildTypes {

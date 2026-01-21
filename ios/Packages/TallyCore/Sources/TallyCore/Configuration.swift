@@ -2,6 +2,9 @@ import Foundation
 
 /// App configuration loaded from Info.plist or environment
 public enum Configuration {
+    /// Production Clerk publishable key (safe to embed - it's public)
+    private static let productionClerkKey = "pk_live_Y2xlcmsudGFsbHktdHJhY2tlci5hcHAk"
+    
     /// Clerk publishable key for authentication
     public static var clerkPublishableKey: String {
         // Read from Info.plist (set via build settings)
@@ -9,8 +12,8 @@ public enum Configuration {
            !key.isEmpty, !key.hasPrefix("$(") {
             return key
         }
-        // Fallback for development
-        return ProcessInfo.processInfo.environment["CLERK_PUBLISHABLE_KEY"] ?? ""
+        // Fallback to production key for dev builds
+        return productionClerkKey
     }
     
     /// API base URL

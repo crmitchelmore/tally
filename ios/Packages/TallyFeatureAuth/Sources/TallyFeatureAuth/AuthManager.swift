@@ -14,12 +14,28 @@ public final class AuthManager {
     public private(set) var currentUser: TallyUser?
     public private(set) var error: AuthError?
     
+    /// Key for storing offline mode preference
+    private static let offlineModeKey = "tally.offlineMode"
+    
+    /// Whether user has chosen to use offline mode
+    public var prefersOfflineMode: Bool {
+        get { UserDefaults.standard.bool(forKey: Self.offlineModeKey) }
+        set { UserDefaults.standard.set(newValue, forKey: Self.offlineModeKey) }
+    }
+    
     private var clerk: Clerk { Clerk.shared }
     
     private init() {}
     
     /// Configure Clerk with the publishable key
     public func configure() async {
+        // Check if user previously chose offline mode
+        if prefersOfflineMode {
+            isLocalOnlyMode = true
+            isLoading = false
+            return
+        }
+        
         guard Configuration.isConfigured else {
             // No auth configured - run in local-only mode
             isLocalOnlyMode = true
@@ -35,6 +51,23 @@ public final class AuthManager {
             self.error = .clerkError(error)
             isLoading = false
         }
+    }
+    
+    /// Enable offline/local-only mode (user choice)
+    public func enableOfflineMode() {
+        prefersOfflineMode = true
+        isLocalOnlyMode = true
+        isAuthenticated = false
+        currentUser = nil
+        isLoading = false
+    }
+    
+    /// Disable offline mode and try to authenticate
+    public func disableOfflineMode() async {
+        prefersOfflineMode = false
+        isLocalOnlyMode = false
+        isLoading = true
+        await configure()
     }
     
     /// Update local auth state from Clerk

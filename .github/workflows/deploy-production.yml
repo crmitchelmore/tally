@@ -30,6 +30,9 @@ jobs:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           CLERK_PROXY_URL: ""
           NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+          HONEYCOMB_API_KEY: ${{ secrets.HONEYCOMB_API_KEY }}
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}
         run: bun run build
       - name: Deploy (Vercel)
         env:
@@ -37,7 +40,13 @@ jobs:
         run: |
           npx vercel deploy --prod --yes --token=$VERCEL_TOKEN \
             --env CLERK_PROXY_URL="" \
-            --build-env CLERK_PROXY_URL=""
+            --env HONEYCOMB_API_KEY="${{ secrets.HONEYCOMB_API_KEY }}" \
+            --env NEXT_PUBLIC_POSTHOG_KEY="${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}" \
+            --env NEXT_PUBLIC_POSTHOG_HOST="${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}" \
+            --build-env CLERK_PROXY_URL="" \
+            --build-env HONEYCOMB_API_KEY="${{ secrets.HONEYCOMB_API_KEY }}" \
+            --build-env NEXT_PUBLIC_POSTHOG_KEY="${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}" \
+            --build-env NEXT_PUBLIC_POSTHOG_HOST="${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}"
       - name: Smoke check
         env:
           VERCEL_PROD_URL: ${{ secrets.VERCEL_PROD_URL }}

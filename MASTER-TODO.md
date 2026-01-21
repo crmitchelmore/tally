@@ -209,6 +209,48 @@ This skill guides the entire cycle: design, build, test (behavioral, unit, UI, E
   - [ ] Implement PostHog events with identical names + properties across platforms.
   - [ ] Standardize structured wide-event logs (queryable context; trace correlation).
 
+## E2E & UI Tests (after all platform features)
+
+### Web: Playwright tests (covering Cucumber stories)
+- [ ] Feature: Playwright E2E tests (plans/web-api/feature-playwright-e2e.md)
+  - [ ] Set up Playwright with Bun/Next.js project.
+  - [ ] Implement tests for cucumber/01-new-user-onboarding.feature
+  - [ ] Implement tests for cucumber/02-offline-user-experience.feature
+  - [ ] Implement tests for cucumber/03-challenge-management.feature
+  - [ ] Implement tests for cucumber/04-entry-logging.feature
+  - [ ] Implement tests for cucumber/05-community-features.feature
+  - [ ] Implement tests for cucumber/06-user-registration.feature
+  - [ ] Implement tests for cucumber/07-data-portability.feature
+  - [ ] Verify all Playwright tests pass locally and in CI.
+
+### iOS: UI Tests (XCUITest)
+- [ ] Feature: iOS UI tests (plans/ios/feature-ui-tests.md)
+  - [ ] Set up XCUITest target in Tuist project.
+  - [ ] Implement UI tests for onboarding flow.
+  - [ ] Implement UI tests for challenge management.
+  - [ ] Implement UI tests for entry logging.
+  - [ ] Implement UI tests for community features.
+  - [ ] Implement UI tests for data portability.
+  - [ ] Verify all UI tests pass locally and in CI.
+
+### Android: UI Tests (Espresso / Compose UI Tests)
+- [ ] Feature: Android UI tests (plans/android/feature-ui-tests.md)
+  - [ ] Set up Espresso/Compose UI test module.
+  - [ ] Implement UI tests for onboarding flow.
+  - [ ] Implement UI tests for challenge management.
+  - [ ] Implement UI tests for entry logging.
+  - [ ] Implement UI tests for community features.
+  - [ ] Implement UI tests for data portability.
+  - [ ] Verify all UI tests pass locally and in CI.
+
 ## Final project: CI (after everything else)
 - [ ] Add CI (lint/build/test and any existing checks).
 - [ ] Add preview deploy workflow(s) for PRs (optional, but recommended).
+
+## Final: Push to GitHub & Resolve Security Issues
+- [ ] Feature: GitHub push & security resolution (plans/feature-github-security.md)
+  - [ ] Push all changes to GitHub remote.
+  - [ ] Review Dependabot alerts and resolve critical/high vulnerabilities.
+  - [ ] Review CodeQL/secret scanning alerts and remediate.
+  - [ ] Enable branch protection rules on main.
+  - [ ] Verify all security issues are resolved or triaged.

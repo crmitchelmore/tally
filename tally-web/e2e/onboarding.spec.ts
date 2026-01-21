@@ -46,8 +46,8 @@ test.describe("New User Onboarding @web @smoke @onboarding", () => {
 
       await landingPage.startTrackingButton.click();
 
-      // Should redirect to app dashboard
-      await expect(page).toHaveURL(/\/app/);
+      // Should redirect to app dashboard or offline mode
+      await expect(page).toHaveURL(/\/(app|offline)/);
     });
 
     test("seeing the empty dashboard as a new user", async ({

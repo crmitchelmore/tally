@@ -14,10 +14,10 @@ interface UserMenuProps {
 }
 
 /**
- * User menu showing avatar and sign-out option.
+ * User menu showing avatar that links to settings.
  * Shows sign-in CTA when user is null.
  */
-export function UserMenu({ user, onSignOut, className = "" }: UserMenuProps) {
+export function UserMenu({ user, className = "" }: UserMenuProps) {
   if (!user) {
     return (
       <Link
@@ -46,16 +46,15 @@ export function UserMenu({ user, onSignOut, className = "" }: UserMenuProps) {
           </span>
         )}
       </div>
-      <button
-        type="button"
-        onClick={onSignOut}
+      <Link
+        href="/app/settings"
         className="
           w-9 h-9 rounded-full bg-ink/10 dark:bg-paper/10
           flex items-center justify-center text-sm font-medium
           hover:bg-ink/20 dark:hover:bg-paper/20 transition-colors
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
         "
-        aria-label={`Signed in as ${user.name}. Click to sign out.`}
+        aria-label={`Signed in as ${user.name}. Click to open settings.`}
       >
         {user.avatarUrl ? (
           <Image
@@ -70,7 +69,7 @@ export function UserMenu({ user, onSignOut, className = "" }: UserMenuProps) {
             {user.name.charAt(0).toUpperCase()}
           </span>
         )}
-      </button>
+      </Link>
     </div>
   );
 }

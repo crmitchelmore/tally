@@ -94,7 +94,7 @@ export const TallyAnimated = memo(function TallyAnimated({
       {/* Tally marks container */}
       <div 
         className="inline-flex items-end flex-wrap" 
-        style={{ gap: sizes.gap * 2 }}
+        style={{ gap: sizes.gap * 3 }}
       >
         {/* Thousands: horizontal line through boxes */}
         {Array.from({ length: thousands }).map((_, i) => (
@@ -126,15 +126,19 @@ export const TallyAnimated = memo(function TallyAnimated({
           />
         ))}
         
-        {/* Fives: standard 5-gates */}
-        {Array.from({ length: fives }).map((_, i) => (
-          <FiveGate 
-            key={`f-${i}`} 
-            sizes={sizes} 
-            color={strokeColor}
-            slashAnimating={hasAnimation && i === fives - 1 && animatingStrokes.some(s => s.type === "slash")}
-          />
-        ))}
+        {/* Fives: standard 5-gates with visual gap between each */}
+        {fives > 0 && (
+          <div className="inline-flex items-end" style={{ gap: sizes.gap * 2.5 }}>
+            {Array.from({ length: fives }).map((_, i) => (
+              <FiveGate 
+                key={`f-${i}`} 
+                sizes={sizes} 
+                color={strokeColor}
+                slashAnimating={hasAnimation && i === fives - 1 && animatingStrokes.some(s => s.type === "slash")}
+              />
+            ))}
+          </div>
+        )}
         
         {/* Ones: vertical strokes */}
         {ones > 0 && (

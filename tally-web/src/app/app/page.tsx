@@ -4,7 +4,6 @@ import Link from "next/link";
 import { TallyMark } from "@/components/ui/tally-mark";
 import { ChallengeList } from "@/components/challenges";
 import { DashboardHighlights, PersonalRecords, WeeklySummary } from "@/components/stats";
-import { DataManagementSection } from "@/components/data";
 import { FollowedChallengesSection, CommunitySection } from "@/components/community";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
@@ -201,20 +200,19 @@ export default function AppPage() {
   return (
     <div className="space-y-8">
       {/* Welcome section with weekly summary button */}
-      <section className="py-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-ink">
-            Welcome back{user?.firstName ? `, ${user.firstName}` : ""}.
-          </h1>
-          <p className="mt-1 text-base text-muted">
-            Your tallies are ready. Create a challenge or log progress below.
-          </p>
-        </div>
-        <div className="flex-shrink-0 flex gap-2">
-          <DataManagementSection onDataChange={handleRefresh} />
+      <section className="py-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-ink">
+              Welcome back{user?.firstName ? `, ${user.firstName}` : ""}.
+            </h1>
+            <p className="mt-1 text-base text-muted">
+              Your tallies are ready. Create a challenge or log progress below.
+            </p>
+          </div>
           <button
             onClick={() => setShowWeeklySummary(true)}
-            className="px-4 py-2 rounded-xl border border-border text-sm font-medium text-ink hover:bg-border/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            className="flex-shrink-0 px-4 py-2 rounded-xl border border-border text-sm font-medium text-ink hover:bg-border/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
             Weekly Summary
           </button>

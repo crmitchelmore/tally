@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { TallyMark } from "@/components/ui/tally-mark";
 import { ActivityHeatmap } from "@/components/challenges/activity-heatmap";
@@ -21,6 +21,7 @@ interface ChallengeData {
 export default function ChallengeDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const challengeId = params.id as string;
 
   const [data, setData] = useState<ChallengeData | null>(null);
@@ -29,10 +30,19 @@ export default function ChallengeDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   
-  // Entry dialog state
+  // Entry dialog state - check query param for auto-open
   const [showAddEntry, setShowAddEntry] = useState(false);
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
   const [drilldownDate, setDrilldownDate] = useState<string | null>(null);
+
+  // Auto-open add entry dialog if requested via query param
+  useEffect(() => {
+    if (searchParams.get("addEntry") === "true" && data) {
+      setShowAddEntry(true);
+      // Clear the query param from URL without navigation
+      router.replace(`/app/challenges/${challengeId}`, { scroll: false });
+    }
+  }, [searchParams, data, challengeId, router]);
 
   // Fetch challenge data
   const fetchData = useCallback(async () => {
@@ -261,16 +271,54 @@ export default function ChallengeDetailPage() {
             >
               + Add Entry
             </button>
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="p-2 rounded-lg text-muted hover:bg-border/50 transition-colors"
-              aria-label="Settings"
-            >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-            </svg>
-          </button>
-        </div>
+            {/* Popover menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className="p-2 rounded-lg text-muted hover:bg-border/50 transition-colors"
+                aria-label="Settings"
+                aria-expanded={showSettings}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+              </button>
+              {/* Popover dropdown */}
+              {showSettings && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setShowSettings(false)}
+                    aria-hidden="true"
+                  />
+                  <div className="absolute right-0 top-full mt-2 z-50 w-56 bg-surface border border-border rounded-xl shadow-lg overflow-hidden">
+                    <div className="py-1">
+                      <button
+                        onClick={() => { handleToggleArchive(); setShowSettings(false); }}
+                        className="w-full text-left px-4 py-3 hover:bg-border/30 transition-colors"
+                      >
+                        <p className="font-medium text-ink text-sm">
+                          {challenge.isArchived ? "Unarchive" : "Archive"}
+                        </p>
+                        <p className="text-xs text-muted">
+                          {challenge.isArchived ? "Restore to active list" : "Hide from active challenges"}
+                        </p>
+                      </button>
+                      <div className="border-t border-border" />
+                      <button
+                        onClick={() => { handleDelete(); setShowSettings(false); }}
+                        disabled={deleting}
+                        className="w-full text-left px-4 py-3 hover:bg-error/10 transition-colors text-error"
+                      >
+                        <p className="font-medium text-sm">{deleting ? "Deleting..." : "Delete"}</p>
+                        <p className="text-xs opacity-70">Permanently remove</p>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Stats grid */}
@@ -350,36 +398,6 @@ export default function ChallengeDetailPage() {
           </div>
         </div>
       </div>
-
-      {/* Settings panel */}
-      {showSettings && (
-        <div className="bg-surface border border-border rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-ink mb-4">Settings</h2>
-          <div className="space-y-3">
-            <button
-              onClick={handleToggleArchive}
-              className="w-full text-left px-4 py-3 rounded-lg border border-border hover:bg-border/30 transition-colors"
-            >
-              <p className="font-medium text-ink">
-                {challenge.isArchived ? "Unarchive Challenge" : "Archive Challenge"}
-              </p>
-              <p className="text-sm text-muted">
-                {challenge.isArchived
-                  ? "Restore this challenge to your active list"
-                  : "Hide from active challenges (can be restored later)"}
-              </p>
-            </button>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="w-full text-left px-4 py-3 rounded-lg border border-error/30 hover:bg-error/10 transition-colors text-error"
-            >
-              <p className="font-medium">{deleting ? "Deleting..." : "Delete Challenge"}</p>
-              <p className="text-sm opacity-70">Permanently remove this challenge and all entries</p>
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Recent entries */}
       <div className="bg-surface border border-border rounded-2xl p-6">

@@ -7,6 +7,7 @@ import { TallyMark } from "@/components/ui/tally-mark";
 import { ActivityHeatmap } from "@/components/challenges/activity-heatmap";
 import { AddEntryDialog, EntryList, DayDrilldown, EditEntryDialog } from "@/components/entries";
 import type { Challenge, ChallengeStats, Entry, CreateEntryRequest, UpdateEntryRequest } from "@/app/api/v1/_lib/types";
+import { getIconEmoji } from "@/lib/challenge-icons";
 
 interface ChallengeData {
   challenge: Challenge;
@@ -265,8 +266,11 @@ export default function ChallengeDetailPage() {
       <div className="bg-surface border border-border rounded-2xl p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
+            <span className="text-2xl" aria-hidden="true">
+              {getIconEmoji(challenge.icon)}
+            </span>
             <span
-              className="w-4 h-4 rounded-full flex-shrink-0"
+              className="w-3 h-3 rounded-full flex-shrink-0"
               style={{ backgroundColor: challenge.color }}
             />
             <h1 className="text-2xl font-semibold text-ink">{challenge.name}</h1>

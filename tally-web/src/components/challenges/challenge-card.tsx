@@ -3,6 +3,7 @@
 import { TallyDisplay } from "@/components/ui/tally-display";
 import Link from "next/link";
 import type { Challenge, ChallengeStats } from "@/app/api/v1/_lib/types";
+import { getIconEmoji } from "@/lib/challenge-icons";
 
 export interface ChallengeCardProps {
   challenge: Challenge;
@@ -52,9 +53,13 @@ export function ChallengeCard({ challenge, stats, className = "", onQuickAdd }: 
           {/* Left: Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
+              {/* Icon */}
+              <span className="text-lg" aria-hidden="true">
+                {getIconEmoji(challenge.icon)}
+              </span>
               {/* Color indicator */}
               <span
-                className="w-3 h-3 rounded-full flex-shrink-0"
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                 style={{ backgroundColor: challenge.color }}
                 aria-hidden="true"
               />

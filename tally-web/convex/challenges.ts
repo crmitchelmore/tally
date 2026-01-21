@@ -16,6 +16,9 @@ function toApiFormat(challenge: Doc<"challenges">) {
     icon: challenge.icon,
     isPublic: challenge.isPublic,
     isArchived: challenge.isArchived,
+    countType: challenge.countType,
+    unitLabel: challenge.unitLabel,
+    defaultIncrement: challenge.defaultIncrement,
     createdAt: new Date(challenge.createdAt).toISOString(),
     updatedAt: new Date(challenge.updatedAt || challenge.createdAt).toISOString(),
   };
@@ -102,6 +105,9 @@ export const create = mutation({
     color: v.string(),
     icon: v.string(),
     isPublic: v.boolean(),
+    countType: v.optional(v.union(v.literal("simple"), v.literal("sets"), v.literal("custom"))),
+    unitLabel: v.optional(v.string()),
+    defaultIncrement: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -116,6 +122,9 @@ export const create = mutation({
       icon: args.icon,
       isPublic: args.isPublic,
       isArchived: false,
+      countType: args.countType,
+      unitLabel: args.unitLabel,
+      defaultIncrement: args.defaultIncrement,
       createdAt: now,
       updatedAt: now,
     });

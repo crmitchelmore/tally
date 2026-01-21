@@ -157,11 +157,11 @@ function FiveGate({
         className="absolute rounded-full"
         style={{
           width: sizes.stroke,
-          height: sizes.height * 1.15,
+          height: gateWidth * 1.3,
           backgroundColor: c2,
           left: "50%",
           top: "50%",
-          transform: "translate(-50%, -50%) rotate(-18deg)",
+          transform: "translate(-50%, -50%) rotate(-65deg)",
         }}
       />
     </div>
@@ -360,7 +360,8 @@ function ThousandBlock({
   c3: string;
 }) {
   const boxSize = sizes.boxSize * 0.6;
-  const rowWidth = boxSize * 10 + sizes.gap * 9;
+  const boxGap = sizes.gap / 2;
+  const rowWidth = boxSize * 10 + boxGap * 9;
   
   return (
     <div className="relative">
@@ -369,7 +370,7 @@ function ThousandBlock({
         {Array.from({ length: 10 }).map((_, i) => (
           <div
             key={i}
-            className="border rounded-sm"
+            className="border"
             style={{
               width: boxSize,
               height: boxSize,
@@ -383,10 +384,10 @@ function ThousandBlock({
       <span
         className="absolute rounded-full"
         style={{
-          width: rowWidth + sizes.gap * 2,
+          width: rowWidth + boxGap * 2,
           height: sizes.stroke,
           backgroundColor: "var(--color-accent)",
-          left: -sizes.gap,
+          left: -boxGap,
           top: "50%",
           transform: "translateY(-50%)",
         }}

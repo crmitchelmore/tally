@@ -29,6 +29,7 @@ const PRESET_ICONS = [
   { value: "music", label: "Music", emoji: "🎵" },
   { value: "heart", label: "Health", emoji: "❤️" },
   { value: "star", label: "Goal", emoji: "⭐" },
+  { value: "strength", label: "Strength", emoji: "💪" },
 ];
 
 const UNIT_OPTIONS = [

@@ -5,32 +5,37 @@ import { TallyMark } from "@/components/ui/tally-mark";
 import { ChallengeList } from "@/components/challenges";
 import { DashboardHighlights, PersonalRecords, WeeklySummary } from "@/components/stats";
 import { FollowedChallengesSection, CommunitySection } from "@/components/community";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
-import type { 
-  Challenge, 
-  ChallengeStats, 
-  CreateChallengeRequest,
-  DashboardStats,
-  PersonalRecords as PersonalRecordsType,
-  Entry
-} from "@/app/api/v1/_lib/types";
-
-interface ChallengeWithStats {
-  challenge: Challenge;
-  stats: ChallengeStats;
-}
+import { useChallenges } from "@/hooks/use-challenges";
+import { useStats, useEntries } from "@/hooks/use-stats";
+import type { Challenge } from "@/app/api/v1/_lib/types";
 
 export default function AppPage() {
   const { isLoaded, isSignedIn, user } = useUser();
-  const [challenges, setChallenges] = useState<ChallengeWithStats[]>([]);
-  const [entries, setEntries] = useState<Entry[]>([]);
-  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
-  const [personalRecords, setPersonalRecords] = useState<PersonalRecordsType | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [statsLoading, setStatsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showWeeklySummary, setShowWeeklySummary] = useState(false);
+
+  // Data fetching with SWR - shows cached data immediately
+  const isReady = isLoaded && isSignedIn;
+  const { 
+    challenges, 
+    isLoading: challengesLoading, 
+    error, 
+    createChallenge, 
+    refresh: refreshChallenges 
+  } = useChallenges(isReady);
+  
+  const { 
+    dashboardStats, 
+    personalRecords, 
+    isLoading: statsLoading,
+    refresh: refreshStats 
+  } = useStats(isReady);
+  
+  const { 
+    entries, 
+    refresh: refreshEntries 
+  } = useEntries(isReady);
 
   // Map challenge IDs to names for personal records display
   const challengeNames = useMemo(() => {
@@ -50,120 +55,12 @@ export default function AppPage() {
     return map;
   }, [challenges]);
 
-  // Fetch challenges with stats
-  const fetchChallenges = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const res = await fetch("/api/v1/challenges");
-      if (!res.ok) throw new Error("Failed to load challenges");
-
-      const data = await res.json();
-      const challengesWithStats: ChallengeWithStats[] = [];
-
-      // Fetch stats for each challenge in parallel
-      await Promise.all(
-        data.challenges.map(async (challenge: Challenge) => {
-          try {
-            const statsRes = await fetch(`/api/v1/challenges/${challenge.id}/stats`);
-            if (statsRes.ok) {
-              const statsData = await statsRes.json();
-              challengesWithStats.push({ challenge, stats: statsData.stats });
-            }
-          } catch {
-            // Use default stats if fetch fails
-            challengesWithStats.push({
-              challenge,
-              stats: {
-                challengeId: challenge.id,
-                totalCount: 0,
-                remaining: challenge.target,
-                daysElapsed: 0,
-                daysRemaining: 365,
-                perDayRequired: Math.ceil(challenge.target / 365),
-                currentPace: 0,
-                paceStatus: "on-pace" as const,
-                streakCurrent: 0,
-                streakBest: 0,
-                bestDay: null,
-                dailyAverage: 0,
-              },
-            });
-          }
-        })
-      );
-
-      setChallenges(challengesWithStats);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load challenges");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Fetch dashboard stats and personal records
-  const fetchStats = useCallback(async () => {
-    try {
-      setStatsLoading(true);
-      const res = await fetch("/api/v1/stats");
-      if (res.ok) {
-        const data = await res.json();
-        setDashboardStats(data.dashboard);
-        setPersonalRecords(data.records);
-      }
-    } catch {
-      // Stats fetch failure is non-critical
-    } finally {
-      setStatsLoading(false);
-    }
-  }, []);
-
-  // Fetch all entries for weekly summary
-  const fetchEntries = useCallback(async () => {
-    try {
-      const res = await fetch("/api/v1/entries");
-      if (res.ok) {
-        const data = await res.json();
-        setEntries(data.entries || []);
-      }
-    } catch {
-      // Entries fetch failure is non-critical for summary
-    }
-  }, []);
-
-  // Load data on mount (only if signed in)
-  useEffect(() => {
-    if (isLoaded && isSignedIn) {
-      fetchChallenges();
-      fetchStats();
-      fetchEntries();
-    } else if (isLoaded && !isSignedIn) {
-      setLoading(false);
-      setStatsLoading(false);
-    }
-  }, [isLoaded, isSignedIn, fetchChallenges, fetchStats, fetchEntries]);
-
-  // Create challenge handler
-  const handleCreateChallenge = useCallback(async (data: CreateChallengeRequest) => {
-    const res = await fetch("/api/v1/challenges", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.error || "Failed to create challenge");
-    }
-  }, []);
-
-  // Refresh handler for stats after challenge/entry changes
+  // Refresh all data
   const handleRefresh = useCallback(() => {
-    fetchChallenges();
-    fetchStats();
-    fetchEntries();
-  }, [fetchChallenges, fetchStats, fetchEntries]);
+    refreshChallenges();
+    refreshStats();
+    refreshEntries();
+  }, [refreshChallenges, refreshStats, refreshEntries]);
 
   // Show signed-out CTA if not authenticated
   if (isLoaded && !isSignedIn) {
@@ -222,9 +119,9 @@ export default function AppPage() {
       {/* Challenges list - shown first when empty for better UX */}
       <ChallengeList
         challenges={challenges}
-        loading={loading}
+        loading={challengesLoading}
         error={error}
-        onCreateChallenge={handleCreateChallenge}
+        onCreateChallenge={createChallenge}
         onRefresh={handleRefresh}
       />
 

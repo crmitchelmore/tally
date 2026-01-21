@@ -49,6 +49,9 @@ export const convexChallenges = {
     color: string;
     icon: string;
     isPublic: boolean;
+    countType?: "simple" | "sets" | "custom";
+    unitLabel?: string;
+    defaultIncrement?: number;
   }) => client.mutation(api.challenges.create, args),
   
   update: (args: {

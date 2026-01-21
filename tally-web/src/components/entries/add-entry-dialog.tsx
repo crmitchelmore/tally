@@ -21,7 +21,7 @@ const FEELINGS = [
 /**
  * Dialog for adding a new entry to a challenge.
  * Fast, tactile UX with large tap targets and ink-stroke feedback.
- * Adapts UI based on challenge countType and defaultIncrement.
+ * Compact layout to fit on standard viewports.
  */
 export function AddEntryDialog({
   challenge,
@@ -29,34 +29,31 @@ export function AddEntryDialog({
   onClose,
   onSubmit,
 }: AddEntryDialogProps) {
-  // Get challenge settings
   const defaultIncrement = challenge.defaultIncrement ?? 1;
   const countType = challenge.countType ?? "simple";
   const unitLabel = challenge.unitLabel ?? "marks";
   
   const [count, setCount] = useState(defaultIncrement);
-  const [sets, setSets] = useState<number[]>([defaultIncrement]); // For sets mode
+  const [sets, setSets] = useState<number[]>([defaultIncrement]);
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [note, setNote] = useState("");
   const [feeling, setFeeling] = useState<typeof FEELINGS[number]["value"] | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showOptions, setShowOptions] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const countInputRef = useRef<HTMLInputElement>(null);
 
-  // Calculate total from sets
   const setsTotal = sets.reduce((sum, s) => sum + s, 0);
   const displayCount = countType === "sets" ? setsTotal : count;
 
-  // Open/close dialog
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
 
     if (open) {
       dialog.showModal();
-      // Reset form with challenge defaults
       setCount(defaultIncrement);
       setSets([defaultIncrement]);
       setDate(new Date().toISOString().split("T")[0]);
@@ -64,43 +61,32 @@ export function AddEntryDialog({
       setFeeling(undefined);
       setError(null);
       setShowSuccess(false);
-      // Focus count input after opening
+      setShowOptions(false);
       setTimeout(() => countInputRef.current?.select(), 50);
     } else {
       dialog.close();
     }
   }, [open, defaultIncrement]);
 
-  // Handle click outside
   const handleDialogClick = useCallback(
     (e: React.MouseEvent<HTMLDialogElement>) => {
-      if (e.target === dialogRef.current) {
-        onClose();
-      }
+      if (e.target === dialogRef.current) onClose();
     },
     [onClose]
   );
 
-  // Handle escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && open) {
-        onClose();
-      }
+      if (e.key === "Escape" && open) onClose();
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
   }, [open, onClose]);
 
-  // Quick increment/decrement - uses challenge's defaultIncrement
-  const incrementCount = useCallback(
-    (delta: number) => {
-      setCount((c) => Math.max(1, c + delta));
-    },
-    []
-  );
+  const incrementCount = useCallback((delta: number) => {
+    setCount((c) => Math.max(1, c + delta));
+  }, []);
 
-  // Set manipulation for sets mode
   const addSet = useCallback(() => {
     setSets((prev) => [...prev, defaultIncrement]);
   }, [defaultIncrement]);
@@ -113,11 +99,9 @@ export function AddEntryDialog({
     setSets((prev) => prev.map((s, i) => i === index ? Math.max(1, value) : s));
   }, []);
 
-  // Validate date (no future dates)
   const today = new Date().toISOString().split("T")[0];
   const isFutureDate = date > today;
 
-  // Submit handler
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -135,7 +119,6 @@ export function AddEntryDialog({
           feeling,
         });
 
-        // Show success feedback with tally animation
         setShowSuccess(true);
         setTimeout(() => {
           setShowSuccess(false);
@@ -163,21 +146,17 @@ export function AddEntryDialog({
         open:animate-dialog-in
       "
     >
-      <div className="bg-surface rounded-2xl shadow-xl border border-border overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+      <div className="bg-surface rounded-2xl shadow-xl border border-border overflow-hidden max-h-[90vh] flex flex-col">
+        {/* Header - compact */}
+        <div className="px-5 py-3 border-b border-border flex items-center justify-between flex-shrink-0">
           <div>
-            <h2 className="text-lg font-semibold text-ink">Add Entry</h2>
-            <p className="text-sm text-muted">{challenge.name}</p>
+            <h2 className="text-base font-semibold text-ink">Add Entry</h2>
+            <p className="text-xs text-muted">{challenge.name}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="
-              w-8 h-8 rounded-full flex items-center justify-center
-              text-muted hover:text-ink hover:bg-border/50
-              transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-            "
+            className="w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-border/50 transition-colors"
             aria-label="Close"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -186,105 +165,56 @@ export function AddEntryDialog({
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Count input - adapts based on countType */}
+        {/* Form - scrollable */}
+        <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-1">
+          {/* Count input */}
           {countType === "sets" ? (
-            /* Sets mode - track each set separately */
             <div>
-              <label className="block text-sm font-medium text-muted mb-3 text-center">
+              <label className="block text-sm font-medium text-muted mb-2 text-center">
                 Sets & {unitLabel}
               </label>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {sets.map((setVal, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
-                    <span className="text-sm text-muted w-16">Set {idx + 1}</span>
-                    <div className="flex items-center gap-2 flex-1">
-                      <button
-                        type="button"
-                        onClick={() => updateSet(idx, setVal - defaultIncrement)}
-                        className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 transition-colors"
-                      >
-                        −
-                      </button>
-                      <input
-                        type="number"
-                        min={1}
-                        value={setVal}
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="text-xs text-muted w-12">Set {idx + 1}</span>
+                    <div className="flex items-center gap-1 flex-1">
+                      <button type="button" onClick={() => updateSet(idx, setVal - defaultIncrement)}
+                        className="w-7 h-7 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-sm">−</button>
+                      <input type="number" min={1} value={setVal}
                         onChange={(e) => updateSet(idx, parseInt(e.target.value) || 1)}
-                        className="w-20 h-10 text-center text-xl font-semibold tabular-nums bg-transparent border-b-2 border-border focus:border-accent text-ink outline-none"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => updateSet(idx, setVal + defaultIncrement)}
-                        className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 transition-colors"
-                      >
-                        +
-                      </button>
+                        className="w-14 h-8 text-center text-lg font-semibold tabular-nums bg-transparent border-b-2 border-border focus:border-accent text-ink outline-none" />
+                      <button type="button" onClick={() => updateSet(idx, setVal + defaultIncrement)}
+                        className="w-7 h-7 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-sm">+</button>
                     </div>
                     {sets.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeSet(idx)}
-                        className="w-8 h-8 rounded-full text-muted hover:text-error hover:bg-error/10 transition-colors"
-                        aria-label="Remove set"
-                      >
-                        ×
-                      </button>
+                      <button type="button" onClick={() => removeSet(idx)}
+                        className="w-7 h-7 rounded-full text-muted hover:text-error text-lg">×</button>
                     )}
                   </div>
                 ))}
-                <button
-                  type="button"
-                  onClick={addSet}
-                  className="w-full py-2 border border-dashed border-border rounded-xl text-muted hover:text-ink hover:border-muted transition-colors text-sm"
-                >
-                  + Add Set
-                </button>
+                <button type="button" onClick={addSet}
+                  className="w-full py-1.5 border border-dashed border-border rounded-lg text-muted hover:text-ink text-xs">+ Add Set</button>
               </div>
-              {/* Total display */}
-              <div className="mt-4 text-center">
-                <p className="text-sm text-muted">Total</p>
-                <p className="text-3xl font-semibold text-ink tabular-nums">{setsTotal} <span className="text-base text-muted">{unitLabel}</span></p>
-              </div>
-              {/* Tally preview */}
-              <div className="mt-4 flex justify-center">
-                <TallyMark count={Math.min(setsTotal, 25)} size="md" animated />
+              <div className="mt-3 flex items-center justify-center gap-4">
+                <div className="text-center">
+                  <p className="text-3xl font-semibold text-ink tabular-nums">{setsTotal}</p>
+                  <p className="text-xs text-muted">{unitLabel}</p>
+                </div>
+                <TallyMark count={Math.min(setsTotal, 25)} size="sm" animated />
               </div>
             </div>
           ) : (
-            /* Simple count mode */
             <div className="text-center">
-              <label htmlFor="count" className="block text-sm font-medium text-muted mb-3">
+              <label htmlFor="count" className="block text-sm font-medium text-muted mb-2">
                 How many {unitLabel}?
               </label>
-              <div className="flex items-center justify-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => incrementCount(-defaultIncrement * 5)}
-                  className="
-                    w-12 h-12 rounded-full border border-border
-                    text-muted hover:text-ink hover:bg-border/50
-                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-                    text-lg font-medium
-                  "
-                  aria-label={`Decrease by ${defaultIncrement * 5}`}
-                >
+              <div className="flex items-center justify-center gap-2">
+                <button type="button" onClick={() => incrementCount(-defaultIncrement * 5)}
+                  className="w-10 h-10 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-sm font-medium">
                   -{defaultIncrement * 5}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => incrementCount(-defaultIncrement)}
-                  className="
-                    w-10 h-10 rounded-full border border-border
-                    text-muted hover:text-ink hover:bg-border/50
-                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-                    text-lg
-                  "
-                  aria-label={`Decrease by ${defaultIncrement}`}
-                >
-                  −
-                </button>
+                <button type="button" onClick={() => incrementCount(-defaultIncrement)}
+                  className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-base">−</button>
                 <input
                   ref={countInputRef}
                   id="count"
@@ -293,126 +223,94 @@ export function AddEntryDialog({
                   max={9999}
                   value={count}
                   onChange={(e) => setCount(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="
-                    w-24 h-16 text-center text-4xl font-semibold tabular-nums
-                    bg-transparent border-b-2 border-border focus:border-accent
-                    text-ink outline-none
-                  "
+                  className="w-20 h-12 text-center text-3xl font-semibold tabular-nums bg-transparent border-b-2 border-border focus:border-accent text-ink outline-none"
                 />
-                <button
-                  type="button"
-                  onClick={() => incrementCount(defaultIncrement)}
-                  className="
-                    w-10 h-10 rounded-full border border-border
-                    text-muted hover:text-ink hover:bg-border/50
-                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-                    text-lg
-                  "
-                  aria-label={`Increase by ${defaultIncrement}`}
-                >
-                  +
-                </button>
-                <button
-                  type="button"
-                  onClick={() => incrementCount(defaultIncrement * 5)}
-                  className="
-                    w-12 h-12 rounded-full border border-border
-                    text-muted hover:text-ink hover:bg-border/50
-                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-                    text-lg font-medium
-                  "
-                  aria-label={`Increase by ${defaultIncrement * 5}`}
-                >
+                <button type="button" onClick={() => incrementCount(defaultIncrement)}
+                  className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-base">+</button>
+                <button type="button" onClick={() => incrementCount(defaultIncrement * 5)}
+                  className="w-10 h-10 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-sm font-medium">
                   +{defaultIncrement * 5}
                 </button>
               </div>
-              {/* Unit label */}
-              {unitLabel !== "marks" && (
-                <p className="mt-2 text-sm text-muted">{unitLabel}</p>
-              )}
-              {/* Tally preview */}
-              <div className="mt-4 flex justify-center">
-                <TallyMark count={Math.min(count, 25)} size="md" animated />
+              {/* Tally preview - compact */}
+              <div className="mt-2 flex justify-center">
+                <TallyMark count={Math.min(count, 25)} size="sm" animated />
               </div>
             </div>
           )}
 
-          {/* Date input */}
-          <div>
-            <label htmlFor="date" className="block text-sm font-medium text-muted mb-2">
-              Date
-            </label>
+          {/* Date - inline compact */}
+          <div className="flex items-center gap-3">
+            <label htmlFor="date" className="text-sm font-medium text-muted whitespace-nowrap">Date</label>
             <input
               id="date"
               type="date"
               value={date}
               max={today}
               onChange={(e) => setDate(e.target.value)}
-              className={`
-                w-full px-4 py-3 rounded-xl border
+              className={`flex-1 px-3 py-2 rounded-lg border text-sm
                 ${isFutureDate ? "border-error" : "border-border"}
-                bg-paper text-ink
-                focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
-                transition-colors
-              `}
+                bg-paper text-ink focus:outline-none focus:ring-2 focus:ring-accent`}
             />
-            {isFutureDate && (
-              <p className="mt-1 text-sm text-error">Future dates are not allowed</p>
-            )}
           </div>
+          {isFutureDate && <p className="text-xs text-error">Future dates are not allowed</p>}
 
-          {/* Feeling selector - progressive disclosure */}
-          <div>
-            <label className="block text-sm font-medium text-muted mb-2">
-              How did it feel? <span className="font-normal">(optional)</span>
-            </label>
-            <div className="flex gap-2">
-              {FEELINGS.map((f) => (
-                <button
-                  key={f.value}
-                  type="button"
-                  onClick={() => setFeeling(feeling === f.value ? undefined : f.value)}
-                  className={`
-                    flex-1 py-3 rounded-xl border text-center
-                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-                    ${
-                      feeling === f.value
-                        ? "border-accent bg-accent/10 text-ink"
-                        : "border-border text-muted hover:border-muted"
-                    }
-                  `}
-                >
-                  <span className="block text-2xl">{f.emoji}</span>
-                  <span className="block text-xs mt-1">{f.label}</span>
-                </button>
-              ))}
+          {/* Collapsible options */}
+          <button
+            type="button"
+            onClick={() => setShowOptions(!showOptions)}
+            className="w-full flex items-center justify-between py-2 text-sm text-muted hover:text-ink"
+          >
+            <span>More options</span>
+            <svg className={`w-4 h-4 transition-transform ${showOptions ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {showOptions && (
+            <div className="space-y-4 pt-1">
+              {/* Feeling selector - compact */}
+              <div>
+                <label className="block text-xs font-medium text-muted mb-2">
+                  How did it feel?
+                </label>
+                <div className="flex gap-1.5">
+                  {FEELINGS.map((f) => (
+                    <button
+                      key={f.value}
+                      type="button"
+                      onClick={() => setFeeling(feeling === f.value ? undefined : f.value)}
+                      className={`flex-1 py-2 rounded-lg border text-center transition-colors
+                        ${feeling === f.value
+                          ? "border-accent bg-accent/10 text-ink"
+                          : "border-border text-muted hover:border-muted"}`}
+                    >
+                      <span className="block text-lg">{f.emoji}</span>
+                      <span className="block text-[10px] mt-0.5">{f.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Note input - compact */}
+              <div>
+                <label htmlFor="note" className="block text-xs font-medium text-muted mb-1.5">Note</label>
+                <textarea
+                  id="note"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  maxLength={500}
+                  rows={2}
+                  placeholder="Any thoughts..."
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-paper text-ink placeholder:text-muted/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+                />
+              </div>
             </div>
-          </div>
-
-          {/* Note input - progressive disclosure */}
-          <div>
-            <label htmlFor="note" className="block text-sm font-medium text-muted mb-2">
-              Note <span className="font-normal">(optional)</span>
-            </label>
-            <textarea
-              id="note"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              maxLength={500}
-              rows={2}
-              placeholder="Any thoughts about today's progress..."
-              className="
-                w-full px-4 py-3 rounded-xl border border-border
-                bg-paper text-ink placeholder:text-muted/50
-                focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
-                transition-colors resize-none
-              "
-            />
-          </div>
+          )}
 
           {/* Error message */}
           {error && (
-            <div className="p-3 rounded-xl bg-error/10 border border-error/20 text-error text-sm">
+            <div className="p-2 rounded-lg bg-error/10 border border-error/20 text-error text-xs">
               {error}
             </div>
           )}
@@ -421,20 +319,13 @@ export function AddEntryDialog({
           <button
             type="submit"
             disabled={isSubmitting || isFutureDate}
-            className={`
-              w-full py-4 rounded-xl font-semibold text-lg
-              transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
-              ${
-                showSuccess
-                  ? "bg-success text-white"
-                  : "bg-accent text-white hover:bg-accent/90"
-              }
-              disabled:opacity-50 disabled:cursor-not-allowed
-            `}
+            className={`w-full py-3 rounded-xl font-semibold text-base transition-all
+              ${showSuccess ? "bg-success text-white" : "bg-accent text-white hover:bg-accent/90"}
+              disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {isSubmitting ? (
               <span className="inline-flex items-center gap-2">
-                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
@@ -442,7 +333,7 @@ export function AddEntryDialog({
               </span>
             ) : showSuccess ? (
               <span className="inline-flex items-center gap-2">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
                 Added!

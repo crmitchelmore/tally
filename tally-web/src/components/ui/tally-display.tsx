@@ -136,7 +136,7 @@ function FiveGate({
   );
 }
 
-/** 25-unit: X mark */
+/** 25-unit: X mark - same size as Xs inside the 100-box */
 function TwentyFiveX({ 
   sizes, 
   color,
@@ -144,7 +144,8 @@ function TwentyFiveX({
   sizes: { stroke: number; height: number; gap: number; boxSize: number };
   color?: string;
 }) {
-  const xSize = sizes.boxSize;
+  // Match the size of Xs inside the HundredBox
+  const xSize = sizes.boxSize * 1.1;
   const strokeColor = color || "currentColor";
   
   return (
@@ -157,7 +158,7 @@ function TwentyFiveX({
         className="absolute rounded-full"
         style={{
           width: sizes.stroke,
-          height: xSize * 1.4,
+          height: xSize * 1.3,
           backgroundColor: strokeColor,
           left: "50%",
           top: "50%",
@@ -168,7 +169,7 @@ function TwentyFiveX({
         className="absolute rounded-full"
         style={{
           width: sizes.stroke,
-          height: xSize * 1.4,
+          height: xSize * 1.3,
           backgroundColor: strokeColor,
           left: "50%",
           top: "50%",
@@ -179,7 +180,7 @@ function TwentyFiveX({
   );
 }
 
-/** 100-unit: Box outline with X inside */
+/** 100-unit: Box outline with 4 X marks inside (each X = 25, so 4×25 = 100) */
 function HundredBox({ 
   sizes, 
   color,
@@ -187,8 +188,19 @@ function HundredBox({
   sizes: { stroke: number; height: number; gap: number; boxSize: number };
   color?: string;
 }) {
-  const boxSize = sizes.boxSize * 1.2;
+  // Box is 4x the size of an X to contain 4 Xs in a 2x2 grid
+  const boxSize = sizes.boxSize * 2.4;
+  const xSize = sizes.boxSize * 0.9;
   const strokeColor = color || "currentColor";
+  const xStroke = Math.max(1, sizes.stroke - 1);
+  
+  // Positions for 4 Xs in a 2x2 grid
+  const positions = [
+    { x: "25%", y: "25%" }, // top-left
+    { x: "75%", y: "25%" }, // top-right
+    { x: "25%", y: "75%" }, // bottom-left
+    { x: "75%", y: "75%" }, // bottom-right
+  ];
   
   return (
     <div 
@@ -199,27 +211,43 @@ function HundredBox({
         borderColor: strokeColor,
       }}
     >
-      {/* X inside */}
-      <span
-        className="absolute rounded-full bg-accent"
-        style={{
-          width: sizes.stroke - 1,
-          height: boxSize * 0.9,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%) rotate(45deg)",
-        }}
-      />
-      <span
-        className="absolute rounded-full bg-accent"
-        style={{
-          width: sizes.stroke - 1,
-          height: boxSize * 0.9,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%) rotate(-45deg)",
-        }}
-      />
+      {/* 4 X marks inside */}
+      {positions.map((pos, i) => (
+        <div
+          key={i}
+          className="absolute"
+          style={{
+            left: pos.x,
+            top: pos.y,
+            transform: "translate(-50%, -50%)",
+            width: xSize,
+            height: xSize,
+          }}
+        >
+          <span
+            className="absolute rounded-full"
+            style={{
+              width: xStroke,
+              height: xSize * 1.2,
+              backgroundColor: strokeColor,
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%) rotate(45deg)",
+            }}
+          />
+          <span
+            className="absolute rounded-full"
+            style={{
+              width: xStroke,
+              height: xSize * 1.2,
+              backgroundColor: strokeColor,
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%) rotate(-45deg)",
+            }}
+          />
+        </div>
+      ))}
     </div>
   );
 }

@@ -21,6 +21,7 @@ const FEELINGS = [
 /**
  * Dialog for adding a new entry to a challenge.
  * Fast, tactile UX with large tap targets and ink-stroke feedback.
+ * Adapts UI based on challenge countType and defaultIncrement.
  */
 export function AddEntryDialog({
   challenge,
@@ -28,7 +29,13 @@ export function AddEntryDialog({
   onClose,
   onSubmit,
 }: AddEntryDialogProps) {
-  const [count, setCount] = useState(1);
+  // Get challenge settings
+  const defaultIncrement = challenge.defaultIncrement ?? 1;
+  const countType = challenge.countType ?? "simple";
+  const unitLabel = challenge.unitLabel ?? "marks";
+  
+  const [count, setCount] = useState(defaultIncrement);
+  const [sets, setSets] = useState<number[]>([defaultIncrement]); // For sets mode
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [note, setNote] = useState("");
   const [feeling, setFeeling] = useState<typeof FEELINGS[number]["value"] | undefined>();
@@ -38,6 +45,10 @@ export function AddEntryDialog({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const countInputRef = useRef<HTMLInputElement>(null);
 
+  // Calculate total from sets
+  const setsTotal = sets.reduce((sum, s) => sum + s, 0);
+  const displayCount = countType === "sets" ? setsTotal : count;
+
   // Open/close dialog
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -45,8 +56,9 @@ export function AddEntryDialog({
 
     if (open) {
       dialog.showModal();
-      // Reset form
-      setCount(1);
+      // Reset form with challenge defaults
+      setCount(defaultIncrement);
+      setSets([defaultIncrement]);
       setDate(new Date().toISOString().split("T")[0]);
       setNote("");
       setFeeling(undefined);
@@ -57,7 +69,7 @@ export function AddEntryDialog({
     } else {
       dialog.close();
     }
-  }, [open]);
+  }, [open, defaultIncrement]);
 
   // Handle click outside
   const handleDialogClick = useCallback(
@@ -80,13 +92,26 @@ export function AddEntryDialog({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [open, onClose]);
 
-  // Quick increment/decrement
+  // Quick increment/decrement - uses challenge's defaultIncrement
   const incrementCount = useCallback(
     (delta: number) => {
       setCount((c) => Math.max(1, c + delta));
     },
     []
   );
+
+  // Set manipulation for sets mode
+  const addSet = useCallback(() => {
+    setSets((prev) => [...prev, defaultIncrement]);
+  }, [defaultIncrement]);
+
+  const removeSet = useCallback((index: number) => {
+    setSets((prev) => prev.length > 1 ? prev.filter((_, i) => i !== index) : prev);
+  }, []);
+
+  const updateSet = useCallback((index: number, value: number) => {
+    setSets((prev) => prev.map((s, i) => i === index ? Math.max(1, value) : s));
+  }, []);
 
   // Validate date (no future dates)
   const today = new Date().toISOString().split("T")[0];
@@ -104,7 +129,8 @@ export function AddEntryDialog({
       try {
         await onSubmit({
           date,
-          count,
+          count: displayCount,
+          sets: countType === "sets" ? sets : undefined,
           note: note.trim() || undefined,
           feeling,
         });
@@ -121,7 +147,7 @@ export function AddEntryDialog({
         setIsSubmitting(false);
       }
     },
-    [count, date, note, feeling, isSubmitting, isFutureDate, onSubmit, onClose]
+    [displayCount, sets, countType, date, note, feeling, isSubmitting, isFutureDate, onSubmit, onClose]
   );
 
   if (!open) return null;
@@ -162,84 +188,154 @@ export function AddEntryDialog({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Count input - primary action, large and prominent */}
-          <div className="text-center">
-            <label htmlFor="count" className="block text-sm font-medium text-muted mb-3">
-              How many?
-            </label>
-            <div className="flex items-center justify-center gap-4">
-              <button
-                type="button"
-                onClick={() => incrementCount(-5)}
-                className="
-                  w-12 h-12 rounded-full border border-border
-                  text-muted hover:text-ink hover:bg-border/50
-                  transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-                  text-lg font-medium
-                "
-                aria-label="Decrease by 5"
-              >
-                -5
-              </button>
-              <button
-                type="button"
-                onClick={() => incrementCount(-1)}
-                className="
-                  w-10 h-10 rounded-full border border-border
-                  text-muted hover:text-ink hover:bg-border/50
-                  transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-                  text-lg
-                "
-                aria-label="Decrease by 1"
-              >
-                −
-              </button>
-              <input
-                ref={countInputRef}
-                id="count"
-                type="number"
-                min={1}
-                max={9999}
-                value={count}
-                onChange={(e) => setCount(Math.max(1, parseInt(e.target.value) || 1))}
-                className="
-                  w-24 h-16 text-center text-4xl font-semibold tabular-nums
-                  bg-transparent border-b-2 border-border focus:border-accent
-                  text-ink outline-none
-                "
-              />
-              <button
-                type="button"
-                onClick={() => incrementCount(1)}
-                className="
-                  w-10 h-10 rounded-full border border-border
-                  text-muted hover:text-ink hover:bg-border/50
-                  transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-                  text-lg
-                "
-                aria-label="Increase by 1"
-              >
-                +
-              </button>
-              <button
-                type="button"
-                onClick={() => incrementCount(5)}
-                className="
-                  w-12 h-12 rounded-full border border-border
-                  text-muted hover:text-ink hover:bg-border/50
-                  transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-                  text-lg font-medium
-                "
-                aria-label="Increase by 5"
-              >
-                +5
-              </button>
+          {/* Count input - adapts based on countType */}
+          {countType === "sets" ? (
+            /* Sets mode - track each set separately */
+            <div>
+              <label className="block text-sm font-medium text-muted mb-3 text-center">
+                Sets & {unitLabel}
+              </label>
+              <div className="space-y-3">
+                {sets.map((setVal, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <span className="text-sm text-muted w-16">Set {idx + 1}</span>
+                    <div className="flex items-center gap-2 flex-1">
+                      <button
+                        type="button"
+                        onClick={() => updateSet(idx, setVal - defaultIncrement)}
+                        className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 transition-colors"
+                      >
+                        −
+                      </button>
+                      <input
+                        type="number"
+                        min={1}
+                        value={setVal}
+                        onChange={(e) => updateSet(idx, parseInt(e.target.value) || 1)}
+                        className="w-20 h-10 text-center text-xl font-semibold tabular-nums bg-transparent border-b-2 border-border focus:border-accent text-ink outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => updateSet(idx, setVal + defaultIncrement)}
+                        className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                    {sets.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeSet(idx)}
+                        className="w-8 h-8 rounded-full text-muted hover:text-error hover:bg-error/10 transition-colors"
+                        aria-label="Remove set"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addSet}
+                  className="w-full py-2 border border-dashed border-border rounded-xl text-muted hover:text-ink hover:border-muted transition-colors text-sm"
+                >
+                  + Add Set
+                </button>
+              </div>
+              {/* Total display */}
+              <div className="mt-4 text-center">
+                <p className="text-sm text-muted">Total</p>
+                <p className="text-3xl font-semibold text-ink tabular-nums">{setsTotal} <span className="text-base text-muted">{unitLabel}</span></p>
+              </div>
+              {/* Tally preview */}
+              <div className="mt-4 flex justify-center">
+                <TallyMark count={Math.min(setsTotal, 25)} size="md" animated />
+              </div>
             </div>
-            {/* Tally preview */}
-            <div className="mt-4 flex justify-center">
-              <TallyMark count={Math.min(count, 25)} size="md" animated />
+          ) : (
+            /* Simple count mode */
+            <div className="text-center">
+              <label htmlFor="count" className="block text-sm font-medium text-muted mb-3">
+                How many {unitLabel}?
+              </label>
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => incrementCount(-defaultIncrement * 5)}
+                  className="
+                    w-12 h-12 rounded-full border border-border
+                    text-muted hover:text-ink hover:bg-border/50
+                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                    text-lg font-medium
+                  "
+                  aria-label={`Decrease by ${defaultIncrement * 5}`}
+                >
+                  -{defaultIncrement * 5}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => incrementCount(-defaultIncrement)}
+                  className="
+                    w-10 h-10 rounded-full border border-border
+                    text-muted hover:text-ink hover:bg-border/50
+                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                    text-lg
+                  "
+                  aria-label={`Decrease by ${defaultIncrement}`}
+                >
+                  −
+                </button>
+                <input
+                  ref={countInputRef}
+                  id="count"
+                  type="number"
+                  min={1}
+                  max={9999}
+                  value={count}
+                  onChange={(e) => setCount(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="
+                    w-24 h-16 text-center text-4xl font-semibold tabular-nums
+                    bg-transparent border-b-2 border-border focus:border-accent
+                    text-ink outline-none
+                  "
+                />
+                <button
+                  type="button"
+                  onClick={() => incrementCount(defaultIncrement)}
+                  className="
+                    w-10 h-10 rounded-full border border-border
+                    text-muted hover:text-ink hover:bg-border/50
+                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                    text-lg
+                  "
+                  aria-label={`Increase by ${defaultIncrement}`}
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  onClick={() => incrementCount(defaultIncrement * 5)}
+                  className="
+                    w-12 h-12 rounded-full border border-border
+                    text-muted hover:text-ink hover:bg-border/50
+                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                    text-lg font-medium
+                  "
+                  aria-label={`Increase by ${defaultIncrement * 5}`}
+                >
+                  +{defaultIncrement * 5}
+                </button>
+              </div>
+              {/* Unit label */}
+              {unitLabel !== "marks" && (
+                <p className="mt-2 text-sm text-muted">{unitLabel}</p>
+              )}
+              {/* Tally preview */}
+              <div className="mt-4 flex justify-center">
+                <TallyMark count={Math.min(count, 25)} size="md" animated />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Date input */}
           <div>
@@ -352,7 +448,7 @@ export function AddEntryDialog({
                 Added!
               </span>
             ) : (
-              `Add ${count} ${count === 1 ? "mark" : "marks"}`
+              `Add ${displayCount} ${unitLabel}`
             )}
           </button>
         </form>

@@ -205,6 +205,50 @@ main.landing {
   }
 }
 
+@keyframes slash-draw {
+  from {
+    transform: translate(-50%, -50%) rotate(-18deg) scaleY(0);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(-18deg) scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes x-draw {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes box-draw {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes line-draw {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
 .animate-stroke-draw {
   transform-origin: bottom;
   animation: stroke-draw 200ms ease-out;

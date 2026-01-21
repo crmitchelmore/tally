@@ -1,6 +1,6 @@
 "use client";
 
-import { TallyMark } from "@/components/ui/tally-mark";
+import { TallyDisplay } from "@/components/ui/tally-display";
 import Link from "next/link";
 import type { Challenge, ChallengeStats } from "@/app/api/v1/_lib/types";
 
@@ -8,7 +8,7 @@ export interface ChallengeCardProps {
   challenge: Challenge;
   stats: ChallengeStats;
   className?: string;
-  onQuickAdd?: (challengeId: string, amount: number) => void;
+  onQuickAdd?: (challengeId: string) => void;
 }
 
 /**
@@ -34,7 +34,7 @@ export function ChallengeCard({ challenge, stats, className = "", onQuickAdd }: 
     e.preventDefault();
     e.stopPropagation();
     if (onQuickAdd) {
-      onQuickAdd(challenge.id, challenge.defaultIncrement || 1);
+      onQuickAdd(challenge.id);
     }
   };
 
@@ -99,9 +99,13 @@ export function ChallengeCard({ challenge, stats, className = "", onQuickAdd }: 
           </div>
         </div>
         
-        {/* Mini tally preview */}
+        {/* Mini tally preview - using hierarchical display */}
         <div className="mt-4 pt-4 border-t border-border">
-          <TallyMark count={Math.min(stats.totalCount, 25)} size="sm" />
+          <TallyDisplay 
+            count={stats.totalCount} 
+            size="sm" 
+            color={challenge.color}
+          />
         </div>
       </Link>
       

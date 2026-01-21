@@ -16,8 +16,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        // PostHog analytics (uncomment when ready to integrate)
-        // .package(url: "https://github.com/PostHog/posthog-ios", from: "3.0.0"),
+        // PostHog analytics
+        .package(url: "https://github.com/PostHog/posthog-ios", from: "3.0.0"),
         
         // OpenTelemetry Swift (uncomment when ready to integrate)
         // .package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.9.0"),
@@ -26,8 +26,7 @@ let package = Package(
         .target(
             name: "Telemetry",
             dependencies: [
-                // Uncomment when PostHog is added:
-                // .product(name: "PostHog", package: "posthog-ios"),
+                .product(name: "PostHog", package: "posthog-ios"),
             ],
             path: "Sources/Telemetry"
         ),

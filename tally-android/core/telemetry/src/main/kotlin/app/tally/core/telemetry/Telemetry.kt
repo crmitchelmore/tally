@@ -15,7 +15,10 @@
 
 package app.tally.core.telemetry
 
+import android.app.Application
 import android.util.Log
+import com.posthog.PostHog
+import com.posthog.PostHogConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -206,13 +209,14 @@ object Telemetry {
         ignoreUnknownKeys = true
     }
     
-    // PostHog client will be initialized when SDK is added
-    // private var posthog: PostHog? = null
+    private var isPostHogConfigured = false
     
     /**
      * Initialize telemetry with configuration
+     * Call this from Application.onCreate()
      */
     fun initialize(
+        application: Application,
         posthogKey: String? = null,
         honeycombKey: String? = null,
         appVersion: String,
@@ -225,10 +229,37 @@ object Telemetry {
         TelemetryConfig.buildNumber = buildNumber
         environment?.let { TelemetryConfig.environment = it }
         
-        // Initialize PostHog when SDK is added
-        // if (posthogKey != null) {
-        //     posthog = PostHog.with(context)
-        // }
+        // Initialize PostHog
+        if (!posthogKey.isNullOrBlank()) {
+            val config = PostHogConfig(
+                apiKey = posthogKey,
+                host = TelemetryConfig.posthogHost
+            ).apply {
+                captureApplicationLifecycleEvents = true
+                captureScreenViews = false // We'll do this manually with wide events
+            }
+            PostHog.setup(application, config)
+            isPostHogConfigured = true
+            Log.i(TAG, "[Telemetry] PostHog initialized")
+        } else {
+            Log.w(TAG, "[Telemetry] PostHog not configured - no API key")
+        }
+    }
+    
+    /**
+     * Identify the current user for PostHog
+     */
+    fun identify(userId: String, properties: Map<String, Any>? = null) {
+        if (!isPostHogConfigured) return
+        PostHog.identify(userId, properties)
+    }
+    
+    /**
+     * Reset PostHog identity (on sign out)
+     */
+    fun reset() {
+        if (!isPostHogConfigured) return
+        PostHog.reset()
     }
     
     // MARK: - Sampling
@@ -263,8 +294,10 @@ object Telemetry {
         val jsonString = json.encodeToString(event)
         Log.i(TAG, jsonString)
         
-        // PostHog capture (when SDK is added)
-        // posthog?.capture(event.event, event.flattenedProperties())
+        // PostHog capture
+        if (isPostHogConfigured) {
+            PostHog.capture(event.event, event.flattenedProperties())
+        }
     }
     
     /**

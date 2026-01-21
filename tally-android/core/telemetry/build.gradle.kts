@@ -42,8 +42,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.serialization.json)
 
-    // PostHog analytics (uncomment when ready to integrate)
-    // implementation("com.posthog:posthog-android:3.+")
+    // PostHog analytics
+    implementation("com.posthog:posthog-android:3.8.2")
 
     // OpenTelemetry Android (uncomment when ready to integrate)
     // implementation("io.opentelemetry.android:android-agent:0.5.+")

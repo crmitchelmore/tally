@@ -15,6 +15,7 @@
 
 import Foundation
 import os.log
+import PostHog
 
 // MARK: - Configuration
 
@@ -273,15 +274,40 @@ public final class Telemetry {
     
     private let logger = Logger(subsystem: "app.tally.ios", category: "telemetry")
     private let encoder = JSONEncoder()
-    
-    // PostHog client will be initialized when SDK is added
-    // private var posthog: PHGPostHog?
+    private var isPostHogConfigured = false
     
     private init() {
         encoder.outputFormatting = [.sortedKeys]
         encoder.dateEncodingStrategy = .iso8601
-        // Initialize PostHog when SDK is added
-        // setupPostHog()
+        setupPostHog()
+    }
+    
+    /// Configure PostHog with API key from config
+    private func setupPostHog() {
+        guard let apiKey = TelemetryConfig.posthogKey, !apiKey.isEmpty else {
+            logger.warning("[Telemetry] PostHog not configured - no API key")
+            return
+        }
+        
+        let config = PostHogConfig(apiKey: apiKey, host: TelemetryConfig.posthogHost)
+        config.captureApplicationLifecycleEvents = true
+        config.captureScreenViews = false // We'll do this manually with wide events
+        
+        PostHogSDK.shared.setup(config)
+        isPostHogConfigured = true
+        logger.info("[Telemetry] PostHog initialized")
+    }
+    
+    /// Identify the current user for PostHog
+    public func identify(userId: String, properties: [String: Any]? = nil) {
+        guard isPostHogConfigured else { return }
+        PostHogSDK.shared.identify(userId, userProperties: properties)
+    }
+    
+    /// Reset PostHog identity (on sign out)
+    public func reset() {
+        guard isPostHogConfigured else { return }
+        PostHogSDK.shared.reset()
     }
     
     // MARK: - Sampling
@@ -320,8 +346,10 @@ public final class Telemetry {
             logger.info("\(jsonString)")
         }
         
-        // PostHog capture (when SDK is added)
-        // posthog?.capture(event.event.rawValue, properties: event.flattenedProperties)
+        // PostHog capture
+        if isPostHogConfigured {
+            PostHogSDK.shared.capture(event.event.rawValue, properties: event.flattenedProperties)
+        }
     }
     
     /// Capture an event with minimal boilerplate

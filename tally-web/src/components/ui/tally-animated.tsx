@@ -187,7 +187,7 @@ function Stroke({
   );
 }
 
-/** 5-gate: 4 strokes + diagonal slash */
+/** 5-gate: 4 strokes + diagonal slash (accent) */
 function FiveGate({ 
   sizes, 
   color,
@@ -198,6 +198,7 @@ function FiveGate({
   slashAnimating?: boolean;
 }) {
   const gateWidth = sizes.stroke * 4 + sizes.gap * 3;
+  const accentColor = "var(--color-accent)";
   
   return (
     <div 
@@ -207,13 +208,13 @@ function FiveGate({
       {Array.from({ length: 4 }).map((_, i) => (
         <Stroke key={i} sizes={sizes} color={color} />
       ))}
-      {/* Diagonal slash */}
+      {/* Diagonal slash in accent color */}
       <span
         className={`absolute rounded-full ${slashAnimating ? "animate-slash-draw" : ""}`}
         style={{
           width: sizes.stroke,
           height: sizes.height * 1.15,
-          backgroundColor: "var(--accent)",
+          backgroundColor: accentColor,
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%) rotate(-18deg)",
@@ -225,7 +226,7 @@ function FiveGate({
   );
 }
 
-/** 25-unit: X mark */
+/** 25-unit: X mark - uses accent color */
 function TwentyFiveX({ 
   sizes, 
   color,
@@ -236,6 +237,7 @@ function TwentyFiveX({
   animating?: boolean;
 }) {
   const xSize = sizes.boxSize;
+  const accentColor = "var(--color-accent)";
   
   return (
     <div 
@@ -251,7 +253,7 @@ function TwentyFiveX({
         style={{
           width: sizes.stroke,
           height: xSize * 1.4,
-          backgroundColor: color,
+          backgroundColor: accentColor,
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%) rotate(45deg)",
@@ -262,7 +264,7 @@ function TwentyFiveX({
         style={{
           width: sizes.stroke,
           height: xSize * 1.4,
-          backgroundColor: color,
+          backgroundColor: accentColor,
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%) rotate(-45deg)",
@@ -272,7 +274,7 @@ function TwentyFiveX({
   );
 }
 
-/** 100-unit: Box outline with X inside */
+/** 100-unit: Box outline (muted) with 4 Xs inside (accent) */
 function HundredBox({ 
   sizes, 
   color,
@@ -282,7 +284,19 @@ function HundredBox({
   color: string;
   animating?: boolean;
 }) {
-  const boxSize = sizes.boxSize * 1.2;
+  const boxSize = sizes.boxSize * 2;
+  const xSize = sizes.boxSize * 0.7;
+  const xStroke = Math.max(1, sizes.stroke - 1);
+  const mutedColor = "var(--color-muted)";
+  const accentColor = "var(--color-accent)";
+  
+  // 4 X positions in 2x2 grid
+  const positions = [
+    { x: "25%", y: "25%" }, // top-left
+    { x: "75%", y: "25%" }, // top-right
+    { x: "25%", y: "75%" }, // bottom-left
+    { x: "75%", y: "75%" }, // bottom-right
+  ];
   
   return (
     <div 
@@ -290,35 +304,51 @@ function HundredBox({
       style={{ 
         width: boxSize, 
         height: boxSize,
-        borderColor: color,
+        borderColor: mutedColor,
         animation: animating ? "box-draw 0.3s ease-out forwards" : undefined,
       }}
     >
-      <span
-        className="absolute rounded-full bg-accent"
-        style={{
-          width: sizes.stroke - 1,
-          height: boxSize * 0.9,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%) rotate(45deg)",
-        }}
-      />
-      <span
-        className="absolute rounded-full bg-accent"
-        style={{
-          width: sizes.stroke - 1,
-          height: boxSize * 0.9,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%) rotate(-45deg)",
-        }}
-      />
+      {positions.map((pos, i) => (
+        <div
+          key={i}
+          className="absolute"
+          style={{
+            left: pos.x,
+            top: pos.y,
+            transform: "translate(-50%, -50%)",
+            width: xSize,
+            height: xSize,
+          }}
+        >
+          <span
+            className="absolute rounded-full"
+            style={{
+              width: xStroke,
+              height: xSize * 1.2,
+              backgroundColor: accentColor,
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%) rotate(45deg)",
+            }}
+          />
+          <span
+            className="absolute rounded-full"
+            style={{
+              width: xStroke,
+              height: xSize * 1.2,
+              backgroundColor: accentColor,
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%) rotate(-45deg)",
+            }}
+          />
+        </div>
+      ))}
     </div>
   );
 }
 
-/** 1000-unit: Row of boxes with horizontal line through */
+/** 1000-unit: Row of boxes (muted) with horizontal line through (accent) */
 function ThousandBlock({ 
   sizes, 
   color,
@@ -330,6 +360,8 @@ function ThousandBlock({
 }) {
   const boxSize = sizes.boxSize * 0.8;
   const rowWidth = boxSize * 5 + sizes.gap * 2;
+  const mutedColor = "var(--color-muted)";
+  const accentColor = "var(--color-accent)";
   
   return (
     <div className={`relative ${animating ? "animate-line-draw" : ""}`}>
@@ -341,7 +373,7 @@ function ThousandBlock({
             style={{
               width: boxSize,
               height: boxSize,
-              borderColor: color,
+              borderColor: mutedColor,
               borderWidth: Math.max(1, sizes.stroke - 1),
             }}
           />
@@ -352,7 +384,7 @@ function ThousandBlock({
         style={{
           width: rowWidth + sizes.gap * 2,
           height: sizes.stroke,
-          backgroundColor: "var(--accent)",
+          backgroundColor: accentColor,
           left: -sizes.gap,
           top: "50%",
           transform: "translateY(-50%)",

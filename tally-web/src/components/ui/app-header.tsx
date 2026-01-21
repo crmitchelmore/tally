@@ -38,8 +38,8 @@ export function AppHeader({
               href="/app"
               className="flex items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 rounded-lg"
             >
-              <TallyMark count={5} size="sm" className="text-ink dark:text-paper" />
-              <span className="text-lg font-semibold text-ink dark:text-paper">
+              <TallyMark count={5} size="sm" className="text-ink" />
+              <span className="text-lg font-semibold text-ink">
                 Tally
               </span>
             </Link>

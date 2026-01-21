@@ -32,7 +32,16 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      {hasClerkKeys ? <ClerkProvider>{body}</ClerkProvider> : body}
+      {hasClerkKeys ? (
+        <ClerkProvider
+          proxyUrl={undefined}
+          domain=""
+        >
+          {body}
+        </ClerkProvider>
+      ) : (
+        body
+      )}
     </html>
   );
 }

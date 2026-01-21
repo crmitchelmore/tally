@@ -18,9 +18,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Clerk and API configuration - use env var or fallback to production key
+        // Clerk and API configuration - use env var or fallback to default key
         val clerkKey = System.getenv("CLERK_PUBLISHABLE_KEY")?.takeIf { it.isNotEmpty() } 
-            ?: "pk_live_Y2xlcmsudGFsbHktdHJhY2tlci5hcHAk"
+            ?: "pk_test_d2lzZS10dW5hLTg1LmNsZXJrLmFjY291bnRzLmRldiQ"
         val apiUrl = System.getenv("API_BASE_URL")?.takeIf { it.isNotEmpty() }
             ?: "https://tally-tracker.app"
         

@@ -15,6 +15,8 @@ let project = Project(
             deploymentTargets: .iOS("17.0"),
             infoPlist: .extendingDefault(
                 with: [
+                    "CFBundleDisplayName": "Tally",
+                    "CFBundleName": "Tally",
                     "UILaunchScreen": [
                         "UIColorName": "",
                         "UIImageName": "",

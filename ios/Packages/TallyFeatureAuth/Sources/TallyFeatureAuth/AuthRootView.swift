@@ -23,6 +23,9 @@ public struct AuthRootView<SignedInContent: View, SignedOutContent: View>: View 
         Group {
             if authManager.isLoading {
                 LoadingView()
+            } else if authManager.isLocalOnlyMode {
+                // No auth configured - run in local-only mode
+                signedInContent()
             } else if authManager.isAuthenticated {
                 signedInContent()
             } else {

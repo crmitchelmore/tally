@@ -10,6 +10,7 @@ public final class AuthManager {
     
     public private(set) var isLoading = true
     public private(set) var isAuthenticated = false
+    public private(set) var isLocalOnlyMode = false
     public private(set) var currentUser: TallyUser?
     public private(set) var error: AuthError?
     
@@ -20,7 +21,8 @@ public final class AuthManager {
     /// Configure Clerk with the publishable key
     public func configure() async {
         guard Configuration.isConfigured else {
-            error = .notConfigured
+            // No auth configured - run in local-only mode
+            isLocalOnlyMode = true
             isLoading = false
             return
         }

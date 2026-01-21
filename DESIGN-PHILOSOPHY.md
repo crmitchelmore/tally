@@ -56,6 +56,7 @@ A hierarchical tally-mark icon system that stays intuitive at small sizes by **c
   - **100-cap simplification (exactly 100 only):** hide all C1 5-gate detail; show **only** the **X (C2)** + **square outline (C3)**.
   - **1,000-unit (capacity = 1,000):** a row of **10** 100-blocks.
   - **1,000-cap simplification (exactly 1,000 only):** remove the internal X marks; keep the 10 squares and draw **one horizontal line overlay** through all 10 squares (next color in the cycle; typically C1).
+  - **Multiple thousands:** stack vertically; each 1,000 forms its own row below the previous.
   - **10,000-unit (capacity = 10,000):** stack **10 rows** of the 1,000 representation (10×10 macro-grid of 100-block squares).
   - **10,000 closure (exactly 10,000 only):** add a single bold **diagonal closure stroke** across the entire 10×10 block (next color in the cycle; typically C2).
 

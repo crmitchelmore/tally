@@ -221,20 +221,7 @@ export default function AppPage() {
         </div>
       </section>
 
-      {/* Dashboard highlights */}
-      <DashboardHighlights stats={dashboardStats} loading={statsLoading} />
-
-      {/* Personal records */}
-      <PersonalRecords 
-        records={personalRecords} 
-        loading={statsLoading} 
-        challengeNames={challengeNames}
-      />
-
-      {/* Followed challenges */}
-      <FollowedChallengesSection onRefresh={handleRefresh} />
-
-      {/* Challenges list */}
+      {/* Challenges list - shown first when empty for better UX */}
       <ChallengeList
         challenges={challenges}
         loading={loading}
@@ -242,6 +229,21 @@ export default function AppPage() {
         onCreateChallenge={handleCreateChallenge}
         onRefresh={handleRefresh}
       />
+
+      {/* Dashboard highlights - only show when user has data */}
+      {challenges.length > 0 && (
+        <>
+          <DashboardHighlights stats={dashboardStats} loading={statsLoading} />
+          <PersonalRecords 
+            records={personalRecords} 
+            loading={statsLoading} 
+            challengeNames={challengeNames}
+          />
+        </>
+      )}
+
+      {/* Followed challenges */}
+      <FollowedChallengesSection onRefresh={handleRefresh} />
 
       {/* Community section */}
       <CommunitySection onRefresh={handleRefresh} />

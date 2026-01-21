@@ -18,7 +18,8 @@ package app.tally.core.telemetry
 import android.app.Application
 import android.util.Log
 import com.posthog.PostHog
-import com.posthog.PostHogConfig
+import com.posthog.android.PostHogAndroid
+import com.posthog.android.PostHogAndroidConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -150,9 +151,9 @@ data class WideEvent(
     val request: RequestProperties? = null
 ) {
     /**
-     * Flattened map for PostHog properties
+     * Flattened map for PostHog properties (non-null values only)
      */
-    fun flattenedProperties(): Map<String, Any?> = buildMap {
+    fun flattenedProperties(): Map<String, Any> = buildMap {
         put("type", type)
         put("event", event)
         put("timestamp", timestamp)
@@ -231,14 +232,13 @@ object Telemetry {
         
         // Initialize PostHog
         if (!posthogKey.isNullOrBlank()) {
-            val config = PostHogConfig(
+            val config = PostHogAndroidConfig(
                 apiKey = posthogKey,
-                host = TelemetryConfig.posthogHost
-            ).apply {
-                captureApplicationLifecycleEvents = true
+                host = TelemetryConfig.posthogHost,
+                captureApplicationLifecycleEvents = true,
                 captureScreenViews = false // We'll do this manually with wide events
-            }
-            PostHog.setup(application, config)
+            )
+            PostHogAndroid.setup(application, config)
             isPostHogConfigured = true
             Log.i(TAG, "[Telemetry] PostHog initialized")
         } else {
@@ -251,7 +251,7 @@ object Telemetry {
      */
     fun identify(userId: String, properties: Map<String, Any>? = null) {
         if (!isPostHogConfigured) return
-        PostHog.identify(userId, properties)
+        PostHog.identify(userId, userProperties = properties)
     }
     
     /**
@@ -296,7 +296,10 @@ object Telemetry {
         
         // PostHog capture
         if (isPostHogConfigured) {
-            PostHog.capture(event.event, event.flattenedProperties())
+            PostHog.capture(
+                event = event.event,
+                properties = event.flattenedProperties()
+            )
         }
     }
     

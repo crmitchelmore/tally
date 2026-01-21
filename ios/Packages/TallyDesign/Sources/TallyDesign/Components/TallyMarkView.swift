@@ -227,22 +227,39 @@ public struct TallyMarkView: View {
     }
     
     private func drawHundredCap(in context: GraphicsContext, bounds: CGRect) {
-        let inset = bounds.width * 0.15
-        
-        // Draw X (C2)
-        let xPath = Path { p in
-            p.move(to: CGPoint(x: inset, y: inset))
-            p.addLine(to: CGPoint(x: bounds.width - inset, y: bounds.height - inset))
-            p.move(to: CGPoint(x: bounds.width - inset, y: inset))
-            p.addLine(to: CGPoint(x: inset, y: bounds.height - inset))
-        }
-        context.stroke(xPath, with: .color(.tallyInkSecondary), lineWidth: 3.0)
+        let inset = bounds.width * 0.1
+        let innerSize = bounds.width - 2 * inset
+        let xSize = innerSize * 0.35  // Size of each X
         
         // Draw square outline (C3)
         let squarePath = Path { p in
-            p.addRect(CGRect(x: inset, y: inset, width: bounds.width - 2 * inset, height: bounds.height - 2 * inset))
+            p.addRect(CGRect(x: inset, y: inset, width: innerSize, height: innerSize))
         }
         context.stroke(squarePath, with: .color(.tallyInkTertiary), lineWidth: 2.5)
+        
+        // Draw 4 Xs in 2x2 grid inside the box
+        let positions: [(x: CGFloat, y: CGFloat)] = [
+            (0.25, 0.25), // Top-left
+            (0.75, 0.25), // Top-right
+            (0.25, 0.75), // Bottom-left
+            (0.75, 0.75), // Bottom-right
+        ]
+        
+        for pos in positions {
+            let centerX = inset + innerSize * pos.x
+            let centerY = inset + innerSize * pos.y
+            let halfX = xSize / 2
+            
+            let xPath = Path { p in
+                // Diagonal 1
+                p.move(to: CGPoint(x: centerX - halfX, y: centerY - halfX))
+                p.addLine(to: CGPoint(x: centerX + halfX, y: centerY + halfX))
+                // Diagonal 2
+                p.move(to: CGPoint(x: centerX + halfX, y: centerY - halfX))
+                p.addLine(to: CGPoint(x: centerX - halfX, y: centerY + halfX))
+            }
+            context.stroke(xPath, with: .color(.tallyInkSecondary), lineWidth: 2.0)
+        }
     }
     
     private func drawHundredBlocksRow(in context: GraphicsContext, bounds: CGRect, count: Int) {

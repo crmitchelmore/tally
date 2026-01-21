@@ -465,7 +465,7 @@ private fun DrawScope.drawMini25(
 }
 
 /**
- * Draws 100 cap: X + square outline.
+ * Draws 100 cap: Square outline with 4 Xs inside (each X = 25, so 4×25 = 100).
  */
 private fun DrawScope.draw100Cap(
     c2: Color,
@@ -475,31 +475,45 @@ private fun DrawScope.draw100Cap(
     val w = size.width
     val h = size.height
     val padding = w * 0.1f
+    val innerSize = w - 2 * padding
 
     // Square outline in C3
     drawRect(
         color = c3,
         topLeft = Offset(padding, padding),
-        size = androidx.compose.ui.geometry.Size(w - 2 * padding, h - 2 * padding),
+        size = androidx.compose.ui.geometry.Size(innerSize, innerSize),
         style = Stroke(width = strokeWidth * 1.5f, join = StrokeJoin.Round)
     )
 
-    // X in C2
-    val innerPadding = padding * 1.5f
-    drawLine(
-        color = c2,
-        start = Offset(innerPadding, innerPadding),
-        end = Offset(w - innerPadding, h - innerPadding),
-        strokeWidth = strokeWidth * 1.3f,
-        cap = StrokeCap.Round
+    // Draw 4 Xs in 2x2 grid inside the box
+    val xSize = innerSize * 0.3f
+    val positions = listOf(
+        Offset(0.25f, 0.25f), // Top-left
+        Offset(0.75f, 0.25f), // Top-right
+        Offset(0.25f, 0.75f), // Bottom-left
+        Offset(0.75f, 0.75f)  // Bottom-right
     )
-    drawLine(
-        color = c2,
-        start = Offset(w - innerPadding, innerPadding),
-        end = Offset(innerPadding, h - innerPadding),
-        strokeWidth = strokeWidth * 1.3f,
-        cap = StrokeCap.Round
-    )
+
+    for (pos in positions) {
+        val centerX = padding + innerSize * pos.x
+        val centerY = padding + innerSize * pos.y
+        val halfX = xSize / 2
+
+        drawLine(
+            color = c2,
+            start = Offset(centerX - halfX, centerY - halfX),
+            end = Offset(centerX + halfX, centerY + halfX),
+            strokeWidth = strokeWidth,
+            cap = StrokeCap.Round
+        )
+        drawLine(
+            color = c2,
+            start = Offset(centerX + halfX, centerY - halfX),
+            end = Offset(centerX - halfX, centerY + halfX),
+            strokeWidth = strokeWidth,
+            cap = StrokeCap.Round
+        )
+    }
 }
 
 /**
@@ -539,7 +553,7 @@ private fun DrawScope.draw101To999(
 }
 
 /**
- * Draws a mini 100 block.
+ * Draws a mini 100 block (square with 4 Xs inside).
  */
 private fun DrawScope.drawMini100(
     c2: Color,
@@ -548,29 +562,45 @@ private fun DrawScope.drawMini100(
     blockSize: Float
 ) {
     val padding = blockSize * 0.1f
+    val innerSize = blockSize - 2 * padding
 
+    // Square outline
     drawRect(
         color = c3,
         topLeft = Offset(padding, padding),
-        size = androidx.compose.ui.geometry.Size(blockSize - 2 * padding, blockSize - 2 * padding),
+        size = androidx.compose.ui.geometry.Size(innerSize, innerSize),
         style = Stroke(width = strokeWidth * 1.2f, join = StrokeJoin.Round)
     )
 
-    val innerPadding = padding * 1.5f
-    drawLine(
-        color = c2,
-        start = Offset(innerPadding, innerPadding),
-        end = Offset(blockSize - innerPadding, blockSize - innerPadding),
-        strokeWidth = strokeWidth,
-        cap = StrokeCap.Round
+    // Draw 4 Xs in 2x2 grid
+    val xSize = innerSize * 0.25f
+    val positions = listOf(
+        Offset(0.25f, 0.25f),
+        Offset(0.75f, 0.25f),
+        Offset(0.25f, 0.75f),
+        Offset(0.75f, 0.75f)
     )
-    drawLine(
-        color = c2,
-        start = Offset(blockSize - innerPadding, innerPadding),
-        end = Offset(innerPadding, blockSize - innerPadding),
-        strokeWidth = strokeWidth,
-        cap = StrokeCap.Round
-    )
+
+    for (pos in positions) {
+        val centerX = padding + innerSize * pos.x
+        val centerY = padding + innerSize * pos.y
+        val halfX = xSize / 2
+
+        drawLine(
+            color = c2,
+            start = Offset(centerX - halfX, centerY - halfX),
+            end = Offset(centerX + halfX, centerY + halfX),
+            strokeWidth = strokeWidth * 0.8f,
+            cap = StrokeCap.Round
+        )
+        drawLine(
+            color = c2,
+            start = Offset(centerX + halfX, centerY - halfX),
+            end = Offset(centerX - halfX, centerY + halfX),
+            strokeWidth = strokeWidth * 0.8f,
+            cap = StrokeCap.Round
+        )
+    }
 }
 
 /**

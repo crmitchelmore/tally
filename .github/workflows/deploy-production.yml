@@ -28,12 +28,15 @@ jobs:
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CLERK_PROXY_URL: ""
         run: bun run build
       - name: Deploy (Vercel)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
         run: |
-          npx vercel deploy --prod --yes --token=$VERCEL_TOKEN
+          npx vercel deploy --prod --yes --token=$VERCEL_TOKEN \
+            --env CLERK_PROXY_URL="" \
+            --build-env CLERK_PROXY_URL=""
       - name: Smoke check
         env:
           VERCEL_PROD_URL: ${{ secrets.VERCEL_PROD_URL }}

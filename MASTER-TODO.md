@@ -222,6 +222,7 @@ This skill guides the entire cycle: design, build, test (behavioral, unit, UI, E
   - [ ] Implement tests for cucumber/06-user-registration.feature
   - [ ] Implement tests for cucumber/07-data-portability.feature
   - [ ] Verify all Playwright tests pass locally and in CI.
+  - [ ] Run Playwright tests against production deployed web app and verify pass.
 
 ### iOS: UI Tests (XCUITest)
 - [ ] Feature: iOS UI tests (plans/ios/feature-ui-tests.md)

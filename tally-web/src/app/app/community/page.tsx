@@ -198,10 +198,10 @@ export default function CommunityPage() {
 
               {/* Tally preview */}
               <div className="flex items-center justify-between">
-                <div className="text-ink">
-                  <TallyDisplay count={Math.min(challenge.totalReps, 50)} size="sm" />
+                <div className="text-ink overflow-x-auto">
+                  <TallyDisplay count={challenge.totalReps} size="sm" />
                 </div>
-                <div className="flex items-center gap-1 text-sm text-muted">
+                <div className="flex items-center gap-1 text-sm text-muted flex-shrink-0">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"

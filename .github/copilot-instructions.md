@@ -1,5 +1,7 @@
 # Copilot Instructions (Tally)
 
+**NEVER STOP TO ASK QUESTIONS** — make the best decision without compromising security or our design philosophy.
+
 Use this philosophy in all product work:
 - Tactile: interactions feel like marking paper; clear visual feedback.
 - Focused: minimal UI; numbers and progress are central.
@@ -47,4 +49,5 @@ IOS_TEAM_ID
 VERCEL_PROJECT_ID
 VERCEL_ORG_ID
 VERCEL_PROD_URL
+HONEYCOMB_API_KEY
 

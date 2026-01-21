@@ -44,6 +44,7 @@ jobs:
           install_args: tuist
       - name: Generate Xcode project
         run: |
+          mise use -g tuist@latest
           tuist install
           tuist generate --no-open
       - name: Build iOS app

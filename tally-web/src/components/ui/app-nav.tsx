@@ -35,8 +35,8 @@ export function AppNav() {
               px-4 py-2 rounded-lg text-sm font-medium transition-colors
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
               ${isActive 
-                ? "bg-ink/5 dark:bg-paper/10 text-ink dark:text-paper" 
-                : "text-muted hover:text-ink dark:hover:text-paper hover:bg-ink/5 dark:hover:bg-paper/5"
+                ? "bg-accent/10 text-ink" 
+                : "text-muted hover:text-ink hover:bg-ink/5"
               }
             `}
             aria-current={isActive ? "page" : undefined}

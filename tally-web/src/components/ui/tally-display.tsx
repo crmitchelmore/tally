@@ -9,19 +9,26 @@ export interface TallyDisplayProps {
   size?: "sm" | "md" | "lg";
   /** Additional CSS classes */
   className?: string;
-  /** Color for strokes */
+  /** Base color for strokes (C1) */
   color?: string;
 }
 
 /**
  * Tally Display Component
  *
- * Renders tally marks with the traditional counting pattern:
+ * Renders tally marks with the traditional counting pattern and color hierarchy:
+ * - C1 (ink): Base strokes, 5-gate verticals
+ * - C2 (accent): 5th stroke diagonal slash, X marks for 25
+ * - C3 (muted): Box outline for 100
+ * - Accent: Horizontal line for 1000
+ * 
+ * Pattern:
  * - 1-4: vertical strokes
  * - 5: 4 strokes + diagonal slash (5-gate)
- * - 25: X overlay (5×5)
- * - 100: Box outline (4×25)
- * - 1000: Horizontal line through 10 boxes
+ * - 25: X mark (in C2 color)
+ * - 26-99: Xs in 2x2 grid positions (bottom-left, top-left, bottom-right, top-right)
+ * - 100: Box outline (C3) containing 4 Xs (C2)
+ * - 1000: Row of boxes with horizontal line through (accent)
  */
 export const TallyDisplay = memo(function TallyDisplay({
   count,
@@ -35,12 +42,20 @@ export const TallyDisplay = memo(function TallyDisplay({
     lg: { stroke: 4, height: 40, gap: 6, boxSize: 20 },
   }[size];
 
+  // Color hierarchy
+  const c1 = color || "currentColor"; // Base strokes
+  const c2 = "var(--color-accent)"; // X marks (25s)
+  const c3 = "var(--color-muted)"; // Box outlines (100s)
+
   // Break down count into components
   const thousands = Math.floor(count / 1000);
   const hundreds = Math.floor((count % 1000) / 100);
   const twentyFives = Math.floor((count % 100) / 25);
   const fives = Math.floor((count % 25) / 5);
   const ones = count % 5;
+
+  // For 26-99, show Xs in grid positions as if filling a 100-box
+  const showXsInGrid = twentyFives > 0 && twentyFives < 4;
 
   return (
     <div 
@@ -51,29 +66,34 @@ export const TallyDisplay = memo(function TallyDisplay({
     >
       {/* Thousands: horizontal line through boxes */}
       {Array.from({ length: thousands }).map((_, i) => (
-        <ThousandBlock key={`k-${i}`} sizes={sizes} color={color} />
+        <ThousandBlock key={`k-${i}`} sizes={sizes} c1={c1} c3={c3} />
       ))}
       
-      {/* Hundreds: filled box with X */}
+      {/* Hundreds: box with 4 Xs */}
       {Array.from({ length: hundreds }).map((_, i) => (
-        <HundredBox key={`h-${i}`} sizes={sizes} color={color} />
+        <HundredBox key={`h-${i}`} sizes={sizes} c2={c2} c3={c3} />
       ))}
       
-      {/* Twenty-fives: X mark */}
-      {Array.from({ length: twentyFives }).map((_, i) => (
-        <TwentyFiveX key={`x-${i}`} sizes={sizes} color={color} />
-      ))}
+      {/* Twenty-fives: X marks in grid layout (like filling a box) */}
+      {showXsInGrid ? (
+        <XsInGridLayout sizes={sizes} count={twentyFives} c2={c2} />
+      ) : (
+        // Full 4 Xs shown as individual marks
+        Array.from({ length: twentyFives }).map((_, i) => (
+          <TwentyFiveX key={`x-${i}`} sizes={sizes} color={c2} />
+        ))
+      )}
       
       {/* Fives: standard 5-gates */}
       {Array.from({ length: fives }).map((_, i) => (
-        <FiveGate key={`f-${i}`} sizes={sizes} color={color} />
+        <FiveGate key={`f-${i}`} sizes={sizes} c1={c1} c2={c2} />
       ))}
       
       {/* Ones: vertical strokes */}
       {ones > 0 && (
         <div className="inline-flex items-end" style={{ gap: sizes.gap }}>
           {Array.from({ length: ones }).map((_, i) => (
-            <Stroke key={`s-${i}`} sizes={sizes} color={color} />
+            <Stroke key={`s-${i}`} sizes={sizes} color={c1} />
           ))}
         </div>
       )}
@@ -85,19 +105,17 @@ export const TallyDisplay = memo(function TallyDisplay({
 function Stroke({ 
   sizes, 
   color,
-  animating = false,
 }: { 
   sizes: { stroke: number; height: number; gap: number; boxSize: number };
-  color?: string;
-  animating?: boolean;
+  color: string;
 }) {
   return (
     <span
-      className={`rounded-full ${animating ? "animate-stroke-draw" : ""}`}
+      className="rounded-full"
       style={{
         width: sizes.stroke,
         height: sizes.height,
-        backgroundColor: color || "currentColor",
+        backgroundColor: color,
       }}
     />
   );
@@ -106,10 +124,12 @@ function Stroke({
 /** 5-gate: 4 strokes + diagonal slash */
 function FiveGate({ 
   sizes, 
-  color,
+  c1,
+  c2,
 }: { 
   sizes: { stroke: number; height: number; gap: number; boxSize: number };
-  color?: string;
+  c1: string;
+  c2: string;
 }) {
   const gateWidth = sizes.stroke * 4 + sizes.gap * 3;
   
@@ -119,14 +139,15 @@ function FiveGate({
       style={{ gap: sizes.gap, width: gateWidth }}
     >
       {Array.from({ length: 4 }).map((_, i) => (
-        <Stroke key={i} sizes={sizes} color={color} />
+        <Stroke key={i} sizes={sizes} color={c1} />
       ))}
-      {/* Diagonal slash */}
+      {/* Diagonal slash in accent color (C2) */}
       <span
-        className="absolute rounded-full bg-accent"
+        className="absolute rounded-full"
         style={{
           width: sizes.stroke,
           height: sizes.height * 1.15,
+          backgroundColor: c2,
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%) rotate(-18deg)",
@@ -136,30 +157,27 @@ function FiveGate({
   );
 }
 
-/** 25-unit: X mark - same size as Xs inside the 100-box */
+/** 25-unit: X mark */
 function TwentyFiveX({ 
   sizes, 
   color,
 }: { 
   sizes: { stroke: number; height: number; gap: number; boxSize: number };
-  color?: string;
+  color: string;
 }) {
-  // Match the size of Xs inside the HundredBox
   const xSize = sizes.boxSize * 1.1;
-  const strokeColor = color || "currentColor";
   
   return (
     <div 
       className="relative" 
       style={{ width: xSize, height: xSize }}
     >
-      {/* X lines */}
       <span
         className="absolute rounded-full"
         style={{
           width: sizes.stroke,
           height: xSize * 1.3,
-          backgroundColor: strokeColor,
+          backgroundColor: color,
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%) rotate(45deg)",
@@ -170,7 +188,7 @@ function TwentyFiveX({
         style={{
           width: sizes.stroke,
           height: xSize * 1.3,
-          backgroundColor: strokeColor,
+          backgroundColor: color,
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%) rotate(-45deg)",
@@ -180,21 +198,89 @@ function TwentyFiveX({
   );
 }
 
-/** 100-unit: Box outline with 4 X marks inside (each X = 25, so 4×25 = 100) */
-function HundredBox({ 
-  sizes, 
-  color,
-}: { 
+/** Xs displayed in 2x2 grid positions (for 26-99 range) */
+function XsInGridLayout({
+  sizes,
+  count,
+  c2,
+}: {
   sizes: { stroke: number; height: number; gap: number; boxSize: number };
-  color?: string;
+  count: number; // 1-3 Xs
+  c2: string;
 }) {
-  // Box is 4x the size of an X to contain 4 Xs in a 2x2 grid
+  // Box size matches HundredBox for visual consistency
   const boxSize = sizes.boxSize * 2.4;
   const xSize = sizes.boxSize * 0.9;
-  const strokeColor = color || "currentColor";
   const xStroke = Math.max(1, sizes.stroke - 1);
   
-  // Positions for 4 Xs in a 2x2 grid
+  // Fill order: bottom-left, top-left, bottom-right (then top-right for 4th)
+  const fillOrder = [
+    { x: "25%", y: "75%" },  // bottom-left (1st)
+    { x: "25%", y: "25%" },  // top-left (2nd)
+    { x: "75%", y: "75%" },  // bottom-right (3rd)
+    { x: "75%", y: "25%" },  // top-right (4th - only when complete)
+  ];
+  
+  return (
+    <div 
+      className="relative" 
+      style={{ width: boxSize, height: boxSize }}
+    >
+      {fillOrder.slice(0, count).map((pos, i) => (
+        <div
+          key={i}
+          className="absolute"
+          style={{
+            left: pos.x,
+            top: pos.y,
+            transform: "translate(-50%, -50%)",
+            width: xSize,
+            height: xSize,
+          }}
+        >
+          <span
+            className="absolute rounded-full"
+            style={{
+              width: xStroke,
+              height: xSize * 1.2,
+              backgroundColor: c2,
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%) rotate(45deg)",
+            }}
+          />
+          <span
+            className="absolute rounded-full"
+            style={{
+              width: xStroke,
+              height: xSize * 1.2,
+              backgroundColor: c2,
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%) rotate(-45deg)",
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** 100-unit: Box outline with 4 X marks inside */
+function HundredBox({ 
+  sizes, 
+  c2,
+  c3,
+}: { 
+  sizes: { stroke: number; height: number; gap: number; boxSize: number };
+  c2: string;
+  c3: string;
+}) {
+  const boxSize = sizes.boxSize * 2.4;
+  const xSize = sizes.boxSize * 0.9;
+  const xStroke = Math.max(1, sizes.stroke - 1);
+  
+  // All 4 positions filled
   const positions = [
     { x: "25%", y: "25%" }, // top-left
     { x: "75%", y: "25%" }, // top-right
@@ -208,10 +294,10 @@ function HundredBox({
       style={{ 
         width: boxSize, 
         height: boxSize,
-        borderColor: strokeColor,
+        borderColor: c3, // Box outline in muted color (C3)
       }}
     >
-      {/* 4 X marks inside */}
+      {/* 4 X marks inside in accent color (C2) */}
       {positions.map((pos, i) => (
         <div
           key={i}
@@ -229,7 +315,7 @@ function HundredBox({
             style={{
               width: xStroke,
               height: xSize * 1.2,
-              backgroundColor: strokeColor,
+              backgroundColor: c2, // X in accent color
               left: "50%",
               top: "50%",
               transform: "translate(-50%, -50%) rotate(45deg)",
@@ -240,7 +326,7 @@ function HundredBox({
             style={{
               width: xStroke,
               height: xSize * 1.2,
-              backgroundColor: strokeColor,
+              backgroundColor: c2, // X in accent color
               left: "50%",
               top: "50%",
               transform: "translate(-50%, -50%) rotate(-45deg)",
@@ -255,18 +341,19 @@ function HundredBox({
 /** 1000-unit: Row of boxes with horizontal line through */
 function ThousandBlock({ 
   sizes, 
-  color,
+  c1,
+  c3,
 }: { 
   sizes: { stroke: number; height: number; gap: number; boxSize: number };
-  color?: string;
+  c1: string;
+  c3: string;
 }) {
   const boxSize = sizes.boxSize * 0.8;
   const rowWidth = boxSize * 5 + sizes.gap * 4;
-  const strokeColor = color || "currentColor";
   
   return (
     <div className="relative">
-      {/* Row of 5 mini boxes (representing 500, doubled with line = 1000) */}
+      {/* Row of 5 mini boxes in C3 */}
       <div className="flex" style={{ gap: sizes.gap / 2 }}>
         {Array.from({ length: 5 }).map((_, i) => (
           <div
@@ -275,19 +362,19 @@ function ThousandBlock({
             style={{
               width: boxSize,
               height: boxSize,
-              borderColor: strokeColor,
+              borderColor: c3,
               borderWidth: Math.max(1, sizes.stroke - 1),
             }}
           />
         ))}
       </div>
-      {/* Horizontal line through */}
+      {/* Horizontal line through in accent color */}
       <span
         className="absolute rounded-full"
         style={{
           width: rowWidth + sizes.gap * 2,
           height: sizes.stroke,
-          backgroundColor: "var(--accent)",
+          backgroundColor: "var(--color-accent)",
           left: -sizes.gap,
           top: "50%",
           transform: "translateY(-50%)",

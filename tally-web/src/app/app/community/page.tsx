@@ -13,6 +13,7 @@ interface PublicChallenge {
   progress: number;
   followerCount: number;
   isFollowing: boolean;
+  isOwner: boolean;
   owner: { id: string; name: string };
 }
 
@@ -158,19 +159,25 @@ export default function CommunityPage() {
                   <h3 className="font-semibold text-ink truncate">{challenge.name}</h3>
                   <p className="text-sm text-muted">by {challenge.owner.name}</p>
                 </div>
-                <button
-                  onClick={() => handleFollow(challenge.id)}
-                  className={`
-                    px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                    ${
-                      followingIds.has(challenge.id)
-                        ? "bg-accent/10 text-accent border border-accent/30"
-                        : "bg-border/50 text-muted hover:bg-border"
-                    }
-                  `}
-                >
-                  {followingIds.has(challenge.id) ? "Following" : "Follow"}
-                </button>
+                {challenge.isOwner ? (
+                  <span className="px-3 py-1.5 rounded-lg text-sm font-medium bg-muted/10 text-muted">
+                    Your Challenge
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => handleFollow(challenge.id)}
+                    className={`
+                      px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                      ${
+                        followingIds.has(challenge.id)
+                          ? "bg-accent/10 text-accent border border-accent/30"
+                          : "bg-border/50 text-muted hover:bg-border"
+                      }
+                    `}
+                  >
+                    {followingIds.has(challenge.id) ? "Following" : "Follow"}
+                  </button>
+                )}
               </div>
 
               {/* Progress */}

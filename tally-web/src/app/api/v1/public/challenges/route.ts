@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
         progress: Math.round(progress * 10) / 10,
         followerCount,
         isFollowing: following,
+        isOwner: c.userId === authResult.userId,
         owner: owner
           ? { id: owner.id, name: owner.name }
           : { id: c.userId, name: "Unknown" },

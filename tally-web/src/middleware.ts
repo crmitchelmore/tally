@@ -11,9 +11,6 @@ function ensureNavigator(req: NextRequest) {
   }
 }
 
-// Clerk FAPI proxy - bypass all middleware for clerk subdomain
-const CLERK_FAPI = "https://frontend-api.clerk.services";
-
 // Public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -32,12 +29,10 @@ const hasClerkKeys =
 export default async function middleware(req: NextRequest) {
   ensureNavigator(req);
 
-  // Proxy requests to clerk.tally-tracker.app to Clerk's frontend API
+  // Let vercel.json handle clerk.tally-tracker.app proxy
   const host = req.headers.get("host") ?? "";
   if (host.startsWith("clerk.")) {
-    const url = new URL(req.url);
-    const targetUrl = new URL(`${CLERK_FAPI}${url.pathname}${url.search}`);
-    return NextResponse.rewrite(targetUrl);
+    return NextResponse.next();
   }
 
   if (!hasClerkKeys) {

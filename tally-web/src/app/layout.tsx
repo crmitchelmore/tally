@@ -41,7 +41,15 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      {hasClerkKeys ? <ClerkProvider>{body}</ClerkProvider> : body}
+      {hasClerkKeys ? (
+        <ClerkProvider
+          clerkJSUrl="https://cdn.clerk.com/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+        >
+          {body}
+        </ClerkProvider>
+      ) : (
+        body
+      )}
     </html>
   );
 }

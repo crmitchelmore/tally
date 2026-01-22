@@ -79,9 +79,13 @@ export async function updateChallenge(challenge: Challenge): Promise<Challenge> 
   });
 }
 
-export async function deleteChallenge(id: string): Promise<boolean> {
-  await convexChallenges.remove(id as Id<"challenges">);
-  return true;
+export async function deleteChallenge(id: string): Promise<{ deletedAt: number }> {
+  const result = await convexChallenges.remove(id as Id<"challenges">);
+  return { deletedAt: result.deletedAt };
+}
+
+export async function restoreChallenge(id: string): Promise<Challenge> {
+  return await convexChallenges.restore(id as Id<"challenges">);
 }
 
 // Entry operations
@@ -118,9 +122,13 @@ export async function updateEntry(entry: Entry): Promise<Entry> {
   });
 }
 
-export async function deleteEntry(id: string): Promise<boolean> {
-  await convexEntries.remove(id as Id<"entries">);
-  return true;
+export async function deleteEntry(id: string): Promise<{ deletedAt: number }> {
+  const result = await convexEntries.remove(id as Id<"entries">);
+  return { deletedAt: result.deletedAt };
+}
+
+export async function restoreEntry(id: string): Promise<Entry> {
+  return await convexEntries.restore(id as Id<"entries">);
 }
 
 // Follow operations

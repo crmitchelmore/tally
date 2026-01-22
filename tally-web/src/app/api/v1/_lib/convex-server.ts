@@ -64,8 +64,11 @@ export const convexChallenges = {
     isArchived?: boolean;
   }) => client.mutation(api.challenges.update, args),
   
-  remove: (id: Id<"challenges">) =>
-    client.mutation(api.challenges.remove, { id }),
+  remove: (id: Id<"challenges">, deletedBy?: string) =>
+    client.mutation(api.challenges.remove, { id, deletedBy }),
+  
+  restore: (id: Id<"challenges">) =>
+    client.mutation(api.challenges.restore, { id }),
 };
 
 // Entry operations
@@ -96,8 +99,11 @@ export const convexEntries = {
     feeling?: "great" | "good" | "okay" | "tough";
   }) => client.mutation(api.entries.update, args),
   
-  remove: (id: Id<"entries">) =>
-    client.mutation(api.entries.remove, { id }),
+  remove: (id: Id<"entries">, deletedBy?: string) =>
+    client.mutation(api.entries.remove, { id, deletedBy }),
+  
+  restore: (id: Id<"entries">) =>
+    client.mutation(api.entries.restore, { id }),
 };
 
 // Follow operations
@@ -114,6 +120,6 @@ export const convexFollows = {
   follow: (userId: string, challengeId: string) =>
     client.mutation(api.follows.follow, { userId, challengeId }),
   
-  unfollow: (userId: string, challengeId: string) =>
-    client.mutation(api.follows.unfollow, { userId, challengeId }),
+  unfollow: (userId: string, challengeId: string, deletedBy?: string) =>
+    client.mutation(api.follows.unfollow, { userId, challengeId, deletedBy }),
 };

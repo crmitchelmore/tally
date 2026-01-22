@@ -19,6 +19,9 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.optional(v.number()), // Optional for migration
     avatarUrl: v.optional(v.string()), // From existing data
+    // Soft delete fields
+    deletedAt: v.optional(v.number()),
+    deletedBy: v.optional(v.string()),
   })
     .index("by_clerk_id", ["clerkId"]),
 
@@ -40,6 +43,9 @@ export default defineSchema({
     defaultIncrement: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()), // Optional for migration
+    // Soft delete fields
+    deletedAt: v.optional(v.number()),
+    deletedBy: v.optional(v.string()),
   })
     .index("by_user_id", ["userId"])
     .index("by_user_archived", ["userId", "isArchived"])
@@ -61,6 +67,9 @@ export default defineSchema({
     )),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()), // Optional for migration
+    // Soft delete fields
+    deletedAt: v.optional(v.number()),
+    deletedBy: v.optional(v.string()),
   })
     .index("by_user_id", ["userId"])
     .index("by_challenge_id", ["challengeId"])
@@ -72,6 +81,9 @@ export default defineSchema({
     userId: v.string(),
     challengeId: v.string(),
     createdAt: v.number(),
+    // Soft delete fields
+    deletedAt: v.optional(v.number()),
+    deletedBy: v.optional(v.string()),
   })
     .index("by_user_id", ["userId"])
     .index("by_challenge_id", ["challengeId"])

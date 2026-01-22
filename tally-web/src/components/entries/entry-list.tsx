@@ -10,6 +10,7 @@ export interface EntryListProps {
   onEdit?: (entry: Entry) => void;
   onDelete?: (entry: Entry) => void;
   className?: string;
+  unitLabel?: string;
 }
 
 const FEELING_LABELS = {
@@ -29,6 +30,7 @@ export function EntryList({
   onEdit,
   onDelete,
   className = "",
+  unitLabel = "marks",
 }: EntryListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -119,7 +121,7 @@ export function EntryList({
                         {entry.count}
                       </span>
                       <span className="text-sm text-muted">
-                        {entry.count === 1 ? "mark" : "marks"}
+                        {entry.count === 1 ? unitLabel.replace(/s$/, "") : unitLabel}
                       </span>
                       {entry.feeling && (
                         <span className="text-sm text-muted" title={FEELING_LABELS[entry.feeling].label}>

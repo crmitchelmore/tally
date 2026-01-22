@@ -60,3 +60,7 @@ captures/
 .ralph-ctx.*
 .ctx.*
 .ctx
+
+# Playwright
+playwright-report/
+test-results/

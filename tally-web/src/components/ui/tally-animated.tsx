@@ -228,7 +228,7 @@ function FiveGate({
           backgroundColor: accentColor,
           left: "50%",
           top: "50%",
-          transform: "translate(-50%, -50%) rotate(-18deg)",
+          transform: "translate(-50%, -50%) rotate(-20deg)",
           transformOrigin: "center",
           animation: slashAnimating ? "slash-draw 0.3s ease-out forwards" : undefined,
         }}

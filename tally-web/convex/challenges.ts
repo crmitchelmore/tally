@@ -98,6 +98,21 @@ export const get = query({
 });
 
 /**
+ * Get a challenge by ID including soft-deleted (for ownership verification)
+ */
+export const getIncludingDeleted = query({
+  args: { id: v.id("challenges") },
+  handler: async (ctx, args) => {
+    const challenge = await ctx.db.get(args.id);
+    if (!challenge) return null;
+    return {
+      ...toApiFormat(challenge),
+      deletedAt: challenge.deletedAt,
+    };
+  },
+});
+
+/**
  * Create a new challenge
  */
 export const create = mutation({
@@ -218,12 +233,21 @@ export const remove = mutation({
 
 /**
  * Restore a soft-deleted challenge and its related entries/follows
+ * Validates ownership before restoring
  */
 export const restore = mutation({
-  args: { id: v.id("challenges") },
+  args: { 
+    id: v.id("challenges"),
+    userId: v.string(),
+  },
   handler: async (ctx, args) => {
     const challenge = await ctx.db.get(args.id);
     if (!challenge) throw new Error("Challenge not found");
+    
+    // Validate ownership before any mutation
+    if (challenge.userId !== args.userId) {
+      throw new Error("Access denied: not owner");
+    }
     
     const challengeDeletedAt = challenge.deletedAt;
     if (!challengeDeletedAt) {

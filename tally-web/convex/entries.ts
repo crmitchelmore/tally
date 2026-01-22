@@ -73,6 +73,21 @@ export const get = query({
 });
 
 /**
+ * Get an entry by ID including soft-deleted (for ownership verification)
+ */
+export const getIncludingDeleted = query({
+  args: { id: v.id("entries") },
+  handler: async (ctx, args) => {
+    const entry = await ctx.db.get(args.id);
+    if (!entry) return null;
+    return {
+      ...toApiFormat(entry),
+      deletedAt: entry.deletedAt,
+    };
+  },
+});
+
+/**
  * Create a new entry
  */
 export const create = mutation({
@@ -155,12 +170,21 @@ export const remove = mutation({
 
 /**
  * Restore a soft-deleted entry
+ * Validates ownership before restoring
  */
 export const restore = mutation({
-  args: { id: v.id("entries") },
+  args: { 
+    id: v.id("entries"),
+    userId: v.string(),
+  },
   handler: async (ctx, args) => {
     const entry = await ctx.db.get(args.id);
     if (!entry) throw new Error("Entry not found");
+    
+    // Validate ownership before any mutation
+    if (entry.userId !== args.userId) {
+      throw new Error("Access denied: not owner");
+    }
     
     await ctx.db.patch(args.id, { 
       deletedAt: undefined,

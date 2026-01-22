@@ -23,18 +23,17 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const { id } = await params;
 
     try {
-      const entry = await restoreEntry(id);
-
-      // Verify ownership
-      if (entry.userId !== authResult.userId) {
-        return jsonForbidden("Access denied");
-      }
-
+      // Pass userId to restore - ownership validation happens in Convex mutation
+      const entry = await restoreEntry(id, authResult.userId);
       return jsonOk({ success: true, entry });
     } catch (err) {
-      // Entry not found or already restored
-      if (err instanceof Error && err.message.includes("not found")) {
-        return jsonNotFound("Entry not found or already active");
+      if (err instanceof Error) {
+        if (err.message.includes("Access denied")) {
+          return jsonForbidden("Access denied");
+        }
+        if (err.message.includes("not found")) {
+          return jsonNotFound("Entry not found or already active");
+        }
       }
       throw err;
     }

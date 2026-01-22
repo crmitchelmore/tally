@@ -84,8 +84,8 @@ export async function deleteChallenge(id: string): Promise<{ deletedAt: number }
   return { deletedAt: result.deletedAt };
 }
 
-export async function restoreChallenge(id: string): Promise<Challenge> {
-  return await convexChallenges.restore(id as Id<"challenges">);
+export async function restoreChallenge(id: string, userId: string): Promise<Challenge> {
+  return await convexChallenges.restore(id as Id<"challenges">, userId);
 }
 
 // Entry operations
@@ -127,8 +127,8 @@ export async function deleteEntry(id: string): Promise<{ deletedAt: number }> {
   return { deletedAt: result.deletedAt };
 }
 
-export async function restoreEntry(id: string): Promise<Entry> {
-  return await convexEntries.restore(id as Id<"entries">);
+export async function restoreEntry(id: string, userId: string): Promise<Entry> {
+  return await convexEntries.restore(id as Id<"entries">, userId);
 }
 
 // Follow operations

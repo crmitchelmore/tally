@@ -39,6 +39,9 @@ export const convexChallenges = {
   get: (id: Id<"challenges">) =>
     client.query(api.challenges.get, { id }),
   
+  getIncludingDeleted: (id: Id<"challenges">) =>
+    client.query(api.challenges.getIncludingDeleted, { id }),
+  
   create: (args: {
     userId: string;
     name: string;
@@ -67,8 +70,8 @@ export const convexChallenges = {
   remove: (id: Id<"challenges">, deletedBy?: string) =>
     client.mutation(api.challenges.remove, { id, deletedBy }),
   
-  restore: (id: Id<"challenges">) =>
-    client.mutation(api.challenges.restore, { id }),
+  restore: (id: Id<"challenges">, userId: string) =>
+    client.mutation(api.challenges.restore, { id, userId }),
 };
 
 // Entry operations
@@ -81,6 +84,9 @@ export const convexEntries = {
   
   get: (id: Id<"entries">) =>
     client.query(api.entries.get, { id }),
+  
+  getIncludingDeleted: (id: Id<"entries">) =>
+    client.query(api.entries.getIncludingDeleted, { id }),
   
   create: (args: {
     userId: string;
@@ -102,8 +108,8 @@ export const convexEntries = {
   remove: (id: Id<"entries">, deletedBy?: string) =>
     client.mutation(api.entries.remove, { id, deletedBy }),
   
-  restore: (id: Id<"entries">) =>
-    client.mutation(api.entries.restore, { id }),
+  restore: (id: Id<"entries">, userId: string) =>
+    client.mutation(api.entries.restore, { id, userId }),
 };
 
 // Follow operations

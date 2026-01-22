@@ -35,8 +35,22 @@ Feature: Entry Logging
   # Journey: Detailed Entry with Sets/Reps
   # -------------------------------------------------------------------
 
+  @add @detailed @countType-sets
+  Scenario: Adding entry to a challenge configured for sets tracking
+    Given I have a challenge named "Push-ups" with countType "sets"
+    When I open the add entry dialog for "Push-ups"
+    Then I should see the sets input mode automatically
+    And I should see "Set 1" input field
+    And I should see an "Add set" button
+    When I add an entry with sets:
+      | reps |
+      | 20   |
+      | 15   |
+    Then the entry should record a total of 35 reps
+    And the entry should preserve individual set data [20, 15]
+
   @add @detailed
-  Scenario: Adding a detailed entry with sets of reps
+  Scenario: Adding a detailed entry with sets of reps (manual expand)
     Given I am adding an entry to challenge "Push-ups"
     When I tap "Add sets" to expand detailed mode
     And I add an entry with sets:

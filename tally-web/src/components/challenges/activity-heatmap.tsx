@@ -9,6 +9,7 @@ export interface ActivityHeatmapProps {
   endDate: string;
   color?: string;
   onDayClick?: (date: string, count: number) => void;
+  unitLabel?: string;
 }
 
 /**
@@ -21,6 +22,7 @@ export function ActivityHeatmap({
   endDate,
   color = "#FF4747",
   onDayClick,
+  unitLabel = "marks",
 }: ActivityHeatmapProps) {
   // Group entries by date
   const entriesByDate = useMemo(() => {
@@ -184,8 +186,8 @@ export function ActivityHeatmap({
                           ? `color-mix(in oklch, ${color} 75%, var(--color-border))`
                           : color,
                     }}
-                    title={`${day.date}: ${day.count} ${day.count === 1 ? "mark" : "marks"}`}
-                    aria-label={`${day.date}: ${day.count} marks`}
+                    title={`${day.date}: ${day.count} ${day.count === 1 ? unitLabel.replace(/s$/, "") : unitLabel}`}
+                    aria-label={`${day.date}: ${day.count} ${unitLabel}`}
                   />
                 );
               })}

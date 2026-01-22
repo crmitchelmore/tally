@@ -12,6 +12,7 @@ export interface DayDrilldownProps {
   onEdit?: (entry: Entry) => void;
   onDelete?: (entry: Entry) => void;
   onAddEntry?: () => void;
+  unitLabel?: string;
 }
 
 const FEELING_LABELS = {
@@ -33,6 +34,7 @@ export function DayDrilldown({
   onEdit,
   onDelete,
   onAddEntry,
+  unitLabel = "marks",
 }: DayDrilldownProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -103,7 +105,7 @@ export function DayDrilldown({
           <div>
             <h2 className="text-lg font-semibold text-ink">{formattedDate}</h2>
             <p className="text-sm text-muted">
-              {dayTotal} {dayTotal === 1 ? "mark" : "marks"} logged
+              {dayTotal} {dayTotal === 1 ? unitLabel.replace(/s$/, "") : unitLabel} logged
             </p>
           </div>
           <button
@@ -128,7 +130,7 @@ export function DayDrilldown({
           <div className="text-center mb-6 pb-6 border-b border-border">
             <TallyMark count={Math.min(dayTotal, 50)} size="lg" />
             <p className="mt-3 text-3xl font-semibold text-ink tabular-nums">{dayTotal}</p>
-            <p className="text-sm text-muted">{dayTotal === 1 ? "mark" : "marks"} this day</p>
+            <p className="text-sm text-muted">{dayTotal === 1 ? unitLabel.replace(/s$/, "") : unitLabel} this day</p>
           </div>
 
           {/* Entries list */}
@@ -172,7 +174,7 @@ export function DayDrilldown({
                         {entry.count}
                       </span>
                       <span className="text-sm text-muted">
-                        {entry.count === 1 ? "mark" : "marks"}
+                        {entry.count === 1 ? unitLabel.replace(/s$/, "") : unitLabel}
                       </span>
                       {entry.feeling && (
                         <span className="text-sm text-muted" title={FEELING_LABELS[entry.feeling].label}>

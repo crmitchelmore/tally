@@ -236,6 +236,7 @@ export default function ChallengeDetailPage() {
   if (!data) return null;
 
   const { challenge, stats, entries } = data;
+  const unitLabel = challenge.unitLabel || "marks";
 
   const paceColors = {
     ahead: "text-success",
@@ -243,10 +244,11 @@ export default function ChallengeDetailPage() {
     behind: "text-warning",
   };
 
+  const behindBy = Math.ceil((stats.daysElapsed * challenge.target / (new Date(challenge.endDate).getTime() - new Date(challenge.startDate).getTime()) * 86400000) - stats.totalCount);
   const paceMessages = {
     ahead: "You're ahead of pace!",
     "on-pace": "Right on track.",
-    behind: `Behind by ${Math.ceil((stats.daysElapsed * challenge.target / (new Date(challenge.endDate).getTime() - new Date(challenge.startDate).getTime()) * 86400000) - stats.totalCount)} marks`,
+    behind: `Behind by ${behindBy} ${behindBy === 1 ? unitLabel.replace(/s$/, "") : unitLabel}`,
   };
 
   return (
@@ -387,7 +389,7 @@ export default function ChallengeDetailPage() {
         <div className={`mt-4 p-3 rounded-lg bg-border/30 ${paceColors[stats.paceStatus]}`}>
           <p className="text-sm font-medium">{paceMessages[stats.paceStatus]}</p>
           <p className="text-xs text-muted mt-0.5">
-            Current pace: {stats.currentPace}/day · Best day: {stats.bestDay?.count || 0} marks
+            Current pace: {stats.currentPace}/day · Best day: {stats.bestDay?.count || 0} {(stats.bestDay?.count || 0) === 1 ? unitLabel.replace(/s$/, "") : unitLabel}
           </p>
         </div>
 
@@ -406,6 +408,7 @@ export default function ChallengeDetailPage() {
           endDate={challenge.endDate}
           color={challenge.color}
           onDayClick={handleDayClick}
+          unitLabel={unitLabel}
         />
       </div>
 
@@ -423,7 +426,7 @@ export default function ChallengeDetailPage() {
           </div>
           <div>
             <p className="text-sm text-muted">Best day</p>
-            <p className="text-xl font-semibold text-ink tabular-nums">{stats.bestDay?.count || 0} marks</p>
+            <p className="text-xl font-semibold text-ink tabular-nums">{stats.bestDay?.count || 0} {(stats.bestDay?.count || 0) === 1 ? unitLabel.replace(/s$/, "") : unitLabel}</p>
           </div>
           <div>
             <p className="text-sm text-muted">Daily average</p>
@@ -439,6 +442,7 @@ export default function ChallengeDetailPage() {
           entries={entries.slice(0, 20)}
           onEdit={setEditingEntry}
           onDelete={(entry) => handleDeleteEntry(entry.id)}
+          unitLabel={unitLabel}
         />
       </div>
 
@@ -471,6 +475,7 @@ export default function ChallengeDetailPage() {
           setDrilldownDate(null);
           setShowAddEntry(true);
         }}
+        unitLabel={unitLabel}
       />
     </div>
   );

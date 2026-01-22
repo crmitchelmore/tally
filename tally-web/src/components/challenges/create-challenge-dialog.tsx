@@ -43,8 +43,6 @@ const UNIT_OPTIONS = [
   { value: "sessions", label: "Sessions" },
 ];
 
-const INCREMENT_OPTIONS = [1, 5, 10, 25, 50, 100];
-
 /**
  * Modal dialog for creating a new challenge.
  * Uses div-based modal for Safari compatibility (native dialog has issues).
@@ -66,7 +64,6 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
   const [countType, setCountType] = useState<CountType>("simple");
   const [unitLabel, setUnitLabel] = useState("reps");
   const [customUnit, setCustomUnit] = useState("");
-  const [defaultIncrement, setDefaultIncrement] = useState(1);
   
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -116,7 +113,6 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
       setCountType("simple");
       setUnitLabel("reps");
       setCustomUnit("");
-      setDefaultIncrement(1);
       setError(null);
     }
   }, [open]);
@@ -138,7 +134,6 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
         isPublic,
         countType,
         unitLabel: finalUnitLabel,
-        defaultIncrement,
       };
 
       if (timeframeType === "custom") {
@@ -153,7 +148,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
     } finally {
       setSubmitting(false);
     }
-  }, [name, target, timeframeType, customStart, customEnd, color, icon, isPublic, countType, unitLabel, customUnit, defaultIncrement, onSubmit, onClose]);
+  }, [name, target, timeframeType, customStart, customEnd, color, icon, isPublic, countType, unitLabel, customUnit, onSubmit, onClose]);
 
   if (!open) return null;
 
@@ -397,31 +392,6 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
                 "
               />
             )}
-          </div>
-
-          {/* Quick Add Increment */}
-          <div>
-            <label className="block text-sm font-medium text-ink mb-1">Quick add amount</label>
-            <p className="text-xs text-muted mb-2">Default increment when you tap the + button</p>
-            <div className="flex gap-2 flex-wrap">
-              {INCREMENT_OPTIONS.map((inc) => (
-                <button
-                  key={inc}
-                  type="button"
-                  onClick={() => setDefaultIncrement(inc)}
-                  className={`
-                    w-12 h-10 rounded-lg text-sm font-medium border transition-colors
-                    ${defaultIncrement === inc
-                      ? "bg-accent text-white border-accent"
-                      : "bg-paper border-border text-ink hover:bg-border/50"
-                    }
-                  `}
-                  aria-pressed={defaultIncrement === inc}
-                >
-                  +{inc}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Color */}

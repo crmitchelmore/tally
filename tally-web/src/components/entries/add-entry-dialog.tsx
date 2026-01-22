@@ -29,12 +29,12 @@ export function AddEntryDialog({
   onClose,
   onSubmit,
 }: AddEntryDialogProps) {
-  const defaultIncrement = challenge.defaultIncrement ?? 1;
   const countType = challenge.countType ?? "simple";
   const unitLabel = challenge.unitLabel ?? "marks";
   
-  const [count, setCount] = useState(defaultIncrement);
-  const [sets, setSets] = useState<number[]>([defaultIncrement]);
+  // Use string for count to allow empty input
+  const [countStr, setCountStr] = useState("1");
+  const [sets, setSets] = useState<string[]>(["1"]);
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [note, setNote] = useState("");
   const [feeling, setFeeling] = useState<typeof FEELINGS[number]["value"] | undefined>();
@@ -44,8 +44,10 @@ export function AddEntryDialog({
   const [showOptions, setShowOptions] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const countInputRef = useRef<HTMLInputElement>(null);
+  const firstSetRef = useRef<HTMLInputElement>(null);
 
-  const setsTotal = sets.reduce((sum, s) => sum + s, 0);
+  const count = parseInt(countStr, 10) || 0;
+  const setsTotal = sets.reduce((sum, s) => sum + (parseInt(s, 10) || 0), 0);
   const displayCount = countType === "sets" ? setsTotal : count;
 
   useEffect(() => {
@@ -54,19 +56,25 @@ export function AddEntryDialog({
 
     if (open) {
       dialog.showModal();
-      setCount(defaultIncrement);
-      setSets([defaultIncrement]);
+      setCountStr("1");
+      setSets(["1"]);
       setDate(new Date().toISOString().split("T")[0]);
       setNote("");
       setFeeling(undefined);
       setError(null);
       setShowSuccess(false);
       setShowOptions(false);
-      setTimeout(() => countInputRef.current?.select(), 50);
+      setTimeout(() => {
+        if (countType === "sets") {
+          firstSetRef.current?.select();
+        } else {
+          countInputRef.current?.select();
+        }
+      }, 50);
     } else {
       dialog.close();
     }
-  }, [open, defaultIncrement]);
+  }, [open, countType]);
 
   const handleDialogClick = useCallback(
     (e: React.MouseEvent<HTMLDialogElement>) => {
@@ -84,19 +92,25 @@ export function AddEntryDialog({
   }, [open, onClose]);
 
   const incrementCount = useCallback((delta: number) => {
-    setCount((c) => Math.max(1, c + delta));
+    setCountStr((c) => String(Math.max(0, (parseInt(c, 10) || 0) + delta)));
   }, []);
 
   const addSet = useCallback(() => {
-    setSets((prev) => [...prev, defaultIncrement]);
-  }, [defaultIncrement]);
+    setSets((prev) => [...prev, "1"]);
+  }, []);
 
   const removeSet = useCallback((index: number) => {
     setSets((prev) => prev.length > 1 ? prev.filter((_, i) => i !== index) : prev);
   }, []);
 
-  const updateSet = useCallback((index: number, value: number) => {
-    setSets((prev) => prev.map((s, i) => i === index ? Math.max(1, value) : s));
+  const updateSet = useCallback((index: number, value: string) => {
+    setSets((prev) => prev.map((s, i) => i === index ? value : s));
+  }, []);
+
+  const incrementSet = useCallback((index: number, delta: number) => {
+    setSets((prev) => prev.map((s, i) => 
+      i === index ? String(Math.max(0, (parseInt(s, 10) || 0) + delta)) : s
+    ));
   }, []);
 
   const today = new Date().toISOString().split("T")[0];
@@ -105,16 +119,17 @@ export function AddEntryDialog({
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (isSubmitting || isFutureDate) return;
+      if (isSubmitting || isFutureDate || displayCount <= 0) return;
 
       setIsSubmitting(true);
       setError(null);
 
       try {
+        const numericSets = sets.map(s => parseInt(s, 10) || 0).filter(n => n > 0);
         await onSubmit({
           date,
           count: displayCount,
-          sets: countType === "sets" ? sets : undefined,
+          sets: countType === "sets" ? numericSets : undefined,
           note: note.trim() || undefined,
           feeling,
         });
@@ -178,12 +193,16 @@ export function AddEntryDialog({
                   <div key={idx} className="flex items-center gap-2">
                     <span className="text-xs text-muted w-12">Set {idx + 1}</span>
                     <div className="flex items-center gap-1 flex-1">
-                      <button type="button" onClick={() => updateSet(idx, setVal - defaultIncrement)}
+                      <button type="button" onClick={() => incrementSet(idx, -1)}
                         className="w-7 h-7 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-sm">−</button>
-                      <input type="number" min={1} value={setVal}
-                        onChange={(e) => updateSet(idx, parseInt(e.target.value) || 1)}
+                      <input 
+                        ref={idx === 0 ? firstSetRef : undefined}
+                        type="number" 
+                        min={0} 
+                        value={setVal}
+                        onChange={(e) => updateSet(idx, e.target.value)}
                         className="w-14 h-8 text-center text-lg font-semibold tabular-nums bg-transparent border-b-2 border-border focus:border-accent text-ink outline-none" />
-                      <button type="button" onClick={() => updateSet(idx, setVal + defaultIncrement)}
+                      <button type="button" onClick={() => incrementSet(idx, 1)}
                         className="w-7 h-7 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-sm">+</button>
                     </div>
                     {sets.length > 1 && (
@@ -208,32 +227,49 @@ export function AddEntryDialog({
               <label htmlFor="count" className="block text-sm font-medium text-muted mb-2">
                 How many {unitLabel}?
               </label>
-              <div className="flex items-center justify-center gap-2">
-                <button type="button" onClick={() => incrementCount(-defaultIncrement * 5)}
-                  className="w-10 h-10 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-sm font-medium">
-                  -{defaultIncrement * 5}
+              {/* -100, -10, -1 buttons */}
+              <div className="flex items-center justify-center gap-1 mb-2">
+                <button type="button" onClick={() => incrementCount(-100)}
+                  className="w-12 h-8 rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50 text-xs font-medium">
+                  −100
                 </button>
-                <button type="button" onClick={() => incrementCount(-defaultIncrement)}
-                  className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-base">−</button>
-                <input
-                  ref={countInputRef}
-                  id="count"
-                  type="number"
-                  min={1}
-                  max={9999}
-                  value={count}
-                  onChange={(e) => setCount(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-20 h-12 text-center text-3xl font-semibold tabular-nums bg-transparent border-b-2 border-border focus:border-accent text-ink outline-none"
-                />
-                <button type="button" onClick={() => incrementCount(defaultIncrement)}
-                  className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-base">+</button>
-                <button type="button" onClick={() => incrementCount(defaultIncrement * 5)}
-                  className="w-10 h-10 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-sm font-medium">
-                  +{defaultIncrement * 5}
+                <button type="button" onClick={() => incrementCount(-10)}
+                  className="w-10 h-8 rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50 text-xs font-medium">
+                  −10
+                </button>
+                <button type="button" onClick={() => incrementCount(-1)}
+                  className="w-8 h-8 rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50 text-sm font-medium">
+                  −1
+                </button>
+              </div>
+              {/* Main input */}
+              <input
+                ref={countInputRef}
+                id="count"
+                type="number"
+                min={0}
+                max={99999}
+                value={countStr}
+                onChange={(e) => setCountStr(e.target.value)}
+                className="w-28 h-14 text-center text-4xl font-semibold tabular-nums bg-transparent border-b-2 border-border focus:border-accent text-ink outline-none"
+              />
+              {/* +1, +10, +100 buttons */}
+              <div className="flex items-center justify-center gap-1 mt-2">
+                <button type="button" onClick={() => incrementCount(1)}
+                  className="w-8 h-8 rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50 text-sm font-medium">
+                  +1
+                </button>
+                <button type="button" onClick={() => incrementCount(10)}
+                  className="w-10 h-8 rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50 text-xs font-medium">
+                  +10
+                </button>
+                <button type="button" onClick={() => incrementCount(100)}
+                  className="w-12 h-8 rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50 text-xs font-medium">
+                  +100
                 </button>
               </div>
               {/* Tally preview - compact */}
-              <div className="mt-2 flex justify-center">
+              <div className="mt-3 flex justify-center">
                 <TallyMark count={Math.min(count, 25)} size="sm" animated />
               </div>
             </div>

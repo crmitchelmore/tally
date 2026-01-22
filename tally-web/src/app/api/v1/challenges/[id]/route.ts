@@ -109,9 +109,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return jsonForbidden("Access denied");
     }
 
-    await deleteChallenge(id);
+    const result = await deleteChallenge(id);
 
-    return jsonOk({ success: true });
+    // Return deletedAt for undo capability
+    return jsonOk({ success: true, id, deletedAt: result.deletedAt });
   } catch (error) {
     console.error("Error in DELETE /api/v1/challenges/[id]:", error);
     return jsonInternalError();

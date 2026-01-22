@@ -35,7 +35,7 @@ async function loginWithClerk(page: Page): Promise<void> {
   // Check if we got redirected to Google OAuth (means user was created with Google)
   if (page.url().includes("accounts.google.com")) {
     throw new Error(
-      "Test user appears to use Google OAuth. Please create a test user with email/password in Clerk dashboard."
+      "Redirected to Google OAuth. Please ensure the test user has password authentication enabled in Clerk."
     );
   }
   
@@ -48,13 +48,15 @@ async function loginWithClerk(page: Page): Promise<void> {
   const continueButton = page.getByRole("button", { name: /continue/i }).first();
   await continueButton.click();
   
-  // Wait for next step
-  await page.waitForTimeout(1500);
+  // Wait for next step - give more time for redirect
+  await page.waitForTimeout(3000);
   
-  // Check again if redirected to Google OAuth
+  // Check if redirected to Google OAuth
   if (page.url().includes("accounts.google.com")) {
     throw new Error(
-      "Test user appears to use Google OAuth. Please create a test user with email/password in Clerk dashboard."
+      "User redirected to Google OAuth after entering email. " +
+      "This means the account's primary auth method is Google. " +
+      "In Clerk dashboard, go to Users > select user > add Password as an auth method."
     );
   }
   

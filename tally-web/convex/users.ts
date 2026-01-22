@@ -1,8 +1,26 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { Doc } from "./_generated/dataModel";
+
+// Helper to check if a record is not soft-deleted
+function isNotDeleted<T extends { deletedAt?: number }>(doc: T): boolean {
+  return doc.deletedAt === undefined;
+}
+
+// Helper to convert user doc to API format
+function toApiFormat(user: Doc<"users">) {
+  return {
+    id: user._id,
+    clerkId: user.clerkId,
+    email: user.email,
+    name: user.name,
+    createdAt: new Date(user.createdAt).toISOString(),
+    updatedAt: new Date(user.updatedAt || user.createdAt).toISOString(),
+  };
+}
 
 /**
- * Get user by Clerk ID
+ * Get user by Clerk ID (excludes soft-deleted)
  */
 export const getByClerkId = query({
   args: { clerkId: v.string() },
@@ -12,17 +30,9 @@ export const getByClerkId = query({
       .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
       .first();
     
-    if (!user) return null;
+    if (!user || !isNotDeleted(user)) return null;
     
-    // Convert timestamps to ISO strings for API compatibility
-    return {
-      id: user._id,
-      clerkId: user.clerkId,
-      email: user.email,
-      name: user.name,
-      createdAt: new Date(user.createdAt).toISOString(),
-      updatedAt: new Date(user.updatedAt || user.createdAt).toISOString(),
-    };
+    return toApiFormat(user);
   },
 });
 
@@ -47,15 +57,7 @@ export const create = mutation({
     const user = await ctx.db.get(userId);
     if (!user) throw new Error("Failed to create user");
     
-    // Convert timestamps to ISO strings for API compatibility
-    return {
-      id: user._id,
-      clerkId: user.clerkId,
-      email: user.email,
-      name: user.name,
-      createdAt: new Date(user.createdAt).toISOString(),
-      updatedAt: new Date(user.updatedAt || user.createdAt).toISOString(),
-    };
+    return toApiFormat(user);
   },
 });
 
@@ -77,14 +79,40 @@ export const update = mutation({
     const user = await ctx.db.get(id);
     if (!user) throw new Error("User not found");
     
-    // Convert timestamps to ISO strings for API compatibility
-    return {
-      id: user._id,
-      clerkId: user.clerkId,
-      email: user.email,
-      name: user.name,
-      createdAt: new Date(user.createdAt).toISOString(),
-      updatedAt: new Date(user.updatedAt || user.createdAt).toISOString(),
-    };
+    return toApiFormat(user);
+  },
+});
+
+/**
+ * Soft delete a user
+ */
+export const remove = mutation({
+  args: { 
+    id: v.id("users"),
+    deletedBy: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    await ctx.db.patch(args.id, { 
+      deletedAt: now,
+      deletedBy: args.deletedBy,
+    });
+    return { success: true, deletedAt: now };
+  },
+});
+
+/**
+ * Restore a soft-deleted user
+ */
+export const restore = mutation({
+  args: { id: v.id("users") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, { 
+      deletedAt: undefined,
+      deletedBy: undefined,
+    });
+    const user = await ctx.db.get(args.id);
+    if (!user) throw new Error("User not found after restore");
+    return toApiFormat(user);
   },
 });

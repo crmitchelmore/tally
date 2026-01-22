@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { TallyMark } from "@/components/ui/tally-mark";
+import { UndoToast } from "@/components/ui/undo-toast";
 import { ActivityHeatmap } from "@/components/challenges/activity-heatmap";
 import { AddEntryDialog, EntryList, DayDrilldown, EditEntryDialog } from "@/components/entries";
 import type { Challenge, ChallengeStats, Entry, CreateEntryRequest, UpdateEntryRequest } from "@/app/api/v1/_lib/types";
@@ -35,6 +36,9 @@ export default function ChallengeDetailPage() {
   const [showAddEntry, setShowAddEntry] = useState(false);
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
   const [drilldownDate, setDrilldownDate] = useState<string | null>(null);
+  
+  // Undo state for deleted entries
+  const [deletedEntry, setDeletedEntry] = useState<{ id: string; message: string } | null>(null);
 
   // Auto-open add entry dialog if requested via query param
   useEffect(() => {
@@ -124,9 +128,10 @@ export default function ChallengeDetailPage() {
     [fetchData]
   );
 
-  // Delete entry handler
+  // Delete entry handler (with undo support)
   const handleDeleteEntry = useCallback(
     async (id: string) => {
+      const entry = data?.entries.find((e) => e.id === id);
       const res = await fetch(`/api/v1/entries/${id}`, {
         method: "DELETE",
       });
@@ -136,10 +141,32 @@ export default function ChallengeDetailPage() {
         throw new Error(errData.error || "Failed to delete entry");
       }
 
+      // Show undo toast
+      setDeletedEntry({
+        id,
+        message: `Entry deleted${entry ? ` (${entry.count} marks)` : ""}`,
+      });
+
       await fetchData();
     },
-    [fetchData]
+    [fetchData, data?.entries]
   );
+
+  // Restore entry handler
+  const handleRestoreEntry = useCallback(async () => {
+    if (!deletedEntry) return;
+    
+    const res = await fetch(`/api/v1/entries/${deletedEntry.id}/restore`, {
+      method: "POST",
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to restore entry");
+    }
+
+    setDeletedEntry(null);
+    await fetchData();
+  }, [deletedEntry, fetchData]);
 
   // Heatmap day click handler
   const handleDayClick = useCallback((date: string) => {
@@ -187,13 +214,18 @@ export default function ChallengeDetailPage() {
 
   // Delete
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this challenge? This cannot be undone.")) {
-      return;
-    }
+    if (!data) return;
+    const challengeName = data.challenge.name;
     try {
       setDeleting(true);
       const res = await fetch(`/api/v1/challenges/${challengeId}`, { method: "DELETE" });
       if (res.ok) {
+        const result = await res.json();
+        // Navigate to dashboard with undo info in session storage
+        sessionStorage.setItem("deletedChallenge", JSON.stringify({
+          id: result.id,
+          name: challengeName,
+        }));
         router.push("/app");
       }
     } catch {
@@ -477,6 +509,15 @@ export default function ChallengeDetailPage() {
         }}
         unitLabel={unitLabel}
       />
+
+      {/* Undo toast for deleted entry */}
+      {deletedEntry && (
+        <UndoToast
+          message={deletedEntry.message}
+          onUndo={handleRestoreEntry}
+          onDismiss={() => setDeletedEntry(null)}
+        />
+      )}
     </div>
   );
 }

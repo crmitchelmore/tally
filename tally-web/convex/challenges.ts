@@ -2,6 +2,11 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
 
+// Helper to check if a record is not soft-deleted
+function isNotDeleted<T extends { deletedAt?: number }>(doc: T): boolean {
+  return doc.deletedAt === undefined;
+}
+
 // Helper to convert Convex doc to API format
 function toApiFormat(challenge: Doc<"challenges">) {
   return {
@@ -25,7 +30,7 @@ function toApiFormat(challenge: Doc<"challenges">) {
 }
 
 /**
- * List challenges by user ID
+ * List challenges by user ID (excluding soft-deleted)
  */
 export const listByUser = query({
   args: { userId: v.string() },
@@ -34,12 +39,12 @@ export const listByUser = query({
       .query("challenges")
       .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
       .collect();
-    return challenges.map(toApiFormat);
+    return challenges.filter(isNotDeleted).map(toApiFormat);
   },
 });
 
 /**
- * List active (non-archived) challenges by user ID
+ * List active (non-archived) challenges by user ID (excluding soft-deleted)
  */
 export const listActive = query({
   args: { userId: v.string() },
@@ -52,15 +57,15 @@ export const listActive = query({
       )
       .collect();
     
-    // Filter by end date (challenges that haven't ended yet)
+    // Filter by end date and exclude soft-deleted
     return challenges
-      .filter((c) => c.endDate >= now)
+      .filter((c) => isNotDeleted(c) && c.endDate >= now)
       .map(toApiFormat);
   },
 });
 
 /**
- * Get public challenges (for community)
+ * Get public challenges (for community) - excluding soft-deleted
  */
 export const listPublic = query({
   args: {},
@@ -73,21 +78,37 @@ export const listPublic = query({
       )
       .collect();
     
-    // Filter by end date (challenges that haven't ended yet)
+    // Filter by end date and exclude soft-deleted
     return challenges
-      .filter((c) => c.endDate >= now)
+      .filter((c) => isNotDeleted(c) && c.endDate >= now)
       .map(toApiFormat);
   },
 });
 
 /**
- * Get a challenge by ID
+ * Get a challenge by ID (returns null if soft-deleted)
  */
 export const get = query({
   args: { id: v.id("challenges") },
   handler: async (ctx, args) => {
     const challenge = await ctx.db.get(args.id);
-    return challenge ? toApiFormat(challenge) : null;
+    if (!challenge || !isNotDeleted(challenge)) return null;
+    return toApiFormat(challenge);
+  },
+});
+
+/**
+ * Get a challenge by ID including soft-deleted (for ownership verification)
+ */
+export const getIncludingDeleted = query({
+  args: { id: v.id("challenges") },
+  handler: async (ctx, args) => {
+    const challenge = await ctx.db.get(args.id);
+    if (!challenge) return null;
+    return {
+      ...toApiFormat(challenge),
+      deletedAt: challenge.deletedAt,
+    };
   },
 });
 
@@ -160,34 +181,117 @@ export const update = mutation({
 });
 
 /**
- * Delete a challenge and all related entries and follows
+ * Soft delete a challenge and cascade to related entries and follows
  */
 export const remove = mutation({
-  args: { id: v.id("challenges") },
+  args: { 
+    id: v.id("challenges"),
+    deletedBy: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
-    // Delete all entries for this challenge
+    const now = Date.now();
+    
+    // Soft delete all entries for this challenge
     const entries = await ctx.db
       .query("entries")
       .withIndex("by_challenge_id", (q) => q.eq("challengeId", args.id))
       .collect();
     
     for (const entry of entries) {
-      await ctx.db.delete(entry._id);
+      if (isNotDeleted(entry)) {
+        await ctx.db.patch(entry._id, { 
+          deletedAt: now,
+          deletedBy: args.deletedBy,
+        });
+      }
     }
 
-    // Delete all follows for this challenge
+    // Soft delete all follows for this challenge
     const follows = await ctx.db
       .query("follows")
       .withIndex("by_challenge_id", (q) => q.eq("challengeId", args.id))
       .collect();
     
     for (const follow of follows) {
-      await ctx.db.delete(follow._id);
+      if (isNotDeleted(follow)) {
+        await ctx.db.patch(follow._id, { 
+          deletedAt: now,
+          deletedBy: args.deletedBy,
+        });
+      }
     }
 
-    // Delete the challenge
-    await ctx.db.delete(args.id);
+    // Soft delete the challenge
+    await ctx.db.patch(args.id, { 
+      deletedAt: now,
+      deletedBy: args.deletedBy,
+    });
     
-    return { success: true };
+    return { success: true, deletedAt: now };
+  },
+});
+
+/**
+ * Restore a soft-deleted challenge and its related entries/follows
+ * Validates ownership before restoring
+ */
+export const restore = mutation({
+  args: { 
+    id: v.id("challenges"),
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const challenge = await ctx.db.get(args.id);
+    if (!challenge) throw new Error("Challenge not found");
+    
+    // Validate ownership before any mutation
+    if (challenge.userId !== args.userId) {
+      throw new Error("Access denied: not owner");
+    }
+    
+    const challengeDeletedAt = challenge.deletedAt;
+    if (!challengeDeletedAt) {
+      return toApiFormat(challenge); // Already not deleted
+    }
+    
+    // Restore the challenge
+    await ctx.db.patch(args.id, { 
+      deletedAt: undefined,
+      deletedBy: undefined,
+    });
+    
+    // Restore entries that were deleted at the same time (cascade restore)
+    const entries = await ctx.db
+      .query("entries")
+      .withIndex("by_challenge_id", (q) => q.eq("challengeId", args.id))
+      .collect();
+    
+    for (const entry of entries) {
+      if (entry.deletedAt === challengeDeletedAt) {
+        await ctx.db.patch(entry._id, { 
+          deletedAt: undefined,
+          deletedBy: undefined,
+        });
+      }
+    }
+
+    // Restore follows that were deleted at the same time
+    const follows = await ctx.db
+      .query("follows")
+      .withIndex("by_challenge_id", (q) => q.eq("challengeId", args.id))
+      .collect();
+    
+    for (const follow of follows) {
+      if (follow.deletedAt === challengeDeletedAt) {
+        await ctx.db.patch(follow._id, { 
+          deletedAt: undefined,
+          deletedBy: undefined,
+        });
+      }
+    }
+    
+    const restored = await ctx.db.get(args.id);
+    if (!restored) throw new Error("Challenge not found after restore");
+    return toApiFormat(restored);
   },
 });

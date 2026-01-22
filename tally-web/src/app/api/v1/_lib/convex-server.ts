@@ -39,6 +39,9 @@ export const convexChallenges = {
   get: (id: Id<"challenges">) =>
     client.query(api.challenges.get, { id }),
   
+  getIncludingDeleted: (id: Id<"challenges">) =>
+    client.query(api.challenges.getIncludingDeleted, { id }),
+  
   create: (args: {
     userId: string;
     name: string;
@@ -64,8 +67,11 @@ export const convexChallenges = {
     isArchived?: boolean;
   }) => client.mutation(api.challenges.update, args),
   
-  remove: (id: Id<"challenges">) =>
-    client.mutation(api.challenges.remove, { id }),
+  remove: (id: Id<"challenges">, deletedBy?: string) =>
+    client.mutation(api.challenges.remove, { id, deletedBy }),
+  
+  restore: (id: Id<"challenges">, userId: string) =>
+    client.mutation(api.challenges.restore, { id, userId }),
 };
 
 // Entry operations
@@ -78,6 +84,9 @@ export const convexEntries = {
   
   get: (id: Id<"entries">) =>
     client.query(api.entries.get, { id }),
+  
+  getIncludingDeleted: (id: Id<"entries">) =>
+    client.query(api.entries.getIncludingDeleted, { id }),
   
   create: (args: {
     userId: string;
@@ -96,8 +105,11 @@ export const convexEntries = {
     feeling?: "great" | "good" | "okay" | "tough";
   }) => client.mutation(api.entries.update, args),
   
-  remove: (id: Id<"entries">) =>
-    client.mutation(api.entries.remove, { id }),
+  remove: (id: Id<"entries">, deletedBy?: string) =>
+    client.mutation(api.entries.remove, { id, deletedBy }),
+  
+  restore: (id: Id<"entries">, userId: string) =>
+    client.mutation(api.entries.restore, { id, userId }),
 };
 
 // Follow operations
@@ -114,6 +126,6 @@ export const convexFollows = {
   follow: (userId: string, challengeId: string) =>
     client.mutation(api.follows.follow, { userId, challengeId }),
   
-  unfollow: (userId: string, challengeId: string) =>
-    client.mutation(api.follows.unfollow, { userId, challengeId }),
+  unfollow: (userId: string, challengeId: string, deletedBy?: string) =>
+    client.mutation(api.follows.unfollow, { userId, challengeId, deletedBy }),
 };

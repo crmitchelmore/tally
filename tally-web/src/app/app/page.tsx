@@ -2,18 +2,39 @@
 
 import Link from "next/link";
 import { TallyMark } from "@/components/ui/tally-mark";
+import { UndoToast } from "@/components/ui/undo-toast";
 import { ChallengeList } from "@/components/challenges";
 import { DashboardHighlights, PersonalRecords, WeeklySummary } from "@/components/stats";
 import { FollowedChallengesSection, CommunitySection } from "@/components/community";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useChallenges } from "@/hooks/use-challenges";
 import { useStats, useEntries } from "@/hooks/use-stats";
 import type { Challenge } from "@/app/api/v1/_lib/types";
 
+interface DeletedChallenge {
+  id: string;
+  name: string;
+}
+
 export default function AppPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const [showWeeklySummary, setShowWeeklySummary] = useState(false);
+  const [deletedChallenge, setDeletedChallenge] = useState<DeletedChallenge | null>(null);
+
+  // Check for deleted challenge in session storage (from challenge detail page)
+  useEffect(() => {
+    const stored = sessionStorage.getItem("deletedChallenge");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setDeletedChallenge(parsed);
+        sessionStorage.removeItem("deletedChallenge");
+      } catch {
+        // Ignore parse errors
+      }
+    }
+  }, []);
 
   // Data fetching with SWR - shows cached data immediately
   const isReady = isLoaded && isSignedIn;
@@ -61,6 +82,22 @@ export default function AppPage() {
     refreshStats();
     refreshEntries();
   }, [refreshChallenges, refreshStats, refreshEntries]);
+
+  // Restore deleted challenge
+  const handleRestoreChallenge = useCallback(async () => {
+    if (!deletedChallenge) return;
+    
+    const res = await fetch(`/api/v1/challenges/${deletedChallenge.id}/restore`, {
+      method: "POST",
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to restore challenge");
+    }
+
+    setDeletedChallenge(null);
+    handleRefresh();
+  }, [deletedChallenge, handleRefresh]);
 
   // Show signed-out CTA if not authenticated
   if (isLoaded && !isSignedIn) {
@@ -150,6 +187,15 @@ export default function AppPage() {
         open={showWeeklySummary}
         onClose={() => setShowWeeklySummary(false)}
       />
+
+      {/* Undo toast for deleted challenge */}
+      {deletedChallenge && (
+        <UndoToast
+          message={`"${deletedChallenge.name}" deleted`}
+          onUndo={handleRestoreChallenge}
+          onDismiss={() => setDeletedChallenge(null)}
+        />
+      )}
     </div>
   );
 }

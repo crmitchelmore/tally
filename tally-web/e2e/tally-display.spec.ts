@@ -183,6 +183,52 @@ test.describe("Add Entry Dialog @entries", () => {
   });
 });
 
+test.describe("Sets and Reps Entry Mode @entries @sets", () => {
+  test("add entry dialog shows sets mode when challenge has countType sets", async ({ page }) => {
+    await page.goto("/offline");
+
+    // Create a challenge with countType: "sets"
+    await page.evaluate(() => {
+      const challenges = [{
+        id: "sets-challenge",
+        name: "Push-ups",
+        target: 10000,
+        color: "#FF4747",
+        countType: "sets",
+        unitLabel: "reps",
+        startDate: new Date().toISOString().split("T")[0],
+        endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      }];
+      localStorage.setItem("tally_offline_challenges", JSON.stringify(challenges));
+      localStorage.setItem("tally_offline_user", "true");
+    });
+    await page.reload();
+    await page.waitForTimeout(500);
+
+    // Click on the challenge card to enter detail view
+    const challengeCard = page.getByRole("button", { name: /push-ups/i }).first();
+    await expect(challengeCard).toBeVisible();
+    await challengeCard.click();
+    await page.waitForTimeout(300);
+
+    // Click "Add sets..." button to open the full add entry dialog
+    const addSetsButton = page.getByRole("button", { name: "Add sets..." });
+    await expect(addSetsButton).toBeVisible();
+    await addSetsButton.click();
+    await page.waitForTimeout(300);
+
+    // The add entry dialog should show sets input mode automatically
+    // since the challenge was created with countType: "sets"
+    // Look for "Set 1" label which indicates sets mode is active
+    const setsLabel = page.getByText(/set\s*1/i);
+    await expect(setsLabel).toBeVisible({ timeout: 5000 });
+
+    // Should also have an "Add another set" button
+    const addAnotherSetButton = page.getByRole("button", { name: /add another set/i });
+    await expect(addAnotherSetButton).toBeVisible();
+  });
+});
+
 test.describe("Challenge Icons Display @visual", () => {
   test("challenge card shows icon emoji", async ({ page }) => {
     await page.goto("/offline");

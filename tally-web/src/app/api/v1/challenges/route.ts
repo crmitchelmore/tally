@@ -92,6 +92,9 @@ export async function POST(request: NextRequest) {
         color: body.color || "#FF4747", // Default tally red
         icon: body.icon || "tally",
         isPublic: body.isPublic ?? false,
+        countType: body.countType,
+        unitLabel: body.unitLabel,
+        defaultIncrement: body.defaultIncrement,
       });
 
       span.setAttribute("challenge.id", challenge.id);

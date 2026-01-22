@@ -73,8 +73,9 @@ test.describe("Challenge Creation with Settings @challenges", () => {
       await increment100.click();
     }
 
-    // Submit the form
-    const submitButton = page.getByRole("button", { name: /create/i });
+    // Submit the form - use dialog-scoped selector to avoid matching empty state button
+    const dialog = page.getByRole("dialog");
+    const submitButton = dialog.getByRole("button", { name: /create/i });
     if (await submitButton.isVisible()) {
       await submitButton.click();
     }

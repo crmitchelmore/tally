@@ -2,6 +2,11 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Doc } from "./_generated/dataModel";
 
+// Helper to check if a record is not soft-deleted
+function isNotDeleted<T extends { deletedAt?: number }>(doc: T): boolean {
+  return doc.deletedAt === undefined;
+}
+
 // Helper to convert Convex doc to API format
 function toApiFormat(entry: Doc<"entries">) {
   return {
@@ -18,7 +23,7 @@ function toApiFormat(entry: Doc<"entries">) {
 }
 
 /**
- * List entries by challenge ID (sorted by date DESC)
+ * List entries by challenge ID (sorted by date DESC, excluding soft-deleted)
  */
 export const listByChallenge = query({
   args: { challengeId: v.string() },
@@ -28,15 +33,16 @@ export const listByChallenge = query({
       .withIndex("by_challenge_id", (q) => q.eq("challengeId", args.challengeId))
       .collect();
     
-    // Sort by date descending
+    // Sort by date descending, excluding soft-deleted
     return entries
+      .filter(isNotDeleted)
       .sort((a, b) => b.date.localeCompare(a.date))
       .map(toApiFormat);
   },
 });
 
 /**
- * List entries by user ID (sorted by date DESC)
+ * List entries by user ID (sorted by date DESC, excluding soft-deleted)
  */
 export const listByUser = query({
   args: { userId: v.string() },
@@ -46,21 +52,23 @@ export const listByUser = query({
       .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
       .collect();
     
-    // Sort by date descending
+    // Sort by date descending, excluding soft-deleted
     return entries
+      .filter(isNotDeleted)
       .sort((a, b) => b.date.localeCompare(a.date))
       .map(toApiFormat);
   },
 });
 
 /**
- * Get an entry by ID
+ * Get an entry by ID (returns null if soft-deleted)
  */
 export const get = query({
   args: { id: v.id("entries") },
   handler: async (ctx, args) => {
     const entry = await ctx.db.get(args.id);
-    return entry ? toApiFormat(entry) : null;
+    if (!entry || !isNotDeleted(entry)) return null;
+    return toApiFormat(entry);
   },
 });
 
@@ -128,12 +136,39 @@ export const update = mutation({
 });
 
 /**
- * Delete an entry
+ * Soft delete an entry
  */
 export const remove = mutation({
+  args: { 
+    id: v.id("entries"),
+    deletedBy: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    await ctx.db.patch(args.id, { 
+      deletedAt: now,
+      deletedBy: args.deletedBy,
+    });
+    return { success: true, deletedAt: now };
+  },
+});
+
+/**
+ * Restore a soft-deleted entry
+ */
+export const restore = mutation({
   args: { id: v.id("entries") },
   handler: async (ctx, args) => {
-    await ctx.db.delete(args.id);
-    return { success: true };
+    const entry = await ctx.db.get(args.id);
+    if (!entry) throw new Error("Entry not found");
+    
+    await ctx.db.patch(args.id, { 
+      deletedAt: undefined,
+      deletedBy: undefined,
+    });
+    
+    const restored = await ctx.db.get(args.id);
+    if (!restored) throw new Error("Entry not found after restore");
+    return toApiFormat(restored);
   },
 });

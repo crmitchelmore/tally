@@ -5,3 +5,5 @@ export { AppHeader } from "./app-header";
 export { SyncIndicator } from "./sync-indicator";
 export { ThemeToggle } from "./theme-toggle";
 export { UserMenu } from "./user-menu";
+export { UndoToast, useUndoToast } from "./undo-toast";
+export type { UndoToastProps, UndoItem } from "./undo-toast";

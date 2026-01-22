@@ -1954,3 +1954,20 @@ main.landing {
   white-space: nowrap;
   border-width: 0;
 }
+
+
+/* Undo toast animation */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.2s ease-out;
+}

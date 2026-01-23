@@ -54,13 +54,13 @@ jobs:
           VERCEL_PROD_URL: ${{ secrets.VERCEL_PROD_URL }}
         run: |
           echo "::group::Homepage loads"
-          curl -fsS --max-time 30 "$VERCEL_PROD_URL" >/dev/null
+          curl -fsSL --max-time 30 "$VERCEL_PROD_URL" >/dev/null
           echo "✅ Homepage returns 200"
           echo "::endgroup::"
           
           echo "::group::Health check (env vars present)"
-          HEALTH_RESPONSE=$(curl -s --max-time 10 "$VERCEL_PROD_URL/api/v1/public/health")
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$VERCEL_PROD_URL/api/v1/public/health")
+          HEALTH_RESPONSE=$(curl -sL --max-time 10 "$VERCEL_PROD_URL/api/v1/public/health")
+          HTTP_CODE=$(curl -sL -o /dev/null -w "%{http_code}" "$VERCEL_PROD_URL/api/v1/public/health")
           if [ "$HTTP_CODE" = "200" ]; then
             echo "✅ Health check passed"
             echo "$HEALTH_RESPONSE" | head -c 500
@@ -75,7 +75,7 @@ jobs:
           echo "::endgroup::"
           
           echo "::group::API returns 401 for unauthenticated requests (not 500)"
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$VERCEL_PROD_URL/api/v1/challenges" \
+          HTTP_CODE=$(curl -sL -o /dev/null -w "%{http_code}" -X POST "$VERCEL_PROD_URL/api/v1/challenges" \
             -H "Content-Type: application/json" \
             -d '{"name":"smoke-test"}')
           if [ "$HTTP_CODE" = "401" ]; then

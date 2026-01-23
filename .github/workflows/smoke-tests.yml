@@ -23,7 +23,7 @@ jobs:
           echo "Testing: $PROD_URL"
           
           echo "::group::Homepage loads"
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$PROD_URL")
+          HTTP_CODE=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 30 "$PROD_URL")
           if [ "$HTTP_CODE" = "200" ]; then
             echo "✅ Homepage returns 200"
           else
@@ -33,8 +33,8 @@ jobs:
           echo "::endgroup::"
           
           echo "::group::Health endpoint"
-          HEALTH_RESPONSE=$(curl -s --max-time 10 "$PROD_URL/api/v1/public/health")
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL/api/v1/public/health")
+          HEALTH_RESPONSE=$(curl -sL --max-time 10 "$PROD_URL/api/v1/public/health")
+          HTTP_CODE=$(curl -sL -o /dev/null -w "%{http_code}" "$PROD_URL/api/v1/public/health")
           if [ "$HTTP_CODE" = "200" ]; then
             echo "✅ Health check passed"
             echo "$HEALTH_RESPONSE"
@@ -49,7 +49,7 @@ jobs:
           echo "::endgroup::"
           
           echo "::group::API auth check"
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$PROD_URL/api/v1/challenges" \
+          HTTP_CODE=$(curl -sL -o /dev/null -w "%{http_code}" -X POST "$PROD_URL/api/v1/challenges" \
             -H "Content-Type: application/json" \
             -d '{"name":"smoke-test"}')
           if [ "$HTTP_CODE" = "401" ]; then

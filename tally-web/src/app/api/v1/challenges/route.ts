@@ -115,7 +115,17 @@ export async function POST(request: NextRequest) {
       return jsonCreated({ challenge });
     } catch (error) {
       console.error("Error in POST /api/v1/challenges:", error);
-      return jsonInternalError();
+      // Return error details in non-production for debugging
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      return new Response(
+        JSON.stringify({
+          error: "Internal Server Error",
+          message: errorMessage,
+          stack: process.env.NODE_ENV !== "production" ? errorStack : undefined,
+        }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
     }
   });
 }

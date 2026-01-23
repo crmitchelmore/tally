@@ -28,7 +28,13 @@ public final class AuthManager {
     
     private var clerk: Clerk { Clerk.shared }
     
-    private init() {}
+    private init() {
+        // Check for test reset flag
+        if CommandLine.arguments.contains("--reset-offline-mode") {
+            print("[AuthManager] Resetting offline mode for testing")
+            UserDefaults.standard.removeObject(forKey: Self.offlineModeKey)
+        }
+    }
     
     /// Configure Clerk with the publishable key
     public func configure() async {

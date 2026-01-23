@@ -7,6 +7,21 @@ final class AuthTests: TallyUITestCase {
     lazy var authPage = AuthPage(app: app)
     lazy var dashboardPage = DashboardPage(app: app)
     
+    override func setUpWithError() throws {
+        // Reset app before super.setUp which launches the app
+        // This ensures each test starts with a fresh state
+        let setupApp = XCUIApplication()
+        setupApp.launchArguments = ["--uitesting", "--reset-offline-mode"]
+        // Don't launch, just set arguments - super.setUp will launch
+        
+        try super.setUpWithError()
+        
+        // Override the launch arguments to include reset flag
+        app.terminate()
+        app.launchArguments.append("--reset-offline-mode")
+        app.launch()
+    }
+    
     // MARK: - Sign In View
     
     func testSignInViewAppears() throws {
@@ -30,28 +45,42 @@ final class AuthTests: TallyUITestCase {
     // MARK: - Offline Mode
     
     func testContinueWithoutAccountEntersOfflineMode() throws {
-        // Wait for sign in view
+        // Wait for sign in view to fully load
         XCTAssertTrue(
-            authPage.continueWithoutAccountButton.waitForExistence(timeout: 10),
+            authPage.tallyLogo.waitForExistence(timeout: 15),
+            "Tally logo should appear on sign in screen"
+        )
+        
+        // Find the offline button - try both identifier and text
+        let offlineButton = app.buttons["continue-offline-button"].exists 
+            ? app.buttons["continue-offline-button"]
+            : app.buttons["Continue without account"]
+            
+        XCTAssertTrue(
+            offlineButton.waitForExistence(timeout: 10),
             "Offline mode button should exist"
         )
         
         // Tap to enter offline mode
-        authPage.tapContinueWithoutAccount()
+        offlineButton.tap()
+        
+        // Wait for transition
+        sleep(2)
         
         // Should see dashboard - look for any of these indicators:
         // 1. The empty state with "No challenges yet" text
-        // 2. The Create Challenge button
+        // 2. The Create Challenge button (by text or identifier)
         // 3. The toolbar plus button
         // 4. The "Home" tab bar label
         let noChallengText = app.staticTexts["No challenges yet"].waitForExistence(timeout: 10)
-        let createButton = dashboardPage.createChallengeButton.waitForExistence(timeout: 5)
-        let plusButton = app.buttons.matching(NSPredicate(format: "label CONTAINS 'plus' OR identifier CONTAINS 'plus'")).firstMatch.waitForExistence(timeout: 5)
-        let homeTab = app.staticTexts["Home"].waitForExistence(timeout: 5)
+        let createButtonById = app.buttons["create-challenge-button"].waitForExistence(timeout: 3)
+        let createButtonByText = app.buttons["Create Challenge"].waitForExistence(timeout: 3)
+        let homeTab = app.staticTexts["Home"].waitForExistence(timeout: 3)
+        let tallyTitle = app.navigationBars["Tally"].waitForExistence(timeout: 3)
         
-        let enteredApp = noChallengText || createButton || plusButton || homeTab
+        let enteredApp = noChallengText || createButtonById || createButtonByText || homeTab || tallyTitle
         
-        XCTAssertTrue(enteredApp, "Should enter app in offline mode (found: noChallenge=\(noChallengText), createBtn=\(createButton), plus=\(plusButton), home=\(homeTab))")
+        XCTAssertTrue(enteredApp, "Should enter app in offline mode (found: noChallenge=\(noChallengText), createBtnId=\(createButtonById), createBtnText=\(createButtonByText), home=\(homeTab), tallyNav=\(tallyTitle))")
     }
     
     // MARK: - Sign In with Test User

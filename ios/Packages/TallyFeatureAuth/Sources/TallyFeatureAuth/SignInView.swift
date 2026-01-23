@@ -52,6 +52,7 @@ public struct SignInView: View {
                             .background(Color.tallyAccent)
                             .cornerRadius(12)
                     }
+                    .accessibilityIdentifier("sign-in-button")
                     .accessibilityHint("Opens sign in screen")
                     
                     Button {
@@ -69,6 +70,7 @@ public struct SignInView: View {
                             )
                             .cornerRadius(12)
                     }
+                    .accessibilityIdentifier("continue-offline-button")
                     .accessibilityHint("Use app offline without syncing")
                     
                     Text("Your data stays on this device in offline mode.")

@@ -4,6 +4,7 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextInput
+import androidx.test.platform.app.InstrumentationRegistry
 
 /**
  * Base test utilities and helpers for Tally UI tests.
@@ -60,6 +61,12 @@ object TestData {
     const val CHALLENGE_TARGET = "10000"
     const val ENTRY_COUNT = "50"
     
-    const val TEST_EMAIL = "test@example.com"
-    const val TEST_PASSWORD = "TestPass123!"
+    // Test credentials - read from instrumentation arguments or use defaults
+    val TEST_EMAIL: String
+        get() = InstrumentationRegistry.getArguments().getString("TEST_USER_EMAIL") 
+            ?: "test@example.com"
+    
+    val TEST_PASSWORD: String
+        get() = InstrumentationRegistry.getArguments().getString("TEST_USER_PASSWORD")
+            ?: "TestPass123!"
 }

@@ -11,11 +11,21 @@ class AuthPage {
     // MARK: - Sign In View Elements
     
     var signInButton: XCUIElement {
-        app.buttons["Sign in"]
+        // Try accessibility identifier first, then fall back to text
+        let byIdentifier = app.buttons["sign-in-button"]
+        if byIdentifier.exists {
+            return byIdentifier
+        }
+        return app.buttons["Sign in"]
     }
     
     var continueWithoutAccountButton: XCUIElement {
-        app.buttons["Continue without account"]
+        // Try accessibility identifier first, then fall back to text
+        let byIdentifier = app.buttons["continue-offline-button"]
+        if byIdentifier.exists {
+            return byIdentifier
+        }
+        return app.buttons["Continue without account"]
     }
     
     var tallyLogo: XCUIElement {

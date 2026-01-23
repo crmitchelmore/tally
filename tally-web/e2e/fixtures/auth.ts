@@ -150,14 +150,27 @@ export const test = base.extend<{
     await page.goto("/app");
     await page.waitForTimeout(2000);
     
-    // If redirected to sign-in, we need to authenticate
-    if (page.url().includes("/sign-in")) {
+    // Check if we need to authenticate:
+    // 1. Redirected to sign-in page
+    // 2. OR see "Sign in" button in header (app allows unauthenticated access)
+    const needsAuth = page.url().includes("/sign-in") || 
+      await page.getByRole("button", { name: "Sign in" }).isVisible().catch(() => false);
+    
+    if (needsAuth) {
+      console.log("Auth required - logging in with Clerk...");
+      await page.goto("/sign-in");
       await loginWithClerk(page);
       await saveAuthState(authenticatedContext);
     }
     
-    // Verify we're authenticated
-    await page.waitForURL(/\/app/, { timeout: 10000 });
+    // Verify we're authenticated - should NOT see "Sign in" button
+    await page.goto("/app");
+    await page.waitForTimeout(2000);
+    const signInButton = page.getByRole("button", { name: "Sign in" });
+    const stillNeedsAuth = await signInButton.isVisible().catch(() => false);
+    if (stillNeedsAuth) {
+      throw new Error("Authentication failed - Sign in button still visible after login");
+    }
     
     await use(page);
   },

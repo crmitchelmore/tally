@@ -21,12 +21,9 @@ export async function GET() {
   if (process.env.NEXT_PUBLIC_CONVEX_URL) {
     try {
       const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL);
+      const { api } = await import("../../../../../../convex/_generated/api");
       // A simple query to verify connectivity - list public challenges (should return empty or data)
-      await client.query(
-        // @ts-expect-error - dynamic import
-        (await import("../../../../../../convex/_generated/api")).api.challenges.listPublic,
-        {}
-      );
+      await client.query(api.challenges.listPublic, {});
       convexConnected = true;
     } catch (err) {
       convexError = err instanceof Error ? err.message : String(err);

@@ -33,9 +33,10 @@ struct DashboardPage {
     // MARK: - Actions
     
     func challengeCard(named name: String) -> XCUIElement {
-        app.otherElements["challenge-card"].containing(
-            NSPredicate(format: "label CONTAINS[c] %@", name)
-        ).firstMatch
+        // Find challenge cards that contain the given name
+        app.otherElements.matching(identifier: "challenge-card")
+            .containing(.staticText, identifier: name)
+            .firstMatch
     }
     
     func quickAddButton(forChallenge name: String) -> XCUIElement {

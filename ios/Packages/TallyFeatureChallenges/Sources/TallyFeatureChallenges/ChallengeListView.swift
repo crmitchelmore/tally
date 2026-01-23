@@ -246,9 +246,11 @@ struct EmptyStateView: View {
             .buttonStyle(.borderedProminent)
             .tint(Color.tallyAccent)
             .tallyPadding(.top, TallySpacing.sm)
+            .accessibilityIdentifier("create-challenge-button")
         }
         .tallyPadding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityIdentifier("empty-state")
     }
 }
 

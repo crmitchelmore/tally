@@ -10,6 +10,15 @@ class TallyUITestCase: XCTestCase {
         
         app = XCUIApplication()
         app.launchArguments = ["--uitesting"]
+        
+        // Pass environment variables for test credentials
+        if let email = ProcessInfo.processInfo.environment["TEST_USER_EMAIL"] {
+            app.launchEnvironment["TEST_USER_EMAIL"] = email
+        }
+        if let password = ProcessInfo.processInfo.environment["TEST_USER_PASSWORD"] {
+            app.launchEnvironment["TEST_USER_PASSWORD"] = password
+        }
+        
         app.launch()
     }
     
@@ -62,6 +71,6 @@ enum TestData {
     static let challengeTarget = "10000"
     static let entryCount = "50"
     
-    static let testEmail = "test@example.com"
-    static let testPassword = "TestPass123!"
+    static let testEmail = ProcessInfo.processInfo.environment["TEST_USER_EMAIL"] ?? "test@example.com"
+    static let testPassword = ProcessInfo.processInfo.environment["TEST_USER_PASSWORD"] ?? "TestPass123!"
 }

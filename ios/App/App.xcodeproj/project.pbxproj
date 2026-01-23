@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0283E423EB3C277E2A12E108 /* TallyFeatureChallenges.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C8EC6562F91FECF24EA9DF1A /* TallyFeatureChallenges.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		19601A31CB3100FC2E4EAA13 /* AuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5342D0099CF90011A046F568 /* AuthTests.swift */; };
 		1E54BBB9B4C5BAC7E3D34A50 /* OfflineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08F19A63DA8D9F3330470832 /* OfflineTests.swift */; };
 		2E743A6F76CCB6064D781210 /* TuistAssets+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D529DAAF6A9D59C44D9D68 /* TuistAssets+App.swift */; };
 		36A25B908DD0111127B364DE /* TallyDesign.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A995F149EF7FFEBC7F2EFDBB /* TallyDesign.framework */; };
@@ -28,6 +29,7 @@
 		9C3D03C4730356363FA7C58D /* TallyCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F6BADD4378FD7BA41B6122F3 /* TallyCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A150D4E4BC765D5DC63529D4 /* ChallengeDetailPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10375E988EAFB3574D1C92BD /* ChallengeDetailPage.swift */; };
 		B54EC7FC1A1472DADA201360 /* TallyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A87B2E789E3FCB795DB8449 /* TallyApp.swift */; };
+		BCAA623B8B3DC5F728A52234 /* AuthPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7594EAA9D5E631B92ADA4C59 /* AuthPage.swift */; };
 		BD5931CEC9A7D63728EB2BCE /* AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89688C338AD182298E5871B5 /* AppTests.swift */; };
 		BD70BA0F49FB2796CEE04222 /* CommunityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A24F21BB46A01D26C10D7A1 /* CommunityView.swift */; };
 		C7FD2ACA9A08E0DEA95BD0F5 /* DashboardPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8584F946B6DF00D152E3D0 /* DashboardPage.swift */; };
@@ -115,10 +117,12 @@
 		4A87B2E789E3FCB795DB8449 /* TallyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallyApp.swift; sourceTree = "<group>"; };
 		5092A9693A1EA9027AE23807 /* EntryDialogPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryDialogPage.swift; sourceTree = "<group>"; };
 		513115D93DAEA724AA14D1CE /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
+		5342D0099CF90011A046F568 /* AuthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthTests.swift; sourceTree = "<group>"; };
 		5445B743B2848E62908B578D /* EntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryTests.swift; sourceTree = "<group>"; };
 		571E08A9083FD4334E4B7D06 /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5AEDED3981F54ACD2343FBC9 /* ChallengeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeTests.swift; sourceTree = "<group>"; };
 		6418FF9FEE329D1A96DB3F49 /* Clerk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Clerk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7594EAA9D5E631B92ADA4C59 /* AuthPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthPage.swift; sourceTree = "<group>"; };
 		77D69EAF942AA87F8A9468BF /* Kingfisher.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Kingfisher.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7EB5417526AA6171D15EB07D /* FactoryKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FactoryKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		89688C338AD182298E5871B5 /* AppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTests.swift; sourceTree = "<group>"; };
@@ -199,6 +203,7 @@
 		5DD5711D249E6001D7ADD84C /* Pages */ = {
 			isa = PBXGroup;
 			children = (
+				7594EAA9D5E631B92ADA4C59 /* AuthPage.swift */,
 				10375E988EAFB3574D1C92BD /* ChallengeDetailPage.swift */,
 				CFF01A1C3CB0DA38D6414E62 /* ChallengeDialogPage.swift */,
 				BC8584F946B6DF00D152E3D0 /* DashboardPage.swift */,
@@ -268,6 +273,7 @@
 			children = (
 				5DD5711D249E6001D7ADD84C /* Pages */,
 				5C873AC266BA42B9FED9DFD3 /* Utilities */,
+				5342D0099CF90011A046F568 /* AuthTests.swift */,
 				5AEDED3981F54ACD2343FBC9 /* ChallengeTests.swift */,
 				5445B743B2848E62908B578D /* EntryTests.swift */,
 				08F19A63DA8D9F3330470832 /* OfflineTests.swift */,
@@ -426,10 +432,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				19601A31CB3100FC2E4EAA13 /* AuthTests.swift in Sources */,
 				EDBD7E2A869F3E7CEA274D0B /* ChallengeTests.swift in Sources */,
 				E1D7E798236D1E38DB2F616A /* EntryTests.swift in Sources */,
 				1E54BBB9B4C5BAC7E3D34A50 /* OfflineTests.swift in Sources */,
 				81397244B99F1BE4588A8107 /* OnboardingTests.swift in Sources */,
+				BCAA623B8B3DC5F728A52234 /* AuthPage.swift in Sources */,
 				A150D4E4BC765D5DC63529D4 /* ChallengeDetailPage.swift in Sources */,
 				E6777DDA65665B0B2AF20164 /* ChallengeDialogPage.swift in Sources */,
 				C7FD2ACA9A08E0DEA95BD0F5 /* DashboardPage.swift in Sources */,

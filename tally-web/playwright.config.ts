@@ -25,10 +25,16 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
     env: {
-      // Pass through env vars needed for Clerk/Convex
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "",
-      CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY || "",
-      NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL || "",
+      // Pass through env vars needed for Clerk/Convex (only when defined)
+      ...(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY 
+        ? { NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY } 
+        : {}),
+      ...(process.env.CLERK_SECRET_KEY 
+        ? { CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY } 
+        : {}),
+      ...(process.env.NEXT_PUBLIC_CONVEX_URL 
+        ? { NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL } 
+        : {}),
     },
   },
   timeout: 60 * 1000, // 60s per test max

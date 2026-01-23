@@ -6,7 +6,7 @@
  * 2. Persisting auth state across tests
  * 3. Running tests against the dev Convex backend
  */
-import { test as base, expect, Page, BrowserContext } from "@playwright/test";
+import { test as base, expect, Page, BrowserContext, BrowserContextOptions } from "@playwright/test";
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
@@ -15,9 +15,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const AUTH_STATE_PATH = path.join(__dirname, "../../.auth-state.json");
 
+// Auth state TTL - configurable via env, defaults to 24 hours
+const AUTH_STATE_TTL_MS = parseInt(process.env.AUTH_STATE_TTL_HOURS || "24", 10) * 60 * 60 * 1000;
+
 // Test credentials from environment
 const TEST_USER_EMAIL = process.env.TEST_USER_EMAIL;
 const TEST_USER_PASSWORD = process.env.TEST_USER_PASSWORD;
+
+// Type for storage state with timestamp
+type StorageStateInput = NonNullable<BrowserContextOptions["storageState"]>;
+interface TimedStorageState {
+  timestamp: number;
+  cookies: Array<{ name: string; value: string; domain: string; path: string }>;
+  origins: Array<{ origin: string; localStorage: Array<{ name: string; value: string }> }>;
+}
 
 /**
  * Perform Clerk login with email/password (native Clerk auth, not OAuth)
@@ -28,9 +39,6 @@ async function loginWithClerk(page: Page): Promise<void> {
   }
 
   await page.goto("/sign-in");
-  
-  // Wait for page to load
-  await page.waitForTimeout(2000);
   
   // Check if we got immediately redirected to Google OAuth
   if (page.url().includes("accounts.google.com")) {
@@ -51,8 +59,9 @@ async function loginWithClerk(page: Page): Promise<void> {
   await continueButton.waitFor({ state: "visible", timeout: 5000 });
   await continueButton.click();
   
-  // Wait for next step
-  await page.waitForTimeout(3000);
+  // Wait for password field to appear (replaces waitForTimeout)
+  const passwordInput = page.locator('input[type="password"]').first();
+  await passwordInput.waitFor({ state: "visible", timeout: 10000 });
   
   // Check if redirected to Google OAuth after entering email
   if (page.url().includes("accounts.google.com")) {
@@ -63,9 +72,6 @@ async function loginWithClerk(page: Page): Promise<void> {
     );
   }
   
-  // Should now see password field for native Clerk auth
-  const passwordInput = page.locator('input[type="password"]').first();
-  await passwordInput.waitFor({ state: "visible", timeout: 10000 });
   await passwordInput.fill(TEST_USER_PASSWORD);
   
   // Click continue/sign in button  
@@ -85,10 +91,9 @@ function hasValidAuthState(): boolean {
   }
   
   try {
-    const state = JSON.parse(fs.readFileSync(AUTH_STATE_PATH, "utf-8"));
-    // Check if state is less than 24 hours old
-    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
-    return state.timestamp && state.timestamp > oneDayAgo;
+    const state = JSON.parse(fs.readFileSync(AUTH_STATE_PATH, "utf-8")) as TimedStorageState;
+    const expiryThreshold = Date.now() - AUTH_STATE_TTL_MS;
+    return state.timestamp && state.timestamp > expiryThreshold;
   } catch {
     return false;
   }
@@ -111,16 +116,15 @@ async function saveAuthState(context: BrowserContext): Promise<void> {
 /**
  * Load saved auth state
  */
-function loadAuthState(): object | null {
+function loadAuthState(): StorageStateInput | null {
   if (!hasValidAuthState()) {
     return null;
   }
   
   try {
-    const state = JSON.parse(fs.readFileSync(AUTH_STATE_PATH, "utf-8"));
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { timestamp, ...storageState } = state;
-    return storageState;
+    const state = JSON.parse(fs.readFileSync(AUTH_STATE_PATH, "utf-8")) as TimedStorageState;
+    const { timestamp: _, ...storageState } = state;
+    return storageState as StorageStateInput;
   } catch {
     return null;
   }
@@ -136,7 +140,7 @@ export const test = base.extend<{
     const existingState = loadAuthState();
     
     const context = existingState 
-      ? await browser.newContext({ storageState: existingState as any })
+      ? await browser.newContext({ storageState: existingState })
       : await browser.newContext();
     
     await use(context);
@@ -148,7 +152,9 @@ export const test = base.extend<{
     
     // Check if we need to login
     await page.goto("/app");
-    await page.waitForTimeout(2000);
+    // Wait for either redirect or content to load
+    await page.waitForLoadState("domcontentloaded");
+    await page.waitForTimeout(1000); // Brief pause for client-side routing
     
     // Check if we need to authenticate:
     // 1. Redirected to sign-in page
@@ -165,7 +171,8 @@ export const test = base.extend<{
     
     // Verify we're authenticated - should NOT see "Sign in" button
     await page.goto("/app");
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState("domcontentloaded");
+    await page.waitForTimeout(1000);
     const signInButton = page.getByRole("button", { name: "Sign in" });
     const stillNeedsAuth = await signInButton.isVisible().catch(() => false);
     if (stillNeedsAuth) {

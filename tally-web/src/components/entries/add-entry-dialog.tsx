@@ -185,60 +185,70 @@ export function AddEntryDialog({
           {/* Count input */}
           {countType === "sets" ? (
             <div>
-              <label className="block text-sm font-medium text-muted mb-2 text-center">
+              <label className="block text-sm font-medium text-muted mb-3 text-center">
                 Sets & {unitLabel}
               </label>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {sets.map((setVal, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <span className="text-xs text-muted w-12">Set {idx + 1}</span>
-                    <div className="flex items-center gap-1 flex-1">
+                  <div key={idx} className="bg-paper rounded-xl p-3 border border-border">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-muted">Set {idx + 1}</span>
+                      {sets.length > 1 && (
+                        <button type="button" onClick={() => removeSet(idx)}
+                          className="text-xs text-muted hover:text-error transition-colors">Remove</button>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      {/* Decrement buttons */}
+                      <button type="button" onClick={() => incrementSet(idx, -10)}
+                        className="w-10 h-10 rounded-lg bg-border/30 text-muted hover:text-ink hover:bg-border/50 text-xs font-medium transition-colors">−10</button>
                       <button type="button" onClick={() => incrementSet(idx, -1)}
-                        className="w-7 h-7 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-sm">−</button>
+                        className="w-10 h-10 rounded-lg bg-border/30 text-muted hover:text-ink hover:bg-border/50 text-sm font-medium transition-colors">−1</button>
+                      {/* Input */}
                       <input 
                         ref={idx === 0 ? firstSetRef : undefined}
                         type="number" 
                         min={0} 
                         value={setVal}
                         onChange={(e) => updateSet(idx, e.target.value)}
-                        className="w-14 h-8 text-center text-lg font-semibold tabular-nums bg-transparent border-b-2 border-border focus:border-accent text-ink outline-none" />
+                        className="w-16 h-12 text-center text-2xl font-semibold tabular-nums bg-surface border-2 border-border rounded-lg focus:border-accent text-ink outline-none" />
+                      {/* Increment buttons */}
                       <button type="button" onClick={() => incrementSet(idx, 1)}
-                        className="w-7 h-7 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-sm">+</button>
+                        className="w-10 h-10 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 text-sm font-medium transition-colors">+1</button>
+                      <button type="button" onClick={() => incrementSet(idx, 10)}
+                        className="w-10 h-10 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 text-xs font-medium transition-colors">+10</button>
                     </div>
-                    {sets.length > 1 && (
-                      <button type="button" onClick={() => removeSet(idx)}
-                        className="w-7 h-7 rounded-full text-muted hover:text-error text-lg">×</button>
-                    )}
                   </div>
                 ))}
                 <button type="button" onClick={addSet}
-                  className="w-full py-1.5 border border-dashed border-border rounded-lg text-muted hover:text-ink text-xs">+ Add Set</button>
+                  className="w-full py-2.5 border-2 border-dashed border-border rounded-xl text-muted hover:text-ink hover:border-muted text-sm font-medium transition-colors">+ Add Set</button>
               </div>
-              <div className="mt-3 flex items-center justify-center gap-4">
+              {/* Total display */}
+              <div className="mt-4 p-4 bg-accent/5 rounded-xl flex items-center justify-center gap-4">
                 <div className="text-center">
-                  <p className="text-3xl font-semibold text-ink tabular-nums">{setsTotal}</p>
-                  <p className="text-xs text-muted">{unitLabel}</p>
+                  <p className="text-4xl font-bold text-ink tabular-nums">{setsTotal}</p>
+                  <p className="text-xs text-muted mt-0.5">total {unitLabel}</p>
                 </div>
                 <TallyMark count={Math.min(setsTotal, 25)} size="sm" animated />
               </div>
             </div>
           ) : (
             <div className="text-center">
-              <label htmlFor="count" className="block text-sm font-medium text-muted mb-2">
+              <label htmlFor="count" className="block text-sm font-medium text-muted mb-3">
                 How many {unitLabel}?
               </label>
-              {/* -100, -10, -1 buttons */}
-              <div className="flex items-center justify-center gap-1 mb-2">
+              {/* Decrement row */}
+              <div className="flex items-center justify-center gap-2 mb-3">
                 <button type="button" onClick={() => incrementCount(-100)}
-                  className="w-12 h-8 rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50 text-xs font-medium">
+                  className="w-14 h-10 rounded-lg bg-border/30 text-muted hover:text-ink hover:bg-border/50 text-xs font-medium transition-colors">
                   −100
                 </button>
                 <button type="button" onClick={() => incrementCount(-10)}
-                  className="w-10 h-8 rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50 text-xs font-medium">
+                  className="w-12 h-10 rounded-lg bg-border/30 text-muted hover:text-ink hover:bg-border/50 text-xs font-medium transition-colors">
                   −10
                 </button>
                 <button type="button" onClick={() => incrementCount(-1)}
-                  className="w-8 h-8 rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50 text-sm font-medium">
+                  className="w-10 h-10 rounded-lg bg-border/30 text-muted hover:text-ink hover:bg-border/50 text-sm font-medium transition-colors">
                   −1
                 </button>
               </div>
@@ -251,25 +261,25 @@ export function AddEntryDialog({
                 max={99999}
                 value={countStr}
                 onChange={(e) => setCountStr(e.target.value)}
-                className="w-28 h-14 text-center text-4xl font-semibold tabular-nums bg-transparent border-b-2 border-border focus:border-accent text-ink outline-none"
+                className="w-32 h-16 text-center text-5xl font-bold tabular-nums bg-surface border-2 border-border rounded-xl focus:border-accent text-ink outline-none"
               />
-              {/* +1, +10, +100 buttons */}
-              <div className="flex items-center justify-center gap-1 mt-2">
+              {/* Increment row */}
+              <div className="flex items-center justify-center gap-2 mt-3">
                 <button type="button" onClick={() => incrementCount(1)}
-                  className="w-8 h-8 rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50 text-sm font-medium">
+                  className="w-10 h-10 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 text-sm font-medium transition-colors">
                   +1
                 </button>
                 <button type="button" onClick={() => incrementCount(10)}
-                  className="w-10 h-8 rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50 text-xs font-medium">
+                  className="w-12 h-10 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 text-xs font-medium transition-colors">
                   +10
                 </button>
                 <button type="button" onClick={() => incrementCount(100)}
-                  className="w-12 h-8 rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50 text-xs font-medium">
+                  className="w-14 h-10 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 text-xs font-medium transition-colors">
                   +100
                 </button>
               </div>
-              {/* Tally preview - compact */}
-              <div className="mt-3 flex justify-center">
+              {/* Tally preview */}
+              <div className="mt-4 flex justify-center">
                 <TallyMark count={Math.min(count, 25)} size="sm" animated />
               </div>
             </div>

@@ -93,7 +93,7 @@ function hasValidAuthState(): boolean {
   try {
     const state = JSON.parse(fs.readFileSync(AUTH_STATE_PATH, "utf-8")) as TimedStorageState;
     const expiryThreshold = Date.now() - AUTH_STATE_TTL_MS;
-    return state.timestamp && state.timestamp > expiryThreshold;
+    return Boolean(state.timestamp && state.timestamp > expiryThreshold);
   } catch {
     return false;
   }

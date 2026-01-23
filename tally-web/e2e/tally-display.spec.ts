@@ -205,16 +205,11 @@ test.describe("Sets and Reps Entry Mode @entries @sets", () => {
     await page.reload();
     await page.waitForTimeout(500);
 
-    // Click on the challenge card to enter detail view
-    const challengeCard = page.getByRole("button", { name: /push-ups/i }).first();
-    await expect(challengeCard).toBeVisible();
-    await challengeCard.click();
-    await page.waitForTimeout(300);
-
-    // Click "Add sets..." button to open the full add entry dialog
-    const addSetsButton = page.getByRole("button", { name: "Add sets..." });
-    await expect(addSetsButton).toBeVisible();
-    await addSetsButton.click();
+    // In offline mode, cards don't link to detail view - use the quick-add button
+    // The quick-add button has aria-label "Add 1 reps" for sets challenges
+    const quickAddButton = page.getByRole("button", { name: /add 1/i }).first();
+    await expect(quickAddButton).toBeVisible({ timeout: 5000 });
+    await quickAddButton.click();
     await page.waitForTimeout(300);
 
     // The add entry dialog should show sets input mode automatically
@@ -223,9 +218,9 @@ test.describe("Sets and Reps Entry Mode @entries @sets", () => {
     const setsLabel = page.getByText(/set\s*1/i);
     await expect(setsLabel).toBeVisible({ timeout: 5000 });
 
-    // Should also have an "Add another set" button
-    const addAnotherSetButton = page.getByRole("button", { name: /add another set/i });
-    await expect(addAnotherSetButton).toBeVisible();
+    // Should also have an "+ Add Set" button
+    const addSetButton = page.getByRole("button", { name: /add set/i });
+    await expect(addSetButton).toBeVisible();
   });
 });
 

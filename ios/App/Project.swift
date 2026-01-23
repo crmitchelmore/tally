@@ -1,8 +1,12 @@
 import ProjectDescription
 
-// Environment variables passed via Tuist's Environment type or xcconfig
-let env = Environment.clerkPublishableKey.getString(default: "")
-let apiUrl = Environment.apiBaseURL.getString(default: "https://tally-tracker.app")
+// Default Clerk publishable key (safe to embed - it's public)
+let defaultClerkKey = "pk_test_d2lzZS10dW5hLTg1LmNsZXJrLmFjY291bnRzLmRldiQ"
+let defaultApiUrl = "https://tally-tracker.app"
+
+// Environment variables can override defaults via Tuist's Environment type
+let clerkKey = Environment.clerkPublishableKey.getString(default: defaultClerkKey)
+let apiUrl = Environment.apiBaseURL.getString(default: defaultApiUrl)
 
 let project = Project(
     name: "App",
@@ -49,7 +53,7 @@ let project = Project(
                     "DEVELOPMENT_TEAM": "",
                     "CODE_SIGN_STYLE": "Automatic",
                     "ENABLE_PREVIEWS": "YES",
-                    "CLERK_PUBLISHABLE_KEY": .init(stringLiteral: env),
+                    "CLERK_PUBLISHABLE_KEY": .init(stringLiteral: clerkKey),
                     "API_BASE_URL": .init(stringLiteral: apiUrl)
                 ],
                 configurations: [

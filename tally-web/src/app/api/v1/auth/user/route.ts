@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser, clerkClient, verifyToken } from "@clerk/nextjs/server";
 import { requireAuth, isAuthError } from "../../_lib/auth";
 import {
   getUserByClerkId,
@@ -17,13 +17,41 @@ import {
   withSpan,
   generateRequestId,
 } from "@/lib/telemetry";
+import { headers } from "next/headers";
+
+/**
+ * Get user ID from either cookie auth or Bearer token
+ */
+async function getAuthenticatedUserId(): Promise<string | null> {
+  // First try standard cookie-based auth
+  const { userId } = await auth();
+  if (userId) return userId;
+  
+  // Try Bearer token for mobile clients
+  const headersList = await headers();
+  const authHeader = headersList.get("authorization");
+  
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.substring(7);
+    try {
+      const verifiedToken = await verifyToken(token, {
+        secretKey: process.env.CLERK_SECRET_KEY,
+      });
+      return verifiedToken?.sub ?? null;
+    } catch (error) {
+      console.error("Bearer token verification failed:", error);
+    }
+  }
+  
+  return null;
+}
 
 export async function POST() {
   const requestId = generateRequestId();
   
   return withSpan("auth.provision_user", { request_id: requestId }, async (span) => {
     try {
-      const { userId: clerkId } = await auth();
+      const clerkId = await getAuthenticatedUserId();
       
       if (!clerkId) {
         return jsonUnauthorized();
@@ -31,7 +59,9 @@ export async function POST() {
 
       span.setAttribute("user.clerk_id", clerkId);
 
-      const clerkUser = await currentUser();
+      // Get user details from Clerk
+      const client = await clerkClient();
+      const clerkUser = await client.users.getUser(clerkId);
       if (!clerkUser) {
         return jsonNotFound("User not found");
       }

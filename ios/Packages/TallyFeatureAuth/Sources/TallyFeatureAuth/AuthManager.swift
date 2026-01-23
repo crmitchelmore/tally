@@ -1,6 +1,9 @@
 import SwiftUI
 import TallyCore
 import Clerk
+import os.log
+
+private let logger = Logger(subsystem: "com.tally.app", category: "AuthManager")
 
 /// Authentication state manager using Clerk
 @MainActor
@@ -73,10 +76,8 @@ public final class AuthManager {
     /// Update local auth state from Clerk
     public func updateAuthState() async {
         isLoading = true
-        defer { isLoading = false }
         
         if let clerkUser = clerk.user {
-            isAuthenticated = true
             currentUser = TallyUser(
                 id: clerkUser.id,
                 email: clerkUser.primaryEmailAddress?.emailAddress,
@@ -85,36 +86,50 @@ public final class AuthManager {
                 imageUrl: clerkUser.imageUrl
             )
             
-            // Sync token to Keychain and provision user
+            // Sync token to Keychain and provision user BEFORE marking as authenticated
             await syncTokenAndProvisionUser()
+            isAuthenticated = true
         } else {
             isAuthenticated = false
             currentUser = nil
             KeychainService.shared.deleteToken()
         }
+        
+        isLoading = false
     }
     
     /// Sync the session token to Keychain and call /api/v1/auth/user
     private func syncTokenAndProvisionUser() async {
-        guard let session = clerk.session else { return }
+        guard let session = clerk.session else {
+            logger.warning("No clerk session available")
+            return
+        }
         
         do {
             // Get the session token
             let tokenResult = try await session.getToken()
             if let token = tokenResult?.jwt {
+                logger.info("Got token from Clerk: \(String(token.prefix(20)))...")
                 try KeychainService.shared.storeToken(token)
+                logger.info("Token stored in Keychain")
                 
                 // Provision user via API
                 await provisionUser(token: token)
+            } else {
+                logger.warning("No JWT in token result")
             }
         } catch {
+            logger.error("Token sync error: \(error.localizedDescription)")
             self.error = .tokenSyncFailed(error)
         }
     }
     
     /// Call POST /api/v1/auth/user to ensure user exists in backend
     private func provisionUser(token: String) async {
-        guard let url = URL(string: "\(Configuration.apiBaseURL)/api/v1/auth/user") else {
+        let urlString = "\(Configuration.apiBaseURL)/api/v1/auth/user"
+        logger.info("Provisioning user at \(urlString)")
+        
+        guard let url = URL(string: urlString) else {
             return
         }
         
@@ -124,12 +139,18 @@ public final class AuthManager {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         do {
-            let (_, response) = try await URLSession.shared.data(for: request)
-            if let httpResponse = response as? HTTPURLResponse,
-               !(200...299).contains(httpResponse.statusCode) {
-                self.error = .provisionFailed(httpResponse.statusCode)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            if let httpResponse = response as? HTTPURLResponse {
+                logger.info("Provision response: \(httpResponse.statusCode)")
+                if let body = String(data: data, encoding: .utf8) {
+                    logger.debug("Response body: \(body)")
+                }
+                if !(200...299).contains(httpResponse.statusCode) {
+                    self.error = .provisionFailed(httpResponse.statusCode)
+                }
             }
         } catch {
+            logger.error("Provision network error: \(error.localizedDescription)")
             // Non-fatal: user may be offline
             self.error = .networkError(error)
         }

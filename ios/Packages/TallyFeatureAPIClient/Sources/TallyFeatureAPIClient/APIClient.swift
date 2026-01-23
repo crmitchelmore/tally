@@ -29,7 +29,16 @@ public actor APIClient {
     
     /// Get Bearer token from Keychain
     private func getAuthToken() -> String? {
-        KeychainService.shared.retrieveToken()
+        let token = KeychainService.shared.retrieveToken()
+        #if DEBUG
+        if let token = token {
+            let prefix = String(token.prefix(20))
+            print("[APIClient] Token found: \(prefix)...")
+        } else {
+            print("[APIClient] No token in Keychain")
+        }
+        #endif
+        return token
     }
     
     // MARK: - Request Building
@@ -56,6 +65,10 @@ public actor APIClient {
         if let token = getAuthToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
+        
+        #if DEBUG
+        print("[APIClient] \(method) \(url.absoluteString)")
+        #endif
         
         if let body = body {
             request.httpBody = body

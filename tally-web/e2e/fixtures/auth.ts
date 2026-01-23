@@ -29,13 +29,14 @@ async function loginWithClerk(page: Page): Promise<void> {
 
   await page.goto("/sign-in");
   
-  // Wait for Clerk sign-in form to load
+  // Wait for page to load
   await page.waitForTimeout(2000);
   
-  // Check if we got redirected to Google OAuth (means user was created with Google)
+  // Check if we got immediately redirected to Google OAuth
   if (page.url().includes("accounts.google.com")) {
     throw new Error(
-      "Redirected to Google OAuth. Please ensure the test user has password authentication enabled in Clerk."
+      "Clerk immediately redirected to Google OAuth. " +
+      "Enable email+password in Clerk Dashboard."
     );
   }
   
@@ -44,19 +45,21 @@ async function loginWithClerk(page: Page): Promise<void> {
   await emailInput.waitFor({ state: "visible", timeout: 10000 });
   await emailInput.fill(TEST_USER_EMAIL);
   
-  // Click continue button
-  const continueButton = page.getByRole("button", { name: /continue/i }).first();
+  // Click the "Continue" button (NOT "Continue with Google")
+  // Use exact match to avoid matching OAuth buttons
+  const continueButton = page.getByRole("button", { name: "Continue", exact: true });
+  await continueButton.waitFor({ state: "visible", timeout: 5000 });
   await continueButton.click();
   
-  // Wait for next step - give more time for redirect
+  // Wait for next step
   await page.waitForTimeout(3000);
   
-  // Check if redirected to Google OAuth
+  // Check if redirected to Google OAuth after entering email
   if (page.url().includes("accounts.google.com")) {
     throw new Error(
-      "User redirected to Google OAuth after entering email. " +
-      "This means the account's primary auth method is Google. " +
-      "In Clerk dashboard, go to Users > select user > add Password as an auth method."
+      "Clerk redirected to Google OAuth after entering email. " +
+      "The user may have been created via Google OAuth. " +
+      "Create a new user with email+password auth, not Google."
     );
   }
   
@@ -66,7 +69,7 @@ async function loginWithClerk(page: Page): Promise<void> {
   await passwordInput.fill(TEST_USER_PASSWORD);
   
   // Click continue/sign in button  
-  const signInButton = page.getByRole("button", { name: /continue|sign in/i }).first();
+  const signInButton = page.getByRole("button", { name: "Continue", exact: true });
   await signInButton.click();
   
   // Wait for redirect to app
@@ -94,75 +97,73 @@ function hasValidAuthState(): boolean {
 /**
  * Save auth state for reuse
  */
-export async function saveAuthState(context: BrowserContext): Promise<void> {
-  const state = await context.storageState();
-  const stateWithTimestamp = {
-    ...state,
-    timestamp: Date.now(),
-  };
-  fs.writeFileSync(AUTH_STATE_PATH, JSON.stringify(stateWithTimestamp, null, 2));
+async function saveAuthState(context: BrowserContext): Promise<void> {
+  const storageState = await context.storageState();
+  fs.writeFileSync(
+    AUTH_STATE_PATH,
+    JSON.stringify({
+      timestamp: Date.now(),
+      ...storageState,
+    })
+  );
 }
 
 /**
  * Load saved auth state
  */
-function loadAuthState(): { cookies: any[]; origins: any[] } | null {
+function loadAuthState(): object | null {
   if (!hasValidAuthState()) {
     return null;
   }
   
   try {
     const state = JSON.parse(fs.readFileSync(AUTH_STATE_PATH, "utf-8"));
-    return { cookies: state.cookies, origins: state.origins };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { timestamp, ...storageState } = state;
+    return storageState;
   } catch {
     return null;
   }
 }
 
-// Authenticated test fixture
-export const authenticatedTest = base.extend<{
+// Extend base test with authenticated fixtures
+export const test = base.extend<{
   authenticatedPage: Page;
+  authenticatedContext: BrowserContext;
 }>({
-  authenticatedPage: async ({ browser }, use) => {
-    // Try to use existing auth state
-    const savedState = loadAuthState();
+  authenticatedContext: async ({ browser }, use) => {
+    // Try to reuse existing auth state
+    const existingState = loadAuthState();
     
-    let context: BrowserContext;
-    let page: Page;
+    const context = existingState 
+      ? await browser.newContext({ storageState: existingState as any })
+      : await browser.newContext();
     
-    if (savedState) {
-      // Create context with saved auth state
-      context = await browser.newContext({ storageState: savedState as any });
-      page = await context.newPage();
-      
-      // Verify auth is still valid
-      await page.goto("/app");
-      await page.waitForTimeout(2000);
-      
-      // If redirected to sign-in, auth expired
-      if (page.url().includes("sign-in")) {
-        await context.close();
-        // Fall through to fresh login
-      } else {
-        // Auth is valid
-        await use(page);
-        await context.close();
-        return;
-      }
+    await use(context);
+    await context.close();
+  },
+  
+  authenticatedPage: async ({ authenticatedContext }, use) => {
+    const page = await authenticatedContext.newPage();
+    
+    // Check if we need to login
+    await page.goto("/app");
+    await page.waitForTimeout(2000);
+    
+    // If redirected to sign-in, we need to authenticate
+    if (page.url().includes("/sign-in")) {
+      await loginWithClerk(page);
+      await saveAuthState(authenticatedContext);
     }
     
-    // Need fresh login
-    context = await browser.newContext();
-    page = await context.newPage();
-    
-    await loginWithClerk(page);
-    
-    // Save auth state for future tests
-    await saveAuthState(context);
+    // Verify we're authenticated
+    await page.waitForURL(/\/app/, { timeout: 10000 });
     
     await use(page);
-    await context.close();
   },
 });
 
 export { expect };
+
+// Export as authenticatedTest for backward compatibility
+export const authenticatedTest = test;

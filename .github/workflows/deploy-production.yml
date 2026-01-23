@@ -39,6 +39,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
         run: |
           npx vercel deploy --prod --yes --token=$VERCEL_TOKEN \
+            --env CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" \
             --env CLERK_PROXY_URL="" \
             --env HONEYCOMB_API_KEY="${{ secrets.HONEYCOMB_API_KEY }}" \
             --env NEXT_PUBLIC_POSTHOG_KEY="${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}" \

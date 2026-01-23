@@ -32,8 +32,11 @@ public final class AuthManager {
     
     /// Configure Clerk with the publishable key
     public func configure() async {
+        print("[AuthManager] configure() called")
+        
         // Check if user previously chose offline mode
         if prefersOfflineMode {
+            print("[AuthManager] prefersOfflineMode is true, using local-only mode")
             isLocalOnlyMode = true
             isLoading = false
             return
@@ -41,16 +44,21 @@ public final class AuthManager {
         
         guard Configuration.isConfigured else {
             // No auth configured - run in local-only mode
+            print("[AuthManager] Configuration not set, using local-only mode")
             isLocalOnlyMode = true
             isLoading = false
             return
         }
         
         do {
+            print("[AuthManager] Configuring Clerk with key: \(String(Configuration.clerkPublishableKey.prefix(20)))...")
             try await clerk.configure(publishableKey: Configuration.clerkPublishableKey)
+            print("[AuthManager] Clerk configured, loading...")
             try await clerk.load()
+            print("[AuthManager] Clerk loaded, session: \(clerk.session?.id ?? "nil"), user: \(clerk.user?.id ?? "nil")")
             await updateAuthState()
         } catch {
+            print("[AuthManager] Clerk error: \(error)")
             self.error = .clerkError(error)
             isLoading = false
         }
@@ -76,8 +84,10 @@ public final class AuthManager {
     /// Update local auth state from Clerk
     public func updateAuthState() async {
         isLoading = true
+        print("[AuthManager] updateAuthState called")
         
         if let clerkUser = clerk.user {
+            print("[AuthManager] Found clerk user: \(clerkUser.id)")
             currentUser = TallyUser(
                 id: clerkUser.id,
                 email: clerkUser.primaryEmailAddress?.emailAddress,
@@ -89,7 +99,9 @@ public final class AuthManager {
             // Sync token to Keychain and provision user BEFORE marking as authenticated
             await syncTokenAndProvisionUser()
             isAuthenticated = true
+            print("[AuthManager] isAuthenticated set to true")
         } else {
+            print("[AuthManager] No clerk user found")
             isAuthenticated = false
             currentUser = nil
             KeychainService.shared.deleteToken()
@@ -101,6 +113,7 @@ public final class AuthManager {
     /// Sync the session token to Keychain and call /api/v1/auth/user
     private func syncTokenAndProvisionUser() async {
         guard let session = clerk.session else {
+            print("[AuthManager] No clerk session available")
             logger.warning("No clerk session available")
             return
         }
@@ -109,16 +122,20 @@ public final class AuthManager {
             // Get the session token
             let tokenResult = try await session.getToken()
             if let token = tokenResult?.jwt {
+                print("[AuthManager] Got token from Clerk: \(String(token.prefix(20)))...")
                 logger.info("Got token from Clerk: \(String(token.prefix(20)))...")
                 try KeychainService.shared.storeToken(token)
+                print("[AuthManager] Token stored in Keychain")
                 logger.info("Token stored in Keychain")
                 
                 // Provision user via API
                 await provisionUser(token: token)
             } else {
+                print("[AuthManager] No JWT in token result")
                 logger.warning("No JWT in token result")
             }
         } catch {
+            print("[AuthManager] Token sync error: \(error.localizedDescription)")
             logger.error("Token sync error: \(error.localizedDescription)")
             self.error = .tokenSyncFailed(error)
         }
@@ -127,6 +144,7 @@ public final class AuthManager {
     /// Call POST /api/v1/auth/user to ensure user exists in backend
     private func provisionUser(token: String) async {
         let urlString = "\(Configuration.apiBaseURL)/api/v1/auth/user"
+        print("[AuthManager] Provisioning user at \(urlString)")
         logger.info("Provisioning user at \(urlString)")
         
         guard let url = URL(string: urlString) else {
@@ -141,8 +159,10 @@ public final class AuthManager {
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             if let httpResponse = response as? HTTPURLResponse {
+                print("[AuthManager] Provision response: \(httpResponse.statusCode)")
                 logger.info("Provision response: \(httpResponse.statusCode)")
                 if let body = String(data: data, encoding: .utf8) {
+                    print("[AuthManager] Response body: \(body)")
                     logger.debug("Response body: \(body)")
                 }
                 if !(200...299).contains(httpResponse.statusCode) {
@@ -150,6 +170,7 @@ public final class AuthManager {
                 }
             }
         } catch {
+            print("[AuthManager] Provision network error: \(error.localizedDescription)")
             logger.error("Provision network error: \(error.localizedDescription)")
             // Non-fatal: user may be offline
             self.error = .networkError(error)

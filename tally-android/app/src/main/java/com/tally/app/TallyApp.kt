@@ -3,10 +3,10 @@ package com.tally.app
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -106,7 +106,7 @@ fun TallyApp(
                     },
                     icon = {
                         Icon(
-                            imageVector = if (selectedTab == 1) Icons.Filled.Person else Icons.Outlined.Person,
+                            imageVector = if (selectedTab == 1) Icons.Filled.Group else Icons.Outlined.Group,
                             contentDescription = null
                         )
                     },

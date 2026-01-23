@@ -39,13 +39,17 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
         run: |
           npx vercel deploy --prod --yes --token=$VERCEL_TOKEN \
+            --env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
             --env CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" \
             --env CLERK_PROXY_URL="" \
             --env NEXT_PUBLIC_CONVEX_URL="${{ secrets.NEXT_PUBLIC_CONVEX_URL }}" \
             --env HONEYCOMB_API_KEY="${{ secrets.HONEYCOMB_API_KEY }}" \
             --env NEXT_PUBLIC_POSTHOG_KEY="${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}" \
             --env NEXT_PUBLIC_POSTHOG_HOST="${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}" \
+            --build-env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
+            --build-env CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" \
             --build-env CLERK_PROXY_URL="" \
+            --build-env NEXT_PUBLIC_CONVEX_URL="${{ secrets.NEXT_PUBLIC_CONVEX_URL }}" \
             --build-env HONEYCOMB_API_KEY="${{ secrets.HONEYCOMB_API_KEY }}" \
             --build-env NEXT_PUBLIC_POSTHOG_KEY="${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}" \
             --build-env NEXT_PUBLIC_POSTHOG_HOST="${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}"

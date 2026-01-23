@@ -1,0 +1,72 @@
+name: Production Smoke Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Production URL to test'
+        required: false
+        default: 'https://tally-tracker.app'
+  schedule:
+    # Run every 6 hours to catch issues
+    - cron: '0 */6 * * *'
+
+jobs:
+  smoke-tests:
+    name: Production Smoke Tests
+    runs-on: ubuntu-latest
+    env:
+      PROD_URL: ${{ github.event.inputs.url || 'https://tally-tracker.app' }}
+    steps:
+      - name: Health check
+        run: |
+          echo "Testing: $PROD_URL"
+          
+          echo "::group::Homepage loads"
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$PROD_URL")
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Homepage returns 200"
+          else
+            echo "❌ Homepage returns $HTTP_CODE"
+            exit 1
+          fi
+          echo "::endgroup::"
+          
+          echo "::group::Health endpoint"
+          HEALTH_RESPONSE=$(curl -s --max-time 10 "$PROD_URL/api/v1/public/health")
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL/api/v1/public/health")
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Health check passed"
+            echo "$HEALTH_RESPONSE"
+          elif [ "$HTTP_CODE" = "503" ]; then
+            echo "❌ Health check failed - service unhealthy"
+            echo "$HEALTH_RESPONSE"
+            exit 1
+          else
+            echo "❌ Health endpoint returned $HTTP_CODE"
+            exit 1
+          fi
+          echo "::endgroup::"
+          
+          echo "::group::API auth check"
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$PROD_URL/api/v1/challenges" \
+            -H "Content-Type: application/json" \
+            -d '{"name":"smoke-test"}')
+          if [ "$HTTP_CODE" = "401" ]; then
+            echo "✅ API returns 401 for unauthenticated requests"
+          elif [ "$HTTP_CODE" -ge 500 ]; then
+            echo "❌ API returns $HTTP_CODE (server error)"
+            exit 1
+          else
+            echo "⚠️ API returns $HTTP_CODE"
+          fi
+          echo "::endgroup::"
+
+      - name: Report status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "🎉 All smoke tests passed for $PROD_URL"
+          else
+            echo "🚨 Smoke tests failed for $PROD_URL"
+          fi

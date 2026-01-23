@@ -229,7 +229,7 @@ export function AddEntryDialog({
                   <p className="text-4xl font-bold text-ink tabular-nums">{setsTotal}</p>
                   <p className="text-xs text-muted mt-0.5">total {unitLabel}</p>
                 </div>
-                <TallyMark count={Math.min(setsTotal, 25)} size="sm" animated />
+                <TallyMark count={setsTotal} size="md" animated />
               </div>
             </div>
           ) : (
@@ -280,7 +280,7 @@ export function AddEntryDialog({
               </div>
               {/* Tally preview */}
               <div className="mt-4 flex justify-center">
-                <TallyMark count={Math.min(count, 25)} size="sm" animated />
+                <TallyMark count={count} size="md" animated />
               </div>
             </div>
           )}

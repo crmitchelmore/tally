@@ -10,7 +10,9 @@
     "start": "next start",
     "lint": "next lint",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:dev": "CONVEX_DEPLOYMENT=$CONVEX_DEPLOYMENT_DEV playwright test --grep @authenticated",
+    "test:e2e:api": "playwright test --grep @api"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.8",

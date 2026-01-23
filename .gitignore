@@ -64,3 +64,6 @@ captures/
 # Playwright
 playwright-report/
 test-results/
+
+# E2E auth state
+.auth-state.json

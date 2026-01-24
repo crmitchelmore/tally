@@ -1,0 +1,37 @@
+{
+  "identifier": "Configuration",
+  "products": [
+    {
+      "displayPrice": "2.99",
+      "familyShareable": false,
+      "internalID": "tip_small",
+      "localizations": [
+        {"locale": "en_US", "name": "Small Tip", "description": "Buy me a coffee"}
+      ],
+      "productID": "tip_small",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "4.99",
+      "familyShareable": false,
+      "internalID": "tip_medium",
+      "localizations": [
+        {"locale": "en_US", "name": "Medium Tip", "description": "Buy me lunch"}
+      ],
+      "productID": "tip_medium",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "9.99",
+      "familyShareable": false,
+      "internalID": "tip_large",
+      "localizations": [
+        {"locale": "en_US", "name": "Large Tip", "description": "Buy me dinner"}
+      ],
+      "productID": "tip_large",
+      "type": "Consumable"
+    }
+  ],
+  "settings": {"_failTransactionsEnabled": false},
+  "version": {"major": 3, "minor": 0}
+}

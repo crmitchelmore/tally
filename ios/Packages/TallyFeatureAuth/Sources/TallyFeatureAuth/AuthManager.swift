@@ -34,6 +34,20 @@ public final class AuthManager {
             print("[AuthManager] Resetting offline mode for testing")
             UserDefaults.standard.removeObject(forKey: Self.offlineModeKey)
         }
+        
+        // Check for offline mode flag (for UI tests)
+        if CommandLine.arguments.contains("--offline-mode") {
+            print("[AuthManager] --offline-mode flag detected, enabling offline mode")
+            prefersOfflineMode = true
+        }
+        
+        // Check for clear data flag (for UI tests)
+        if CommandLine.arguments.contains("--clear-data") {
+            print("[AuthManager] Clearing all data for testing")
+            // Clear challenges local store
+            UserDefaults.standard.removeObject(forKey: "tally.challenges.data")
+            UserDefaults.standard.removeObject(forKey: "tally.challenges.pending")
+        }
     }
     
     /// Configure Clerk with the publishable key

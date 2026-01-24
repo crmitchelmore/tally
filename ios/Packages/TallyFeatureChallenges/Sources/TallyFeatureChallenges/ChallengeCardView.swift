@@ -114,6 +114,7 @@ public struct ChallengeCardView: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("challenge-card-\(challenge.name)")
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint("Double tap to view details")
     }

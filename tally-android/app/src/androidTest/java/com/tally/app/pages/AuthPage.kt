@@ -5,7 +5,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertExists
 
 /**
  * Page object for the Sign-in screen.
@@ -40,19 +39,19 @@ class AuthPage(private val composeRule: ComposeTestRule) {
     
     fun assertSignInViewIsVisible() {
         appTitle().assertIsDisplayed()
-        signInButton().assertExists()
+        signInButton().assertIsDisplayed()
     }
     
     fun assertHasRequiredElements() {
-        tallyLogo().assertExists()
+        tallyLogo().assertIsDisplayed()
         appTitle().assertIsDisplayed()
         tagline().assertIsDisplayed()
-        signInButton().assertExists()
-        continueWithoutAccountButton().assertExists()
+        signInButton().assertIsDisplayed()
+        continueWithoutAccountButton().assertIsDisplayed()
         offlineModeNote().assertIsDisplayed()
     }
     
     fun assertIsSignedOut() {
-        signInButton().assertExists()
+        signInButton().assertIsDisplayed()
     }
 }

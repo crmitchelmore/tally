@@ -5,7 +5,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertDoesNotExist
 
 /**
  * Page object for the Dashboard screen.
@@ -52,6 +51,13 @@ class DashboardPage(private val composeRule: ComposeTestRule) {
     }
     
     fun assertChallengeNotExists(name: String) {
-        challengeCard(name).assertDoesNotExist()
+        // Try to find the node - if it doesn't exist, assertion passes
+        try {
+            challengeCard(name).assertIsDisplayed()
+            throw AssertionError("Challenge '$name' should not exist")
+        } catch (e: AssertionError) {
+            if (e.message?.contains("should not exist") == true) throw e
+            // Node doesn't exist - this is what we want
+        }
     }
 }

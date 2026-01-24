@@ -1,7 +1,8 @@
 import ProjectDescription
 
 // Default Clerk publishable key (safe to embed - it's public)
-let defaultClerkKey = "pk_test_d2lzZS10dW5hLTg1LmNsZXJrLmFjY291bnRzLmRldiQ"
+// This is the prod Clerk instance (clerk.tally-tracker.app)
+let defaultClerkKey = "pk_live_Y2xlcmsudGFsbHktdHJhY2tlci5hcHAk"
 let defaultApiUrl = "https://tally-tracker.app"
 
 // Environment variables can override defaults via Tuist's Environment type

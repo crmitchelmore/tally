@@ -7,15 +7,35 @@ struct ChallengeDialogPage {
     // MARK: - Elements
     
     var dialog: XCUIElement {
-        app.sheets.firstMatch.exists ? app.sheets.firstMatch : app.otherElements["challenge-dialog"]
+        // Try various ways to find the challenge form/dialog
+        let byId = app.otherElements["challenge-form"]
+        if byId.exists { return byId }
+        
+        // Sheets (iOS presents sheets)
+        if app.sheets.firstMatch.exists { return app.sheets.firstMatch }
+        
+        // Navigation stack with form
+        let navStack = app.navigationBars["New Challenge"]
+        if navStack.exists { return navStack }
+        
+        let editNavStack = app.navigationBars["Edit Challenge"]
+        if editNavStack.exists { return editNavStack }
+        
+        return app.otherElements["challenge-dialog"]
     }
     
     var nameTextField: XCUIElement {
-        app.textFields["Challenge Name"].firstMatch
+        // Find by placeholder "Challenge name"
+        let byPlaceholder = app.textFields["Challenge name"]
+        if byPlaceholder.exists { return byPlaceholder }
+        return app.textFields["Challenge Name"].firstMatch
     }
     
     var targetTextField: XCUIElement {
-        app.textFields["Target"].firstMatch
+        // Find the target text field - it's inside a stepper, labeled "Target"
+        let byLabel = app.textFields["Target"]
+        if byLabel.exists { return byLabel }
+        return app.textFields.matching(NSPredicate(format: "value CONTAINS '100'")).firstMatch
     }
     
     var timeframePicker: XCUIElement {

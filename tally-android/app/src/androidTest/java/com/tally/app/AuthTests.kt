@@ -1,8 +1,8 @@
 package com.tally.app
 
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.assertExists
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tally.app.pages.AuthPage
 import com.tally.app.pages.DashboardPage
@@ -56,17 +56,17 @@ class AuthTests {
         val enteredApp = try {
             // Look for any of these indicators that we're in the app
             val hasNoChallengText = try {
-                composeRule.onNodeWithText("No challenges yet").assertExists()
+                composeRule.onNodeWithText("No challenges yet").assertIsDisplayed()
                 true
             } catch (e: Exception) { false }
             
             val hasCreateButton = try {
-                dashboardPage.createChallengeButton().assertExists()
+                dashboardPage.createChallengeButton().assertIsDisplayed()
                 true
             } catch (e: Exception) { false }
             
             val hasHomeTab = try {
-                composeRule.onNodeWithText("Home").assertExists()
+                composeRule.onNodeWithText("Home").assertIsDisplayed()
                 true
             } catch (e: Exception) { false }
             
@@ -85,7 +85,7 @@ class AuthTests {
     fun testSignInButtonLaunchesClerkAuth() {
         // Wait for sign-in view
         composeRule.waitForIdle()
-        authPage.signInButton().assertExists()
+        authPage.signInButton().assertIsDisplayed()
         
         // Tap sign in - this would normally launch Clerk's browser auth
         // In a real test, we'd need to mock or handle the browser intent

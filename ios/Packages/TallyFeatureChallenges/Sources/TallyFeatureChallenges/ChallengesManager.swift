@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 import TallyCore
 import TallyFeatureAPIClient
+import TallyFeatureAuth
 
 /// Observable state manager for challenges with offline-first behavior
 @MainActor
@@ -49,6 +50,18 @@ public final class ChallengesManager {
     public func refresh() async {
         isLoading = challenges.isEmpty
         errorMessage = nil
+        
+        // In local-only mode, skip API calls entirely
+        // Check both AuthManager state and command line flag for test support
+        let isLocalOnly = AuthManager.shared.isLocalOnlyMode || 
+            CommandLine.arguments.contains("--offline-mode")
+        
+        if isLocalOnly {
+            isOnline = false
+            syncState = .offline
+            isLoading = false
+            return
+        }
         
         do {
             let serverChallenges = try await apiClient.listChallenges(includeArchived: true)

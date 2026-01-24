@@ -51,7 +51,9 @@ export function PersonalRecords({ records, loading, challengeNames }: PersonalRe
     records.longestStreak > 0 ||
     records.highestDailyAverage ||
     records.mostActiveDays > 0 ||
-    records.biggestSingleEntry;
+    records.biggestSingleEntry ||
+    records.bestSet ||
+    records.avgSetValue;
 
   if (!hasAnyRecords) {
     return (
@@ -121,6 +123,27 @@ export function PersonalRecords({ records, loading, challengeNames }: PersonalRe
             </p>
             <p className="text-xs text-muted truncate">
               {getChallengeName(records.biggestSingleEntry.challengeId)}
+            </p>
+          </div>
+        )}
+
+        {/* Best set - for sets-based challenges */}
+        {records.bestSet && (
+          <div>
+            <p className="text-xs text-muted uppercase tracking-wide mb-0.5">Best set</p>
+            <p className="text-xl font-semibold text-accent tabular-nums">
+              {records.bestSet.value.toLocaleString()}
+            </p>
+            <p className="text-xs text-muted">{formatDate(records.bestSet.date)}</p>
+          </div>
+        )}
+
+        {/* Average set value */}
+        {records.avgSetValue != null && (
+          <div>
+            <p className="text-xs text-muted uppercase tracking-wide mb-0.5">Avg set</p>
+            <p className="text-xl font-semibold text-ink tabular-nums">
+              {records.avgSetValue.toFixed(1)}
             </p>
           </div>
         )}

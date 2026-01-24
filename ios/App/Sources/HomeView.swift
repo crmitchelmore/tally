@@ -10,6 +10,7 @@ struct HomeView: View {
     @State private var showCreateSheet = false
     @State private var selectedChallenge: Challenge?
     @State private var editingChallenge: Challenge?
+    @State private var addEntryChallenge: Challenge?
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
@@ -23,10 +24,8 @@ struct HomeView: View {
                 showCreateSheet = true
             },
             onQuickAdd: { challenge in
-                // Quick add entry for challenge
-                Task {
-                    await quickAddEntry(for: challenge)
-                }
+                // Show add entry sheet for challenge
+                addEntryChallenge = challenge
             }
         )
         .navigationTitle("Tally")
@@ -56,9 +55,8 @@ struct HomeView: View {
                     challenge: challenge,
                     manager: challengesManager,
                     onAddEntry: {
-                        Task {
-                            await quickAddEntry(for: challenge)
-                        }
+                        selectedChallenge = nil
+                        addEntryChallenge = challenge
                     },
                     onEdit: {
                         selectedChallenge = nil
@@ -82,23 +80,17 @@ struct HomeView: View {
                 }
             )
         }
-    }
-    
-    private func quickAddEntry(for challenge: Challenge) async {
-        // Create entry via API client
-        do {
-            let request = CreateEntryRequest(
-                challengeId: challenge.id,
-                date: ISO8601DateFormatter().string(from: Date()).prefix(10).description,
-                count: 1,
-                note: nil,
-                feeling: nil
+        .sheet(item: $addEntryChallenge) { challenge in
+            AddEntrySheet(
+                challenge: challenge,
+                onSave: {
+                    addEntryChallenge = nil
+                    Task { await challengesManager.refresh() }
+                },
+                onCancel: {
+                    addEntryChallenge = nil
+                }
             )
-            _ = try await APIClient.shared.createEntry(request)
-            // Refresh to show updated stats
-            await challengesManager.refresh()
-        } catch {
-            // Entry creation failed, but we show challenges anyway
         }
     }
 }

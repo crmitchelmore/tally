@@ -4,12 +4,20 @@ import XCTest
 class TallyUITestCase: XCTestCase {
     var app: XCUIApplication!
     
+    /// Override to return false if test requires authentication (not offline mode)
+    var useOfflineMode: Bool { true }
+    
     override func setUpWithError() throws {
         try super.setUpWithError()
         continueAfterFailure = false
         
         app = XCUIApplication()
-        app.launchArguments = ["--uitesting"]
+        app.launchArguments = ["--uitesting", "--reset-offline-mode", "--clear-data"]
+        
+        // Use offline mode for most tests (faster, no auth required)
+        if useOfflineMode {
+            app.launchArguments.append("--offline-mode")
+        }
         
         // Pass environment variables for test credentials
         if let email = ProcessInfo.processInfo.environment["TEST_USER_EMAIL"] {

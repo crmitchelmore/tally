@@ -2,13 +2,16 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { TallyMark } from "@/components/ui/tally-mark";
-import type { Challenge, CreateEntryRequest } from "@/app/api/v1/_lib/types";
+import { calculateInitialValue, getLastSetValue } from "@/lib/entry-defaults";
+import type { Challenge, CreateEntryRequest, Entry } from "@/app/api/v1/_lib/types";
 
 export interface AddEntryDialogProps {
   challenge: Challenge;
   open: boolean;
   onClose: () => void;
   onSubmit: (data: Omit<CreateEntryRequest, "challengeId">) => Promise<void>;
+  /** Recent entries for calculating smart initial values */
+  entries?: Entry[];
 }
 
 const FEELINGS = [
@@ -22,12 +25,14 @@ const FEELINGS = [
  * Dialog for adding a new entry to a challenge.
  * Fast, tactile UX with large tap targets and ink-stroke feedback.
  * Compact layout to fit on standard viewports.
+ * Uses smart initial values based on recent entry history.
  */
 export function AddEntryDialog({
   challenge,
   open,
   onClose,
   onSubmit,
+  entries = [],
 }: AddEntryDialogProps) {
   const countType = challenge.countType ?? "simple";
   const unitLabel = challenge.unitLabel ?? "marks";
@@ -56,8 +61,11 @@ export function AddEntryDialog({
 
     if (open) {
       dialog.showModal();
-      setCountStr("1");
-      setSets(["1"]);
+      // Calculate smart initial value based on recent entries
+      const initialValue = calculateInitialValue(entries, countType);
+      const initialStr = String(initialValue);
+      setCountStr(initialStr);
+      setSets([initialStr]);
       setDate(new Date().toISOString().split("T")[0]);
       setNote("");
       setFeeling(undefined);
@@ -74,7 +82,7 @@ export function AddEntryDialog({
     } else {
       dialog.close();
     }
-  }, [open, countType]);
+  }, [open, countType, entries]);
 
   const handleDialogClick = useCallback(
     (e: React.MouseEvent<HTMLDialogElement>) => {
@@ -96,7 +104,8 @@ export function AddEntryDialog({
   }, []);
 
   const addSet = useCallback(() => {
-    setSets((prev) => [...prev, "1"]);
+    // Use the value of the last set as the initial value for the new set
+    setSets((prev) => [...prev, getLastSetValue(prev)]);
   }, []);
 
   const removeSet = useCallback((index: number) => {

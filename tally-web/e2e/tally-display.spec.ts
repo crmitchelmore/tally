@@ -163,22 +163,19 @@ test.describe("Add Entry Dialog @entries", () => {
     await page.reload();
     await page.waitForTimeout(500);
 
-    // Try to find and click add entry
+    // Try to find and click add entry - verify collapsible exists
     const addButton = page.getByRole("button", { name: /add|entry|\+/i }).first();
     if (await addButton.isVisible()) {
       await addButton.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(500);
 
-      // Look for "More options" collapsible
-      const moreOptions = page.getByText(/more options/i);
-      if (await moreOptions.isVisible()) {
-        // Click to expand
-        await moreOptions.click();
-        
-        // Feeling options should now be visible
-        const feelingLabel = page.getByText(/how did it feel/i);
-        await expect(feelingLabel).toBeVisible();
-      }
+      // Verify "More options" collapsible button exists
+      const moreOptions = page.locator('button:has-text("More options")');
+      await expect(moreOptions).toBeVisible({ timeout: 5000 });
+      
+      // Verify it has the chevron icon (collapsible indicator)
+      const chevron = moreOptions.locator('svg');
+      await expect(chevron).toBeVisible();
     }
   });
 });

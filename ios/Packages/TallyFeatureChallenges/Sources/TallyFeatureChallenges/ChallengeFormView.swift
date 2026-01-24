@@ -188,6 +188,7 @@ public struct ChallengeFormView: View {
                 }
             }
         }
+        .accessibilityIdentifier("challenge-form")
     }
     
     // MARK: - Color Button

@@ -19,6 +19,16 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.optional(v.number()), // Optional for migration
     avatarUrl: v.optional(v.string()), // From existing data
+    // Dashboard panel configuration
+    dashboardConfig: v.optional(v.object({
+      panels: v.object({
+        highlights: v.boolean(),
+        personalRecords: v.boolean(),
+        progressGraph: v.boolean(),
+        burnUpChart: v.boolean(),
+        setsStats: v.boolean(),
+      }),
+    })),
     // Soft delete fields
     deletedAt: v.optional(v.number()),
     deletedBy: v.optional(v.string()),

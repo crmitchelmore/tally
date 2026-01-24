@@ -484,6 +484,7 @@ export default function ChallengeDetailPage() {
         open={showAddEntry}
         onClose={() => setShowAddEntry(false)}
         onSubmit={handleAddEntry}
+        entries={entries}
       />
 
       {/* Edit entry dialog */}

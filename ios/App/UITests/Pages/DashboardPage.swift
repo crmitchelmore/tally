@@ -11,7 +11,10 @@ struct DashboardPage {
     }
     
     var createChallengeButton: XCUIElement {
-        app.buttons["Create Challenge"].firstMatch
+        // Try identifier first, then fall back to label
+        let byId = app.buttons["create-challenge-button"]
+        if byId.exists { return byId }
+        return app.buttons["Create Challenge"].firstMatch
     }
     
     var challengeCards: XCUIElementQuery {
@@ -33,10 +36,12 @@ struct DashboardPage {
     // MARK: - Actions
     
     func challengeCard(named name: String) -> XCUIElement {
-        // Find challenge cards that contain the given name
-        app.otherElements.matching(identifier: "challenge-card")
-            .containing(.staticText, identifier: name)
-            .firstMatch
+        // Try specific identifier first
+        let byId = app.buttons["challenge-card-\(name)"]
+        if byId.exists { return byId }
+        
+        // Fall back to finding by text content
+        return app.buttons.containing(NSPredicate(format: "label CONTAINS[c] %@", name)).firstMatch
     }
     
     func quickAddButton(forChallenge name: String) -> XCUIElement {
@@ -44,7 +49,13 @@ struct DashboardPage {
     }
     
     func tapCreateChallenge() {
-        createChallengeButton.tap()
+        // Try identifier first, then fall back to label
+        let byId = app.buttons["create-challenge-button"]
+        if byId.waitForExistence(timeout: 3) {
+            byId.tap()
+        } else {
+            app.buttons["Create Challenge"].firstMatch.tap()
+        }
     }
     
     func tapChallenge(named name: String) {

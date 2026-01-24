@@ -4,22 +4,14 @@ import XCTest
 /// These tests verify sign-in with test user credentials
 final class AuthTests: TallyUITestCase {
     
+    /// Auth tests need to NOT use offline mode
+    override var useOfflineMode: Bool { false }
+    
     lazy var authPage = AuthPage(app: app)
     lazy var dashboardPage = DashboardPage(app: app)
     
     override func setUpWithError() throws {
-        // Reset app before super.setUp which launches the app
-        // This ensures each test starts with a fresh state
-        let setupApp = XCUIApplication()
-        setupApp.launchArguments = ["--uitesting", "--reset-offline-mode"]
-        // Don't launch, just set arguments - super.setUp will launch
-        
         try super.setUpWithError()
-        
-        // Override the launch arguments to include reset flag
-        app.terminate()
-        app.launchArguments.append("--reset-offline-mode")
-        app.launch()
     }
     
     // MARK: - Sign In View

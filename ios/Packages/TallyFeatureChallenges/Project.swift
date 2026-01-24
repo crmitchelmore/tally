@@ -14,7 +14,8 @@ let project = Project(
             dependencies: [
                 .project(target: "TallyCore", path: "../TallyCore"),
                 .project(target: "TallyDesign", path: "../TallyDesign"),
-                .project(target: "TallyFeatureAPIClient", path: "../TallyFeatureAPIClient")
+                .project(target: "TallyFeatureAPIClient", path: "../TallyFeatureAPIClient"),
+                .project(target: "TallyFeatureAuth", path: "../TallyFeatureAuth")
             ]
         ),
         .target(

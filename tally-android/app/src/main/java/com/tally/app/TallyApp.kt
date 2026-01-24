@@ -24,17 +24,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.tally.app.data.ChallengesRepository
+import com.tally.app.data.ChallengesViewModel
 import com.tally.app.ui.CommunityScreen
 import com.tally.app.ui.HomeScreen
 import com.tally.app.ui.SettingsScreen
 import com.tally.core.auth.TallyUser
 import com.tally.core.auth.ui.UserProfileButton
 import com.tally.core.design.TallyColors
+import com.tally.core.network.TallyApiClient
 import kotlinx.serialization.Serializable
 
 /**
@@ -53,11 +58,26 @@ object CommunityRoute
 @Composable
 fun TallyApp(
     user: TallyUser?,
-    onSignOut: () -> Unit
+    onSignOut: () -> Unit,
+    apiClient: TallyApiClient? = null
 ) {
     val navController = rememberNavController()
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var showSettings by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    // Create repository and ViewModel
+    val isOfflineMode = user == null
+    val repository = remember(isOfflineMode) {
+        ChallengesRepository(
+            context = context,
+            apiClient = apiClient,
+            isOfflineMode = isOfflineMode
+        )
+    }
+    val challengesViewModel: ChallengesViewModel = viewModel(
+        factory = ChallengesViewModel.Factory(repository)
+    )
 
     if (showSettings) {
         ModalBottomSheet(
@@ -137,7 +157,7 @@ fun TallyApp(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable<HomeRoute> {
-                HomeScreen()
+                HomeScreen(viewModel = challengesViewModel)
             }
             composable<CommunityRoute> {
                 CommunityScreen()

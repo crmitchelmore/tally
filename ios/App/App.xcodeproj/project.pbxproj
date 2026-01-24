@@ -548,7 +548,7 @@
 				API_BASE_URL = "https://tally-tracker.app";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLERK_PUBLISHABLE_KEY = pk_test_d2lzZS10dW5hLTg1LmNsZXJrLmFjY291bnRzLmRldiQ;
+				CLERK_PUBLISHABLE_KEY = pk_live_Y2xlcmsudGFsbHktdHJhY2tlci5hcHAk;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
@@ -691,7 +691,7 @@
 				API_BASE_URL = "https://tally-tracker.app";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLERK_PUBLISHABLE_KEY = pk_test_d2lzZS10dW5hLTg1LmNsZXJrLmFjY291bnRzLmRldiQ;
+				CLERK_PUBLISHABLE_KEY = pk_live_Y2xlcmsudGFsbHktdHJhY2tlci5hcHAk;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";

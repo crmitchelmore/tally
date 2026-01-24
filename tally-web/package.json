@@ -9,6 +9,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:dev": "CONVEX_DEPLOYMENT=$CONVEX_DEPLOYMENT_DEV playwright test --grep @authenticated",
@@ -45,6 +47,7 @@
     "eslint-config-next": "^15.5.9",
     "postcss": "^8.5.6",
     "tailwindcss": "3",
-    "typescript": "5.4.5"
+    "typescript": "5.4.5",
+    "vitest": "^4.0.18"
   }
 }

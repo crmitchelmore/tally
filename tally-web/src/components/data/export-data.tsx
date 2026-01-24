@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import type { DashboardConfig } from "@/app/api/v1/_lib/types";
 
 /**
  * Export user data in JSON or CSV format.
@@ -155,6 +156,8 @@ function convertToCSV(data: {
     icon: string;
     isPublic: boolean;
     isArchived: boolean;
+    countType?: string;
+    unitLabel?: string;
     createdAt: string;
   }>;
   entries: Array<{
@@ -162,17 +165,19 @@ function convertToCSV(data: {
     challengeId: string;
     date: string;
     count: number;
+    sets?: number[];
     note?: string;
     feeling?: string;
     createdAt: string;
   }>;
+  dashboardConfig?: DashboardConfig;
 }): string {
   const lines: string[] = [];
 
   // Challenges section
   lines.push("# CHALLENGES");
   lines.push(
-    "id,name,target,timeframeType,startDate,endDate,color,icon,isPublic,isArchived,createdAt"
+    "id,name,target,timeframeType,startDate,endDate,color,icon,isPublic,isArchived,countType,unitLabel,createdAt"
   );
   for (const c of data.challenges) {
     lines.push(
@@ -187,6 +192,8 @@ function convertToCSV(data: {
         c.icon,
         c.isPublic,
         c.isArchived,
+        c.countType || "simple",
+        c.unitLabel || "marks",
         c.createdAt,
       ].join(",")
     );
@@ -194,7 +201,7 @@ function convertToCSV(data: {
 
   lines.push("");
   lines.push("# ENTRIES");
-  lines.push("id,challengeId,date,count,note,feeling,createdAt");
+  lines.push("id,challengeId,date,count,sets,note,feeling,createdAt");
   for (const e of data.entries) {
     lines.push(
       [
@@ -202,11 +209,19 @@ function convertToCSV(data: {
         e.challengeId,
         e.date,
         e.count,
+        e.sets ? e.sets.join("|") : "", // Pipe-delimited sets
         escapeCSV(e.note || ""),
         e.feeling || "",
         e.createdAt,
       ].join(",")
     );
+  }
+
+  // Dashboard config section
+  if (data.dashboardConfig) {
+    lines.push("");
+    lines.push("# DASHBOARD_CONFIG");
+    lines.push(JSON.stringify(data.dashboardConfig));
   }
 
   return lines.join("\n");

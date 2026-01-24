@@ -42,6 +42,8 @@ Feature: Data Portability
       | timeframe  | year               |
       | color      | red                |
       | public     | false              |
+      | countType  | sets               |
+      | unitLabel  | reps               |
     And the challenge has entries with notes and feelings
     When I export my data as JSON
     Then the export should include:
@@ -52,6 +54,8 @@ Feature: Data Portability
       | timeframe | yes     |
       | color     | yes     |
       | public    | yes     |
+      | countType | yes     |
+      | unitLabel | yes     |
       | entries   | yes     |
     And each entry should include:
       | field   | present |
@@ -60,6 +64,10 @@ Feature: Data Portability
       | note    | yes (if set) |
       | feeling | yes (if set) |
       | sets    | yes (if set) |
+    And dashboard config should be included:
+      | field             | present |
+      | panels.highlights | yes     |
+      | panels.progressGraph | yes  |
 
   @export @offline-user
   Scenario: Offline user can export local data

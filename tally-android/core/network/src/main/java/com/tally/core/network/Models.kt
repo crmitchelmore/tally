@@ -116,6 +116,16 @@ data class ChallengeStats(
 )
 
 /**
+ * Best set record
+ */
+@Serializable
+data class BestSet(
+    val value: Int,
+    val date: String,
+    @SerialName("challenge_id") val challengeId: String
+)
+
+/**
  * Dashboard stats
  */
 @Serializable
@@ -123,7 +133,10 @@ data class DashboardStats(
     @SerialName("total_marks") val totalMarks: Int,
     val today: Int,
     @SerialName("best_streak") val bestStreak: Int,
-    @SerialName("overall_pace_status") val overallPaceStatus: PaceStatus
+    @SerialName("overall_pace_status") val overallPaceStatus: PaceStatus,
+    // Sets-specific stats
+    @SerialName("best_set") val bestSet: BestSet? = null,
+    @SerialName("avg_set_value") val avgSetValue: Double? = null
 )
 
 /**
@@ -154,8 +167,32 @@ data class PersonalRecords(
     @SerialName("longest_streak") val longestStreak: Int,
     @SerialName("highest_daily_average") val highestDailyAverage: HighestDailyAverage? = null,
     @SerialName("most_active_days") val mostActiveDays: Int,
-    @SerialName("biggest_single_entry") val biggestSingleEntry: BiggestSingleEntry? = null
+    @SerialName("biggest_single_entry") val biggestSingleEntry: BiggestSingleEntry? = null,
+    // Sets-specific records
+    @SerialName("best_set") val bestSet: BestSet? = null,
+    @SerialName("avg_set_value") val avgSetValue: Double? = null
 )
+
+/**
+ * Dashboard panel configuration
+ */
+@Serializable
+data class DashboardConfig(
+    val panels: Panels = Panels()
+) {
+    @Serializable
+    data class Panels(
+        val highlights: Boolean = true,
+        @SerialName("personal_records") val personalRecords: Boolean = true,
+        @SerialName("progress_graph") val progressGraph: Boolean = true,
+        @SerialName("burn_up_chart") val burnUpChart: Boolean = true,
+        @SerialName("sets_stats") val setsStats: Boolean = true
+    )
+
+    companion object {
+        val DEFAULT = DashboardConfig()
+    }
+}
 
 /**
  * Pagination info

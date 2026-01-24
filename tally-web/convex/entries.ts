@@ -15,6 +15,7 @@ function toApiFormat(entry: Doc<"entries">) {
     challengeId: entry.challengeId,
     date: entry.date,
     count: entry.count,
+    sets: entry.sets, // Include sets breakdown in API response
     note: entry.note,
     feeling: entry.feeling,
     createdAt: new Date(entry.createdAt).toISOString(),
@@ -96,6 +97,7 @@ export const create = mutation({
     challengeId: v.string(),
     date: v.string(),
     count: v.number(),
+    sets: v.optional(v.array(v.number())), // Optional sets breakdown
     note: v.optional(v.string()),
     feeling: v.optional(v.union(
       v.literal("great"),
@@ -111,6 +113,7 @@ export const create = mutation({
       challengeId: args.challengeId,
       date: args.date,
       count: args.count,
+      sets: args.sets,
       note: args.note,
       feeling: args.feeling,
       createdAt: now,
@@ -130,6 +133,7 @@ export const update = mutation({
     id: v.id("entries"),
     date: v.optional(v.string()),
     count: v.optional(v.number()),
+    sets: v.optional(v.array(v.number())), // Optional sets breakdown
     note: v.optional(v.string()),
     feeling: v.optional(v.union(
       v.literal("great"),

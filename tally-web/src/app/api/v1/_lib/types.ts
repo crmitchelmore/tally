@@ -111,8 +111,20 @@ export interface CreateEntryRequest {
 export interface UpdateEntryRequest {
   date?: string;
   count?: number;
+  sets?: number[]; // Optional sets breakdown
   note?: string;
   feeling?: "great" | "good" | "okay" | "tough";
+}
+
+// Dashboard panel configuration
+export interface DashboardConfig {
+  panels: {
+    highlights: boolean;
+    personalRecords: boolean;
+    progressGraph: boolean;
+    burnUpChart: boolean;
+    setsStats: boolean;
+  };
 }
 
 // Stats types
@@ -136,6 +148,9 @@ export interface DashboardStats {
   today: number;
   bestStreak: number;
   overallPaceStatus: "ahead" | "on-pace" | "behind" | "none";
+  // Sets-specific stats (only populated when user has sets-based challenges)
+  bestSet?: { value: number; date: string; challengeId: string };
+  avgSetValue?: number;
 }
 
 export interface PersonalRecords {
@@ -144,6 +159,9 @@ export interface PersonalRecords {
   highestDailyAverage: { challengeId: string; average: number } | null;
   mostActiveDays: number;
   biggestSingleEntry: { date: string; count: number; challengeId: string } | null;
+  // Sets-specific records
+  bestSet?: { value: number; date: string; challengeId: string };
+  avgSetValue?: number;
 }
 
 // Pagination

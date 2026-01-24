@@ -157,6 +157,15 @@ public struct DashboardStats: Codable, Sendable, Equatable {
     public let today: Int
     public let bestStreak: Int
     public let overallPaceStatus: PaceStatus
+    // Sets-specific stats
+    public let bestSet: BestSet?
+    public let avgSetValue: Double?
+    
+    public struct BestSet: Codable, Sendable, Equatable {
+        public let value: Int
+        public let date: String
+        public let challengeId: String
+    }
 }
 
 /// Personal records
@@ -166,6 +175,9 @@ public struct PersonalRecords: Codable, Sendable, Equatable {
     public let highestDailyAverage: HighestAverage?
     public let mostActiveDays: Int
     public let biggestSingleEntry: BiggestEntry?
+    // Sets-specific records
+    public let bestSet: BestSet?
+    public let avgSetValue: Double?
     
     public struct BestDay: Codable, Sendable, Equatable {
         public let date: String
@@ -182,6 +194,45 @@ public struct PersonalRecords: Codable, Sendable, Equatable {
         public let count: Int
         public let challengeId: String
     }
+    
+    public struct BestSet: Codable, Sendable, Equatable {
+        public let value: Int
+        public let date: String
+        public let challengeId: String
+    }
+}
+
+/// Dashboard panel configuration
+public struct DashboardConfig: Codable, Sendable, Equatable {
+    public var panels: Panels
+    
+    public struct Panels: Codable, Sendable, Equatable {
+        public var highlights: Bool
+        public var personalRecords: Bool
+        public var progressGraph: Bool
+        public var burnUpChart: Bool
+        public var setsStats: Bool
+        
+        public init(
+            highlights: Bool = true,
+            personalRecords: Bool = true,
+            progressGraph: Bool = true,
+            burnUpChart: Bool = true,
+            setsStats: Bool = true
+        ) {
+            self.highlights = highlights
+            self.personalRecords = personalRecords
+            self.progressGraph = progressGraph
+            self.burnUpChart = burnUpChart
+            self.setsStats = setsStats
+        }
+    }
+    
+    public init(panels: Panels = Panels()) {
+        self.panels = panels
+    }
+    
+    public static let `default` = DashboardConfig()
 }
 
 /// Weekly summary

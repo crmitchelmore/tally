@@ -192,6 +192,50 @@ Feature: Entry Logging
     And the heatmap should update to reflect the change
 
   # -------------------------------------------------------------------
+  # Journey: Smart Initial Values
+  # -------------------------------------------------------------------
+
+  @add @smart-defaults
+  Scenario: New entry starts with 2-week average for simple count
+    Given challenge "Push-ups" has countType "simple"
+    And I have entries from the last 2 weeks:
+      | date       | count |
+      | yesterday  | 20    |
+      | 3 days ago | 25    |
+      | 5 days ago | 25    |
+      | 7 days ago | 30    |
+    When I open the add entry dialog for "Push-ups"
+    Then the initial count value should be 25
+    # Average is 25, rounded to nearest 5
+
+  @add @smart-defaults @sets
+  Scenario: New entry starts with avg first-set value for sets mode
+    Given challenge "Push-ups" has countType "sets"
+    And I have entries from the last 2 weeks:
+      | date       | sets       |
+      | yesterday  | 20, 15, 10 |
+      | 3 days ago | 18, 12, 8  |
+    When I open the add entry dialog for "Push-ups"
+    Then the first set value should be 19
+    # Average of first sets: (20 + 18) / 2 = 19
+
+  @add @smart-defaults @add-set
+  Scenario: Adding another set uses previous set's value
+    Given I am adding an entry with sets to "Push-ups"
+    And I have entered Set 1 with value 25
+    When I tap "+ Add Set"
+    Then Set 2 should start with value 25
+    When I change Set 2 to 20
+    And I tap "+ Add Set"
+    Then Set 3 should start with value 20
+
+  @add @smart-defaults @no-history
+  Scenario: New entry defaults to 1 with no recent history
+    Given challenge "Push-ups" has no entries in the last 14 days
+    When I open the add entry dialog for "Push-ups"
+    Then the initial count value should be 1
+
+  # -------------------------------------------------------------------
   # Journey: Multiple Entries Per Day
   # -------------------------------------------------------------------
 

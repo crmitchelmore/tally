@@ -99,7 +99,21 @@ public enum EntryDefaults {
 }
 
 private extension ISO8601DateFormatter {
+    // Cache formatters for performance (they're expensive to create)
+    private static let localDateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        return formatter
+    }()
+    
     static func string(from date: Date, timeZone: TimeZone, formatOptions: ISO8601DateFormatter.Options) -> String {
+        // Use cached formatter for the common case
+        if formatOptions == [.withFullDate] {
+            let formatter = localDateFormatter
+            formatter.timeZone = timeZone
+            return formatter.string(from: date)
+        }
+        // Fallback for other format options
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = formatOptions
         formatter.timeZone = timeZone

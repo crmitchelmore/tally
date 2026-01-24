@@ -52,6 +52,16 @@ fun AddEntryDialog(
     var showDatePicker by remember { mutableStateOf(false) }
 
     val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
+    
+    // DatePicker state must be hoisted outside conditional to follow Compose rules
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = selectedDate.toEpochDay() * 24 * 60 * 60 * 1000,
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return utcTimeMillis <= System.currentTimeMillis()
+            }
+        }
+    )
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -306,14 +316,6 @@ fun AddEntryDialog(
 
     // Date picker dialog
     if (showDatePicker) {
-        val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = selectedDate.toEpochDay() * 24 * 60 * 60 * 1000,
-            selectableDates = object : SelectableDates {
-                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                    return utcTimeMillis <= System.currentTimeMillis()
-                }
-            }
-        )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {

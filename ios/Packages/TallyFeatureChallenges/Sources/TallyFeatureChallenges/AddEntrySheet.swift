@@ -18,6 +18,13 @@ public struct AddEntrySheet: View {
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
+    // Cached formatter for performance
+    private static let dateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        return formatter
+    }()
+    
     public init(
         challenge: Challenge,
         onSave: @escaping () -> Void,
@@ -295,9 +302,7 @@ public struct AddEntrySheet: View {
         errorMessage = nil
         
         do {
-            let dateFormatter = ISO8601DateFormatter()
-            dateFormatter.formatOptions = [.withFullDate]
-            let dateString = dateFormatter.string(from: selectedDate)
+            let dateString = Self.dateFormatter.string(from: selectedDate)
             
             let request = CreateEntryRequest(
                 challengeId: challenge.id,

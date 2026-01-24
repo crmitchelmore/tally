@@ -5,6 +5,7 @@ import TallyFeatureAuth
 /// Main app view with tab-based navigation
 struct AppView: View {
     @State private var selectedTab = 0
+    @State private var showSettings = false
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
@@ -18,7 +19,9 @@ struct AppView: View {
                     HomeView()
                         .toolbar {
                             ToolbarItem(placement: .navigationBarTrailing) {
-                                UserProfileButton()
+                                UserProfileButton {
+                                    showSettings = true
+                                }
                             }
                         }
                 }
@@ -31,7 +34,9 @@ struct AppView: View {
                     CommunityView()
                         .toolbar {
                             ToolbarItem(placement: .navigationBarTrailing) {
-                                UserProfileButton()
+                                UserProfileButton {
+                                    showSettings = true
+                                }
                             }
                         }
                 }
@@ -47,6 +52,9 @@ struct AppView: View {
                 SyncStatusView()
                 Spacer()
             }
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
         }
     }
 }

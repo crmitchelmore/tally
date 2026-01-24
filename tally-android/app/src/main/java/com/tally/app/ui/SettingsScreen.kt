@@ -1,6 +1,8 @@
 package com.tally.app.ui
 
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,8 +16,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.tally.app.BuildConfig
 import com.tally.core.billing.TipJarScreen
 import com.tally.core.billing.TipManager
+
+/** Find Activity from context, traversing ContextWrapper if needed */
+private fun Context.findActivity(): Activity? {
+    var ctx = this
+    while (ctx is ContextWrapper) {
+        if (ctx is Activity) return ctx
+        ctx = ctx.baseContext
+    }
+    return null
+}
 
 /**
  * Settings screen with sign out and tip jar options.
@@ -29,18 +42,21 @@ fun SettingsScreen(
     var showTipJar by remember { mutableStateOf(false) }
     
     val context = LocalContext.current
-    val tipManager = remember {
-        (context as? Activity)?.let { TipManager(it) }
+    val tipManager = remember { context.findActivity()?.let { TipManager(it) } }
+    
+    // Clean up TipManager on dispose
+    DisposableEffect(tipManager) {
+        onDispose { tipManager?.disconnect() }
     }
     
     if (showTipJar && tipManager != null) {
         ModalBottomSheet(
-            onDismissRequest = { showTipJar = false }
+            onDismissRequest = { 
+                showTipJar = false
+                tipManager.resetState()
+            }
         ) {
-            TipJarScreen(
-                tipManager = tipManager,
-                onDismiss = { showTipJar = false }
-            )
+            TipJarScreen(tipManager = tipManager)
         }
     }
     
@@ -73,23 +89,26 @@ fun SettingsScreen(
         ) {
             Row(
                 modifier = Modifier
-                    .clickable { showTipJar = true }
+                    .clickable(enabled = tipManager != null) { showTipJar = true }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     imageVector = Icons.Default.Favorite,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = if (tipManager != null) MaterialTheme.colorScheme.primary 
+                           else MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Support Development",
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (tipManager != null) LocalContentColor.current
+                                else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "Leave a tip",
+                        text = if (tipManager != null) "Leave a tip" else "Unavailable",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -140,7 +159,7 @@ fun SettingsScreen(
         
         // Version info
         Text(
-            text = "Version 1.0",
+            text = "Version ${BuildConfig.VERSION_NAME}",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             modifier = Modifier.align(Alignment.CenterHorizontally)

@@ -31,6 +31,7 @@ public final class TipStore: ObservableObject {
                 .sorted { $0.price < $1.price }
         } catch {
             print("Failed to load products: \(error)")
+            purchaseState = .failed("Failed to load products. Please try again later.")
         }
     }
     

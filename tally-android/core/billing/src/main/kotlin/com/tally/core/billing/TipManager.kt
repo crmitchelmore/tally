@@ -1,6 +1,8 @@
 package com.tally.core.billing
 
 import android.app.Activity
+import android.os.Handler
+import android.os.Looper
 import com.android.billingclient.api.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +26,8 @@ class TipManager(private val activity: Activity) : PurchasesUpdatedListener {
     private val _purchaseState = MutableStateFlow<PurchaseState>(PurchaseState.Ready)
     val purchaseState: StateFlow<PurchaseState> = _purchaseState.asStateFlow()
     
+    private var pendingOnReady: (() -> Unit)? = null
+    
     sealed class PurchaseState {
         data object Ready : PurchaseState()
         data object Purchasing : PurchaseState()
@@ -35,15 +39,25 @@ class TipManager(private val activity: Activity) : PurchasesUpdatedListener {
      * Connect to billing service and load products.
      */
     fun connect(onReady: () -> Unit = {}) {
+        pendingOnReady = onReady
         billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                     queryProducts(onReady)
+                } else {
+                    _purchaseState.value = PurchaseState.Failed(
+                        result.debugMessage.ifEmpty { "Failed to connect to billing service" }
+                    )
                 }
             }
             
             override fun onBillingServiceDisconnected() {
-                // Optionally retry connection
+                // Retry connection after delay
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (!billingClient.isReady) {
+                        pendingOnReady?.let { connect(it) }
+                    }
+                }, 3000)
             }
         })
     }
@@ -58,11 +72,17 @@ class TipManager(private val activity: Activity) : PurchasesUpdatedListener {
             })
             .build()
         
-        billingClient.queryProductDetailsAsync(params) { _, details ->
-            _products.value = details.sortedBy { 
-                it.oneTimePurchaseOfferDetails?.priceAmountMicros ?: 0 
+        billingClient.queryProductDetailsAsync(params) { result, details ->
+            if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                _products.value = details.sortedBy { 
+                    it.oneTimePurchaseOfferDetails?.priceAmountMicros ?: 0 
+                }
+                onReady()
+            } else {
+                _purchaseState.value = PurchaseState.Failed(
+                    result.debugMessage.ifEmpty { "Failed to load products" }
+                )
             }
-            onReady()
         }
     }
     
@@ -80,20 +100,40 @@ class TipManager(private val activity: Activity) : PurchasesUpdatedListener {
             ))
             .build()
         
-        billingClient.launchBillingFlow(activity, params)
+        val result = billingClient.launchBillingFlow(activity, params)
+        if (result.responseCode != BillingClient.BillingResponseCode.OK) {
+            _purchaseState.value = PurchaseState.Failed(
+                result.debugMessage.ifEmpty { "Unable to start purchase flow" }
+            )
+        }
     }
     
     override fun onPurchasesUpdated(result: BillingResult, purchases: List<Purchase>?) {
         when (result.responseCode) {
             BillingClient.BillingResponseCode.OK -> {
-                purchases?.forEach { purchase ->
+                if (purchases.isNullOrEmpty()) {
+                    _purchaseState.value = PurchaseState.Failed("No purchase received")
+                    return
+                }
+                purchases.forEach { purchase ->
+                    if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) {
+                        // Pending purchase - don't grant yet
+                        _purchaseState.value = PurchaseState.Ready
+                        return@forEach
+                    }
                     // Consume the purchase (tips are consumable)
                     val params = ConsumeParams.newBuilder()
                         .setPurchaseToken(purchase.purchaseToken)
                         .build()
                     
-                    billingClient.consumeAsync(params) { _, _ ->
-                        _purchaseState.value = PurchaseState.Purchased
+                    billingClient.consumeAsync(params) { consumeResult, _ ->
+                        _purchaseState.value = if (consumeResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                            PurchaseState.Purchased
+                        } else {
+                            PurchaseState.Failed(
+                                consumeResult.debugMessage.ifEmpty { "Failed to complete purchase" }
+                            )
+                        }
                     }
                 }
             }
@@ -119,6 +159,7 @@ class TipManager(private val activity: Activity) : PurchasesUpdatedListener {
      * Disconnect from billing service.
      */
     fun disconnect() {
+        pendingOnReady = null
         billingClient.endConnection()
     }
 }

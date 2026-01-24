@@ -17,7 +17,6 @@ import com.android.billingclient.api.ProductDetails
 @Composable
 fun TipJarScreen(
     tipManager: TipManager,
-    onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val products by tipManager.products.collectAsStateWithLifecycle()
@@ -27,13 +26,7 @@ fun TipJarScreen(
         tipManager.connect()
     }
     
-    DisposableEffect(Unit) {
-        onDispose {
-            tipManager.disconnect()
-        }
-    }
-    
-    // Auto-dismiss on successful purchase after delay
+    // Auto-reset on successful purchase after delay
     LaunchedEffect(purchaseState) {
         if (purchaseState is TipManager.PurchaseState.Purchased) {
             kotlinx.coroutines.delay(2000)

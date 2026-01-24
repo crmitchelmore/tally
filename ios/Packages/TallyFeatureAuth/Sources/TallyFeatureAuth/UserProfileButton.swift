@@ -7,7 +7,6 @@ import Clerk
 public struct UserProfileButton: View {
     @Bindable private var authManager = AuthManager.shared
     @State private var showProfile = false
-    @State private var showSettings = false
     
     /// Closure called when user wants to open settings from profile
     public var onOpenSettings: (() -> Void)?

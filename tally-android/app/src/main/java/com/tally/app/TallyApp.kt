@@ -9,6 +9,7 @@ import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -18,6 +19,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -33,6 +35,7 @@ import com.tally.app.data.ChallengesRepository
 import com.tally.app.data.ChallengesViewModel
 import com.tally.app.ui.CommunityScreen
 import com.tally.app.ui.HomeScreen
+import com.tally.app.ui.SettingsScreen
 import com.tally.core.auth.TallyUser
 import com.tally.core.auth.ui.UserProfileButton
 import com.tally.core.design.TallyColors
@@ -60,6 +63,7 @@ fun TallyApp(
 ) {
     val navController = rememberNavController()
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    var showSettings by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     // Create repository and ViewModel
@@ -75,6 +79,17 @@ fun TallyApp(
         factory = ChallengesViewModel.Factory(repository)
     )
 
+    if (showSettings) {
+        ModalBottomSheet(
+            onDismissRequest = { showSettings = false }
+        ) {
+            SettingsScreen(
+                onDismiss = { showSettings = false },
+                onSignOut = onSignOut
+            )
+        }
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -86,7 +101,7 @@ fun TallyApp(
                 actions = {
                     UserProfileButton(
                         user = user,
-                        onClick = onSignOut
+                        onClick = { showSettings = true }
                     )
                 }
             )

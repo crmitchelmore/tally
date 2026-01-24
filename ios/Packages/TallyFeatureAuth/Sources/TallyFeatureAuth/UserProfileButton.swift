@@ -8,7 +8,12 @@ public struct UserProfileButton: View {
     @Bindable private var authManager = AuthManager.shared
     @State private var showProfile = false
     
-    public init() {}
+    /// Closure called when user wants to open settings from profile
+    public var onOpenSettings: (() -> Void)?
+    
+    public init(onOpenSettings: (() -> Void)? = nil) {
+        self.onOpenSettings = onOpenSettings
+    }
     
     public var body: some View {
         Button {
@@ -37,7 +42,7 @@ public struct UserProfileButton: View {
         .accessibilityLabel("Profile")
         .accessibilityHint("Opens your profile settings")
         .sheet(isPresented: $showProfile) {
-            UserProfileView()
+            UserProfileView(onOpenSettings: onOpenSettings)
                 .presentationDragIndicator(.visible)
         }
     }

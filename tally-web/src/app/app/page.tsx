@@ -4,7 +4,7 @@ import Link from "next/link";
 import { TallyMark } from "@/components/ui/tally-mark";
 import { UndoToast } from "@/components/ui/undo-toast";
 import { ChallengeList } from "@/components/challenges";
-import { DashboardHighlights, PersonalRecords, WeeklySummary, ProgressGraph } from "@/components/stats";
+import { DashboardHighlights, PersonalRecords, WeeklySummary, ProgressGraph, BurnUpChart } from "@/components/stats";
 import { FollowedChallengesSection, CommunitySection } from "@/components/community";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
@@ -243,6 +243,18 @@ export default function AppPage() {
           )}
           {panelConfig.panels.progressGraph && entries.length > 0 && (
             <ProgressGraph entries={entries} challenges={challengesById} />
+          )}
+          {panelConfig.panels.burnUpChart && challenges.length > 0 && (
+            <div className="space-y-6">
+              <h2 className="text-lg font-semibold text-ink">Goal Progress</h2>
+              {challenges.slice(0, 3).map(({ challenge }) => (
+                <BurnUpChart 
+                  key={challenge.id}
+                  entries={entries.filter(e => e.challengeId === challenge.id)} 
+                  challenge={challenge}
+                />
+              ))}
+            </div>
           )}
         </>
       )}

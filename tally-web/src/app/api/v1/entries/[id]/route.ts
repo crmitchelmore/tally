@@ -72,6 +72,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // Apply updates
     if (body.date !== undefined) entry.date = body.date;
     if (body.count !== undefined) entry.count = body.count;
+    if (body.sets !== undefined) entry.sets = body.sets || undefined;
     if (body.note !== undefined) entry.note = body.note || undefined;
     if (body.feeling !== undefined) entry.feeling = body.feeling || undefined;
 

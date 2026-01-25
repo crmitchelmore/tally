@@ -30,6 +30,7 @@ export function EditEntryDialog({
   onDelete,
 }: EditEntryDialogProps) {
   const [count, setCount] = useState(1);
+  const [sets, setSets] = useState<number[]>([]);
   const [date, setDate] = useState("");
   const [note, setNote] = useState("");
   const [feeling, setFeeling] = useState<typeof FEELINGS[number]["value"] | undefined>();
@@ -39,10 +40,14 @@ export function EditEntryDialog({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
+  // Check if this entry uses sets mode
+  const useSetsMode = sets.length > 0;
+
   // Populate form when entry changes
   useEffect(() => {
     if (entry) {
       setCount(entry.count);
+      setSets(entry.sets || []);
       setDate(entry.date);
       setNote(entry.note || "");
       setFeeling(entry.feeling);
@@ -82,6 +87,31 @@ export function EditEntryDialog({
   const today = new Date().toISOString().split("T")[0];
   const isFutureDate = date > today;
 
+  // Update a specific set value
+  const updateSetValue = useCallback((index: number, value: number) => {
+    setSets((prev) => {
+      const newSets = [...prev];
+      newSets[index] = Math.max(0, value);
+      return newSets;
+    });
+  }, []);
+
+  // Add a new set
+  const addSet = useCallback(() => {
+    const lastValue = sets.length > 0 ? sets[sets.length - 1] : 10;
+    setSets((prev) => [...prev, lastValue]);
+  }, [sets]);
+
+  // Remove the last set
+  const removeSet = useCallback(() => {
+    if (sets.length > 1) {
+      setSets((prev) => prev.slice(0, -1));
+    }
+  }, [sets.length]);
+
+  // Compute total from sets when in sets mode
+  const computedCount = useSetsMode ? sets.reduce((sum, s) => sum + s, 0) : count;
+
   // Submit handler
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -94,7 +124,8 @@ export function EditEntryDialog({
       try {
         await onSubmit(entry.id, {
           date,
-          count,
+          count: computedCount,
+          sets: useSetsMode ? sets : undefined,
           note: note.trim() || undefined,
           feeling,
         });
@@ -105,7 +136,7 @@ export function EditEntryDialog({
         setIsSubmitting(false);
       }
     },
-    [entry, count, date, note, feeling, isSubmitting, isFutureDate, onSubmit, onClose]
+    [entry, computedCount, sets, useSetsMode, date, note, feeling, isSubmitting, isFutureDate, onSubmit, onClose]
   );
 
   // Delete handler
@@ -161,78 +192,137 @@ export function EditEntryDialog({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Count input */}
-          <div className="text-center">
-            <label htmlFor="edit-count" className="block text-sm font-medium text-muted mb-3">
-              Count
-            </label>
-            <div className="flex items-center justify-center gap-4">
-              <button
-                type="button"
-                onClick={() => incrementCount(-5)}
-                className="
-                  w-12 h-12 rounded-full border border-border
-                  text-muted hover:text-ink hover:bg-border/50
-                  transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-                  text-lg font-medium
-                "
-              >
-                -5
-              </button>
-              <button
-                type="button"
-                onClick={() => incrementCount(-1)}
-                className="
-                  w-10 h-10 rounded-full border border-border
-                  text-muted hover:text-ink hover:bg-border/50
-                  transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-                  text-lg
-                "
-              >
-                −
-              </button>
-              <input
-                id="edit-count"
-                type="number"
-                min={1}
-                max={9999}
-                value={count}
-                onChange={(e) => setCount(Math.max(1, parseInt(e.target.value) || 1))}
-                className="
-                  w-24 h-16 text-center text-4xl font-semibold tabular-nums
-                  bg-transparent border-b-2 border-border focus:border-accent
-                  text-ink outline-none
-                "
-              />
-              <button
-                type="button"
-                onClick={() => incrementCount(1)}
-                className="
-                  w-10 h-10 rounded-full border border-border
-                  text-muted hover:text-ink hover:bg-border/50
-                  transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-                  text-lg
-                "
-              >
-                +
-              </button>
-              <button
-                type="button"
-                onClick={() => incrementCount(5)}
-                className="
-                  w-12 h-12 rounded-full border border-border
-                  text-muted hover:text-ink hover:bg-border/50
-                  transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
-                  text-lg font-medium
-                "
-              >
-                +5
-              </button>
+          {/* Sets mode or simple count */}
+          {useSetsMode ? (
+            /* Sets mode - show individual sets */
+            <div>
+              <label className="block text-sm font-medium text-muted mb-3">
+                Sets ({sets.length} sets = {computedCount} total)
+              </label>
+              <div className="space-y-2">
+                {sets.map((setVal, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="text-sm text-muted w-12">Set {idx + 1}:</span>
+                    <button
+                      type="button"
+                      onClick={() => updateSetValue(idx, setVal - 1)}
+                      className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-lg"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      min={0}
+                      value={setVal}
+                      onChange={(e) => updateSetValue(idx, parseInt(e.target.value) || 0)}
+                      className="w-20 h-10 text-center text-lg font-semibold tabular-nums bg-transparent border-b-2 border-border focus:border-accent text-ink outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => updateSetValue(idx, setVal + 1)}
+                      className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-lg"
+                    >
+                      +
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-3">
+                <button
+                  type="button"
+                  onClick={addSet}
+                  className="px-3 py-1.5 text-sm rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50"
+                >
+                  + Add Set
+                </button>
+                {sets.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={removeSet}
+                    className="px-3 py-1.5 text-sm rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50"
+                  >
+                    Remove Last
+                  </button>
+                )}
+              </div>
+              <div className="mt-4 flex justify-center">
+                <TallyMark count={Math.min(computedCount, 25)} size="md" />
+              </div>
             </div>
-            <div className="mt-4 flex justify-center">
-              <TallyMark count={Math.min(count, 25)} size="md" />
+          ) : (
+            /* Simple count mode */
+            <div className="text-center">
+              <label htmlFor="edit-count" className="block text-sm font-medium text-muted mb-3">
+                Count
+              </label>
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => incrementCount(-5)}
+                  className="
+                    w-12 h-12 rounded-full border border-border
+                    text-muted hover:text-ink hover:bg-border/50
+                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                    text-lg font-medium
+                  "
+                >
+                  -5
+                </button>
+                <button
+                  type="button"
+                  onClick={() => incrementCount(-1)}
+                  className="
+                    w-10 h-10 rounded-full border border-border
+                    text-muted hover:text-ink hover:bg-border/50
+                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                    text-lg
+                  "
+                >
+                  −
+                </button>
+                <input
+                  id="edit-count"
+                  type="number"
+                  min={1}
+                  max={9999}
+                  value={count}
+                  onChange={(e) => setCount(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="
+                    w-24 h-16 text-center text-4xl font-semibold tabular-nums
+                    bg-transparent border-b-2 border-border focus:border-accent
+                    text-ink outline-none
+                  "
+                />
+                <button
+                  type="button"
+                  onClick={() => incrementCount(1)}
+                  className="
+                    w-10 h-10 rounded-full border border-border
+                    text-muted hover:text-ink hover:bg-border/50
+                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                    text-lg
+                  "
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  onClick={() => incrementCount(5)}
+                  className="
+                    w-12 h-12 rounded-full border border-border
+                    text-muted hover:text-ink hover:bg-border/50
+                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                    text-lg font-medium
+                  "
+                >
+                  +5
+                </button>
+              </div>
+              <div className="mt-4 flex justify-center">
+                <TallyMark count={Math.min(count, 25)} size="md" />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Date input */}
           <div>

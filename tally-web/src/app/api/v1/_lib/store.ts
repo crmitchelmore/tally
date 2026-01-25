@@ -117,6 +117,7 @@ export async function updateEntry(entry: Entry): Promise<Entry> {
     id: entry.id as Id<"entries">,
     date: entry.date,
     count: entry.count,
+    sets: entry.sets,
     note: entry.note,
     feeling: entry.feeling,
   });

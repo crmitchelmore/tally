@@ -42,7 +42,7 @@ public struct UserProfileView: View {
                     
                     VStack(spacing: 4) {
                         if let user = authManager.currentUser {
-                            Text(user.name ?? "Anonymous")
+                            Text(user.displayName)
                                 .font(.title2.bold())
                             
                             if let email = user.email {

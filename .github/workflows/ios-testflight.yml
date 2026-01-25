@@ -107,14 +107,20 @@ jobs:
       - name: Update version and build number
         working-directory: ios/App
         run: |
-          # Update version in generated project
-          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ inputs.version }}" App/Info.plist 2>/dev/null || \
-          /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string ${{ inputs.version }}" App/Info.plist
+          # Update version in generated Info.plist (Tuist puts it in Derived/InfoPlists/)
+          INFO_PLIST="Derived/InfoPlists/App-Info.plist"
           
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.build_number.outputs.BUILD_NUMBER }}" App/Info.plist 2>/dev/null || \
-          /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${{ steps.build_number.outputs.BUILD_NUMBER }}" App/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ inputs.version }}" "$INFO_PLIST" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string ${{ inputs.version }}" "$INFO_PLIST"
           
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.build_number.outputs.BUILD_NUMBER }}" "$INFO_PLIST" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${{ steps.build_number.outputs.BUILD_NUMBER }}" "$INFO_PLIST"
+          
+          # Verify the changes
           echo "📦 Building version ${{ inputs.version }} (${{ steps.build_number.outputs.BUILD_NUMBER }})"
+          echo "Info.plist contents:"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST"
 
       - name: Build archive
         working-directory: ios

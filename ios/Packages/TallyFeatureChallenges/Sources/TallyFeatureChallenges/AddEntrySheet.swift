@@ -8,7 +8,12 @@ public struct AddEntrySheet: View {
     let onSave: () -> Void
     let onCancel: () -> Void
     
+    // Simple mode state
     @State private var count: Int = 1
+    
+    // Sets mode state
+    @State private var sets: [Int] = [1]
+    
     @State private var selectedDate: Date = Date()
     @State private var note: String = ""
     @State private var selectedFeeling: Feeling?
@@ -35,6 +40,14 @@ public struct AddEntrySheet: View {
         self.onCancel = onCancel
     }
     
+    private var isSetsBased: Bool {
+        challenge.countType == .sets
+    }
+    
+    private var totalCount: Int {
+        isSetsBased ? sets.reduce(0, +) : count
+    }
+    
     public var body: some View {
         NavigationStack {
             ScrollView {
@@ -42,11 +55,13 @@ public struct AddEntrySheet: View {
                     // Tally preview
                     tallyPreview
                     
-                    // Count input
-                    countSection
-                    
-                    // Quick add buttons
-                    quickAddButtons
+                    // Count input (mode-specific)
+                    if isSetsBased {
+                        setsSection
+                    } else {
+                        countSection
+                        quickAddButtons
+                    }
                     
                     // Date picker
                     dateSection
@@ -80,7 +95,7 @@ public struct AddEntrySheet: View {
                         Task { await saveEntry() }
                     }
                     .fontWeight(.semibold)
-                    .disabled(isSaving || count < 1)
+                    .disabled(isSaving || totalCount < 1)
                 }
             }
             .overlay {
@@ -97,14 +112,20 @@ public struct AddEntrySheet: View {
     private var tallyPreview: some View {
         VStack(spacing: TallySpacing.md) {
             TallyMarkView(
-                count: count,
+                count: totalCount,
                 animated: !reduceMotion,
                 size: 80
             )
             
-            Text("\(count) \(challenge.resolvedUnitLabel)")
+            Text("\(totalCount) \(challenge.resolvedUnitLabel)")
                 .font(.tallyMonoDisplay)
                 .foregroundColor(Color.tallyInk)
+            
+            if isSetsBased {
+                Text("\(sets.count) set\(sets.count == 1 ? "" : "s")")
+                    .font(.tallyLabelMedium)
+                    .foregroundColor(Color.tallyInkSecondary)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, TallySpacing.xl)
@@ -112,7 +133,97 @@ public struct AddEntrySheet: View {
         .cornerRadius(16)
     }
     
-    // MARK: - Count Section
+    // MARK: - Sets Section
+    
+    private var setsSection: some View {
+        VStack(spacing: TallySpacing.md) {
+            Text("Sets")
+                .font(.tallyLabelMedium)
+                .foregroundColor(Color.tallyInkSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            ForEach(Array(sets.enumerated()), id: \.offset) { index, setCount in
+                setCard(index: index, count: setCount)
+            }
+            
+            // Add set button
+            Button {
+                // Use last set value as initial for new set
+                let lastValue = sets.last ?? challenge.resolvedDefaultIncrement
+                sets.append(lastValue)
+            } label: {
+                HStack {
+                    Image(systemName: "plus.circle.fill")
+                    Text("Add Set")
+                }
+                .font(.tallyLabelMedium)
+                .foregroundColor(Color.tallyAccent)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, TallySpacing.md)
+                .background(Color.tallyPaperTint)
+                .cornerRadius(12)
+            }
+            .accessibilityIdentifier("addSetButton")
+        }
+    }
+    
+    private func setCard(index: Int, count: Int) -> some View {
+        VStack(spacing: TallySpacing.sm) {
+            // Header with set number and remove button
+            HStack {
+                Text("Set \(index + 1)")
+                    .font(.tallyLabelMedium)
+                    .foregroundColor(Color.tallyInk)
+                
+                Spacer()
+                
+                if sets.count > 1 {
+                    Button {
+                        sets.remove(at: index)
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(Color.tallyInkTertiary)
+                    }
+                    .accessibilityLabel("Remove set \(index + 1)")
+                }
+            }
+            
+            // Count display
+            Text("\(count)")
+                .font(.tallyMonoDisplay)
+                .foregroundColor(Color.tallyInk)
+            
+            // -10/-1/+1/+10 buttons
+            HStack(spacing: TallySpacing.sm) {
+                setButton("-10", index: index, increment: -10, enabled: sets[index] > 10)
+                setButton("-1", index: index, increment: -1, enabled: sets[index] > 1)
+                setButton("+1", index: index, increment: 1, enabled: true)
+                setButton("+10", index: index, increment: 10, enabled: true)
+            }
+        }
+        .padding(TallySpacing.md)
+        .background(Color.tallyPaperTint)
+        .cornerRadius(12)
+        .accessibilityIdentifier("setCard\(index)")
+    }
+    
+    private func setButton(_ title: String, index: Int, increment: Int, enabled: Bool) -> some View {
+        Button {
+            sets[index] = max(1, sets[index] + increment)
+        } label: {
+            Text(title)
+                .font(.tallyLabelMedium)
+                .fontWeight(.medium)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, TallySpacing.sm)
+                .background(enabled ? Color.tallyPaper : Color.tallyPaper.opacity(0.5))
+                .foregroundColor(enabled ? Color.tallyInk : Color.tallyInkTertiary)
+                .cornerRadius(8)
+        }
+        .disabled(!enabled)
+    }
+    
+    // MARK: - Count Section (Simple mode)
     
     private var countSection: some View {
         VStack(spacing: TallySpacing.sm) {
@@ -293,7 +404,7 @@ public struct AddEntrySheet: View {
     // MARK: - Actions
     
     private func saveEntry() async {
-        guard count >= 1 else {
+        guard totalCount >= 1 else {
             errorMessage = "Count must be at least 1"
             return
         }
@@ -307,7 +418,8 @@ public struct AddEntrySheet: View {
             let request = CreateEntryRequest(
                 challengeId: challenge.id,
                 date: dateString,
-                count: count,
+                count: totalCount,
+                sets: isSetsBased ? sets : nil,
                 note: note.isEmpty ? nil : note,
                 feeling: selectedFeeling
             )
@@ -324,13 +436,14 @@ public struct AddEntrySheet: View {
             onSave()
         } catch {
             errorMessage = "Failed to save entry. Please try again."
+            print("[AddEntrySheet] Error saving entry: \(error)")
         }
         
         isSaving = false
     }
 }
 
-#Preview {
+#Preview("Simple Mode") {
     AddEntrySheet(
         challenge: Challenge(
             id: "1",
@@ -344,6 +457,30 @@ public struct AddEntrySheet: View {
             icon: "book.fill",
             isPublic: false,
             isArchived: false,
+            createdAt: "2026-01-01T00:00:00Z",
+            updatedAt: "2026-01-01T00:00:00Z"
+        ),
+        onSave: {},
+        onCancel: {}
+    )
+}
+
+#Preview("Sets Mode") {
+    AddEntrySheet(
+        challenge: Challenge(
+            id: "2",
+            userId: "user1",
+            name: "Push-ups",
+            target: 10000,
+            timeframeType: .year,
+            startDate: "2026-01-01",
+            endDate: "2026-12-31",
+            color: "#3B82F6",
+            icon: "dumbbell.fill",
+            isPublic: false,
+            isArchived: false,
+            countType: .sets,
+            unitLabel: "reps",
             createdAt: "2026-01-01T00:00:00Z",
             updatedAt: "2026-01-01T00:00:00Z"
         ),

@@ -11,6 +11,7 @@
 		355E1153F4FA1DBCBEC380D3 /* APIErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FCDD278AB0E3DC92C11E5B /* APIErrorTests.swift */; };
 		3C4ED4FC79481899848B0515 /* Responses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D274037A57EF39CF7874FDF /* Responses.swift */; };
 		3FCFA9E5B8B5905B457C0F17 /* Requests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C04BC1F204A993A36052284 /* Requests.swift */; };
+		44489D150F09A0E4B52B5D84 /* EntryDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7CD6A00ADAF1EE138DCBA1 /* EntryDefaults.swift */; };
 		5895CB2C00D5FDBB97BED02C /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7EB19D4F22F2DC03FAABD85 /* APIClient.swift */; };
 		5C5D852942AB390FE08BFDEE /* RequestsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D9F073F2B5926E6AEB8F30 /* RequestsTests.swift */; };
 		6E060E7C50F664AED595B9E0 /* TallyFeatureAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305ECDF737F7774EEDD6C00C /* TallyFeatureAPIClient.swift */; };
@@ -60,6 +61,7 @@
 		2631564506CF814E345F7870 /* ModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelsTests.swift; sourceTree = "<group>"; };
 		305ECDF737F7774EEDD6C00C /* TallyFeatureAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallyFeatureAPIClient.swift; sourceTree = "<group>"; };
 		33431C5F68CCC8AA65811BDB /* TallyFeatureAPIClientTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TallyFeatureAPIClientTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C7CD6A00ADAF1EE138DCBA1 /* EntryDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryDefaults.swift; sourceTree = "<group>"; };
 		71DF8D0D463EC07B9E08009F /* TallyFeatureAPIClientTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyFeatureAPIClientTests-Info.plist"; sourceTree = "<group>"; };
 		8A3793A314F767E2F7821222 /* TallyCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D274037A57EF39CF7874FDF /* Responses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Responses.swift; sourceTree = "<group>"; };
@@ -103,6 +105,7 @@
 			children = (
 				B7EB19D4F22F2DC03FAABD85 /* APIClient.swift */,
 				01DB47505B999F03B12A3B05 /* APIError.swift */,
+				6C7CD6A00ADAF1EE138DCBA1 /* EntryDefaults.swift */,
 				E4099556AF22BEA1C7439F16 /* Models.swift */,
 				1C04BC1F204A993A36052284 /* Requests.swift */,
 				9D274037A57EF39CF7874FDF /* Responses.swift */,
@@ -271,6 +274,7 @@
 			files = (
 				5895CB2C00D5FDBB97BED02C /* APIClient.swift in Sources */,
 				ECE886C16463156518A49C31 /* APIError.swift in Sources */,
+				44489D150F09A0E4B52B5D84 /* EntryDefaults.swift in Sources */,
 				C7A74DE50D80A38D9697475D /* Models.swift in Sources */,
 				3FCFA9E5B8B5905B457C0F17 /* Requests.swift in Sources */,
 				3C4ED4FC79481899848B0515 /* Responses.swift in Sources */,

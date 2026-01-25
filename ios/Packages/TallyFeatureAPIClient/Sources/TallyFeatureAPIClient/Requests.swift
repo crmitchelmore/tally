@@ -10,6 +10,10 @@ public struct CreateChallengeRequest: Codable, Sendable {
     public let color: String?
     public let icon: String?
     public let isPublic: Bool?
+    // Count configuration
+    public let countType: CountType?
+    public let unitLabel: String?
+    public let defaultIncrement: Int?
     
     public init(
         name: String,
@@ -19,7 +23,10 @@ public struct CreateChallengeRequest: Codable, Sendable {
         endDate: String? = nil,
         color: String? = nil,
         icon: String? = nil,
-        isPublic: Bool? = nil
+        isPublic: Bool? = nil,
+        countType: CountType? = nil,
+        unitLabel: String? = nil,
+        defaultIncrement: Int? = nil
     ) {
         self.name = name
         self.target = target
@@ -29,6 +36,9 @@ public struct CreateChallengeRequest: Codable, Sendable {
         self.color = color
         self.icon = icon
         self.isPublic = isPublic
+        self.countType = countType
+        self.unitLabel = unitLabel
+        self.defaultIncrement = defaultIncrement
     }
 }
 
@@ -63,6 +73,7 @@ public struct CreateEntryRequest: Codable, Sendable {
     public let challengeId: String
     public let date: String
     public let count: Int
+    public let sets: [Int]?
     public let note: String?
     public let feeling: Feeling?
     
@@ -70,12 +81,14 @@ public struct CreateEntryRequest: Codable, Sendable {
         challengeId: String,
         date: String,
         count: Int,
+        sets: [Int]? = nil,
         note: String? = nil,
         feeling: Feeling? = nil
     ) {
         self.challengeId = challengeId
         self.date = date
         self.count = count
+        self.sets = sets
         self.note = note
         self.feeling = feeling
     }
@@ -85,17 +98,20 @@ public struct CreateEntryRequest: Codable, Sendable {
 public struct UpdateEntryRequest: Codable, Sendable {
     public let date: String?
     public let count: Int?
+    public let sets: [Int]?
     public let note: String?
     public let feeling: Feeling?
     
     public init(
         date: String? = nil,
         count: Int? = nil,
+        sets: [Int]? = nil,
         note: String? = nil,
         feeling: Feeling? = nil
     ) {
         self.date = date
         self.count = count
+        self.sets = sets
         self.note = note
         self.feeling = feeling
     }

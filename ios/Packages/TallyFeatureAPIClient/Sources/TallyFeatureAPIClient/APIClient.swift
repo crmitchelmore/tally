@@ -72,6 +72,11 @@ public actor APIClient {
         
         if let body = body {
             request.httpBody = body
+            #if DEBUG
+            if let json = String(data: body, encoding: .utf8) {
+                print("[APIClient] Body: \(json)")
+            }
+            #endif
         }
         
         return request
@@ -93,6 +98,13 @@ public actor APIClient {
             throw APIError.unknown
         }
         
+        #if DEBUG
+        print("[APIClient] Response status: \(httpResponse.statusCode)")
+        if let json = String(data: data, encoding: .utf8) {
+            print("[APIClient] Response: \(json.prefix(500))...")
+        }
+        #endif
+        
         // Handle error responses
         if httpResponse.statusCode >= 400 {
             try handleErrorResponse(data: data, statusCode: httpResponse.statusCode)
@@ -102,6 +114,9 @@ public actor APIClient {
         do {
             return try decoder.decode(T.self, from: data)
         } catch {
+            #if DEBUG
+            print("[APIClient] Decode error: \(error)")
+            #endif
             throw APIError.decodingError(error)
         }
     }
@@ -132,16 +147,22 @@ public actor APIClient {
     
     // MARK: - Challenges API
     
-    /// List user's challenges
-    public func listChallenges(includeArchived: Bool = false) async throws -> [Challenge] {
+    /// List user's challenges with stats
+    public func listChallengesWithStats(includeArchived: Bool = false) async throws -> [ChallengeWithStatsResponse.ChallengeWithStats] {
         var queryItems: [URLQueryItem] = []
         if includeArchived {
             queryItems.append(URLQueryItem(name: "includeArchived", value: "true"))
         }
         
         let request = try buildRequest(path: "/api/v1/challenges", method: "GET", queryItems: queryItems)
-        let response: ChallengesResponse = try await execute(request)
+        let response: ChallengeWithStatsResponse = try await execute(request)
         return response.challenges
+    }
+    
+    /// List user's challenges (without stats for backward compatibility)
+    public func listChallenges(includeArchived: Bool = false) async throws -> [Challenge] {
+        let withStats = try await listChallengesWithStats(includeArchived: includeArchived)
+        return withStats.map { $0.challenge }
     }
     
     /// Get a specific challenge
@@ -228,29 +249,72 @@ public actor APIClient {
     
     /// Get stats for a specific challenge
     public func getChallengeStats(challengeId: String) async throws -> ChallengeStats {
-        let request = try buildRequest(path: "/api/v1/stats/\(challengeId)", method: "GET")
+        let request = try buildRequest(path: "/api/v1/challenges/\(challengeId)/stats", method: "GET")
         let response: StatsResponse = try await execute(request)
         return response.stats
     }
     
-    /// Get dashboard statistics
-    public func getDashboardStats() async throws -> DashboardStats {
-        let request = try buildRequest(path: "/api/v1/stats/dashboard", method: "GET")
-        let response: DashboardStatsResponse = try await execute(request)
-        return response.stats
+    /// Get dashboard statistics and personal records
+    public func getDashboardData() async throws -> (stats: DashboardStats, records: PersonalRecords) {
+        let request = try buildRequest(path: "/api/v1/stats", method: "GET")
+        let response: DashboardResponse = try await execute(request)
+        return (response.dashboard, response.records)
     }
     
-    /// Get personal records
-    public func getPersonalRecords() async throws -> PersonalRecords {
-        let request = try buildRequest(path: "/api/v1/stats/records", method: "GET")
-        let response: PersonalRecordsResponse = try await execute(request)
-        return response.records
+    // MARK: - Community API
+    
+    /// List public challenges
+    public func listPublicChallenges(search: String? = nil) async throws -> [PublicChallenge] {
+        var queryItems: [URLQueryItem] = []
+        if let search = search, !search.isEmpty {
+            queryItems.append(URLQueryItem(name: "search", value: search))
+        }
+        
+        let request = try buildRequest(path: "/api/v1/public/challenges", method: "GET", queryItems: queryItems)
+        let response: PublicChallengesResponse = try await execute(request)
+        return response.challenges
     }
     
-    /// Get weekly summary
-    public func getWeeklySummary() async throws -> WeeklySummary {
-        let request = try buildRequest(path: "/api/v1/stats/weekly", method: "GET")
-        let response: WeeklySummaryResponse = try await execute(request)
-        return response.summary
+    /// List followed challenges
+    public func listFollowedChallenges() async throws -> [PublicChallenge] {
+        let request = try buildRequest(path: "/api/v1/followed", method: "GET")
+        let response: FollowedChallengesResponse = try await execute(request)
+        return response.challenges
+    }
+    
+    /// Follow a challenge
+    public func followChallenge(challengeId: String) async throws {
+        let body = try encoder.encode(FollowRequest(challengeId: challengeId))
+        let request = try buildRequest(path: "/api/v1/follow", method: "POST", body: body)
+        let _: FollowResponse = try await execute(request)
+    }
+    
+    /// Unfollow a challenge
+    public func unfollowChallenge(challengeId: String) async throws {
+        let body = try encoder.encode(FollowRequest(challengeId: challengeId))
+        let request = try buildRequest(path: "/api/v1/follow", method: "DELETE", body: body)
+        let _: UnfollowResponse = try await execute(request)
+    }
+    
+    // MARK: - Data Management API
+    
+    /// Export all user data
+    public func exportData() async throws -> ExportDataResponse {
+        let request = try buildRequest(path: "/api/v1/data", method: "GET")
+        return try await execute(request)
+    }
+    
+    /// Import user data
+    public func importData(_ data: ImportDataRequest) async throws -> ImportDataResponse {
+        let body = try encoder.encode(data)
+        let request = try buildRequest(path: "/api/v1/data", method: "POST", body: body)
+        return try await execute(request)
+    }
+    
+    /// Clear all user data
+    public func clearData() async throws {
+        let request = try buildRequest(path: "/api/v1/data", method: "DELETE")
+        struct ClearResponse: Codable { let cleared: Bool }
+        let _: ClearResponse = try await execute(request)
     }
 }

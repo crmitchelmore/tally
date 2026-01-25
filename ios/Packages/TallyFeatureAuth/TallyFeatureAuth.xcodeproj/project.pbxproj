@@ -11,6 +11,7 @@
 		398354B134FA2559A64BF245 /* TallyDesign.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AEEE252A7527FA9DD8855C5 /* TallyDesign.framework */; };
 		3F0AAA7209A9F3389B79EF3C /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B1FE236FC46C3DD6F4B9AC0 /* AuthManager.swift */; };
 		44BF8113A669DCF0C1A0F9D0 /* TallyFeatureAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A25FF5C6F87CFB2A3437C5 /* TallyFeatureAuth.swift */; };
+		4AB97D174D1089C527288C9C /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4569EFF31827077796C5E658 /* UserProfileView.swift */; };
 		4DB05FCC7F6959E481884A46 /* Clerk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DDC9333326D66C207CF8CD3 /* Clerk.framework */; };
 		6A17790762C9B3EFC021BB75 /* AuthManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FE0559CE88DEA2EFC0D3E05 /* AuthManagerTests.swift */; };
 		93654A7242C44F8642FFDE4E /* UserProfileButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0F8B7417B85DA923D00A90 /* UserProfileButton.swift */; };
@@ -59,6 +60,7 @@
 		2F8C38163E385BA497CC82E6 /* TallyFeatureAuthTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TallyFeatureAuthTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2FE0559CE88DEA2EFC0D3E05 /* AuthManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManagerTests.swift; sourceTree = "<group>"; };
 		3A0F8B7417B85DA923D00A90 /* UserProfileButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileButton.swift; sourceTree = "<group>"; };
+		4569EFF31827077796C5E658 /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
 		4AEEE252A7527FA9DD8855C5 /* TallyDesign.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyDesign.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D74879789C24DABCD59AFEE /* TallyFeatureAuthTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyFeatureAuthTests-Info.plist"; sourceTree = "<group>"; };
 		8DDC9333326D66C207CF8CD3 /* Clerk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Clerk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -144,6 +146,7 @@
 				DF8F1AC3886CB05FE0855557 /* SignInView.swift */,
 				D5A25FF5C6F87CFB2A3437C5 /* TallyFeatureAuth.swift */,
 				3A0F8B7417B85DA923D00A90 /* UserProfileButton.swift */,
+				4569EFF31827077796C5E658 /* UserProfileView.swift */,
 			);
 			path = TallyFeatureAuth;
 			sourceTree = "<group>";
@@ -265,6 +268,7 @@
 				D952FFCC960C8DF946AB4B80 /* SignInView.swift in Sources */,
 				44BF8113A669DCF0C1A0F9D0 /* TallyFeatureAuth.swift in Sources */,
 				93654A7242C44F8642FFDE4E /* UserProfileButton.swift in Sources */,
+				4AB97D174D1089C527288C9C /* UserProfileView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

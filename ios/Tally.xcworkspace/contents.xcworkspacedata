@@ -22,6 +22,9 @@
       <FileRef
          location = "group:TallyFeatureChallenges/TallyFeatureChallenges.xcodeproj">
       </FileRef>
+      <FileRef
+         location = "group:TallyFeatureTipJar/TallyFeatureTipJar.xcodeproj">
+      </FileRef>
    </Group>
    <Group
       location = "container:"

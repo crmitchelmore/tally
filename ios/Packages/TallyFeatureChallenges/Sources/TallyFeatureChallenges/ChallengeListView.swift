@@ -25,13 +25,13 @@ public struct ChallengeListView: View {
     
     public var body: some View {
         Group {
-            if manager.isLoading && manager.challenges.isEmpty {
+            if manager.isLoading && manager.challengesWithStats.isEmpty {
                 LoadingStateView()
             } else if let error = manager.errorMessage {
                 ErrorStateView(message: error) {
                     Task { await manager.refresh() }
                 }
-            } else if manager.challenges.isEmpty {
+            } else if manager.challengesWithStats.isEmpty {
                 EmptyStateView(onCreateChallenge: onCreateChallenge)
             } else {
                 challengesList
@@ -54,19 +54,19 @@ public struct ChallengeListView: View {
                         .tallyPadding(.horizontal)
                 }
                 
-                // Active challenges
-                if !manager.activeChallenges.isEmpty {
+                // Active challenges with stats
+                if !manager.activeChallengesWithStats.isEmpty {
                     Section {
-                        ForEach(manager.activeChallenges) { challenge in
+                        ForEach(manager.activeChallengesWithStats, id: \.challenge.id) { item in
                             ChallengeCardView(
-                                challenge: challenge,
-                                stats: nil, // Stats loaded separately per card
-                                onTap: { onSelectChallenge(challenge) },
-                                onQuickAdd: { onQuickAdd(challenge) }
+                                challenge: item.challenge,
+                                stats: item.stats,
+                                onTap: { onSelectChallenge(item.challenge) },
+                                onQuickAdd: { onQuickAdd(item.challenge) }
                             )
                         }
                     } header: {
-                        SectionHeader(title: "Active", count: manager.activeChallenges.count)
+                        SectionHeader(title: "Active", count: manager.activeChallengesWithStats.count)
                     }
                     .tallyPadding(.horizontal)
                 }
@@ -76,9 +76,10 @@ public struct ChallengeListView: View {
                     Section {
                         DisclosureGroup(isExpanded: $showArchived) {
                             ForEach(manager.archivedChallenges) { challenge in
+                                let stats = manager.stats(for: challenge.id)
                                 ChallengeCardView(
                                     challenge: challenge,
-                                    stats: nil,
+                                    stats: stats,
                                     onTap: { onSelectChallenge(challenge) },
                                     onQuickAdd: { onQuickAdd(challenge) }
                                 )
@@ -103,7 +104,7 @@ struct SectionHeader: View {
     let title: String
     let count: Int
     
-    var body: some View {
+    public var body: some View {
         HStack {
             Text(title)
                 .font(.tallyTitleSmall)
@@ -123,10 +124,11 @@ struct SectionHeader: View {
     }
 }
 
-struct SyncStatusBanner: View {
+public struct SyncStatusBanner: View {
+    public init(state: SyncState) { self.state = state }
     let state: SyncState
     
-    var body: some View {
+    public var body: some View {
         HStack(spacing: TallySpacing.sm) {
             Image(systemName: iconName)
                 .foregroundColor(iconColor)
@@ -179,7 +181,7 @@ struct SyncStatusBanner: View {
 }
 
 struct LoadingStateView: View {
-    var body: some View {
+    public var body: some View {
         VStack(spacing: TallySpacing.lg) {
             ProgressView()
                 .scaleEffect(1.2)
@@ -196,7 +198,7 @@ struct ErrorStateView: View {
     let message: String
     let onRetry: () -> Void
     
-    var body: some View {
+    public var body: some View {
         VStack(spacing: TallySpacing.lg) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 48))
@@ -223,7 +225,7 @@ struct ErrorStateView: View {
 struct EmptyStateView: View {
     let onCreateChallenge: () -> Void
     
-    var body: some View {
+    public var body: some View {
         VStack(spacing: TallySpacing.lg) {
             // Tally mark illustration
             TallyMarkView(count: 5, size: 80)

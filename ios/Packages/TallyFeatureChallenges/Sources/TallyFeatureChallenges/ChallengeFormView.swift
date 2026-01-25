@@ -21,6 +21,11 @@ public struct ChallengeFormView: View {
     @State private var selectedIcon: String = "checkmark"
     @State private var isPublic: Bool = false
     
+    // Count type (simple vs sets)
+    @State private var countType: CountType = .simple
+    @State private var unitLabel: String = ""
+    @State private var defaultIncrement: Int = 1
+    
     @State private var isSaving = false
     @State private var validationError: String?
     
@@ -69,6 +74,7 @@ public struct ChallengeFormView: View {
                 Section {
                     TextField("Challenge name", text: $name)
                         .font(.tallyBodyMedium)
+                        .accessibilityIdentifier("challenge-name-input")
                 } header: {
                     Text("Name")
                 }
@@ -83,12 +89,49 @@ public struct ChallengeFormView: View {
                                 .keyboardType(.numberPad)
                                 .multilineTextAlignment(.trailing)
                                 .frame(width: 80)
+                                .accessibilityIdentifier("challenge-target-input")
                         }
                     }
                 } header: {
                     Text("Target")
                 } footer: {
                     Text("How many do you want to complete?")
+                }
+                
+                // Count type section (new feature!)
+                Section {
+                    Picker("Count Type", selection: $countType) {
+                        Text("Simple Count").tag(CountType.simple)
+                        Text("Sets & Reps").tag(CountType.sets)
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("count-type-picker")
+                    
+                    // Unit label (e.g., "reps", "pages", "minutes")
+                    TextField("Unit (e.g., reps, pages)", text: $unitLabel)
+                        .font(.tallyBodyMedium)
+                        .accessibilityIdentifier("unit-label-input")
+                    
+                    if countType == .sets {
+                        // Default increment for sets
+                        Stepper(value: $defaultIncrement, in: 1...100) {
+                            HStack {
+                                Text("Default per set")
+                                Spacer()
+                                Text("\(defaultIncrement)")
+                                    .foregroundColor(Color.tallyInkSecondary)
+                            }
+                        }
+                        .accessibilityIdentifier("default-increment-stepper")
+                    }
+                } header: {
+                    Text("Counting Method")
+                } footer: {
+                    if countType == .sets {
+                        Text("Track each set separately (e.g., 3 sets of 10 push-ups).")
+                    } else {
+                        Text("Simple count for daily totals.")
+                    }
                 }
                 
                 // Timeframe section
@@ -99,13 +142,16 @@ public struct ChallengeFormView: View {
                         Text("Custom").tag(TimeframeType.custom)
                     }
                     .pickerStyle(.segmented)
+                    .accessibilityIdentifier("timeframe-picker")
                     .onChange(of: timeframeType) { _, newValue in
                         updateDatesForTimeframe(newValue)
                     }
                     
                     if timeframeType == .custom {
                         DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
+                            .accessibilityIdentifier("start-date-picker")
                         DatePicker("End Date", selection: $endDate, in: startDate..., displayedComponents: .date)
+                            .accessibilityIdentifier("end-date-picker")
                     } else {
                         HStack {
                             Text("Period")
@@ -152,6 +198,7 @@ public struct ChallengeFormView: View {
                 // Visibility section
                 Section {
                     Toggle("Public Challenge", isOn: $isPublic)
+                        .accessibilityIdentifier("public-toggle")
                 } header: {
                     Text("Visibility")
                 } footer: {
@@ -180,6 +227,7 @@ public struct ChallengeFormView: View {
                     }
                     .disabled(!isValid || isSaving)
                     .fontWeight(.semibold)
+                    .accessibilityIdentifier("save-challenge-button")
                 }
             }
             .onAppear {
@@ -286,6 +334,9 @@ public struct ChallengeFormView: View {
         selectedColor = challenge.color
         selectedIcon = challenge.icon
         isPublic = challenge.isPublic
+        countType = challenge.countType ?? .simple
+        unitLabel = challenge.unitLabel ?? ""
+        defaultIncrement = challenge.defaultIncrement ?? 1
         
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withFullDate]
@@ -327,7 +378,10 @@ public struct ChallengeFormView: View {
                 endDate: endDate,
                 color: selectedColor,
                 icon: selectedIcon,
-                isPublic: isPublic
+                isPublic: isPublic,
+                countType: countType,
+                unitLabel: unitLabel.isEmpty ? nil : unitLabel,
+                defaultIncrement: defaultIncrement
             )
         }
         
@@ -359,6 +413,32 @@ public struct ChallengeFormView: View {
             icon: "book.fill",
             isPublic: true,
             isArchived: false,
+            createdAt: "2026-01-01T00:00:00Z",
+            updatedAt: "2026-01-01T00:00:00Z"
+        ),
+        onSave: {},
+        onCancel: {}
+    )
+}
+
+#Preview("Sets Mode") {
+    ChallengeFormView(
+        manager: ChallengesManager(),
+        existingChallenge: Challenge(
+            id: "2",
+            userId: "user1",
+            name: "Push-ups",
+            target: 10000,
+            timeframeType: .year,
+            startDate: "2026-01-01",
+            endDate: "2026-12-31",
+            color: "#2563EB",
+            icon: "dumbbell.fill",
+            isPublic: false,
+            isArchived: false,
+            countType: .sets,
+            unitLabel: "reps",
+            defaultIncrement: 10,
             createdAt: "2026-01-01T00:00:00Z",
             updatedAt: "2026-01-01T00:00:00Z"
         ),

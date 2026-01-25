@@ -148,6 +148,39 @@ public struct ChallengeStats: Codable, Sendable, Equatable {
     public struct BestDay: Codable, Sendable, Equatable {
         public let date: String
         public let count: Int
+        
+        public init(date: String, count: Int) {
+            self.date = date
+            self.count = count
+        }
+    }
+    
+    public init(
+        challengeId: String,
+        totalCount: Int,
+        remaining: Int,
+        daysElapsed: Int,
+        daysRemaining: Int,
+        perDayRequired: Double,
+        currentPace: Double,
+        paceStatus: PaceStatus,
+        streakCurrent: Int,
+        streakBest: Int,
+        bestDay: BestDay?,
+        dailyAverage: Double
+    ) {
+        self.challengeId = challengeId
+        self.totalCount = totalCount
+        self.remaining = remaining
+        self.daysElapsed = daysElapsed
+        self.daysRemaining = daysRemaining
+        self.perDayRequired = perDayRequired
+        self.currentPace = currentPace
+        self.paceStatus = paceStatus
+        self.streakCurrent = streakCurrent
+        self.streakBest = streakBest
+        self.bestDay = bestDay
+        self.dailyAverage = dailyAverage
     }
 }
 
@@ -165,6 +198,28 @@ public struct DashboardStats: Codable, Sendable, Equatable {
         public let value: Int
         public let date: String
         public let challengeId: String
+        
+        public init(value: Int, date: String, challengeId: String) {
+            self.value = value
+            self.date = date
+            self.challengeId = challengeId
+        }
+    }
+    
+    public init(
+        totalMarks: Int,
+        today: Int,
+        bestStreak: Int,
+        overallPaceStatus: PaceStatus,
+        bestSet: BestSet? = nil,
+        avgSetValue: Double? = nil
+    ) {
+        self.totalMarks = totalMarks
+        self.today = today
+        self.bestStreak = bestStreak
+        self.overallPaceStatus = overallPaceStatus
+        self.bestSet = bestSet
+        self.avgSetValue = avgSetValue
     }
 }
 
@@ -182,23 +237,63 @@ public struct PersonalRecords: Codable, Sendable, Equatable {
     public struct BestDay: Codable, Sendable, Equatable {
         public let date: String
         public let count: Int
+        
+        public init(date: String, count: Int) {
+            self.date = date
+            self.count = count
+        }
     }
     
     public struct HighestAverage: Codable, Sendable, Equatable {
         public let challengeId: String
         public let average: Double
+        
+        public init(challengeId: String, average: Double) {
+            self.challengeId = challengeId
+            self.average = average
+        }
     }
     
     public struct BiggestEntry: Codable, Sendable, Equatable {
         public let date: String
         public let count: Int
         public let challengeId: String
+        
+        public init(date: String, count: Int, challengeId: String) {
+            self.date = date
+            self.count = count
+            self.challengeId = challengeId
+        }
     }
     
     public struct BestSet: Codable, Sendable, Equatable {
         public let value: Int
         public let date: String
         public let challengeId: String
+        
+        public init(value: Int, date: String, challengeId: String) {
+            self.value = value
+            self.date = date
+            self.challengeId = challengeId
+        }
+    }
+    
+    public init(
+        bestSingleDay: BestDay? = nil,
+        longestStreak: Int,
+        highestDailyAverage: HighestAverage? = nil,
+        mostActiveDays: Int,
+        biggestSingleEntry: BiggestEntry? = nil,
+        bestSet: BestSet? = nil,
+        avgSetValue: Double? = nil
+    ) {
+        self.bestSingleDay = bestSingleDay
+        self.longestStreak = longestStreak
+        self.highestDailyAverage = highestDailyAverage
+        self.mostActiveDays = mostActiveDays
+        self.biggestSingleEntry = biggestSingleEntry
+        self.bestSet = bestSet
+        self.avgSetValue = avgSetValue
     }
 }
 

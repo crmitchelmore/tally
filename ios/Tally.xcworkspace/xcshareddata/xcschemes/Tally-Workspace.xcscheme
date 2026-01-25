@@ -272,6 +272,34 @@
                ReferencedContainer = "container:Packages/TallyFeatureChallenges/TallyFeatureChallenges.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "7E8ED02B9FBD85AE90D11B23"
+               BuildableName = "TallyFeatureTipJar.framework"
+               BlueprintName = "TallyFeatureTipJar"
+               ReferencedContainer = "container:Packages/TallyFeatureTipJar/TallyFeatureTipJar.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "34CAB0909B6185EDB12BD2E3"
+               BuildableName = "TallyFeatureTipJarTests.xctest"
+               BlueprintName = "TallyFeatureTipJarTests"
+               ReferencedContainer = "container:Packages/TallyFeatureTipJar/TallyFeatureTipJar.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -355,6 +383,17 @@
                BuildableName = "TallyFeatureChallengesTests.xctest"
                BlueprintName = "TallyFeatureChallengesTests"
                ReferencedContainer = "container:Packages/TallyFeatureChallenges/TallyFeatureChallenges.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "34CAB0909B6185EDB12BD2E3"
+               BuildableName = "TallyFeatureTipJarTests.xctest"
+               BlueprintName = "TallyFeatureTipJarTests"
+               ReferencedContainer = "container:Packages/TallyFeatureTipJar/TallyFeatureTipJar.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>

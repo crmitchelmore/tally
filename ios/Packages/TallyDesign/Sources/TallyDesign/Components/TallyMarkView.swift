@@ -46,12 +46,8 @@ public struct TallyMarkView: View {
                 // 2x2 grid of 25-units
                 drawGridLayout(in: context, bounds: bounds, count: count)
                 
-            case 100:
-                // 100-cap: X + square outline (collapse detail)
-                drawHundredCap(in: context, bounds: bounds)
-                
-            case 101...999:
-                // Row of 100-blocks
+            case 100...999:
+                // 100-cap or row of 100-blocks with CONSISTENT sizing
                 drawHundredBlocksRow(in: context, bounds: bounds, count: count)
                 
             case 1000:
@@ -112,7 +108,7 @@ public struct TallyMarkView: View {
         // Draw 4 vertical strokes
         drawVerticalStrokes(in: context, bounds: bounds, count: 4)
         
-        // Draw diagonal slash (accent color)
+        // Draw diagonal slash (accent color) - angle: -20deg (matching web)
         let inset = bounds.width * 0.15
         let slashPath = Path { p in
             p.move(to: CGPoint(x: inset, y: bounds.height * 0.8))
@@ -265,12 +261,23 @@ public struct TallyMarkView: View {
     private func drawHundredBlocksRow(in context: GraphicsContext, bounds: CGRect, count: Int) {
         let blocks = count / 100
         let remainder = count % 100
-        let blockSize = bounds.width / 11 // Fit up to 10 with spacing
-        let spacing = blockSize * 0.2
         
-        for i in 0..<min(blocks, 10) {
-            let x = CGFloat(i) * (blockSize + spacing)
-            let blockBounds = CGRect(x: x, y: bounds.height / 2 - blockSize / 2, width: blockSize, height: blockSize)
+        // FIXED: Always use consistent block size based on maximum layout (10 blocks)
+        // This prevents resizing when going from 100 to 101, etc.
+        let maxBlocks = 10
+        let blockSize = bounds.width / CGFloat(maxBlocks + 1) // Fixed size for consistency
+        let spacing = blockSize * 0.1
+        
+        // Calculate offset to center the visible blocks
+        let visibleBlocks = min(blocks + (remainder > 0 ? 1 : 0), maxBlocks)
+        let totalWidth = CGFloat(visibleBlocks) * blockSize + CGFloat(max(0, visibleBlocks - 1)) * spacing
+        let startX = (bounds.width - totalWidth) / 2
+        let centerY = bounds.height / 2 - blockSize / 2
+        
+        // Draw complete 100-blocks
+        for i in 0..<min(blocks, maxBlocks) {
+            let x = startX + CGFloat(i) * (blockSize + spacing)
+            let blockBounds = CGRect(x: x, y: centerY, width: blockSize, height: blockSize)
             var blockContext = context
             blockContext.translateBy(x: blockBounds.origin.x, y: blockBounds.origin.y)
             drawHundredCap(
@@ -279,15 +286,48 @@ public struct TallyMarkView: View {
             )
         }
         
-        // Show partial block indicator if needed
-        if remainder > 0 && blocks < 10 {
-            let x = CGFloat(blocks) * (blockSize + spacing)
-            let blockBounds = CGRect(x: x, y: bounds.height / 2 - blockSize / 2, width: blockSize, height: blockSize)
-            // Draw simplified representation
+        // Draw partial block indicator if needed
+        if remainder > 0 && blocks < maxBlocks {
+            let x = startX + CGFloat(blocks) * (blockSize + spacing)
+            let blockBounds = CGRect(x: x, y: centerY, width: blockSize, height: blockSize)
+            
+            // Draw simplified representation - just outline with fill opacity
+            let fillOpacity = Double(remainder) / 100.0
             let rect = Path { p in
                 p.addRect(blockBounds)
             }
+            context.fill(rect, with: .color(.tallyAccent.opacity(fillOpacity * 0.3)))
             context.stroke(rect, with: .color(.tallyInkTertiary), lineWidth: 1.5)
+            
+            // Draw partial Xs based on percentage
+            if remainder >= 25 {
+                let xSize = blockBounds.width * 0.3
+                let xInset = blockBounds.width * 0.1
+                let innerSize = blockBounds.width - 2 * xInset
+                let completedQuarters = remainder / 25
+                
+                let positions: [(x: CGFloat, y: CGFloat)] = [
+                    (0.25, 0.25),
+                    (0.75, 0.25),
+                    (0.25, 0.75),
+                    (0.75, 0.75),
+                ]
+                
+                for i in 0..<min(completedQuarters, 4) {
+                    let pos = positions[i]
+                    let centerX = blockBounds.minX + xInset + innerSize * pos.x
+                    let centerY = blockBounds.minY + xInset + innerSize * pos.y
+                    let halfX = xSize / 2
+                    
+                    let xPath = Path { p in
+                        p.move(to: CGPoint(x: centerX - halfX, y: centerY - halfX))
+                        p.addLine(to: CGPoint(x: centerX + halfX, y: centerY + halfX))
+                        p.move(to: CGPoint(x: centerX + halfX, y: centerY - halfX))
+                        p.addLine(to: CGPoint(x: centerX - halfX, y: centerY + halfX))
+                    }
+                    context.stroke(xPath, with: .color(.tallyAccent), lineWidth: 1.5)
+                }
+            }
         }
     }
     
@@ -364,6 +404,40 @@ public struct TallyMarkView: View {
         .padding()
 }
 
+#Preview("Hundred and One - Size Consistency") {
+    VStack(spacing: 20) {
+        HStack(spacing: 20) {
+            VStack {
+                TallyMarkView(count: 100, size: 80)
+                Text("100")
+            }
+            VStack {
+                TallyMarkView(count: 101, size: 80)
+                Text("101")
+            }
+            VStack {
+                TallyMarkView(count: 125, size: 80)
+                Text("125")
+            }
+        }
+        HStack(spacing: 20) {
+            VStack {
+                TallyMarkView(count: 150, size: 80)
+                Text("150")
+            }
+            VStack {
+                TallyMarkView(count: 200, size: 80)
+                Text("200")
+            }
+            VStack {
+                TallyMarkView(count: 500, size: 80)
+                Text("500")
+            }
+        }
+    }
+    .padding()
+}
+
 #Preview("Thousand") {
     TallyMarkView(count: 1000)
         .padding()
@@ -372,7 +446,7 @@ public struct TallyMarkView: View {
 #Preview("Range") {
     ScrollView {
         VStack(spacing: 16) {
-            ForEach([1, 3, 5, 10, 25, 50, 100, 500, 1000, 5000, 10000], id: \.self) { count in
+            ForEach([1, 3, 5, 10, 25, 50, 100, 101, 125, 200, 500, 1000, 5000, 10000], id: \.self) { count in
                 VStack {
                     Text("\(count)")
                         .font(.tallyLabelSmall)

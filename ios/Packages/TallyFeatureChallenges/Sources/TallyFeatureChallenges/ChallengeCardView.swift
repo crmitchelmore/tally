@@ -26,10 +26,10 @@ public struct ChallengeCardView: View {
     public var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: TallySpacing.md) {
-                // Header: icon, name, pace indicator
+                // Header: icon, name, badges, pace indicator
                 HStack {
-                    // Challenge icon
-                    Image(systemName: challenge.icon)
+                    // Challenge icon with tint
+                    Image(systemName: iconName)
                         .font(.tallyTitleSmall)
                         .foregroundColor(challengeColor)
                     
@@ -37,6 +37,13 @@ public struct ChallengeCardView: View {
                         .font(.tallyTitleSmall)
                         .foregroundColor(Color.tallyInk)
                         .lineLimit(1)
+                    
+                    // Public badge
+                    if challenge.isPublic {
+                        Image(systemName: "globe")
+                            .font(.caption)
+                            .foregroundColor(Color.tallyInkSecondary)
+                    }
                     
                     Spacer()
                     
@@ -63,7 +70,7 @@ public struct ChallengeCardView: View {
                                 .foregroundColor(Color.tallyInkSecondary)
                         }
                         
-                        // Progress bar
+                        // Progress bar with challenge color
                         GeometryReader { geometry in
                             ZStack(alignment: .leading) {
                                 Rectangle()
@@ -111,12 +118,25 @@ public struct ChallengeCardView: View {
             .background(Color.tallyPaper)
             .cornerRadius(12)
             .shadow(color: Color.tallyInk.opacity(0.06), radius: 4, x: 0, y: 2)
+            // Color accent on left edge
+            .overlay(alignment: .leading) {
+                Rectangle()
+                    .fill(challengeColor)
+                    .frame(width: 4)
+                    .cornerRadius(2)
+                    .padding(.vertical, 8)
+            }
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("challenge-card-\(challenge.name)")
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint("Double tap to view details")
+    }
+    
+    /// Map web icon names to SF Symbols
+    private var iconName: String {
+        IconMapper.sfSymbol(for: challenge.icon)
     }
     
     private var challengeColor: Color {
@@ -144,7 +164,86 @@ public struct ChallengeCardView: View {
             case .none: break
             }
         }
+        if challenge.isPublic {
+            label += ", public challenge"
+        }
         return label
+    }
+}
+
+/// Maps web icon identifiers to SF Symbols
+public enum IconMapper {
+    private static let mapping: [String: String] = [
+        // Direct SF Symbol names
+        "checkmark": "checkmark",
+        "book.fill": "book.fill",
+        "figure.run": "figure.run",
+        "pencil.and.outline": "pencil.and.outline",
+        "music.note": "music.note",
+        "paintbrush.fill": "paintbrush.fill",
+        "cup.and.saucer.fill": "cup.and.saucer.fill",
+        "dumbbell.fill": "dumbbell.fill",
+        "heart.fill": "heart.fill",
+        "star.fill": "star.fill",
+        "leaf.fill": "leaf.fill",
+        "brain.head.profile": "brain.head.profile",
+        
+        // Web icon names (emoji-style) to SF Symbols
+        "fitness": "dumbbell.fill",
+        "book": "book.fill",
+        "run": "figure.run",
+        "running": "figure.run",
+        "pencil": "pencil.and.outline",
+        "write": "pencil.and.outline",
+        "writing": "pencil.and.outline",
+        "music": "music.note",
+        "art": "paintbrush.fill",
+        "paint": "paintbrush.fill",
+        "coffee": "cup.and.saucer.fill",
+        "drink": "cup.and.saucer.fill",
+        "workout": "dumbbell.fill",
+        "gym": "dumbbell.fill",
+        "exercise": "dumbbell.fill",
+        "health": "heart.fill",
+        "love": "heart.fill",
+        "star": "star.fill",
+        "favorite": "star.fill",
+        "nature": "leaf.fill",
+        "plant": "leaf.fill",
+        "mind": "brain.head.profile",
+        "meditation": "brain.head.profile",
+        "meditate": "brain.head.profile",
+        "code": "chevron.left.forwardslash.chevron.right",
+        "programming": "chevron.left.forwardslash.chevron.right",
+        "study": "book.fill",
+        "learn": "graduationcap.fill",
+        "swim": "figure.pool.swim",
+        "swimming": "figure.pool.swim",
+        "bike": "bicycle",
+        "cycling": "bicycle",
+        "walk": "figure.walk",
+        "walking": "figure.walk",
+        "sleep": "moon.fill",
+        "rest": "moon.fill",
+        "water": "drop.fill",
+        "hydration": "drop.fill",
+        "food": "fork.knife",
+        "meal": "fork.knife",
+        "money": "dollarsign.circle.fill",
+        "save": "banknote.fill",
+        "target": "target",
+        "goal": "target",
+        "default": "checkmark",
+    ]
+    
+    public static func sfSymbol(for icon: String) -> String {
+        // First check if it's already a valid SF Symbol name
+        if UIImage(systemName: icon) != nil {
+            return icon
+        }
+        // Then check our mapping
+        let lowercased = icon.lowercased()
+        return mapping[lowercased] ?? mapping[icon] ?? "checkmark"
     }
 }
 
@@ -205,8 +304,8 @@ struct PaceIndicator: View {
 
 // MARK: - Color Extension
 
-extension Color {
-    init?(hex: String) {
+public extension Color {
+    public init?(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
         
@@ -240,7 +339,20 @@ extension Color {
             createdAt: "2026-01-01T00:00:00Z",
             updatedAt: "2026-01-01T00:00:00Z"
         ),
-        stats: nil,
+        stats: ChallengeStats(
+            challengeId: "1",
+            totalCount: 25,
+            remaining: 75,
+            daysElapsed: 30,
+            daysRemaining: 335,
+            perDayRequired: 0.22,
+            currentPace: 0.83,
+            paceStatus: .ahead,
+            streakCurrent: 5,
+            streakBest: 10,
+            bestDay: nil,
+            dailyAverage: 0.83
+        ),
         onTap: {},
         onQuickAdd: {}
     )

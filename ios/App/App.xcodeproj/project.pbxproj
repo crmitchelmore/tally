@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -15,11 +15,13 @@
 		48469C5111BF762561C9B9B6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8F7F83A194E1D17030DCA033 /* Assets.xcassets */; };
 		54F1EBB77D3F424ED2EC58FE /* TallyFeatureChallenges.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C8EC6562F91FECF24EA9DF1A /* TallyFeatureChallenges.framework */; };
 		58417CF4849C60023AF62789 /* EntryDialogPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5092A9693A1EA9027AE23807 /* EntryDialogPage.swift */; };
+		5C0C205BB298CAE3CB969FEC /* TallyFeatureTipJar.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FD57017095728C4F90315C7 /* TallyFeatureTipJar.framework */; };
 		604450B77C88874D48D26C8D /* PhoneNumberKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 17F65D9AD9EDDA8EB25E4A0A /* PhoneNumberKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		64A1D96432215DAA99C651E1 /* TallyDesign.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A995F149EF7FFEBC7F2EFDBB /* TallyDesign.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		69B40BAF2815D2969E4A0FB1 /* Kingfisher.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 77D69EAF942AA87F8A9468BF /* Kingfisher.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6C2C56D877A633E011CBDF2E /* TallyUITestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7A27C38078F64CDD1EC442 /* TallyUITestCase.swift */; };
 		74CF307C13D42E39BAE7F815 /* TallyFeatureAuth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4B5B66D5303483821DD1CE0 /* TallyFeatureAuth.framework */; };
+		75BAA665D2FC41B8CC375C75 /* TallyFeatureTipJar.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7FD57017095728C4F90315C7 /* TallyFeatureTipJar.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		764D77813D6FBFB299008C57 /* TallyFeatureAPIClient.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1C37768CF8BDE3C3C533AC06 /* TallyFeatureAPIClient.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		78F159A7EDD472CF426C10C3 /* SyncStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFB51575A475ABC13347374E /* SyncStatusView.swift */; };
 		7B3B60DAA52F5FBB665686CC /* Clerk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6418FF9FEE329D1A96DB3F49 /* Clerk.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -28,6 +30,7 @@
 		97891A5F2171937139F3C728 /* TallyCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6BADD4378FD7BA41B6122F3 /* TallyCore.framework */; };
 		9C3D03C4730356363FA7C58D /* TallyCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F6BADD4378FD7BA41B6122F3 /* TallyCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A150D4E4BC765D5DC63529D4 /* ChallengeDetailPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10375E988EAFB3574D1C92BD /* ChallengeDetailPage.swift */; };
+		A283D6B6B7AF6EFE72F8D220 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D159BCAB94FE2D241967AF6 /* SettingsView.swift */; };
 		B54EC7FC1A1472DADA201360 /* TallyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A87B2E789E3FCB795DB8449 /* TallyApp.swift */; };
 		BCAA623B8B3DC5F728A52234 /* AuthPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7594EAA9D5E631B92ADA4C59 /* AuthPage.swift */; };
 		BD5931CEC9A7D63728EB2BCE /* AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89688C338AD182298E5871B5 /* AppTests.swift */; };
@@ -97,6 +100,7 @@
 				764D77813D6FBFB299008C57 /* TallyFeatureAPIClient.framework in Embed Frameworks */,
 				7D0448C557AAC8614CCF4858 /* TallyFeatureAuth.framework in Embed Frameworks */,
 				0283E423EB3C277E2A12E108 /* TallyFeatureChallenges.framework in Embed Frameworks */,
+				75BAA665D2FC41B8CC375C75 /* TallyFeatureTipJar.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -125,7 +129,9 @@
 		7594EAA9D5E631B92ADA4C59 /* AuthPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthPage.swift; sourceTree = "<group>"; };
 		77D69EAF942AA87F8A9468BF /* Kingfisher.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Kingfisher.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7EB5417526AA6171D15EB07D /* FactoryKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FactoryKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7FD57017095728C4F90315C7 /* TallyFeatureTipJar.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureTipJar.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		89688C338AD182298E5871B5 /* AppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTests.swift; sourceTree = "<group>"; };
+		8D159BCAB94FE2D241967AF6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		8D7A27C38078F64CDD1EC442 /* TallyUITestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallyUITestCase.swift; sourceTree = "<group>"; };
 		8F7F83A194E1D17030DCA033 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		95D529DAAF6A9D59C44D9D68 /* TuistAssets+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TuistAssets+App.swift"; sourceTree = "<group>"; };
@@ -166,6 +172,7 @@
 				DE6C35D1E77C20E1AE3342EC /* TallyFeatureAPIClient.framework in Frameworks */,
 				74CF307C13D42E39BAE7F815 /* TallyFeatureAuth.framework in Frameworks */,
 				54F1EBB77D3F424ED2EC58FE /* TallyFeatureChallenges.framework in Frameworks */,
+				5C0C205BB298CAE3CB969FEC /* TallyFeatureTipJar.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -244,6 +251,7 @@
 				513115D93DAEA724AA14D1CE /* AppView.swift */,
 				3A24F21BB46A01D26C10D7A1 /* CommunityView.swift */,
 				E74CEC688AF06E6C2810EF30 /* HomeView.swift */,
+				8D159BCAB94FE2D241967AF6 /* SettingsView.swift */,
 				DFB51575A475ABC13347374E /* SyncStatusView.swift */,
 				4A87B2E789E3FCB795DB8449 /* TallyApp.swift */,
 			);
@@ -297,6 +305,7 @@
 				1C37768CF8BDE3C3C533AC06 /* TallyFeatureAPIClient.framework */,
 				B4B5B66D5303483821DD1CE0 /* TallyFeatureAuth.framework */,
 				C8EC6562F91FECF24EA9DF1A /* TallyFeatureChallenges.framework */,
+				7FD57017095728C4F90315C7 /* TallyFeatureTipJar.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -455,6 +464,7 @@
 				DBE7F137FA9A27BFB3915B6F /* AppView.swift in Sources */,
 				BD70BA0F49FB2796CEE04222 /* CommunityView.swift in Sources */,
 				E0B4EC345FB962097386663C /* HomeView.swift in Sources */,
+				A283D6B6B7AF6EFE72F8D220 /* SettingsView.swift in Sources */,
 				78F159A7EDD472CF426C10C3 /* SyncStatusView.swift in Sources */,
 				B54EC7FC1A1472DADA201360 /* TallyApp.swift in Sources */,
 			);
@@ -497,13 +507,16 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.tally.app.uitests;
+				PRODUCT_BUNDLE_IDENTIFIER = app.tally.ios.uitests;
 				PRODUCT_NAME = AppUITests;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = (
+					"$(inherited)",
+					DEBUG,
+				);
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -524,7 +537,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.tally.app.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = app.tally.ios.tests;
 				PRODUCT_NAME = AppTests;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
@@ -548,7 +561,7 @@
 				CLERK_PUBLISHABLE_KEY = pk_live_Y2xlcmsudGFsbHktdHJhY2tlci5hcHAk;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8X4ZN58TYH;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = "Derived/InfoPlists/App-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -556,13 +569,16 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.tally.app;
+				PRODUCT_BUNDLE_IDENTIFIER = app.tally.ios;
 				PRODUCT_NAME = App;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = (
+					"$(inherited)",
+					DEBUG,
+				);
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -634,7 +650,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.tally.app.uitests;
+				PRODUCT_BUNDLE_IDENTIFIER = app.tally.ios.uitests;
 				PRODUCT_NAME = AppUITests;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
@@ -660,13 +676,16 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.tally.app.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = app.tally.ios.tests;
 				PRODUCT_NAME = AppTests;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = (
+					"$(inherited)",
+					DEBUG,
+				);
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -685,7 +704,7 @@
 				CLERK_PUBLISHABLE_KEY = pk_live_Y2xlcmsudGFsbHktdHJhY2tlci5hcHAk;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8X4ZN58TYH;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = "Derived/InfoPlists/App-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -693,7 +712,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.tally.app;
+				PRODUCT_BUNDLE_IDENTIFIER = app.tally.ios;
 				PRODUCT_NAME = App;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;

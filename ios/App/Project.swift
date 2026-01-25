@@ -44,7 +44,8 @@ let project = Project(
                         "UISceneConfigurations": [:]
                     ],
                     "CLERK_PUBLISHABLE_KEY": "$(CLERK_PUBLISHABLE_KEY)",
-                    "API_BASE_URL": "$(API_BASE_URL)"
+                    "API_BASE_URL": "$(API_BASE_URL)",
+                    "ITSAppUsesNonExemptEncryption": false
                 ]
             ),
             sources: ["Sources/**"],

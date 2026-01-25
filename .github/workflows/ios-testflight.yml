@@ -243,7 +243,8 @@ jobs:
               const now = Math.floor(Date.now() / 1000);
               const payload = {
                 iss: issuerId,
-                exp: now + 900,
+                iat: now,
+                exp: now + 1200,  // 20 minutes
                 aud: 'appstoreconnect-v1'
               };
               
@@ -251,9 +252,11 @@ jobs:
               const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64url');
               const signatureInput = `${base64Header}.${base64Payload}`;
               
+              // Use ieee-p1363 encoding for ES256 (required for App Store Connect)
+              const keyObject = crypto.createPrivateKey(privateKey);
               const sign = crypto.createSign('SHA256');
               sign.update(signatureInput);
-              const signature = sign.sign(privateKey, 'base64url');
+              const signature = sign.sign({key: keyObject, dsaEncoding: 'ieee-p1363'}, 'base64url');
               
               return `${signatureInput}.${signature}`;
             }

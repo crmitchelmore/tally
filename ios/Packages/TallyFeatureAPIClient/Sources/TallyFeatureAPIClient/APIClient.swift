@@ -244,6 +244,13 @@ public actor APIClient {
         let request = try buildRequest(path: "/api/v1/entries/\(id)", method: "DELETE")
         let _: DeleteResponse = try await execute(request)
     }
+
+    /// Restore a deleted entry
+    public func restoreEntry(id: String) async throws -> Entry {
+        let request = try buildRequest(path: "/api/v1/entries/\(id)/restore", method: "POST")
+        let response: EntryResponse = try await execute(request)
+        return response.entry
+    }
     
     // MARK: - Stats API
     

@@ -392,6 +392,115 @@ public final class ChallengesManager {
         }
     }
     
+
+    // MARK: - Entry Management
+    
+    /// Get entries for a specific challenge
+    public func getEntries(for challengeId: String) async -> [Entry] {
+        do {
+            let entries = try await apiClient.listEntries(challengeId: challengeId)
+            // Update cached entries for this challenge
+            allEntries.removeAll { $0.challengeId == challengeId }
+            allEntries.append(contentsOf: entries)
+            return entries
+        } catch {
+            #if DEBUG
+            print("[ChallengesManager] Error fetching entries: \(error)")
+            #endif
+            // Return cached entries for this challenge
+            return allEntries.filter { $0.challengeId == challengeId }
+        }
+    }
+    
+    /// Update an entry
+    public func updateEntry(id: String, data: UpdateEntryRequest) async throws {
+        // Optimistically update local cache
+        if let index = allEntries.firstIndex(where: { $0.id == id }) {
+            let existing = allEntries[index]
+            let updated = Entry(
+                id: existing.id,
+                userId: existing.userId,
+                challengeId: existing.challengeId,
+                date: data.date ?? existing.date,
+                count: data.count ?? existing.count,
+                sets: data.sets ?? existing.sets,
+                note: data.note ?? existing.note,
+                feeling: data.feeling ?? existing.feeling,
+                createdAt: existing.createdAt,
+                updatedAt: ISO8601DateFormatter().string(from: Date())
+            )
+            allEntries[index] = updated
+        }
+        
+        do {
+            let serverEntry = try await apiClient.updateEntry(id: id, data: data)
+            // Update with server response
+            if let index = allEntries.firstIndex(where: { $0.id == id }) {
+                allEntries[index] = serverEntry
+            }
+            
+            // Refresh stats for the affected challenge
+            if let entry = allEntries.first(where: { $0.id == id }) {
+                await refreshChallengeStats(challengeId: entry.challengeId)
+            }
+        } catch {
+            // Rollback on error - reload entries
+            if let entry = allEntries.first(where: { $0.id == id }) {
+                _ = await getEntries(for: entry.challengeId)
+            }
+            throw error
+        }
+    }
+    
+    /// Delete an entry with optimistic update
+    public func deleteEntry(id: String) async throws -> Entry {
+        // Find and remove from cache
+        guard let index = allEntries.firstIndex(where: { $0.id == id }) else {
+            throw APIError.notFound("Entry not found")
+        }
+        
+        let deletedEntry = allEntries[index]
+        allEntries.remove(at: index)
+        
+        do {
+            try await apiClient.deleteEntry(id: id)
+            
+            // Refresh stats for the affected challenge
+            await refreshChallengeStats(challengeId: deletedEntry.challengeId)
+            
+            return deletedEntry
+        } catch {
+            // Rollback on error
+            allEntries.insert(deletedEntry, at: index)
+            throw error
+        }
+    }
+    
+    /// Restore a deleted entry
+    public func restoreEntry(id: String) async throws {
+        let restoredEntry = try await apiClient.restoreEntry(id: id)
+        
+        // Add back to cache
+        allEntries.append(restoredEntry)
+        
+        // Refresh stats for the affected challenge
+        await refreshChallengeStats(challengeId: restoredEntry.challengeId)
+    }
+    
+    /// Refresh stats for a specific challenge
+    private func refreshChallengeStats(challengeId: String) async {
+        do {
+            let stats = try await apiClient.getChallengeStats(challengeId: challengeId)
+            if let index = challengesWithStats.firstIndex(where: { $0.challenge.id == challengeId }) {
+                challengesWithStats[index].stats = stats
+            }
+        } catch {
+            #if DEBUG
+            print("[ChallengesManager] Error refreshing stats: \(error)")
+            #endif
+        }
+    }
+
     /// Clear all local data (for logout)
     public func clearLocalData() {
         localStore.clearAll()

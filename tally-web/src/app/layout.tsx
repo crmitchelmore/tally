@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { TelemetryProvider } from "@/components/TelemetryProvider";
 import { ConvexClientProvider } from "@/lib/convex";
+import { DebugBridgeInit } from "@/components/DebugBridgeInit";
 import "./globals.css";
 
 const inter = Inter({
@@ -36,7 +37,10 @@ export default function RootLayout({
 }>) {
   const body = (
     <body className={`${inter.variable} font-sans antialiased`}>
-      <TelemetryProvider>{children}</TelemetryProvider>
+      <TelemetryProvider>
+        <DebugBridgeInit />
+        {children}
+      </TelemetryProvider>
     </body>
   );
 

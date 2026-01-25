@@ -18,6 +18,33 @@ Reference ./design-philosophy.md whenever building anything new to remember the 
 
 Reference ./tech-stack-requirements.md to pick the right tools and technologies.
 
+## Convex Deployment
+
+Convex functions are deployed **separately** from Vercel. After changing:
+- `convex/schema.ts` (data model)
+- `convex/*.ts` (mutations/queries)
+
+Run: `npx convex deploy` to sync changes to production.
+
+**CI does NOT auto-deploy Convex** - this is a manual step after schema/mutation changes.
+
+### Convex Workflow
+
+When modifying Convex schema or mutations:
+1. Update `convex/schema.ts` with new fields
+2. Update `convex/*.ts` mutations to accept/return new fields
+3. Update `src/app/api/v1/_lib/convex-server.ts` TypeScript types
+4. Update API routes to pass new fields through
+5. **Deploy Convex:** `npx convex deploy`
+6. Deploy Vercel (automatic via CI or manual)
+
+Common pitfall: Vercel deploys but Convex is stale → 500 errors on new fields.
+
+### Debugging Convex 500 errors
+1. Check if schema changes were deployed: `npx convex deploy`
+2. Verify mutation args match schema fields
+3. Check Convex dashboard logs at https://dashboard.convex.dev
+
 ## Available .env secrets
 
 CLERK_SECRET_KEY

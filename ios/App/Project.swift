@@ -9,6 +9,14 @@ let defaultApiUrl = "https://tally-tracker.app"
 let clerkKey = Environment.clerkPublishableKey.getString(default: defaultClerkKey)
 let apiUrl = Environment.apiBaseURL.getString(default: defaultApiUrl)
 
+// CI signing settings (passed via environment, e.g., from GitHub Actions)
+let teamId = Environment.developmentTeam.getString(default: "")
+let provisioningProfile = Environment.provisioningProfileSpecifier.getString(default: "")
+let codeSignIdentity = Environment.codeSignIdentity.getString(default: "")
+
+// Determine signing style based on whether provisioning profile is provided
+let isManualSigning = !provisioningProfile.isEmpty
+
 let project = Project(
     name: "App",
     targets: [
@@ -61,12 +69,14 @@ let project = Project(
                         "CODE_SIGN_STYLE": "Automatic",
                         "DEVELOPMENT_TEAM": ""
                     ]),
-                    .release(name: "Release", settings: [
-                        // Allow CI to override with manual signing via xcodebuild args
-                        "CODE_SIGN_STYLE": "$(inherited)",
-                        "DEVELOPMENT_TEAM": "$(inherited)",
-                        "PROVISIONING_PROFILE_SPECIFIER": "$(inherited)",
-                        "CODE_SIGN_IDENTITY": "$(inherited)"
+                    .release(name: "Release", settings: isManualSigning ? [
+                        "CODE_SIGN_STYLE": "Manual",
+                        "DEVELOPMENT_TEAM": .init(stringLiteral: teamId),
+                        "PROVISIONING_PROFILE_SPECIFIER": .init(stringLiteral: provisioningProfile),
+                        "CODE_SIGN_IDENTITY": .init(stringLiteral: codeSignIdentity)
+                    ] : [
+                        "CODE_SIGN_STYLE": "Automatic",
+                        "DEVELOPMENT_TEAM": ""
                     ])
                 ]
             )

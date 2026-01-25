@@ -92,6 +92,10 @@ jobs:
         env:
           TUIST_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           TUIST_API_BASE_URL: "https://tally-tracker.app"
+          # Pass signing settings so Tuist generates the project with correct signing for Release
+          TUIST_DEVELOPMENT_TEAM: ${{ secrets.IOS_TEAM_ID }}
+          TUIST_PROVISIONING_PROFILE_SPECIFIER: ${{ env.PROVISIONING_PROFILE_NAME }}
+          TUIST_CODE_SIGN_IDENTITY: "Apple Distribution"
         run: |
           mise use -g tuist@4.32.0
           tuist install
@@ -111,22 +115,14 @@ jobs:
 
       - name: Build archive
         working-directory: ios
-        env:
-          DEVELOPMENT_TEAM: ${{ secrets.IOS_TEAM_ID }}
         run: |
-          # Build archive with manual signing
-          # Don't specify PROVISIONING_PROFILE_SPECIFIER on command line - let xcodebuild
-          # find the installed profile automatically. This allows frameworks to build
-          # without profiles while the app uses the provisioning profile from ~/Library/MobileDevice/
+          # Build archive - signing is configured via Tuist during project generation
           xcodebuild archive \
             -workspace Tally.xcworkspace \
             -scheme App \
             -configuration Release \
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -destination "generic/platform=iOS" \
-            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            CODE_SIGN_STYLE="Manual" \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
             -allowProvisioningUpdates
 
       - name: Create ExportOptions.plist

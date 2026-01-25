@@ -117,6 +117,7 @@ export async function updateEntry(entry: Entry): Promise<Entry> {
     id: entry.id as Id<"entries">,
     date: entry.date,
     count: entry.count,
+    sets: entry.sets,
     note: entry.note,
     feeling: entry.feeling,
   });
@@ -418,6 +419,7 @@ export async function importUserData(
         challengeId: newChallengeId,
         date: e.date,
         count: e.count,
+        sets: e.sets,
         note: e.note,
         feeling: e.feeling,
       });

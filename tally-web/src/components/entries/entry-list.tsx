@@ -154,12 +154,9 @@ export function EntryList({
               {/* Date header */}
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium text-muted">{formattedDate}</h3>
-                <div className="flex items-center gap-2">
-                  <TallyDisplay count={dayTotal} size="sm" />
-                  <span className="text-sm tabular-nums text-ink font-medium">
-                    {dayTotal} total
-                  </span>
-                </div>
+                <span className="text-sm tabular-nums text-ink font-medium">
+                  {dayTotal} total
+                </span>
               </div>
 
               {/* Entries for this date */}

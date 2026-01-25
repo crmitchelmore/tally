@@ -93,6 +93,7 @@ export const convexEntries = {
     challengeId: string;
     date: string;
     count: number;
+    sets?: number[];
     note?: string;
     feeling?: "great" | "good" | "okay" | "tough";
   }) => client.mutation(api.entries.create, args),
@@ -101,6 +102,7 @@ export const convexEntries = {
     id: Id<"entries">;
     date?: string;
     count?: number;
+    sets?: number[];
     note?: string;
     feeling?: "great" | "good" | "okay" | "tough";
   }) => client.mutation(api.entries.update, args),

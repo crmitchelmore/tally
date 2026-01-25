@@ -96,18 +96,18 @@ export function EditEntryDialog({
     });
   }, []);
 
-  // Add a new set
+  // Add a new set (functional update avoids stale state)
   const addSet = useCallback(() => {
-    const lastValue = sets.length > 0 ? sets[sets.length - 1] : 10;
-    setSets((prev) => [...prev, lastValue]);
-  }, [sets]);
+    setSets((prev) => {
+      const lastValue = prev.length > 0 ? prev[prev.length - 1] : 10;
+      return [...prev, lastValue];
+    });
+  }, []);
 
-  // Remove the last set
+  // Remove the last set (functional update)
   const removeSet = useCallback(() => {
-    if (sets.length > 1) {
-      setSets((prev) => prev.slice(0, -1));
-    }
-  }, [sets.length]);
+    setSets((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  }, []);
 
   // Compute total from sets when in sets mode
   const computedCount = useSetsMode ? sets.reduce((sum, s) => sum + s, 0) : count;
@@ -195,22 +195,24 @@ export function EditEntryDialog({
           {/* Sets mode or simple count */}
           {useSetsMode ? (
             /* Sets mode - show individual sets */
-            <div>
-              <label className="block text-sm font-medium text-muted mb-3">
+            <fieldset>
+              <legend className="block text-sm font-medium text-muted mb-3">
                 Sets ({sets.length} sets = {computedCount} total)
-              </label>
+              </legend>
               <div className="space-y-2">
                 {sets.map((setVal, idx) => (
                   <div key={idx} className="flex items-center gap-2">
-                    <span className="text-sm text-muted w-12">Set {idx + 1}:</span>
+                    <label htmlFor={`set-${idx}`} className="text-sm text-muted w-12">Set {idx + 1}:</label>
                     <button
                       type="button"
                       onClick={() => updateSetValue(idx, setVal - 1)}
                       className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-lg"
+                      aria-label={`Decrease set ${idx + 1}`}
                     >
                       −
                     </button>
                     <input
+                      id={`set-${idx}`}
                       type="number"
                       min={0}
                       value={setVal}
@@ -221,6 +223,7 @@ export function EditEntryDialog({
                       type="button"
                       onClick={() => updateSetValue(idx, setVal + 1)}
                       className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-lg"
+                      aria-label={`Increase set ${idx + 1}`}
                     >
                       +
                     </button>
@@ -248,7 +251,7 @@ export function EditEntryDialog({
               <div className="mt-4 flex justify-center">
                 <TallyMark count={Math.min(computedCount, 25)} size="md" />
               </div>
-            </div>
+            </fieldset>
           ) : (
             /* Simple count mode */
             <div className="text-center">

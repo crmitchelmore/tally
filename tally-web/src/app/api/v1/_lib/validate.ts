@@ -234,6 +234,20 @@ export function validateUpdateEntry(data: unknown): ValidationResult {
     });
   }
 
+  // Validate sets if provided
+  if (body.sets !== undefined && body.sets !== null) {
+    if (!Array.isArray(body.sets)) {
+      errors.push({ field: "sets", message: "Sets must be an array" });
+    } else {
+      const allPositive = body.sets.every(
+        (v: unknown) => typeof v === "number" && v >= 0
+      );
+      if (!allPositive) {
+        errors.push({ field: "sets", message: "All set values must be non-negative numbers" });
+      }
+    }
+  }
+
   return { valid: errors.length === 0, errors };
 }
 

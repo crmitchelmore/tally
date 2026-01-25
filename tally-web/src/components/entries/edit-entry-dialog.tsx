@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { TallyMark } from "@/components/ui/tally-mark";
+import { TallyDisplay } from "@/components/ui/tally-display";
 import type { Entry, UpdateEntryRequest } from "@/app/api/v1/_lib/types";
 
 export interface EditEntryDialogProps {
@@ -87,16 +88,26 @@ export function EditEntryDialog({
   const today = new Date().toISOString().split("T")[0];
   const isFutureDate = date > today;
 
-  // Update a specific set value
-  const updateSetValue = useCallback((index: number, value: number) => {
+
+  // Update a specific set value (string input for controlled form)
+  const updateSet = useCallback((index: number, value: string) => {
     setSets((prev) => {
       const newSets = [...prev];
-      newSets[index] = Math.max(0, value);
+      newSets[index] = Math.max(0, parseInt(value) || 0);
       return newSets;
     });
   }, []);
 
-  // Add a new set (functional update avoids stale state)
+  // Increment a specific set by delta
+  const incrementSet = useCallback((index: number, delta: number) => {
+    setSets((prev) => {
+      const newSets = [...prev];
+      newSets[index] = Math.max(0, (newSets[index] || 0) + delta);
+      return newSets;
+    });
+  }, []);
+
+  // Add a new set
   const addSet = useCallback(() => {
     setSets((prev) => {
       const lastValue = prev.length > 0 ? prev[prev.length - 1] : 10;
@@ -104,10 +115,11 @@ export function EditEntryDialog({
     });
   }, []);
 
-  // Remove the last set (functional update)
-  const removeSet = useCallback(() => {
-    setSets((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  // Remove a specific set by index
+  const removeSet = useCallback((index: number) => {
+    setSets((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
   }, []);
+
 
   // Compute total from sets when in sets mode
   const computedCount = useSetsMode ? sets.reduce((sum, s) => sum + s, 0) : count;
@@ -195,63 +207,53 @@ export function EditEntryDialog({
           {/* Sets mode or simple count */}
           {useSetsMode ? (
             /* Sets mode - show individual sets */
-            <fieldset>
-              <legend className="block text-sm font-medium text-muted mb-3">
+            <div>
+              <label className="block text-sm font-medium text-muted mb-3 text-center">
                 Sets ({sets.length} sets = {computedCount} total)
-              </legend>
-              <div className="space-y-2">
+              </label>
+              <div className="space-y-3">
                 {sets.map((setVal, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <label htmlFor={`set-${idx}`} className="text-sm text-muted w-12">Set {idx + 1}:</label>
-                    <button
-                      type="button"
-                      onClick={() => updateSetValue(idx, setVal - 1)}
-                      className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-lg"
-                      aria-label={`Decrease set ${idx + 1}`}
-                    >
-                      −
-                    </button>
-                    <input
-                      id={`set-${idx}`}
-                      type="number"
-                      min={0}
-                      value={setVal}
-                      onChange={(e) => updateSetValue(idx, parseInt(e.target.value) || 0)}
-                      className="w-20 h-10 text-center text-lg font-semibold tabular-nums bg-transparent border-b-2 border-border focus:border-accent text-ink outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => updateSetValue(idx, setVal + 1)}
-                      className="w-8 h-8 rounded-full border border-border text-muted hover:text-ink hover:bg-border/50 text-lg"
-                      aria-label={`Increase set ${idx + 1}`}
-                    >
-                      +
-                    </button>
+                  <div key={idx} className="bg-paper rounded-xl p-3 border border-border">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-muted">Set {idx + 1}</span>
+                      {sets.length > 1 && (
+                        <button type="button" onClick={() => removeSet(idx)}
+                          className="text-xs text-muted hover:text-error transition-colors">Remove</button>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      {/* Decrement buttons */}
+                      <button type="button" onClick={() => incrementSet(idx, -10)}
+                        className="w-10 h-10 rounded-lg bg-border/30 text-muted hover:text-ink hover:bg-border/50 text-xs font-medium transition-colors">−10</button>
+                      <button type="button" onClick={() => incrementSet(idx, -1)}
+                        className="w-10 h-10 rounded-lg bg-border/30 text-muted hover:text-ink hover:bg-border/50 text-sm font-medium transition-colors">−1</button>
+                      {/* Input */}
+                      <input 
+                        type="number" 
+                        min={0} 
+                        value={setVal}
+                        onChange={(e) => updateSet(idx, e.target.value)}
+                        className="w-16 h-12 text-center text-2xl font-semibold tabular-nums bg-surface border-2 border-border rounded-lg focus:border-accent text-ink outline-none" />
+                      {/* Increment buttons */}
+                      <button type="button" onClick={() => incrementSet(idx, 1)}
+                        className="w-10 h-10 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 text-sm font-medium transition-colors">+1</button>
+                      <button type="button" onClick={() => incrementSet(idx, 10)}
+                        className="w-10 h-10 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 text-xs font-medium transition-colors">+10</button>
+                    </div>
                   </div>
                 ))}
+                <button type="button" onClick={addSet}
+                  className="w-full py-2.5 border-2 border-dashed border-border rounded-xl text-muted hover:text-ink hover:border-muted text-sm font-medium transition-colors">+ Add Set</button>
               </div>
-              <div className="flex gap-2 mt-3">
-                <button
-                  type="button"
-                  onClick={addSet}
-                  className="px-3 py-1.5 text-sm rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50"
-                >
-                  + Add Set
-                </button>
-                {sets.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={removeSet}
-                    className="px-3 py-1.5 text-sm rounded-lg border border-border text-muted hover:text-ink hover:bg-border/50"
-                  >
-                    Remove Last
-                  </button>
-                )}
+              {/* Total display with tally visualization */}
+              <div className="mt-4 p-4 bg-accent/5 rounded-xl flex items-center justify-center gap-4">
+                <div className="text-center">
+                  <p className="text-4xl font-bold text-ink tabular-nums">{computedCount}</p>
+                  <p className="text-xs text-muted mt-0.5">total</p>
+                </div>
+                <TallyDisplay count={computedCount} size="sm" />
               </div>
-              <div className="mt-4 flex justify-center">
-                <TallyMark count={Math.min(computedCount, 25)} size="md" />
-              </div>
-            </fieldset>
+            </div>
           ) : (
             /* Simple count mode */
             <div className="text-center">

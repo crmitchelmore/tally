@@ -1,0 +1,409 @@
+name: iOS TestFlight Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version number (e.g., 1.0.0)"
+        required: true
+        type: string
+      build_number:
+        description: "Build number (auto-increments if empty)"
+        required: false
+        type: string
+      release_notes:
+        description: "What's new in this build"
+        required: false
+        default: "Bug fixes and improvements"
+        type: string
+
+env:
+  XCODE_VERSION: "15.4"
+  IOS_APP_ID: ${{ secrets.IOS_APP_ID }}
+
+jobs:
+  build-and-upload:
+    name: Build & Upload to TestFlight
+    runs-on: macos-14
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+
+      - name: Install Tuist
+        run: mise install tuist
+
+      - name: Calculate build number
+        id: build_number
+        run: |
+          if [ -n "${{ inputs.build_number }}" ]; then
+            echo "BUILD_NUMBER=${{ inputs.build_number }}" >> $GITHUB_OUTPUT
+          else
+            # Use timestamp-based build number: YYMMDD + run number
+            BUILD=$(date +%y%m%d)${{ github.run_number }}
+            echo "BUILD_NUMBER=$BUILD" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install Apple certificate and provisioning profile
+        env:
+          P12_BASE64: ${{ secrets.IOS_SIGNING_CERT_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_SIGNING_CERT_PASSWORD }}
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
+        run: |
+          # Create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/certificate.p12
+          PROFILE_PATH=$RUNNER_TEMP/profile.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # Decode from base64
+          echo -n "$P12_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode -o $PROFILE_PATH
+
+          # Create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # Apply provisioning profile
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+
+          # Extract profile UUID for later use
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< $(/usr/bin/security cms -D -i $PROFILE_PATH))
+          echo "PROVISIONING_PROFILE_UUID=$PROFILE_UUID" >> $GITHUB_ENV
+
+      - name: Generate Xcode project with Tuist
+        working-directory: ios
+        env:
+          TUIST_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          TUIST_API_BASE_URL: "https://tally-tracker.app"
+        run: |
+          tuist install
+          tuist generate --no-open
+
+      - name: Update version and build number
+        working-directory: ios/App
+        run: |
+          # Update version in generated project
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ inputs.version }}" App/Info.plist 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string ${{ inputs.version }}" App/Info.plist
+          
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.build_number.outputs.BUILD_NUMBER }}" App/Info.plist 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${{ steps.build_number.outputs.BUILD_NUMBER }}" App/Info.plist
+          
+          echo "📦 Building version ${{ inputs.version }} (${{ steps.build_number.outputs.BUILD_NUMBER }})"
+
+      - name: Build archive
+        working-directory: ios/App
+        env:
+          DEVELOPMENT_TEAM: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          xcodebuild archive \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -archivePath $RUNNER_TEMP/App.xcarchive \
+            -destination "generic/platform=iOS" \
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
+            PROVISIONING_PROFILE_SPECIFIER="${{ env.PROVISIONING_PROFILE_UUID }}" \
+            CODE_SIGN_STYLE="Manual" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            -allowProvisioningUpdates
+
+      - name: Create ExportOptions.plist
+        run: |
+          cat > $RUNNER_TEMP/ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store-connect</string>
+              <key>teamID</key>
+              <string>${{ secrets.IOS_TEAM_ID }}</string>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>compileBitcode</key>
+              <false/>
+              <key>destination</key>
+              <string>upload</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>com.tally.app</key>
+                  <string>${{ env.PROVISIONING_PROFILE_UUID }}</string>
+              </dict>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/App.xcarchive \
+            -exportPath $RUNNER_TEMP/export \
+            -exportOptionsPlist $RUNNER_TEMP/ExportOptions.plist
+
+      - name: Upload to App Store Connect
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: |
+          # Write API key to file
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_KEY_ID.p8
+
+          # Upload using xcrun
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$RUNNER_TEMP/export/App.ipa" \
+            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+
+      - name: Clean up keychain
+        if: always()
+        run: |
+          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
+          rm -f ~/.appstoreconnect/private_keys/AuthKey_*.p8 || true
+
+    outputs:
+      build_number: ${{ steps.build_number.outputs.BUILD_NUMBER }}
+      version: ${{ inputs.version }}
+
+  poll-and-distribute:
+    name: Poll & Distribute to TestFlight
+    needs: build-and-upload
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Wait for App Store Connect processing
+        uses: actions/github-script@v7
+        id: poll
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APP_ID: ${{ secrets.IOS_APP_ID }}
+          BUILD_NUMBER: ${{ needs.build-and-upload.outputs.build_number }}
+        with:
+          script: |
+            const crypto = require('crypto');
+            
+            // Generate JWT for App Store Connect API
+            function makeJWT(keyId, issuerId, privateKey) {
+              const header = {
+                alg: 'ES256',
+                kid: keyId,
+                typ: 'JWT'
+              };
+              
+              const now = Math.floor(Date.now() / 1000);
+              const payload = {
+                iss: issuerId,
+                exp: now + 900,
+                aud: 'appstoreconnect-v1'
+              };
+              
+              const base64Header = Buffer.from(JSON.stringify(header)).toString('base64url');
+              const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64url');
+              const signatureInput = `${base64Header}.${base64Payload}`;
+              
+              const sign = crypto.createSign('SHA256');
+              sign.update(signatureInput);
+              const signature = sign.sign(privateKey, 'base64url');
+              
+              return `${signatureInput}.${signature}`;
+            }
+            
+            const jwt = makeJWT(
+              process.env.ASC_KEY_ID,
+              process.env.ASC_ISSUER_ID,
+              process.env.ASC_PRIVATE_KEY
+            );
+            
+            const appId = process.env.APP_ID;
+            const buildNumber = process.env.BUILD_NUMBER;
+            
+            // Poll for processed build
+            const maxAttempts = 90; // 90 minutes max
+            const intervalMs = 60000; // 1 minute
+            
+            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+              core.info(`⏳ Polling attempt ${attempt}/${maxAttempts}...`);
+              
+              const url = `https://api.appstoreconnect.apple.com/v1/builds?filter[app]=${appId}&filter[version]=${buildNumber}&filter[processingState]=VALID`;
+              
+              const response = await fetch(url, {
+                headers: {
+                  'Authorization': `Bearer ${jwt}`,
+                  'Content-Type': 'application/json'
+                }
+              });
+              
+              if (!response.ok) {
+                const text = await response.text();
+                core.warning(`API error: ${response.status} - ${text}`);
+              } else {
+                const data = await response.json();
+                
+                if (data.data && data.data.length > 0) {
+                  const build = data.data[0];
+                  core.info(`✅ Build processed! ID: ${build.id}`);
+                  core.setOutput('build_id', build.id);
+                  return;
+                }
+              }
+              
+              if (attempt < maxAttempts) {
+                core.info(`Build not ready yet. Waiting ${intervalMs/1000}s...`);
+                await new Promise(r => setTimeout(r, intervalMs));
+                
+                // Refresh JWT for long polling sessions
+                if (attempt % 10 === 0) {
+                  jwt = makeJWT(
+                    process.env.ASC_KEY_ID,
+                    process.env.ASC_ISSUER_ID,
+                    process.env.ASC_PRIVATE_KEY
+                  );
+                }
+              }
+            }
+            
+            core.setFailed('Timed out waiting for build processing');
+
+      - name: Distribute to TestFlight testers
+        if: success()
+        uses: actions/github-script@v7
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          BUILD_ID: ${{ steps.poll.outputs.build_id }}
+          BETA_GROUP_IDS: ${{ secrets.IOS_TESTFLIGHT_BETA_GROUP_IDS }}
+          RELEASE_NOTES: ${{ inputs.release_notes }}
+        with:
+          script: |
+            const crypto = require('crypto');
+            
+            function makeJWT(keyId, issuerId, privateKey) {
+              const header = { alg: 'ES256', kid: keyId, typ: 'JWT' };
+              const now = Math.floor(Date.now() / 1000);
+              const payload = { iss: issuerId, exp: now + 900, aud: 'appstoreconnect-v1' };
+              
+              const base64Header = Buffer.from(JSON.stringify(header)).toString('base64url');
+              const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64url');
+              const signatureInput = `${base64Header}.${base64Payload}`;
+              
+              const sign = crypto.createSign('SHA256');
+              sign.update(signatureInput);
+              const signature = sign.sign(privateKey, 'base64url');
+              
+              return `${signatureInput}.${signature}`;
+            }
+            
+            const jwt = makeJWT(
+              process.env.ASC_KEY_ID,
+              process.env.ASC_ISSUER_ID,
+              process.env.ASC_PRIVATE_KEY
+            );
+            
+            const buildId = process.env.BUILD_ID;
+            const betaGroupIds = (process.env.BETA_GROUP_IDS || '').split('\n').filter(Boolean);
+            
+            if (betaGroupIds.length === 0) {
+              core.warning('No beta group IDs configured. Build uploaded but not distributed.');
+              return;
+            }
+            
+            // 1. Submit for beta review (required for external testers)
+            core.info('📋 Submitting for beta app review...');
+            try {
+              const reviewResponse = await fetch('https://api.appstoreconnect.apple.com/v1/betaAppReviewSubmissions', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${jwt}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  data: {
+                    type: 'betaAppReviewSubmissions',
+                    relationships: {
+                      build: {
+                        data: { type: 'builds', id: buildId }
+                      }
+                    }
+                  }
+                })
+              });
+              
+              if (!reviewResponse.ok && reviewResponse.status !== 409) {
+                // 409 = already submitted, which is fine
+                const text = await reviewResponse.text();
+                core.warning(`Beta review submission: ${reviewResponse.status} - ${text}`);
+              } else {
+                core.info('✅ Beta app review submitted');
+              }
+            } catch (e) {
+              core.warning(`Beta review error: ${e.message}`);
+            }
+            
+            // 2. Add build to beta groups
+            for (const groupId of betaGroupIds) {
+              core.info(`📱 Adding build to beta group ${groupId}...`);
+              
+              const addResponse = await fetch(`https://api.appstoreconnect.apple.com/v1/builds/${buildId}/relationships/betaGroups`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${jwt}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  data: [{ type: 'betaGroups', id: groupId }]
+                })
+              });
+              
+              if (!addResponse.ok) {
+                const text = await addResponse.text();
+                core.warning(`Failed to add to group ${groupId}: ${addResponse.status} - ${text}`);
+              } else {
+                core.info(`✅ Added to beta group ${groupId}`);
+              }
+            }
+            
+            core.info('🎉 TestFlight distribution complete!');
+
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ needs.build-and-upload.outputs.version }}';
+            const buildNumber = '${{ needs.build-and-upload.outputs.build_number }}';
+            const releaseNotes = `${{ inputs.release_notes }}`;
+            
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `ios-v${version}-${buildNumber}`,
+              name: `iOS v${version} (${buildNumber})`,
+              body: `## iOS TestFlight Release\n\n${releaseNotes}\n\n**Version:** ${version}\n**Build:** ${buildNumber}`,
+              draft: false,
+              prerelease: true
+            });
+            
+            core.info(`📦 Created release ios-v${version}-${buildNumber}`);

@@ -114,8 +114,10 @@ jobs:
         env:
           DEVELOPMENT_TEAM: ${{ secrets.IOS_TEAM_ID }}
         run: |
-          # Archive WITHOUT signing (skip code signing during build)
-          # The export step will handle proper signing with provisioning profile
+          # Build archive with manual signing
+          # Don't specify PROVISIONING_PROFILE_SPECIFIER on command line - let xcodebuild
+          # find the installed profile automatically. This allows frameworks to build
+          # without profiles while the app uses the provisioning profile from ~/Library/MobileDevice/
           xcodebuild archive \
             -workspace Tally.xcworkspace \
             -scheme App \
@@ -123,9 +125,9 @@ jobs:
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -destination "generic/platform=iOS" \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            CODE_SIGN_IDENTITY="-" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGN_STYLE="Manual" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            -allowProvisioningUpdates
 
       - name: Create ExportOptions.plist
         run: |

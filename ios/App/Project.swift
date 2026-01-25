@@ -52,15 +52,22 @@ let project = Project(
             ],
             settings: .settings(
                 base: [
-                    "DEVELOPMENT_TEAM": "",
-                    "CODE_SIGN_STYLE": "Automatic",
                     "ENABLE_PREVIEWS": "YES",
                     "CLERK_PUBLISHABLE_KEY": .init(stringLiteral: clerkKey),
                     "API_BASE_URL": .init(stringLiteral: apiUrl)
                 ],
                 configurations: [
-                    .debug(name: "Debug"),
-                    .release(name: "Release")
+                    .debug(name: "Debug", settings: [
+                        "CODE_SIGN_STYLE": "Automatic",
+                        "DEVELOPMENT_TEAM": ""
+                    ]),
+                    .release(name: "Release", settings: [
+                        // Allow CI to override with manual signing via xcodebuild args
+                        "CODE_SIGN_STYLE": "$(inherited)",
+                        "DEVELOPMENT_TEAM": "$(inherited)",
+                        "PROVISIONING_PROFILE_SPECIFIER": "$(inherited)",
+                        "CODE_SIGN_IDENTITY": "$(inherited)"
+                    ])
                 ]
             )
         ),

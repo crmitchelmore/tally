@@ -4,7 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.tally.core.network.Challenge
+import com.tally.core.network.ChallengeStats
+import com.tally.core.network.ChallengeWithStatsWrapper
+import com.tally.core.network.CountType
+import com.tally.core.network.DashboardConfig
+import com.tally.core.network.DashboardStats
+import com.tally.core.network.ExportData
 import com.tally.core.network.Feeling
+import com.tally.core.network.PersonalRecords
+import com.tally.core.network.PublicChallenge
 import com.tally.core.network.TimeframeType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,8 +32,16 @@ class ChallengesViewModel(
 
     // Expose repository flows
     val challenges: StateFlow<List<Challenge>> = repository.challenges
+    val challengesWithStats: StateFlow<List<ChallengeWithStatsWrapper>> = repository.challengesWithStats
+    val dashboardStats: StateFlow<DashboardStats?> = repository.dashboardStats
+    val personalRecords: StateFlow<PersonalRecords?> = repository.personalRecords
+    val dashboardConfig: StateFlow<DashboardConfig> = repository.dashboardConfig
     val isLoading: StateFlow<Boolean> = repository.isLoading
     val error: StateFlow<String?> = repository.error
+
+    // Community
+    val publicChallenges: StateFlow<List<PublicChallenge>> = repository.publicChallenges
+    val followingChallenges: StateFlow<List<PublicChallenge>> = repository.followingChallenges
 
     // Selected challenge for detail view
     private val _selectedChallenge = MutableStateFlow<Challenge?>(null)
@@ -38,16 +54,28 @@ class ChallengesViewModel(
     private val _showEntryDialog = MutableStateFlow<Challenge?>(null)
     val showEntryDialog: StateFlow<Challenge?> = _showEntryDialog.asStateFlow()
 
-    // Combine challenges with their total counts
+    // Combine challenges with their total counts (fallback if stats not loaded)
     val challengesWithCounts = combine(
         repository.challenges,
+        repository.challengesWithStats,
         repository.entries
-    ) { challenges, _ ->
-        challenges.map { challenge ->
-            ChallengeWithCount(
-                challenge = challenge,
-                totalCount = repository.getTotalCount(challenge.id)
-            )
+    ) { challenges, withStats, _ ->
+        if (withStats.isNotEmpty()) {
+            withStats.map { wrapper ->
+                ChallengeWithCount(
+                    challenge = wrapper.challenge,
+                    totalCount = wrapper.stats.totalCount,
+                    stats = wrapper.stats
+                )
+            }
+        } else {
+            challenges.map { challenge ->
+                ChallengeWithCount(
+                    challenge = challenge,
+                    totalCount = repository.getTotalCount(challenge.id),
+                    stats = null
+                )
+            }
         }
     }.stateIn(
         viewModelScope,
@@ -62,6 +90,12 @@ class ChallengesViewModel(
     fun refresh() {
         viewModelScope.launch {
             repository.refresh()
+        }
+    }
+
+    fun refreshCommunity(search: String? = null) {
+        viewModelScope.launch {
+            repository.refreshCommunity(search)
         }
     }
 
@@ -88,13 +122,25 @@ class ChallengesViewModel(
     fun createChallenge(
         name: String,
         target: Int,
-        timeframeType: TimeframeType
+        timeframeType: TimeframeType,
+        countType: CountType = CountType.SIMPLE,
+        unitLabel: String? = null,
+        defaultIncrement: Int? = null,
+        isPublic: Boolean = false,
+        color: String = "#4F46E5",
+        icon: String = "star"
     ) {
         viewModelScope.launch {
             val challenge = repository.createChallenge(
                 name = name,
                 target = target,
-                timeframeType = timeframeType
+                timeframeType = timeframeType,
+                color = color,
+                icon = icon,
+                isPublic = isPublic,
+                countType = countType,
+                unitLabel = unitLabel,
+                defaultIncrement = defaultIncrement
             )
             if (challenge != null) {
                 hideCreateDialog()
@@ -106,6 +152,7 @@ class ChallengesViewModel(
         challenge: Challenge,
         count: Int,
         date: LocalDate = LocalDate.now(),
+        sets: List<Int>? = null,
         note: String? = null,
         feeling: Feeling? = null
     ) {
@@ -114,6 +161,7 @@ class ChallengesViewModel(
                 challengeId = challenge.id,
                 count = count,
                 date = date,
+                sets = sets,
                 note = note,
                 feeling = feeling
             )
@@ -128,6 +176,43 @@ class ChallengesViewModel(
             repository.deleteChallenge(challenge.id)
             _selectedChallenge.value = null
         }
+    }
+
+    fun followChallenge(challengeId: String) {
+        viewModelScope.launch {
+            repository.followChallenge(challengeId)
+        }
+    }
+
+    fun unfollowChallenge(challengeId: String) {
+        viewModelScope.launch {
+            repository.unfollowChallenge(challengeId)
+        }
+    }
+
+    fun exportData(onResult: (ExportData?) -> Unit) {
+        viewModelScope.launch {
+            val data = repository.exportData()
+            onResult(data)
+        }
+    }
+
+    fun importData(data: ExportData, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val success = repository.importData(data)
+            onResult(success)
+        }
+    }
+
+    fun deleteAllData(onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val success = repository.deleteAllData()
+            onResult(success)
+        }
+    }
+
+    fun updateDashboardConfig(config: DashboardConfig) {
+        repository.updateDashboardConfig(config)
     }
 
     fun clearError() {
@@ -151,11 +236,12 @@ class ChallengesViewModel(
 }
 
 /**
- * Challenge with computed total count.
+ * Challenge with computed total count and optional stats.
  */
 data class ChallengeWithCount(
     val challenge: Challenge,
-    val totalCount: Int
+    val totalCount: Int,
+    val stats: ChallengeStats? = null
 ) {
     val progress: Float
         get() = if (challenge.target > 0) {

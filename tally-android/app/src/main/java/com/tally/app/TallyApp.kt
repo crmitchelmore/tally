@@ -85,7 +85,8 @@ fun TallyApp(
         ) {
             SettingsScreen(
                 onDismiss = { showSettings = false },
-                onSignOut = onSignOut
+                onSignOut = onSignOut,
+                viewModel = challengesViewModel
             )
         }
     }
@@ -160,7 +161,7 @@ fun TallyApp(
                 HomeScreen(viewModel = challengesViewModel)
             }
             composable<CommunityRoute> {
-                CommunityScreen()
+                CommunityScreen(viewModel = challengesViewModel)
             }
         }
     }

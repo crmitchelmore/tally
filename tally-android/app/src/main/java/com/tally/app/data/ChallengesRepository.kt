@@ -4,10 +4,18 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.tally.core.network.ApiResult
 import com.tally.core.network.Challenge
+import com.tally.core.network.ChallengeStats
+import com.tally.core.network.ChallengeWithStatsWrapper
+import com.tally.core.network.CountType
 import com.tally.core.network.CreateChallengeRequest
 import com.tally.core.network.CreateEntryRequest
+import com.tally.core.network.DashboardConfig
+import com.tally.core.network.DashboardStats
 import com.tally.core.network.Entry
+import com.tally.core.network.ExportData
 import com.tally.core.network.Feeling
+import com.tally.core.network.PersonalRecords
+import com.tally.core.network.PublicChallenge
 import com.tally.core.network.TallyApiClient
 import com.tally.core.network.TimeframeType
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,8 +49,29 @@ class ChallengesRepository(
     private val _challenges = MutableStateFlow<List<Challenge>>(emptyList())
     val challenges: StateFlow<List<Challenge>> = _challenges.asStateFlow()
 
+    private val _challengesWithStats = MutableStateFlow<List<ChallengeWithStatsWrapper>>(emptyList())
+    val challengesWithStats: StateFlow<List<ChallengeWithStatsWrapper>> = _challengesWithStats.asStateFlow()
+
     private val _entries = MutableStateFlow<Map<String, List<Entry>>>(emptyMap())
     val entries: StateFlow<Map<String, List<Entry>>> = _entries.asStateFlow()
+
+    private val _allEntries = MutableStateFlow<List<Entry>>(emptyList())
+    val allEntries: StateFlow<List<Entry>> = _allEntries.asStateFlow()
+
+    private val _dashboardStats = MutableStateFlow<DashboardStats?>(null)
+    val dashboardStats: StateFlow<DashboardStats?> = _dashboardStats.asStateFlow()
+
+    private val _personalRecords = MutableStateFlow<PersonalRecords?>(null)
+    val personalRecords: StateFlow<PersonalRecords?> = _personalRecords.asStateFlow()
+
+    private val _publicChallenges = MutableStateFlow<List<PublicChallenge>>(emptyList())
+    val publicChallenges: StateFlow<List<PublicChallenge>> = _publicChallenges.asStateFlow()
+
+    private val _followingChallenges = MutableStateFlow<List<PublicChallenge>>(emptyList())
+    val followingChallenges: StateFlow<List<PublicChallenge>> = _followingChallenges.asStateFlow()
+
+    private val _dashboardConfig = MutableStateFlow(DashboardConfig.DEFAULT)
+    val dashboardConfig: StateFlow<DashboardConfig> = _dashboardConfig.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -53,35 +82,111 @@ class ChallengesRepository(
     init {
         loadLocalChallenges()
         loadLocalEntries()
+        loadLocalDashboardConfig()
     }
 
     /**
-     * Refresh challenges from API (if online) or load from local storage.
+     * Refresh challenges with stats from API (if online) or load from local storage.
      */
     suspend fun refresh() {
         _isLoading.value = true
         _error.value = null
 
         if (isOfflineMode || apiClient == null) {
-            // Just use local data
             loadLocalChallenges()
             _isLoading.value = false
             return
         }
 
-        when (val result = apiClient.listChallenges()) {
+        // Fetch challenges with stats
+        when (val result = apiClient.listChallengesWithStats()) {
             is ApiResult.Success -> {
-                _challenges.value = result.data
-                saveChallengesLocally(result.data)
+                _challengesWithStats.value = result.data
+                _challenges.value = result.data.map { it.challenge }
+                saveChallengesLocally(result.data.map { it.challenge })
             }
             is ApiResult.Failure -> {
                 _error.value = result.error.message
-                // Fall back to local data
                 loadLocalChallenges()
             }
         }
 
+        // Fetch dashboard data
+        when (val result = apiClient.getDashboardData()) {
+            is ApiResult.Success -> {
+                _dashboardStats.value = result.data.dashboard
+                _personalRecords.value = result.data.records
+                result.data.entries?.let { _allEntries.value = it }
+            }
+            is ApiResult.Failure -> {
+                // Non-critical, don't set error
+            }
+        }
+
         _isLoading.value = false
+    }
+
+    /**
+     * Refresh community challenges
+     */
+    suspend fun refreshCommunity(search: String? = null) {
+        if (isOfflineMode || apiClient == null) return
+
+        // Fetch discover challenges
+        when (val result = apiClient.listPublicChallenges(search = search, following = false)) {
+            is ApiResult.Success -> {
+                _publicChallenges.value = result.data
+            }
+            is ApiResult.Failure -> {
+                _error.value = result.error.message
+            }
+        }
+
+        // Fetch following challenges
+        when (val result = apiClient.listPublicChallenges(following = true)) {
+            is ApiResult.Success -> {
+                _followingChallenges.value = result.data
+            }
+            is ApiResult.Failure -> {
+                // Non-critical
+            }
+        }
+    }
+
+    /**
+     * Follow a public challenge
+     */
+    suspend fun followChallenge(challengeId: String): Boolean {
+        if (isOfflineMode || apiClient == null) return false
+
+        return when (val result = apiClient.followChallenge(challengeId)) {
+            is ApiResult.Success -> {
+                refreshCommunity()
+                true
+            }
+            is ApiResult.Failure -> {
+                _error.value = result.error.message
+                false
+            }
+        }
+    }
+
+    /**
+     * Unfollow a public challenge
+     */
+    suspend fun unfollowChallenge(challengeId: String): Boolean {
+        if (isOfflineMode || apiClient == null) return false
+
+        return when (val result = apiClient.unfollowChallenge(challengeId)) {
+            is ApiResult.Success -> {
+                refreshCommunity()
+                true
+            }
+            is ApiResult.Failure -> {
+                _error.value = result.error.message
+                false
+            }
+        }
     }
 
     /**
@@ -92,27 +197,33 @@ class ChallengesRepository(
         target: Int,
         timeframeType: TimeframeType,
         color: String = "#4F46E5",
-        icon: String = "star"
+        icon: String = "star",
+        isPublic: Boolean = false,
+        countType: CountType = CountType.SIMPLE,
+        unitLabel: String? = null,
+        defaultIncrement: Int? = null
     ): Challenge? {
         _isLoading.value = true
 
         val challenge = if (isOfflineMode || apiClient == null) {
-            // Create locally
-            createLocalChallenge(name, target, timeframeType, color, icon)
+            createLocalChallenge(name, target, timeframeType, color, icon, countType, unitLabel, defaultIncrement)
         } else {
             val request = CreateChallengeRequest(
                 name = name,
                 target = target,
                 timeframeType = timeframeType,
                 color = color,
-                icon = icon
+                icon = icon,
+                isPublic = isPublic,
+                countType = countType,
+                unitLabel = unitLabel,
+                defaultIncrement = defaultIncrement
             )
             when (val result = apiClient.createChallenge(request)) {
                 is ApiResult.Success -> result.data
                 is ApiResult.Failure -> {
                     _error.value = result.error.message
-                    // Fall back to local creation
-                    createLocalChallenge(name, target, timeframeType, color, icon)
+                    createLocalChallenge(name, target, timeframeType, color, icon, countType, unitLabel, defaultIncrement)
                 }
             }
         }
@@ -134,6 +245,7 @@ class ChallengesRepository(
         challengeId: String,
         count: Int,
         date: LocalDate = LocalDate.now(),
+        sets: List<Int>? = null,
         note: String? = null,
         feeling: Feeling? = null
     ): Entry? {
@@ -142,12 +254,13 @@ class ChallengesRepository(
         val dateStr = date.format(DateTimeFormatter.ISO_LOCAL_DATE)
         
         val entry = if (isOfflineMode || apiClient == null) {
-            createLocalEntry(challengeId, count, dateStr, note, feeling)
+            createLocalEntry(challengeId, count, dateStr, sets, note, feeling)
         } else {
             val request = CreateEntryRequest(
                 challengeId = challengeId,
                 date = dateStr,
                 count = count,
+                sets = sets,
                 note = note,
                 feeling = feeling
             )
@@ -155,7 +268,7 @@ class ChallengesRepository(
                 is ApiResult.Success -> result.data
                 is ApiResult.Failure -> {
                     _error.value = result.error.message
-                    createLocalEntry(challengeId, count, dateStr, note, feeling)
+                    createLocalEntry(challengeId, count, dateStr, sets, note, feeling)
                 }
             }
         }
@@ -167,6 +280,9 @@ class ChallengesRepository(
             currentEntries[challengeId] = challengeEntries
             _entries.value = currentEntries
             saveEntriesLocally(currentEntries)
+
+            // Refresh to get updated stats
+            refresh()
         }
 
         _isLoading.value = false
@@ -180,13 +296,13 @@ class ChallengesRepository(
         _isLoading.value = true
 
         val success = if (isOfflineMode || apiClient == null) {
-            true // Local delete always succeeds
+            true
         } else {
             when (val result = apiClient.deleteChallenge(challengeId)) {
                 is ApiResult.Success -> true
                 is ApiResult.Failure -> {
                     _error.value = result.error.message
-                    true // Still delete locally even if API fails
+                    true
                 }
             }
         }
@@ -196,7 +312,6 @@ class ChallengesRepository(
             _challenges.value = updated
             saveChallengesLocally(updated)
 
-            // Also remove entries
             val currentEntries = _entries.value.toMutableMap()
             currentEntries.remove(challengeId)
             _entries.value = currentEntries
@@ -212,6 +327,80 @@ class ChallengesRepository(
      */
     fun getTotalCount(challengeId: String): Int {
         return _entries.value[challengeId]?.sumOf { it.count } ?: 0
+    }
+
+    /**
+     * Get stats for a challenge
+     */
+    fun getStatsForChallenge(challengeId: String): ChallengeStats? {
+        return _challengesWithStats.value.find { it.challenge.id == challengeId }?.stats
+    }
+
+    /**
+     * Export all user data
+     */
+    suspend fun exportData(): ExportData? {
+        if (isOfflineMode || apiClient == null) return null
+
+        return when (val result = apiClient.exportData()) {
+            is ApiResult.Success -> result.data
+            is ApiResult.Failure -> {
+                _error.value = result.error.message
+                null
+            }
+        }
+    }
+
+    /**
+     * Import user data
+     */
+    suspend fun importData(data: ExportData): Boolean {
+        if (isOfflineMode || apiClient == null) return false
+
+        return when (val result = apiClient.importData(data)) {
+            is ApiResult.Success -> {
+                refresh()
+                true
+            }
+            is ApiResult.Failure -> {
+                _error.value = result.error.message
+                false
+            }
+        }
+    }
+
+    /**
+     * Delete all user data
+     */
+    suspend fun deleteAllData(): Boolean {
+        if (isOfflineMode || apiClient == null) {
+            // Clear local data
+            _challenges.value = emptyList()
+            _entries.value = emptyMap()
+            prefs.edit().clear().apply()
+            return true
+        }
+
+        return when (val result = apiClient.deleteAllData()) {
+            is ApiResult.Success -> {
+                _challenges.value = emptyList()
+                _entries.value = emptyMap()
+                prefs.edit().clear().apply()
+                true
+            }
+            is ApiResult.Failure -> {
+                _error.value = result.error.message
+                false
+            }
+        }
+    }
+
+    /**
+     * Update dashboard configuration
+     */
+    fun updateDashboardConfig(config: DashboardConfig) {
+        _dashboardConfig.value = config
+        saveDashboardConfigLocally(config)
     }
 
     /**
@@ -249,12 +438,28 @@ class ChallengesRepository(
         prefs.edit().putString(KEY_ENTRIES, json.encodeToString(entries)).apply()
     }
 
+    private fun loadLocalDashboardConfig() {
+        val data = prefs.getString(KEY_DASHBOARD_CONFIG, null) ?: return
+        try {
+            _dashboardConfig.value = json.decodeFromString(data)
+        } catch (e: Exception) {
+            // Use default
+        }
+    }
+
+    private fun saveDashboardConfigLocally(config: DashboardConfig) {
+        prefs.edit().putString(KEY_DASHBOARD_CONFIG, json.encodeToString(config)).apply()
+    }
+
     private fun createLocalChallenge(
         name: String,
         target: Int,
         timeframeType: TimeframeType,
         color: String,
-        icon: String
+        icon: String,
+        countType: CountType,
+        unitLabel: String?,
+        defaultIncrement: Int?
     ): Challenge {
         val now = java.time.Instant.now().toString()
         val (startDate, endDate) = calculateDateRange(timeframeType)
@@ -271,6 +476,9 @@ class ChallengesRepository(
             icon = icon,
             isPublic = false,
             isArchived = false,
+            countType = countType,
+            unitLabel = unitLabel,
+            defaultIncrement = defaultIncrement,
             createdAt = now,
             updatedAt = now
         )
@@ -280,6 +488,7 @@ class ChallengesRepository(
         challengeId: String,
         count: Int,
         date: String,
+        sets: List<Int>?,
         note: String?,
         feeling: Feeling?
     ): Entry {
@@ -290,6 +499,7 @@ class ChallengesRepository(
             challengeId = challengeId,
             date = date,
             count = count,
+            sets = sets,
             note = note,
             feeling = feeling,
             createdAt = now,
@@ -323,5 +533,6 @@ class ChallengesRepository(
     companion object {
         private const val KEY_CHALLENGES = "challenges"
         private const val KEY_ENTRIES = "entries"
+        private const val KEY_DASHBOARD_CONFIG = "dashboard_config"
     }
 }

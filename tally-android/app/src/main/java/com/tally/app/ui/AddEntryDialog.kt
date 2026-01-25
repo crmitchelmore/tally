@@ -26,6 +26,7 @@ import com.tally.core.design.TallyMark
 import com.tally.core.design.TallySpacing
 import com.tally.core.design.TallyTheme
 import com.tally.core.network.Challenge
+import com.tally.core.network.CountType
 import com.tally.core.network.CreateEntryRequest
 import com.tally.core.network.Feeling
 import java.time.LocalDate
@@ -33,7 +34,7 @@ import java.time.format.DateTimeFormatter
 
 /**
  * Dialog for adding an entry to a challenge.
- * Supports count input, date selection, optional note, and feeling selector.
+ * Supports count input, sets mode, date selection, optional note, and feeling selector.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,8 +45,16 @@ fun AddEntryDialog(
     isSaving: Boolean = false,
     errorMessage: String? = null
 ) {
-    var count by remember { mutableIntStateOf(1) }
-    var countText by remember { mutableStateOf("1") }
+    val isSetsMode = challenge.resolvedCountType == CountType.SETS
+    val defaultIncrement = challenge.resolvedDefaultIncrement
+    
+    // Simple count state
+    var count by remember { mutableIntStateOf(defaultIncrement) }
+    var countText by remember { mutableStateOf(defaultIncrement.toString()) }
+    
+    // Sets state
+    var sets by remember { mutableStateOf(listOf(defaultIncrement)) }
+    
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var note by remember { mutableStateOf("") }
     var selectedFeeling by remember { mutableStateOf<Feeling?>(null) }
@@ -53,7 +62,10 @@ fun AddEntryDialog(
 
     val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
     
-    // DatePicker state must be hoisted outside conditional to follow Compose rules
+    // Calculate total count
+    val totalCount = if (isSetsMode) sets.sum() else count
+    
+    // DatePicker state
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = selectedDate.toEpochDay() * 24 * 60 * 60 * 1000,
         selectableDates = object : SelectableDates {
@@ -105,91 +117,35 @@ fun AddEntryDialog(
                     verticalArrangement = Arrangement.spacedBy(TallySpacing.md)
                 ) {
                     TallyMark(
-                        count = count,
+                        count = totalCount,
                         modifier = Modifier.size(80.dp),
                         animated = true
                     )
                     Text(
-                        text = "$count ${challenge.unitLabel ?: "reps"}",
+                        text = "$totalCount ${challenge.resolvedUnitLabel}",
                         style = MaterialTheme.typography.headlineMedium
                     )
                 }
             }
 
-            // Count input with increment/decrement
-            Column(verticalArrangement = Arrangement.spacedBy(TallySpacing.sm)) {
-                Text(
-                    text = "Count",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            if (isSetsMode) {
+                // Sets mode UI
+                SetsInput(
+                    sets = sets,
+                    onSetsChange = { sets = it },
+                    defaultIncrement = defaultIncrement,
+                    unitLabel = challenge.resolvedUnitLabel
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FilledIconButton(
-                        onClick = { if (count > 1) { count--; countText = count.toString() } },
-                        enabled = count > 1,
-                        modifier = Modifier
-                            .size(56.dp)
-                            .testTag("decrementButton")
-                    ) {
-                        Icon(Icons.Default.Remove, contentDescription = "Decrease")
+            } else {
+                // Simple count mode
+                SimpleCountInput(
+                    count = count,
+                    countText = countText,
+                    onCountChange = { newCount, newText ->
+                        count = newCount
+                        countText = newText
                     }
-                    
-                    OutlinedTextField(
-                        value = countText,
-                        onValueChange = { newValue ->
-                            countText = newValue
-                            newValue.toIntOrNull()?.let { if (it >= 1) count = it }
-                        },
-                        modifier = Modifier
-                            .width(100.dp)
-                            .padding(horizontal = TallySpacing.md)
-                            .testTag("countInput"),
-                        textStyle = MaterialTheme.typography.headlineMedium.copy(
-                            textAlign = TextAlign.Center
-                        ),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true
-                    )
-                    
-                    FilledIconButton(
-                        onClick = { count++; countText = count.toString() },
-                        modifier = Modifier
-                            .size(56.dp)
-                            .testTag("incrementButton")
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = "Increase")
-                    }
-                }
-            }
-
-            // Quick add buttons
-            Column(verticalArrangement = Arrangement.spacedBy(TallySpacing.sm)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(TallySpacing.sm)
-                ) {
-                    QuickButton("+1", Modifier.weight(1f)) { count += 1; countText = count.toString() }
-                    QuickButton("+10", Modifier.weight(1f)) { count += 10; countText = count.toString() }
-                    QuickButton("+100", Modifier.weight(1f)) { count += 100; countText = count.toString() }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(TallySpacing.sm)
-                ) {
-                    QuickButton("-1", Modifier.weight(1f), enabled = count > 1) { 
-                        count = maxOf(1, count - 1); countText = count.toString() 
-                    }
-                    QuickButton("-10", Modifier.weight(1f), enabled = count > 10) { 
-                        count = maxOf(1, count - 10); countText = count.toString() 
-                    }
-                    QuickButton("-100", Modifier.weight(1f), enabled = count > 100) { 
-                        count = maxOf(1, count - 100); countText = count.toString() 
-                    }
-                }
+                )
             }
 
             // Date picker
@@ -288,7 +244,8 @@ fun AddEntryDialog(
                     val request = CreateEntryRequest(
                         challengeId = challenge.id,
                         date = selectedDate.format(dateFormatter),
-                        count = count,
+                        count = totalCount,
+                        sets = if (isSetsMode) sets else null,
                         note = note.takeIf { it.isNotBlank() },
                         feeling = selectedFeeling
                     )
@@ -298,7 +255,7 @@ fun AddEntryDialog(
                     .fillMaxWidth()
                     .height(56.dp)
                     .testTag("saveButton"),
-                enabled = !isSaving && count >= 1
+                enabled = !isSaving && totalCount >= 1
             ) {
                 if (isSaving) {
                     CircularProgressIndicator(
@@ -337,6 +294,222 @@ fun AddEntryDialog(
             }
         ) {
             DatePicker(state = datePickerState)
+        }
+    }
+}
+
+@Composable
+private fun SimpleCountInput(
+    count: Int,
+    countText: String,
+    onCountChange: (Int, String) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(TallySpacing.sm)) {
+        Text(
+            text = "Count",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FilledIconButton(
+                onClick = { if (count > 1) onCountChange(count - 1, (count - 1).toString()) },
+                enabled = count > 1,
+                modifier = Modifier.size(56.dp).testTag("decrementButton")
+            ) {
+                Icon(Icons.Default.Remove, contentDescription = "Decrease")
+            }
+            
+            OutlinedTextField(
+                value = countText,
+                onValueChange = { newValue ->
+                    onCountChange(newValue.toIntOrNull()?.coerceAtLeast(1) ?: count, newValue)
+                },
+                modifier = Modifier.width(100.dp).padding(horizontal = TallySpacing.md).testTag("countInput"),
+                textStyle = MaterialTheme.typography.headlineMedium.copy(textAlign = TextAlign.Center),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true
+            )
+            
+            FilledIconButton(
+                onClick = { onCountChange(count + 1, (count + 1).toString()) },
+                modifier = Modifier.size(56.dp).testTag("incrementButton")
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Increase")
+            }
+        }
+
+        // Quick add buttons
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(TallySpacing.sm)
+        ) {
+            QuickButton("+1", Modifier.weight(1f)) { onCountChange(count + 1, (count + 1).toString()) }
+            QuickButton("+10", Modifier.weight(1f)) { onCountChange(count + 10, (count + 10).toString()) }
+            QuickButton("+100", Modifier.weight(1f)) { onCountChange(count + 100, (count + 100).toString()) }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(TallySpacing.sm)
+        ) {
+            QuickButton("-1", Modifier.weight(1f), enabled = count > 1) { 
+                val newCount = maxOf(1, count - 1)
+                onCountChange(newCount, newCount.toString())
+            }
+            QuickButton("-10", Modifier.weight(1f), enabled = count > 10) { 
+                val newCount = maxOf(1, count - 10)
+                onCountChange(newCount, newCount.toString())
+            }
+            QuickButton("-100", Modifier.weight(1f), enabled = count > 100) { 
+                val newCount = maxOf(1, count - 100)
+                onCountChange(newCount, newCount.toString())
+            }
+        }
+    }
+}
+
+@Composable
+private fun SetsInput(
+    sets: List<Int>,
+    onSetsChange: (List<Int>) -> Unit,
+    defaultIncrement: Int,
+    unitLabel: String
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(TallySpacing.sm)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Sets",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "${sets.size} sets · ${sets.sum()} $unitLabel",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        
+        // Individual set cards
+        sets.forEachIndexed { index, setCount ->
+            SetCard(
+                setNumber = index + 1,
+                count = setCount,
+                onCountChange = { newCount ->
+                    val newSets = sets.toMutableList()
+                    newSets[index] = newCount
+                    onSetsChange(newSets)
+                },
+                onRemove = if (sets.size > 1) {
+                    {
+                        val newSets = sets.toMutableList()
+                        newSets.removeAt(index)
+                        onSetsChange(newSets)
+                    }
+                } else null,
+                unitLabel = unitLabel
+            )
+        }
+        
+        // Add set button
+        OutlinedButton(
+            onClick = {
+                // New set starts with the last set's value
+                val lastValue = sets.lastOrNull() ?: defaultIncrement
+                onSetsChange(sets + lastValue)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(Icons.Default.Add, contentDescription = null)
+            Spacer(modifier = Modifier.width(TallySpacing.xs))
+            Text("Add Set")
+        }
+    }
+}
+
+@Composable
+private fun SetCard(
+    setNumber: Int,
+    count: Int,
+    onCountChange: (Int) -> Unit,
+    onRemove: (() -> Unit)?,
+    unitLabel: String
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(TallySpacing.sm),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Set $setNumber",
+                style = MaterialTheme.typography.labelMedium
+            )
+            
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(TallySpacing.xs)
+            ) {
+                // Quick decrement buttons
+                FilledTonalIconButton(
+                    onClick = { if (count > 10) onCountChange(count - 10) },
+                    modifier = Modifier.size(32.dp),
+                    enabled = count > 10
+                ) {
+                    Text("-10", style = MaterialTheme.typography.labelSmall)
+                }
+                FilledTonalIconButton(
+                    onClick = { if (count > 1) onCountChange(count - 1) },
+                    modifier = Modifier.size(32.dp),
+                    enabled = count > 1
+                ) {
+                    Icon(Icons.Default.Remove, contentDescription = "Decrease", modifier = Modifier.size(16.dp))
+                }
+                
+                Text(
+                    text = "$count",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.width(48.dp),
+                    textAlign = TextAlign.Center
+                )
+                
+                // Quick increment buttons
+                FilledTonalIconButton(
+                    onClick = { onCountChange(count + 1) },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Increase", modifier = Modifier.size(16.dp))
+                }
+                FilledTonalIconButton(
+                    onClick = { onCountChange(count + 10) },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Text("+10", style = MaterialTheme.typography.labelSmall)
+                }
+                
+                // Remove button
+                onRemove?.let {
+                    IconButton(
+                        onClick = it,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(Icons.Default.Close, contentDescription = "Remove set", modifier = Modifier.size(16.dp))
+                    }
+                }
+            }
         }
     }
 }

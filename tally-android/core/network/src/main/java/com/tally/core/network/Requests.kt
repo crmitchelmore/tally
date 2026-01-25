@@ -16,7 +16,10 @@ data class CreateChallengeRequest(
     @SerialName("end_date") val endDate: String? = null,
     val color: String? = null,
     val icon: String? = null,
-    @SerialName("is_public") val isPublic: Boolean? = null
+    @SerialName("is_public") val isPublic: Boolean? = null,
+    @SerialName("count_type") val countType: CountType? = null,
+    @SerialName("unit_label") val unitLabel: String? = null,
+    @SerialName("default_increment") val defaultIncrement: Int? = null
 )
 
 @Serializable
@@ -26,7 +29,10 @@ data class UpdateChallengeRequest(
     val color: String? = null,
     val icon: String? = null,
     @SerialName("is_public") val isPublic: Boolean? = null,
-    @SerialName("is_archived") val isArchived: Boolean? = null
+    @SerialName("is_archived") val isArchived: Boolean? = null,
+    @SerialName("count_type") val countType: CountType? = null,
+    @SerialName("unit_label") val unitLabel: String? = null,
+    @SerialName("default_increment") val defaultIncrement: Int? = null
 )
 
 @Serializable
@@ -34,6 +40,7 @@ data class CreateEntryRequest(
     @SerialName("challenge_id") val challengeId: String,
     val date: String,
     val count: Int,
+    val sets: List<Int>? = null,
     val note: String? = null,
     val feeling: Feeling? = null
 )
@@ -42,6 +49,7 @@ data class CreateEntryRequest(
 data class UpdateEntryRequest(
     val date: String? = null,
     val count: Int? = null,
+    val sets: List<Int>? = null,
     val note: String? = null,
     val feeling: Feeling? = null
 )

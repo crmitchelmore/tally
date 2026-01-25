@@ -13,10 +13,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -26,7 +29,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -34,23 +40,35 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.tally.app.R
 import com.tally.app.data.ChallengesViewModel
+import com.tally.app.ui.dashboard.ActivityHeatmap
+import com.tally.app.ui.dashboard.BurnUpChart
+import com.tally.app.ui.dashboard.DashboardHighlights
+import com.tally.app.ui.dashboard.PersonalRecordsCard
+import com.tally.app.ui.dashboard.ProgressChart
 import com.tally.core.design.SyncState
 import com.tally.core.design.SyncStatusIndicator
 import com.tally.core.design.TallySpacing
+import com.tally.core.network.Entry
 import java.time.LocalDate
 
 /**
- * Home screen showing user's challenges with create and add entry functionality.
+ * Home screen showing dashboard and user's challenges with create and add entry functionality.
  */
 @Composable
 fun HomeScreen(
     viewModel: ChallengesViewModel
 ) {
     val challengesWithCounts by viewModel.challengesWithCounts.collectAsState()
+    val dashboardStats by viewModel.dashboardStats.collectAsState()
+    val personalRecords by viewModel.personalRecords.collectAsState()
+    val dashboardConfig by viewModel.dashboardConfig.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val showCreateDialog by viewModel.showCreateDialog.collectAsState()
     val showEntryDialog by viewModel.showEntryDialog.collectAsState()
+
+    // Track expanded dashboard state
+    var dashboardExpanded by rememberSaveable { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -61,6 +79,9 @@ fun HomeScreen(
             viewModel.clearError()
         }
     }
+
+    // Mock all entries for charts (in production, get from repository)
+    val allEntries = remember { mutableListOf<Entry>() }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -91,11 +112,24 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "My Challenges",
+                        text = "Dashboard",
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.testTag("dashboard_title")
                     )
-                    SyncStatusIndicator(state = SyncState.SYNCED)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(TallySpacing.sm)
+                    ) {
+                        IconButton(
+                            onClick = { dashboardExpanded = !dashboardExpanded }
+                        ) {
+                            Icon(
+                                imageVector = if (dashboardExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = if (dashboardExpanded) "Collapse" else "Expand"
+                            )
+                        }
+                        SyncStatusIndicator(state = SyncState.SYNCED)
+                    }
                 }
 
                 when {
@@ -115,7 +149,7 @@ fun HomeScreen(
                         )
                     }
                     else -> {
-                        // Challenge list
+                        // Main content with dashboard and challenges
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -123,6 +157,56 @@ fun HomeScreen(
                             contentPadding = PaddingValues(TallySpacing.md),
                             verticalArrangement = Arrangement.spacedBy(TallySpacing.md)
                         ) {
+                            // Dashboard highlights (always visible)
+                            if (dashboardConfig.panels.highlights) {
+                                item(key = "highlights") {
+                                    DashboardHighlights(stats = dashboardStats)
+                                }
+                            }
+
+                            // Expanded dashboard panels
+                            if (dashboardExpanded) {
+                                if (dashboardConfig.panels.personalRecords) {
+                                    item(key = "records") {
+                                        PersonalRecordsCard(records = personalRecords)
+                                    }
+                                }
+
+                                item(key = "heatmap") {
+                                    ActivityHeatmap(entries = allEntries)
+                                }
+
+                                if (dashboardConfig.panels.progressGraph) {
+                                    item(key = "progress") {
+                                        ProgressChart(
+                                            challenges = challengesWithCounts.map { it.challenge },
+                                            entries = allEntries
+                                        )
+                                    }
+                                }
+
+                                if (dashboardConfig.panels.burnUpChart && challengesWithCounts.isNotEmpty()) {
+                                    item(key = "burnup") {
+                                        BurnUpChart(
+                                            challenge = challengesWithCounts.first().challenge,
+                                            entries = allEntries.filter { 
+                                                it.challengeId == challengesWithCounts.first().challenge.id 
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Challenges header
+                            item(key = "challenges_header") {
+                                Text(
+                                    text = "My Challenges",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.padding(top = TallySpacing.md)
+                                )
+                            }
+
+                            // Challenge cards
                             items(
                                 items = challengesWithCounts,
                                 key = { it.challenge.id }
@@ -144,8 +228,16 @@ fun HomeScreen(
     if (showCreateDialog) {
         CreateChallengeDialog(
             onDismiss = { viewModel.hideCreateDialog() },
-            onCreate = { name, target, timeframe ->
-                viewModel.createChallenge(name, target, timeframe)
+            onCreate = { name, target, timeframe, countType, unitLabel, defaultIncrement, isPublic ->
+                viewModel.createChallenge(
+                    name = name,
+                    target = target,
+                    timeframeType = timeframe,
+                    countType = countType,
+                    unitLabel = unitLabel,
+                    defaultIncrement = defaultIncrement,
+                    isPublic = isPublic
+                )
             }
         )
     }
@@ -160,6 +252,7 @@ fun HomeScreen(
                     challenge = challenge,
                     count = request.count,
                     date = LocalDate.parse(request.date),
+                    sets = request.sets,
                     note = request.note,
                     feeling = request.feeling
                 )

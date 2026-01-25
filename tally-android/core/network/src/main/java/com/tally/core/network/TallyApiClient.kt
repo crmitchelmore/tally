@@ -29,6 +29,11 @@ class TallyApiClient(
         return get<ChallengesResponse>("/api/v1/challenges").map { it.challenges }
     }
 
+    /** List challenges with their stats */
+    suspend fun listChallengesWithStats(): ApiResult<List<ChallengeWithStatsWrapper>> {
+        return get<ChallengesWithStatsResponse>("/api/v1/challenges?include=stats").map { it.challenges }
+    }
+
     /** Get a specific challenge */
     suspend fun getChallenge(id: String): ApiResult<Challenge> {
         return get<ChallengeResponse>("/api/v1/challenges/$id").map { it.challenge }
@@ -114,6 +119,56 @@ class TallyApiClient(
     /** Get personal records */
     suspend fun getPersonalRecords(): ApiResult<PersonalRecords> {
         return get<PersonalRecordsResponse>("/api/v1/stats/records").map { it.records }
+    }
+
+    /** Get combined dashboard data (stats + records + entries) */
+    suspend fun getDashboardData(): ApiResult<DashboardDataResponse> {
+        return get("/api/v1/stats")
+    }
+
+    // ===== Community API =====
+
+    /** List public challenges */
+    suspend fun listPublicChallenges(
+        search: String? = null,
+        following: Boolean? = null
+    ): ApiResult<List<PublicChallenge>> {
+        val params = mutableListOf<String>()
+        search?.let { params.add("search=$it") }
+        following?.let { params.add("following=$it") }
+        
+        val query = if (params.isNotEmpty()) "?${params.joinToString("&")}" else ""
+        return get<PublicChallengesResponse>("/api/v1/public/challenges$query").map { it.challenges }
+    }
+
+    /** Follow a public challenge */
+    suspend fun followChallenge(challengeId: String): ApiResult<Boolean> {
+        return post<FollowResponse>("/api/v1/public/challenges/$challengeId/follow", null)
+            .map { it.success }
+    }
+
+    /** Unfollow a public challenge */
+    suspend fun unfollowChallenge(challengeId: String): ApiResult<Boolean> {
+        return delete("/api/v1/public/challenges/$challengeId/follow").map { true }
+    }
+
+    // ===== Data Export/Import API =====
+
+    /** Export all user data */
+    suspend fun exportData(): ApiResult<ExportData> {
+        return get<ExportDataResponse>("/api/v1/data/export").map { it.data }
+    }
+
+    /** Import user data */
+    suspend fun importData(data: ExportData): ApiResult<ImportCounts> {
+        val request = ImportDataRequest(data = data)
+        return post<ImportDataResponse>("/api/v1/data/import", json.encodeToString(request))
+            .map { it.imported }
+    }
+
+    /** Delete all user data */
+    suspend fun deleteAllData(): ApiResult<Boolean> {
+        return delete("/api/v1/data").map { true }
     }
 
     // ===== HTTP Methods =====

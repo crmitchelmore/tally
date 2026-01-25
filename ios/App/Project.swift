@@ -16,7 +16,7 @@ let project = Project(
             name: "App",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.tally.app",
+            bundleId: "app.tally.ios",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .extendingDefault(
                 with: [
@@ -68,7 +68,7 @@ let project = Project(
             name: "AppTests",
             destinations: .iOS,
             product: .unitTests,
-            bundleId: "com.tally.app.tests",
+            bundleId: "app.tally.ios.tests",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
             sources: ["Tests/**"],
@@ -80,7 +80,7 @@ let project = Project(
             name: "AppUITests",
             destinations: .iOS,
             product: .uiTests,
-            bundleId: "com.tally.app.uitests",
+            bundleId: "app.tally.ios.uitests",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
             sources: ["UITests/**"],

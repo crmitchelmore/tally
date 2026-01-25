@@ -20,7 +20,7 @@ on:
 env:
   XCODE_VERSION: "15.4"
   IOS_APP_ID: ${{ secrets.IOS_APP_ID }}
-  IOS_BUNDLE_ID: "com.tally.app"
+  IOS_BUNDLE_ID: "app.tally.ios"
 
 jobs:
   build-and-upload:
@@ -114,6 +114,8 @@ jobs:
         env:
           DEVELOPMENT_TEAM: ${{ secrets.IOS_TEAM_ID }}
         run: |
+          # Archive with automatic signing - frameworks sign automatically
+          # The export step will re-sign with manual provisioning profile
           xcodebuild archive \
             -workspace Tally.xcworkspace \
             -scheme App \
@@ -121,8 +123,7 @@ jobs:
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -destination "generic/platform=iOS" \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            PROVISIONING_PROFILE_SPECIFIER="${{ env.PROVISIONING_PROFILE_NAME }}" \
-            CODE_SIGN_STYLE="Manual" \
+            CODE_SIGN_STYLE="Automatic" \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             -allowProvisioningUpdates
 

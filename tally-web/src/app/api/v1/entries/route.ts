@@ -117,6 +117,7 @@ export async function POST(request: NextRequest) {
         count: body.count,
         note: body.note,
         feeling: body.feeling,
+        sets: body.sets?.length ? body.sets : undefined,
       });
 
       span.setAttribute("entry.id", entry.id);

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { ExportData } from "@/components/data/export-data";
 import { ImportData } from "@/components/data/import-data";
 import { ClearData } from "@/components/data/clear-data";
-import { SessionsSync } from "@/components/settings/sessions-sync";
+import { SessionsSync, SupportSection } from "@/components/settings";
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 
@@ -108,6 +108,9 @@ export default function SettingsPage() {
 
       {/* Sessions & Sync section */}
       {user && <SessionsSync />}
+
+      {/* Support section */}
+      <SupportSection />
 
       {/* Data Management section */}
       <section className="bg-surface border border-border rounded-2xl p-6">

@@ -114,8 +114,8 @@ jobs:
         env:
           DEVELOPMENT_TEAM: ${{ secrets.IOS_TEAM_ID }}
         run: |
-          # Archive with automatic signing - frameworks sign automatically
-          # The export step will re-sign with manual provisioning profile
+          # Archive without specifying code signing identity
+          # The export step will handle signing with the provisioning profile
           xcodebuild archive \
             -workspace Tally.xcworkspace \
             -scheme App \
@@ -124,7 +124,6 @@ jobs:
             -destination "generic/platform=iOS" \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             CODE_SIGN_STYLE="Automatic" \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
             -allowProvisioningUpdates
 
       - name: Create ExportOptions.plist

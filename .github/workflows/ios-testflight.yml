@@ -125,8 +125,7 @@ jobs:
             -scheme App \
             -configuration Release \
             -archivePath $RUNNER_TEMP/App.xcarchive \
-            -destination "generic/platform=iOS" \
-            -allowProvisioningUpdates
+            -destination "generic/platform=iOS"
 
       - name: Create ExportOptions.plist
         run: |
@@ -144,20 +143,32 @@ jobs:
               <key>compileBitcode</key>
               <false/>
               <key>destination</key>
-              <string>upload</string>
+              <string>export</string>
               <key>signingStyle</key>
               <string>manual</string>
+              <key>signingCertificate</key>
+              <string>Apple Distribution</string>
               <key>provisioningProfiles</key>
               <dict>
                   <key>${{ env.IOS_BUNDLE_ID }}</key>
-                  <string>${{ env.PROVISIONING_PROFILE_UUID }}</string>
+                  <string>${{ env.PROVISIONING_PROFILE_NAME }}</string>
               </dict>
           </dict>
           </plist>
           EOF
 
       - name: Export IPA
+        env:
+          KEYCHAIN_PATH: ${{ runner.temp }}/app-signing.keychain-db
+          KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
         run: |
+          # Ensure keychain is still unlocked and in search list
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+          
+          # Debug: show available identities
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
+          
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -exportPath $RUNNER_TEMP/export \

@@ -110,12 +110,12 @@ jobs:
           echo "📦 Building version ${{ inputs.version }} (${{ steps.build_number.outputs.BUILD_NUMBER }})"
 
       - name: Build archive
-        working-directory: ios/App
+        working-directory: ios
         env:
           DEVELOPMENT_TEAM: ${{ secrets.IOS_TEAM_ID }}
         run: |
           xcodebuild archive \
-            -workspace App.xcworkspace \
+            -workspace Tally.xcworkspace \
             -scheme App \
             -configuration Release \
             -archivePath $RUNNER_TEMP/App.xcarchive \

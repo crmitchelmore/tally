@@ -184,10 +184,20 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys
           echo "$APP_STORE_CONNECT_PRIVATE_KEY" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_KEY_ID.p8
 
-          # Upload using xcrun
+          # Find the actual IPA file (name may vary based on scheme/target)
+          IPA_FILE=$(find $RUNNER_TEMP/export -name "*.ipa" | head -n 1)
+          echo "Found IPA: $IPA_FILE"
+          
+          if [ -z "$IPA_FILE" ]; then
+            echo "Error: No IPA file found in export directory"
+            ls -la $RUNNER_TEMP/export/
+            exit 1
+          fi
+
+          # Upload using xcrun notarytool/altool
           xcrun altool --upload-app \
             --type ios \
-            --file "$RUNNER_TEMP/export/App.ipa" \
+            --file "$IPA_FILE" \
             --apiKey "$APP_STORE_CONNECT_KEY_ID" \
             --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
 

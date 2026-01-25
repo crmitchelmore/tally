@@ -35,11 +35,10 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
-      - name: Setup mise
+      - name: Install Tuist via mise
         uses: jdx/mise-action@v2
-
-      - name: Install Tuist
-        run: mise install tuist
+        with:
+          install_args: tuist@4.32.0
 
       - name: Calculate build number
         id: build_number
@@ -94,6 +93,7 @@ jobs:
           TUIST_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           TUIST_API_BASE_URL: "https://tally-tracker.app"
         run: |
+          mise use -g tuist@4.32.0
           tuist install
           tuist generate --no-open
 

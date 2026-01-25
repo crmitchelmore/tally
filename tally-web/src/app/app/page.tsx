@@ -47,11 +47,23 @@ export default function AppPage() {
         // Ignore parse errors
       }
     }
-    // Load panel config from localStorage
+    // Load panel config from localStorage with defaults merge
     const savedConfig = localStorage.getItem("dashboardConfig");
     if (savedConfig) {
       try {
-        setPanelConfig(JSON.parse(savedConfig));
+        const parsed = JSON.parse(savedConfig);
+        // Merge with defaults so new panel keys are visible
+        const merged = {
+          ...DEFAULT_DASHBOARD_CONFIG,
+          ...parsed,
+          panels: {
+            ...DEFAULT_DASHBOARD_CONFIG.panels,
+            ...parsed.panels,
+          },
+        };
+        setPanelConfig(merged);
+        // Persist merged config
+        localStorage.setItem("dashboardConfig", JSON.stringify(merged));
       } catch {
         // Use default
       }

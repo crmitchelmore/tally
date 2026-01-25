@@ -419,6 +419,7 @@ export async function importUserData(
         challengeId: newChallengeId,
         date: e.date,
         count: e.count,
+        sets: e.sets,
         note: e.note,
         feeling: e.feeling,
       });

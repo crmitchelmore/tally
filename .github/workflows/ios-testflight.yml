@@ -20,6 +20,7 @@ on:
 env:
   XCODE_VERSION: "15.4"
   IOS_APP_ID: ${{ secrets.IOS_APP_ID }}
+  IOS_BUNDLE_ID: "com.tally.app"
 
 jobs:
   build-and-upload:
@@ -144,7 +145,7 @@ jobs:
               <string>manual</string>
               <key>provisioningProfiles</key>
               <dict>
-                  <key>com.tally.app</key>
+                  <key>${{ env.IOS_BUNDLE_ID }}</key>
                   <string>${{ env.PROVISIONING_PROFILE_UUID }}</string>
               </dict>
           </dict>
@@ -200,7 +201,7 @@ jobs:
           ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
           APP_ID: ${{ secrets.IOS_APP_ID }}
-          BUILD_NUMBER: ${{ needs.build-and-upload.outputs.build_number }}
+          VERSION: ${{ needs.build-and-upload.outputs.version }}
         with:
           script: |
             const crypto = require('crypto');
@@ -231,14 +232,14 @@ jobs:
               return `${signatureInput}.${signature}`;
             }
             
-            const jwt = makeJWT(
+            let jwt = makeJWT(
               process.env.ASC_KEY_ID,
               process.env.ASC_ISSUER_ID,
               process.env.ASC_PRIVATE_KEY
             );
             
             const appId = process.env.APP_ID;
-            const buildNumber = process.env.BUILD_NUMBER;
+            const version = process.env.VERSION;
             
             // Poll for processed build
             const maxAttempts = 90; // 90 minutes max
@@ -247,7 +248,8 @@ jobs:
             for (let attempt = 1; attempt <= maxAttempts; attempt++) {
               core.info(`⏳ Polling attempt ${attempt}/${maxAttempts}...`);
               
-              const url = `https://api.appstoreconnect.apple.com/v1/builds?filter[app]=${appId}&filter[version]=${buildNumber}&filter[processingState]=VALID`;
+              // filter[version] is CFBundleShortVersionString (e.g., 1.0.0), not build number
+              const url = `https://api.appstoreconnect.apple.com/v1/builds?filter[app]=${appId}&filter[version]=${version}&filter[processingState]=VALID&sort=-uploadedDate&limit=1`;
               
               const response = await fetch(url, {
                 headers: {
@@ -324,7 +326,11 @@ jobs:
             );
             
             const buildId = process.env.BUILD_ID;
-            const betaGroupIds = (process.env.BETA_GROUP_IDS || '').split('\n').filter(Boolean);
+            // Support both newline-separated and comma-separated group IDs
+            const betaGroupIds = (process.env.BETA_GROUP_IDS || '')
+              .split(/[\n,]/)
+              .map(id => id.trim())
+              .filter(Boolean);
             
             if (betaGroupIds.length === 0) {
               core.warning('No beta group IDs configured. Build uploaded but not distributed.');

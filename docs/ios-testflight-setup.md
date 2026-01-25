@@ -35,7 +35,7 @@ This guide covers setting up automated TestFlight releases for the Tally iOS app
 ### 3. Create Provisioning Profile
 
 1. Go to [Apple Developer → Profiles](https://developer.apple.com/account/resources/profiles/list)
-2. Click **+** → Select **App Store Connect** → Continue
+2. Click **+** → Select **App Store** (under Distribution section) → Continue
 3. Select **com.tally.app** (create App ID first if needed)
 4. Select your distribution certificate
 5. Name: `Tally App Store`
@@ -78,22 +78,20 @@ Go to **Settings → Secrets and variables → Actions** in your GitHub repo and
 | `IOS_SIGNING_CERT_PASSWORD` | Password for .p12 | Step 2 |
 | `IOS_PROVISIONING_PROFILE_BASE64` | Base64-encoded profile | See below |
 | `IOS_KEYCHAIN_PASSWORD` | Temp keychain password | Generate any secure password |
-| `IOS_TESTFLIGHT_BETA_GROUP_IDS` | Beta group ID(s) | Step 5 (one per line) |
+| `IOS_TESTFLIGHT_BETA_GROUP_IDS` | Beta group ID(s) | Step 5 (comma or newline separated) |
 
 **Base64 encoding commands:**
 
 ```bash
-# Encode certificate
+# macOS:
 base64 -i /path/to/certificate.p12 | pbcopy
-# Paste into IOS_SIGNING_CERT_P12_BASE64
-
-# Encode provisioning profile
 base64 -i /path/to/profile.mobileprovision | pbcopy
-# Paste into IOS_PROVISIONING_PROFILE_BASE64
 
-# Copy .p8 key contents
-cat /path/to/AuthKey_XXXXXX.p8 | pbcopy
-# Paste into APP_STORE_CONNECT_PRIVATE_KEY
+# Linux (GNU base64):
+base64 -w 0 /path/to/certificate.p12 | xclip -selection clipboard
+base64 -w 0 /path/to/profile.mobileprovision | xclip -selection clipboard
+
+# Note: -w 0 disables line wrapping (required for secrets)
 ```
 
 ## Usage

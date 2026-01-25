@@ -1971,3 +1971,716 @@ main.landing {
 .animate-slide-up {
   animation: slide-up 0.2s ease-out;
 }
+
+/* ========================================
+   Device Mockups for App Showcase
+   ======================================== */
+
+/* Platform toggle tabs */
+.platform-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.platform-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.platform-tab:hover {
+  color: var(--color-ink);
+  border-color: var(--color-muted);
+}
+
+.platform-tab.active {
+  color: var(--color-accent);
+  background: color-mix(in oklch, var(--color-accent), transparent 92%);
+  border-color: var(--color-accent);
+}
+
+/* Screen selector tabs */
+.screen-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 24px;
+}
+
+.screen-tab {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.screen-tab:hover {
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+
+.screen-tab.active {
+  color: var(--color-ink);
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* Device showcase area */
+.app-showcase-devices {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 48px;
+}
+
+.device-showcase-area {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+/* Device mockup frame */
+.device-mockup {
+  position: relative;
+}
+
+.device-frame {
+  width: 280px;
+  height: 580px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-radius: 40px;
+  padding: 12px;
+  box-shadow: 
+    0 25px 50px -12px rgba(0,0,0,0.25),
+    0 0 0 1px rgba(255,255,255,0.1) inset;
+}
+
+@media (min-width: 768px) {
+  .device-frame {
+    width: 320px;
+    height: 660px;
+    border-radius: 48px;
+    padding: 14px;
+  }
+}
+
+.device-notch {
+  width: 100px;
+  height: 28px;
+  background: #1a1a1a;
+  border-radius: 0 0 16px 16px;
+  margin: 0 auto 0;
+  position: relative;
+  z-index: 10;
+}
+
+.device-screen {
+  width: 100%;
+  height: calc(100% - 8px);
+  background: var(--color-paper);
+  border-radius: 32px;
+  overflow: hidden;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .device-screen {
+    border-radius: 38px;
+  }
+}
+
+.device-home-indicator {
+  width: 120px;
+  height: 5px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 999px;
+  margin: 8px auto 0;
+}
+
+/* Screen preview content */
+.screen-preview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+}
+
+@media (min-width: 768px) {
+  .screen-preview {
+    font-size: 12px;
+  }
+}
+
+/* Status bar */
+.screen-header {
+  padding: 8px 16px;
+}
+
+.screen-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin-bottom: 8px;
+}
+
+.screen-status-icons {
+  display: flex;
+  gap: 4px;
+  font-size: 8px;
+}
+
+.screen-nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.screen-title {
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.screen-sync-badge {
+  font-size: 0.85em;
+  padding: 3px 8px;
+  background: color-mix(in oklch, #22c55e, transparent 85%);
+  color: #16a34a;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+/* Screen content area */
+.screen-content {
+  flex: 1;
+  padding: 12px 16px;
+  overflow-y: auto;
+}
+
+/* Stats row */
+.preview-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 12px;
+  background: var(--color-surface);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.preview-stat {
+  text-align: center;
+}
+
+.preview-stat-value {
+  display: block;
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.preview-stat-label {
+  font-size: 0.85em;
+  color: var(--color-muted);
+}
+
+.preview-stat-good .preview-stat-value {
+  color: var(--color-accent);
+}
+
+/* Challenge cards */
+.preview-challenge-card {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.preview-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.preview-tally-mini {
+  display: flex;
+  gap: 2px;
+  position: relative;
+  width: 28px;
+  height: 28px;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.preview-tally-mini span {
+  width: 2px;
+  height: 16px;
+  background: var(--color-ink);
+  border-radius: 1px;
+}
+
+.preview-tally-mini span.slash {
+  position: absolute;
+  width: 2px;
+  height: 20px;
+  background: var(--color-accent);
+  transform: rotate(-20deg);
+  left: 50%;
+  top: 50%;
+  margin-left: -1px;
+  margin-top: -10px;
+}
+
+.preview-tally-mini.small span {
+  height: 12px;
+}
+
+.preview-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.preview-card-title {
+  display: block;
+  font-weight: 600;
+  color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-card-subtitle {
+  font-size: 0.85em;
+  color: var(--color-muted);
+}
+
+.preview-add-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent);
+  color: white;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1.2em;
+}
+
+.preview-progress-bar {
+  height: 6px;
+  background: var(--color-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.preview-progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 3px;
+  transition: width 300ms ease;
+}
+
+.preview-progress-fill.secondary {
+  background: #8b5cf6;
+}
+
+/* Challenge detail preview */
+.preview-tally-large {
+  text-align: center;
+  padding: 16px;
+  background: var(--color-surface);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.preview-tally-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.preview-25-unit {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.preview-tally-group {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  align-items: flex-end;
+  height: 100%;
+}
+
+.preview-tally-group span {
+  width: 2px;
+  height: 24px;
+  background: var(--color-ink);
+  border-radius: 1px;
+}
+
+.preview-tally-group span.slash {
+  position: absolute;
+  width: 2px;
+  height: 30px;
+  background: var(--color-accent);
+  transform: rotate(-20deg);
+  left: 50%;
+  top: 50%;
+  margin-left: -1px;
+  margin-top: -15px;
+}
+
+.preview-x-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  font-size: 24px;
+  font-weight: 300;
+}
+
+.preview-tally-count {
+  font-size: 1.3em;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+/* Mini chart */
+.preview-chart {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.preview-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 48px;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.preview-bar {
+  flex: 1;
+  background: var(--color-border);
+  border-radius: 2px;
+  transition: background 200ms;
+}
+
+.preview-bar.active {
+  background: var(--color-accent);
+}
+
+.preview-chart-label {
+  display: block;
+  text-align: center;
+  font-size: 0.85em;
+  color: var(--color-muted);
+}
+
+/* Entry list */
+.preview-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--color-surface);
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.preview-entry-date {
+  flex: 1;
+  color: var(--color-muted);
+}
+
+.preview-entry-count {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.preview-entry-feeling {
+  font-size: 1.2em;
+}
+
+/* Community preview */
+.preview-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--color-surface);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  border: 1px solid var(--color-border);
+}
+
+.preview-search-icon {
+  font-size: 1em;
+  opacity: 0.5;
+}
+
+.preview-search-text {
+  color: var(--color-muted);
+}
+
+.preview-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.preview-tab {
+  padding: 8px 12px;
+  font-weight: 500;
+  color: var(--color-muted);
+  border-radius: 8px;
+}
+
+.preview-tab.active {
+  color: var(--color-accent);
+  background: color-mix(in oklch, var(--color-accent), transparent 92%);
+}
+
+.preview-tab .badge {
+  font-size: 0.8em;
+  padding: 2px 6px;
+  background: var(--color-accent);
+  color: white;
+  border-radius: 999px;
+  margin-left: 4px;
+}
+
+.preview-public-card {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.preview-public-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.preview-avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--color-border);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+}
+
+.preview-public-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.preview-public-name {
+  display: block;
+  font-weight: 600;
+  color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-public-owner {
+  font-size: 0.85em;
+  color: var(--color-muted);
+}
+
+.preview-follow-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.85em;
+  font-weight: 500;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+}
+
+.preview-follow-btn.following {
+  background: var(--color-surface);
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+}
+
+.preview-public-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85em;
+  color: var(--color-muted);
+}
+
+/* Bottom navigation */
+.screen-bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0 6px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+}
+
+.screen-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--color-muted);
+}
+
+.screen-nav-item.active {
+  color: var(--color-accent);
+}
+
+.nav-icon {
+  font-size: 1.4em;
+}
+
+.nav-label {
+  font-size: 0.75em;
+  font-weight: 500;
+}
+
+/* Screen description */
+.screen-description {
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.screen-description-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin-bottom: 8px;
+}
+
+.screen-description-text {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-muted);
+}
+
+/* Platform features grid */
+.platforms-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+@media (min-width: 640px) {
+  .platforms-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+}
+
+.platform-features {
+  padding: 24px;
+  background: var(--color-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+}
+
+.platform-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin-bottom: 16px;
+}
+
+.platform-feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.platform-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 0.9375rem;
+  color: var(--color-muted);
+}
+
+.feature-check {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+/* App store links */
+.app-showcase-stores {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 0.9375rem;
+}
+
+.app-showcase-stores-label {
+  color: var(--color-muted);
+}
+
+.store-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-ink);
+  font-weight: 500;
+  transition: all 150ms ease;
+}
+
+.store-link:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.store-icon {
+  font-size: 1.1em;
+}

@@ -64,9 +64,9 @@ jobs:
           PROFILE_PATH=$RUNNER_TEMP/profile.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-          # Decode from base64
-          echo -n "$P12_BASE64" | base64 --decode -o $CERTIFICATE_PATH
-          echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode -o $PROFILE_PATH
+          # Decode from base64 (use BSD-compatible -D flag for macOS)
+          echo -n "$P12_BASE64" | base64 -D -o "$CERTIFICATE_PATH"
+          echo -n "$PROVISIONING_PROFILE_BASE64" | base64 -D -o "$PROFILE_PATH"
 
           # Create temporary keychain
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
@@ -82,9 +82,11 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
-          # Extract profile UUID for later use
+          # Extract profile UUID and Name for later use
           PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< $(/usr/bin/security cms -D -i $PROFILE_PATH))
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print Name" /dev/stdin <<< $(/usr/bin/security cms -D -i $PROFILE_PATH))
           echo "PROVISIONING_PROFILE_UUID=$PROFILE_UUID" >> $GITHUB_ENV
+          echo "PROVISIONING_PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
 
       - name: Generate Xcode project with Tuist
         working-directory: ios
@@ -119,7 +121,7 @@ jobs:
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -destination "generic/platform=iOS" \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            PROVISIONING_PROFILE_SPECIFIER="${{ env.PROVISIONING_PROFILE_UUID }}" \
+            PROVISIONING_PROFILE_SPECIFIER="${{ env.PROVISIONING_PROFILE_NAME }}" \
             CODE_SIGN_STYLE="Manual" \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             -allowProvisioningUpdates
@@ -202,6 +204,7 @@ jobs:
           ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
           APP_ID: ${{ secrets.IOS_APP_ID }}
           VERSION: ${{ needs.build-and-upload.outputs.version }}
+          BUILD_NUMBER: ${{ needs.build-and-upload.outputs.build_number }}
         with:
           script: |
             const crypto = require('crypto');
@@ -240,16 +243,18 @@ jobs:
             
             const appId = process.env.APP_ID;
             const version = process.env.VERSION;
+            const buildNumber = process.env.BUILD_NUMBER;
             
             // Poll for processed build
             const maxAttempts = 90; // 90 minutes max
             const intervalMs = 60000; // 1 minute
             
             for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-              core.info(`⏳ Polling attempt ${attempt}/${maxAttempts}...`);
+              core.info(`⏳ Polling attempt ${attempt}/${maxAttempts} for version ${version} build ${buildNumber}...`);
               
-              // filter[version] is CFBundleShortVersionString (e.g., 1.0.0), not build number
-              const url = `https://api.appstoreconnect.apple.com/v1/builds?filter[app]=${appId}&filter[version]=${version}&filter[processingState]=VALID&sort=-uploadedDate&limit=1`;
+              // filter[version] is CFBundleShortVersionString (e.g., 1.0.0)
+              // We fetch multiple and match on buildNumber to avoid selecting older builds
+              const url = `https://api.appstoreconnect.apple.com/v1/builds?filter[app]=${appId}&filter[version]=${version}&filter[processingState]=VALID&sort=-uploadedDate&limit=10`;
               
               const response = await fetch(url, {
                 headers: {
@@ -265,10 +270,15 @@ jobs:
                 const data = await response.json();
                 
                 if (data.data && data.data.length > 0) {
-                  const build = data.data[0];
-                  core.info(`✅ Build processed! ID: ${build.id}`);
-                  core.setOutput('build_id', build.id);
-                  return;
+                  // Find the build matching our exact build number
+                  const build = data.data.find(b => b.attributes?.buildNumber === buildNumber);
+                  if (build) {
+                    core.info(`✅ Build processed! ID: ${build.id}, buildNumber: ${build.attributes.buildNumber}`);
+                    core.setOutput('build_id', build.id);
+                    return;
+                  } else {
+                    core.info(`Found ${data.data.length} builds but none match buildNumber ${buildNumber}`);
+                  }
                 }
               }
               

@@ -132,21 +132,25 @@ base64 -w 0 /path/to/profile.mobileprovision | xclip -selection clipboard
 ## Troubleshooting
 
 ### "No valid signing identity found"
+
 - Check certificate is not expired
 - Verify base64 encoding is complete (no truncation)
 - Ensure password is correct
 
 ### "Provisioning profile doesn't match bundle ID"
+
 - Profile must be for `com.tally.app`
-- Must be App Store Connect distribution type
+- Must be App Store distribution type (not Development)
 - Must include the signing certificate
 
 ### "Build processing failed"
+
 - Check for issues in App Store Connect
 - Look for email from Apple about rejections
 - Verify app meets minimum requirements
 
 ### "API authentication failed"
+
 - Verify API key has correct permissions
 - Check key hasn't been revoked
 - Ensure private key is complete (including `-----BEGIN/END-----` lines)

@@ -18,11 +18,12 @@ public actor APIClient {
     public init(session: URLSession = .shared) {
         self.session = session
         
+        // API uses camelCase (JavaScript convention)
         self.encoder = JSONEncoder()
-        self.encoder.keyEncodingStrategy = .convertToSnakeCase
+        // Don't convert to snake_case - API expects camelCase
         
         self.decoder = JSONDecoder()
-        self.decoder.keyDecodingStrategy = .convertFromSnakeCase
+        // Don't convert from snake_case - API returns camelCase
     }
     
     // MARK: - Token Management

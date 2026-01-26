@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
+import { TallyDisplay } from "@/components/ui/tally-display";
 
 /**
  * App showcase screens - shows iOS and Android app previews
@@ -151,12 +151,11 @@ function DashboardPreview() {
         </div>
       </div>
       
-      {/* Challenge cards */}
+      {/* Challenge cards with real TallyDisplay */}
       <div className="preview-challenge-card">
         <div className="preview-card-header">
-          <div className="preview-tally-mini">
-            <span /><span /><span /><span />
-            <span className="slash" />
+          <div className="preview-tally-wrapper">
+            <TallyDisplay count={5} size="sm" />
           </div>
           <div className="preview-card-info">
             <span className="preview-card-title">Push-ups 2024</span>
@@ -171,8 +170,8 @@ function DashboardPreview() {
       
       <div className="preview-challenge-card">
         <div className="preview-card-header">
-          <div className="preview-tally-mini small">
-            <span /><span /><span />
+          <div className="preview-tally-wrapper">
+            <TallyDisplay count={3} size="sm" />
           </div>
           <div className="preview-card-info">
             <span className="preview-card-title">Read 50 Books</span>
@@ -191,22 +190,10 @@ function DashboardPreview() {
 function ChallengePreview() {
   return (
     <>
-      {/* Big tally visualization */}
+      {/* Big tally visualization using TallyDisplay */}
       <div className="preview-tally-large">
-        <div className="preview-tally-row">
-          {/* 25-unit X mark */}
-          <div className="preview-25-unit">
-            <div className="preview-tally-group">
-              <span /><span /><span /><span /><span className="slash" />
-            </div>
-            <div className="preview-x-overlay">✕</div>
-          </div>
-          <div className="preview-25-unit">
-            <div className="preview-tally-group">
-              <span /><span /><span /><span /><span className="slash" />
-            </div>
-            <div className="preview-x-overlay">✕</div>
-          </div>
+        <div className="preview-tally-wrapper-lg">
+          <TallyDisplay count={311} size="md" />
         </div>
         <span className="preview-tally-count">8,421 / 10,000</span>
       </div>
@@ -225,15 +212,19 @@ function ChallengePreview() {
         <span className="preview-chart-label">Last 7 days</span>
       </div>
       
-      {/* Entry list */}
+      {/* Entry list with mini tallies */}
       <div className="preview-entry">
         <span className="preview-entry-date">Today</span>
-        <span className="preview-entry-count">+247</span>
+        <div className="preview-tally-wrapper-xs">
+          <TallyDisplay count={5} size="sm" />
+        </div>
         <span className="preview-entry-feeling">🔥</span>
       </div>
       <div className="preview-entry">
         <span className="preview-entry-date">Yesterday</span>
-        <span className="preview-entry-count">+180</span>
+        <div className="preview-tally-wrapper-xs">
+          <TallyDisplay count={4} size="sm" />
+        </div>
         <span className="preview-entry-feeling">😊</span>
       </div>
     </>
@@ -255,7 +246,7 @@ function CommunityPreview() {
         <span className="preview-tab">Following <span className="badge">3</span></span>
       </div>
       
-      {/* Public challenge cards */}
+      {/* Public challenge cards with TallyDisplay */}
       <div className="preview-public-card">
         <div className="preview-public-header">
           <span className="preview-avatar">👤</span>
@@ -265,9 +256,11 @@ function CommunityPreview() {
           </div>
           <button className="preview-follow-btn">Follow</button>
         </div>
-        <div className="preview-public-stats">
-          <span>1,250 / 2,000 miles</span>
-          <span>24 followers</span>
+        <div className="preview-public-footer">
+          <div className="preview-tally-wrapper-xs">
+            <TallyDisplay count={5} size="sm" />
+          </div>
+          <span className="preview-public-stats-text">1,250 / 2,000 miles</span>
         </div>
       </div>
       
@@ -280,9 +273,11 @@ function CommunityPreview() {
           </div>
           <button className="preview-follow-btn following">Following</button>
         </div>
-        <div className="preview-public-stats">
-          <span>Day 67 / 100</span>
-          <span>156 followers</span>
+        <div className="preview-public-footer">
+          <div className="preview-tally-wrapper-xs">
+            <TallyDisplay count={10} size="sm" />
+          </div>
+          <span className="preview-public-stats-text">Day 67 / 100</span>
         </div>
       </div>
     </>

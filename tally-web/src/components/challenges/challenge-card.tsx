@@ -103,13 +103,9 @@ export function ChallengeCard({ challenge, stats, className = "", onQuickAdd, hr
         </div>
       </div>
       
-      {/* Mini tally preview - using hierarchical display */}
+      {/* Mini tally preview - always uses ink for strokes, accent for slashes */}
       <div className="mt-4 pt-4 border-t border-border">
-        <TallyDisplay 
-          count={stats.totalCount} 
-          size="sm" 
-          color={challenge.color}
-        />
+        <TallyDisplay count={stats.totalCount} size="sm" />
       </div>
     </>
   );

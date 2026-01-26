@@ -2684,3 +2684,37 @@ main.landing {
 .store-icon {
   font-size: 1.1em;
 }
+
+/* Tally wrapper for device previews - scales down TallyDisplay */
+.preview-tally-wrapper {
+  display: flex;
+  align-items: center;
+  transform: scale(0.8);
+  transform-origin: center left;
+}
+
+.preview-tally-wrapper-lg {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.preview-tally-wrapper-xs {
+  display: flex;
+  align-items: center;
+  transform: scale(0.7);
+  transform-origin: center left;
+}
+
+/* Public card footer with tally */
+.preview-public-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85em;
+  color: var(--color-muted);
+}
+
+.preview-public-stats-text {
+  flex: 1;
+}

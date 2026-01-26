@@ -132,6 +132,20 @@ public struct ExportDataResponse: Codable, Sendable {
     public let challenges: [Challenge]
     public let entries: [Entry]
     public let dashboardConfig: DashboardConfig?
+    
+    public init(
+        version: String,
+        exportedAt: String,
+        challenges: [Challenge],
+        entries: [Entry],
+        dashboardConfig: DashboardConfig? = nil
+    ) {
+        self.version = version
+        self.exportedAt = exportedAt
+        self.challenges = challenges
+        self.entries = entries
+        self.dashboardConfig = dashboardConfig
+    }
 }
 
 /// Import data request

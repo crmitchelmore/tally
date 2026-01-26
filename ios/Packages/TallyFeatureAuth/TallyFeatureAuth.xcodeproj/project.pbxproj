@@ -18,6 +18,7 @@
 		937DEE1BA6B29B6EFACC1FFB /* AuthRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC61C88F9CE66AC34351E62 /* AuthRootView.swift */; };
 		C5CD87AD7CAF2C4DCBD7A5A3 /* TallyFeatureAuth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BECF836F74BB3ABAEB457476 /* TallyFeatureAuth.framework */; };
 		D952FFCC960C8DF946AB4B80 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF8F1AC3886CB05FE0855557 /* SignInView.swift */; };
+		FEEB58FA4E71BFC642E38365 /* TallyFeatureAPIClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E9D38A9FC59D9156958D0DA /* TallyFeatureAPIClient.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 		4569EFF31827077796C5E658 /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
 		4AEEE252A7527FA9DD8855C5 /* TallyDesign.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyDesign.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D74879789C24DABCD59AFEE /* TallyFeatureAuthTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyFeatureAuthTests-Info.plist"; sourceTree = "<group>"; };
+		7E9D38A9FC59D9156958D0DA /* TallyFeatureAPIClient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureAPIClient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DDC9333326D66C207CF8CD3 /* Clerk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Clerk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9725FA7B90B0458A4C0F316E /* TallyFeatureAuth-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyFeatureAuth-Info.plist"; sourceTree = "<group>"; };
 		BECF836F74BB3ABAEB457476 /* TallyFeatureAuth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureAuth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -78,6 +80,7 @@
 				4DB05FCC7F6959E481884A46 /* Clerk.framework in Frameworks */,
 				33650DC2552EA6371C1FDB05 /* TallyCore.framework in Frameworks */,
 				398354B134FA2559A64BF245 /* TallyDesign.framework in Frameworks */,
+				FEEB58FA4E71BFC642E38365 /* TallyFeatureAPIClient.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -122,6 +125,7 @@
 				8DDC9333326D66C207CF8CD3 /* Clerk.framework */,
 				082853C01B8BC86D53D95F53 /* TallyCore.framework */,
 				4AEEE252A7527FA9DD8855C5 /* TallyDesign.framework */,
+				7E9D38A9FC59D9156958D0DA /* TallyFeatureAPIClient.framework */,
 				BECF836F74BB3ABAEB457476 /* TallyFeatureAuth.framework */,
 				2F8C38163E385BA497CC82E6 /* TallyFeatureAuthTests.xctest */,
 			);

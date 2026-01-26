@@ -14,6 +14,7 @@ let project = Project(
             dependencies: [
                 .project(target: "TallyCore", path: "../TallyCore"),
                 .project(target: "TallyDesign", path: "../TallyDesign"),
+                .project(target: "TallyFeatureAPIClient", path: "../TallyFeatureAPIClient"),
                 .external(name: "Clerk")
             ]
         ),

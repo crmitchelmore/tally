@@ -59,27 +59,9 @@ public struct UserProfileButton: View {
     }
 }
 
-/// Sign out button
-public struct SignOutButton: View {
-    @Bindable private var authManager = AuthManager.shared
-    
-    public init() {}
-    
-    public var body: some View {
-        Button(role: .destructive) {
-            Task {
-                await authManager.signOut()
-            }
-        } label: {
-            Label("Sign out", systemImage: "rectangle.portrait.and.arrow.right")
-        }
-    }
-}
-
 #Preview {
     HStack {
         UserProfileButton()
-        SignOutButton()
     }
     .padding()
 }

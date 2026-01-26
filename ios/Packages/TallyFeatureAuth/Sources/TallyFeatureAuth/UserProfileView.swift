@@ -75,23 +75,6 @@ public struct UserProfileView: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    
-                    Button(role: .destructive) {
-                        Task {
-                            await authManager.signOut()
-                            dismiss()
-                        }
-                    } label: {
-                        HStack {
-                            Image(systemName: "rectangle.portrait.and.arrow.right")
-                            Text("Sign Out")
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                    }
-                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 24)

@@ -2,6 +2,7 @@ import SwiftUI
 import TallyCore
 import Clerk
 import os.log
+import TallyFeatureAPIClient
 
 private let logger = Logger(subsystem: "com.tally.app", category: "AuthManager")
 
@@ -16,6 +17,9 @@ public final class AuthManager {
     public private(set) var isLocalOnlyMode = false
     public private(set) var currentUser: TallyUser?
     public private(set) var error: AuthError?
+    
+    /// Result of data check when transitioning from local-only to authenticated
+    public private(set) var serverDataCheckResult: ServerDataCheckResult?
     
     /// Key for storing offline mode preference
     private static let offlineModeKey = "tally.offlineMode"
@@ -94,11 +98,119 @@ public final class AuthManager {
     }
     
     /// Disable offline mode and try to authenticate
-    public func disableOfflineMode() async {
+    /// Returns true if authentication succeeded, false if user cancelled
+    public func disableOfflineMode() async -> Bool {
         prefersOfflineMode = false
         isLocalOnlyMode = false
         isLoading = true
         await configure()
+        
+        // If authentication succeeded, check for server data
+        if isAuthenticated {
+            await checkServerData()
+            return true
+        }
+        return false
+    }
+    
+    /// Check if the authenticated account has existing data on the server
+    private func checkServerData() async {
+        print("[AuthManager] Checking server for existing data...")
+        logger.info("Checking server for existing data...")
+        
+        do {
+            let challenges = try await APIClient.shared.listChallenges(includeArchived: true)
+            let entries = try await APIClient.shared.listEntries()
+            
+            let hasServerData = !challenges.isEmpty || !entries.isEmpty
+            serverDataCheckResult = ServerDataCheckResult(
+                hasData: hasServerData,
+                challengeCount: challenges.count,
+                entryCount: entries.count
+            )
+            
+            print("[AuthManager] Server has \(challenges.count) challenges, \(entries.count) entries")
+            logger.info("Server has \(challenges.count) challenges, \(entries.count) entries")
+        } catch {
+            print("[AuthManager] Failed to check server data: \(error)")
+            logger.error("Failed to check server data: \(error.localizedDescription)")
+            // Don't set error here - this is non-critical
+            serverDataCheckResult = nil
+        }
+    }
+    
+    /// Import local data to server (called when user chooses to sync local data after login)
+    public func syncLocalDataToServer(localChallenges: [Challenge], localEntries: [Entry]) async throws {
+        print("[AuthManager] Syncing local data to server: \(localChallenges.count) challenges, \(localEntries.count) entries")
+        logger.info("Syncing local data to server: \(localChallenges.count) challenges, \(localEntries.count) entries")
+        
+        let importData = ImportDataRequest(
+            version: "1.0",
+            challenges: localChallenges,
+            entries: localEntries,
+            dashboardConfig: nil
+        )
+        
+        do {
+            let response = try await APIClient.shared.importData(importData)
+            print("[AuthManager] Sync complete: imported \(response.imported.challenges) challenges, \(response.imported.entries) entries")
+            logger.info("Sync complete: imported \(response.imported.challenges) challenges, \(response.imported.entries) entries")
+        } catch {
+            print("[AuthManager] Sync failed: \(error)")
+            logger.error("Sync failed: \(error.localizedDescription)")
+            throw error
+        }
+    }
+    
+    /// Merge local and server data (called when user chooses to merge)
+    public func mergeLocalAndServerData(localChallenges: [Challenge], localEntries: [Entry]) async throws {
+        print("[AuthManager] Merging local and server data...")
+        logger.info("Merging local and server data...")
+        
+        // First, get current server data
+        let serverChallenges = try await APIClient.shared.listChallenges(includeArchived: true)
+        let serverEntries = try await APIClient.shared.listEntries()
+        
+        // Create sets of server IDs to avoid duplicates
+        let serverChallengeIds = Set(serverChallenges.map { $0.id })
+        let serverEntryIds = Set(serverEntries.map { $0.id })
+        
+        // Filter out local items that already exist on server
+        let newChallenges = localChallenges.filter { !serverChallengeIds.contains($0.id) }
+        let newEntries = localEntries.filter { !serverEntryIds.contains($0.id) }
+        
+        print("[AuthManager] Merging \(newChallenges.count) new challenges, \(newEntries.count) new entries")
+        logger.info("Merging \(newChallenges.count) new challenges, \(newEntries.count) new entries")
+        
+        // Import only the new items
+        if !newChallenges.isEmpty || !newEntries.isEmpty {
+            let importData = ImportDataRequest(
+                version: "1.0",
+                challenges: newChallenges,
+                entries: newEntries,
+                dashboardConfig: nil
+            )
+            
+            let response = try await APIClient.shared.importData(importData)
+            print("[AuthManager] Merge complete: \(response.imported.challenges) challenges, \(response.imported.entries) entries")
+            logger.info("Merge complete: \(response.imported.challenges) challenges, \(response.imported.entries) entries")
+        } else {
+            print("[AuthManager] No new data to merge")
+            logger.info("No new data to merge")
+        }
+    }
+    
+    /// Discard local data and use only server data (called when user chooses "Start Fresh")
+    public func useServerDataOnly() {
+        print("[AuthManager] Discarding local data, will use server data only")
+        logger.info("Discarding local data, will use server data only")
+        // The ChallengeStore will handle fetching server data
+        // We just need to clear the local data
+    }
+    
+    /// Clear the server data check result
+    public func clearServerDataCheck() {
+        serverDataCheckResult = nil
     }
     
     /// Update local auth state from Clerk
@@ -197,12 +309,13 @@ public final class AuthManager {
         }
     }
     
-    /// Sign out the current user
+    /// Sign out the current user - not used in iOS but kept for compatibility
     public func signOut() async {
         do {
             try await clerk.signOut()
             isAuthenticated = false
             currentUser = nil
+            serverDataCheckResult = nil
             KeychainService.shared.deleteToken()
             error = nil
         } catch {
@@ -249,4 +362,11 @@ public enum AuthError: Error, LocalizedError {
             return false
         }
     }
+}
+
+/// Result of checking server for existing data
+public struct ServerDataCheckResult {
+    public let hasData: Bool
+    public let challengeCount: Int
+    public let entryCount: Int
 }

@@ -22,6 +22,7 @@ struct SettingsView: View {
     @State private var alertMessage: String?
     @State private var showAlert = false
     @State private var showLoginFlow = false
+    @State private var showSignOutConfirm = false
     
     var body: some View {
         NavigationStack {
@@ -191,12 +192,21 @@ struct SettingsView: View {
                             }
                             .padding(.vertical, 4)
                         }
+                        
+                        // Sign out button for authenticated users
+                        Button(role: .destructive) {
+                            showSignOutConfirm = true
+                        } label: {
+                            Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                        }
                     }
                 } header: {
                     Text("Account")
                 } footer: {
                     if authManager.isLocalOnlyMode {
                         Text("Sign in to sync your data across devices.")
+                    } else if authManager.isAuthenticated {
+                        Text("Signing out will clear all local data from this device.")
                     }
                 }
                 
@@ -285,7 +295,27 @@ struct SettingsView: View {
             } message: {
                 Text(alertMessage ?? "")
             }
+            .alert("Sign Out?", isPresented: $showSignOutConfirm) {
+                Button("Cancel", role: .cancel) {}
+                Button("Sign Out", role: .destructive) {
+                    Task { await handleSignOut() }
+                }
+            } message: {
+                Text("This will clear all local data from this device. Your data is safely stored in the cloud.")
+            }
         }
+    }
+    
+    // MARK: - Sign Out
+    
+    private func handleSignOut() async {
+        // Clear local data first
+        LocalChallengeStore.shared.clearAll()
+        
+        // Then sign out
+        await authManager.signOut()
+        
+        dismiss()
     }
     
     private var placeholderAvatar: some View {

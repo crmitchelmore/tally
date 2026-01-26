@@ -8,6 +8,7 @@ import {
   getChallengesByUserId,
   createChallenge,
   getUserByClerkId,
+  calculateChallengeStats,
 } from "../_lib/store";
 import {
   jsonOk,
@@ -47,7 +48,15 @@ export async function GET(request: NextRequest) {
 
       span.setAttribute("challenges.count", challenges.length);
 
-      return jsonOk({ challenges });
+      // Return challenges with stats for iOS compatibility
+      const challengesWithStats = await Promise.all(
+        challenges.map(async (challenge) => {
+          const stats = await calculateChallengeStats(challenge);
+          return { challenge, stats };
+        })
+      );
+
+      return jsonOk({ challenges: challengesWithStats });
     } catch (error) {
       console.error("Error in GET /api/v1/challenges:", error);
       return jsonInternalError();

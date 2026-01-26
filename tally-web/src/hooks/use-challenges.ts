@@ -42,47 +42,14 @@ function setCachedData(challenges: ChallengeWithStats[]): void {
   }
 }
 
-// Fetcher that gets challenges + stats in parallel batches
+// Fetcher that gets challenges + stats from API (stats now included)
 async function fetchChallengesWithStats(): Promise<ChallengeWithStats[]> {
   const res = await fetch("/api/v1/challenges");
   if (!res.ok) throw new Error("Failed to load challenges");
   
   const data = await res.json();
-  const challenges: Challenge[] = data.challenges;
-  
-  // Fetch all stats in parallel
-  const statsPromises = challenges.map(async (challenge): Promise<ChallengeWithStats> => {
-    try {
-      const statsRes = await fetch(`/api/v1/challenges/${challenge.id}/stats`);
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        return { challenge, stats: statsData.stats };
-      }
-    } catch {
-      // Fall through to default stats
-    }
-    
-    // Default stats if fetch fails
-    return {
-      challenge,
-      stats: {
-        challengeId: challenge.id,
-        totalCount: 0,
-        remaining: challenge.target,
-        daysElapsed: 0,
-        daysRemaining: 365,
-        perDayRequired: Math.ceil(challenge.target / 365),
-        currentPace: 0,
-        paceStatus: "on-pace" as const,
-        streakCurrent: 0,
-        streakBest: 0,
-        bestDay: null,
-        dailyAverage: 0,
-      },
-    };
-  });
-  
-  const result = await Promise.all(statsPromises);
+  // API now returns { challenges: [{ challenge, stats }] } format
+  const result: ChallengeWithStats[] = data.challenges;
   setCachedData(result);
   return result;
 }

@@ -1,5 +1,8 @@
 import Foundation
 import TallyCore
+import os.log
+
+private let logger = Logger(subsystem: "com.tally.app", category: "APIClient")
 
 /// HTTP client for Tally API with Bearer token authentication
 public actor APIClient {
@@ -99,12 +102,10 @@ public actor APIClient {
             throw APIError.unknown
         }
         
-        #if DEBUG
-        print("[APIClient] Response status: \(httpResponse.statusCode)")
+        logger.info("Response status: \(httpResponse.statusCode)")
         if let json = String(data: data, encoding: .utf8) {
-            print("[APIClient] Response: \(json.prefix(500))...")
+            logger.debug("Response body: \(json.prefix(1000))")
         }
-        #endif
         
         // Handle error responses
         if httpResponse.statusCode >= 400 {
@@ -115,9 +116,10 @@ public actor APIClient {
         do {
             return try decoder.decode(T.self, from: data)
         } catch {
-            #if DEBUG
-            print("[APIClient] Decode error: \(error)")
-            #endif
+            logger.error("Decode error: \(error.localizedDescription)")
+            if let json = String(data: data, encoding: .utf8) {
+                logger.error("Failed to decode JSON: \(json)")
+            }
             throw APIError.decodingError(error)
         }
     }

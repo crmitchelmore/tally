@@ -30,7 +30,7 @@
     "@opentelemetry/semantic-conventions": "^1.39.0",
     "convex": "^1.31.5",
     "next": "^15.5.9",
-    "posthog-js": "^1.332.0",
+    "posthog-js": "^1.335.2",
     "posthog-node": "^5.24.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",

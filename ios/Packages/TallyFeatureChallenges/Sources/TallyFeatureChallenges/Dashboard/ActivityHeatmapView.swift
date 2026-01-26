@@ -43,31 +43,34 @@ public struct ActivityHeatmapView: View {
                 Spacer()
             }
             
-            // Heatmap grid
+            // Heatmap grid with month labels inside ScrollView
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 3) {
-                    ForEach(0..<weeksToShow, id: \.self) { weekIndex in
-                        VStack(spacing: 3) {
-                            ForEach(0..<daysInWeek, id: \.self) { dayIndex in
-                                let date = dateFor(weekIndex: weekIndex, dayIndex: dayIndex)
-                                let count = countFor(date: date)
-                                
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(heatmapColor(for: count))
-                                    .frame(width: 10, height: 10)
+                VStack(alignment: .leading, spacing: 4) {
+                    // Heatmap grid
+                    HStack(spacing: 3) {
+                        ForEach(0..<weeksToShow, id: \.self) { weekIndex in
+                            VStack(spacing: 3) {
+                                ForEach(0..<daysInWeek, id: \.self) { dayIndex in
+                                    let date = dateFor(weekIndex: weekIndex, dayIndex: dayIndex)
+                                    let count = countFor(date: date)
+                                    
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .fill(heatmapColor(for: count))
+                                        .frame(width: 10, height: 10)
+                                }
                             }
                         }
                     }
-                }
-            }
-            
-            // Month labels
-            HStack(spacing: 0) {
-                ForEach(monthLabels, id: \.self) { label in
-                    Text(label)
-                        .font(.tallyLabelSmall)
-                        .foregroundColor(Color.tallyInkTertiary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    // Month labels (now inside ScrollView)
+                    HStack(spacing: 0) {
+                        ForEach(monthLabels, id: \.self) { label in
+                            Text(label)
+                                .font(.tallyLabelSmall)
+                                .foregroundColor(Color.tallyInkTertiary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
                 }
             }
         }

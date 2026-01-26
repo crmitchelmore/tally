@@ -9,7 +9,7 @@ private let logger = Logger(subsystem: "com.tally.app", category: "AuthManager")
 /// Authentication state manager using Clerk
 @MainActor
 @Observable
-public final class AuthManager {
+public final class AuthManager: TokenRefresher {
     public static let shared = AuthManager()
     
     public private(set) var isLoading = true
@@ -33,6 +33,9 @@ public final class AuthManager {
     private var clerk: Clerk { Clerk.shared }
     
     private init() {
+        // Set global token refresher for APIClient
+        TallyFeatureAPIClient.tokenRefresher = self
+
         // Check for test reset flag
         if CommandLine.arguments.contains("--reset-offline-mode") {
             print("[AuthManager] Resetting offline mode for testing")
@@ -309,6 +312,27 @@ public final class AuthManager {
         }
     }
     
+    
+    /// Refresh the session token from Clerk
+    public func refreshToken() async -> String? {
+        guard let session = clerk.session else {
+            logger.warning("No clerk session available for refresh")
+            return nil
+        }
+        do {
+            let tokenResult = try await session.getToken()
+            if let token = tokenResult?.jwt {
+                logger.info("Token refreshed successfully")
+                try KeychainService.shared.storeToken(token)
+                return token
+            } else {
+                logger.warning("No JWT in token refresh result")
+            }
+        } catch {
+            logger.error("Token refresh error: \(error.localizedDescription)")
+        }
+        return nil
+    }
     /// Sign out the current user - not used in iOS but kept for compatibility
     public func signOut() async {
         do {

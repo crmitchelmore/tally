@@ -119,7 +119,7 @@ public struct TallyMarkView: View {
     
     private func drawXLayout(in context: GraphicsContext, bounds: CGRect, count: Int) {
         let fiveGates = count / 5
-        let remainder = count % 5
+        // Don't show partial strokes - just completed 5-gates
         let gateSize = bounds.width * 0.28
         let center = CGPoint(x: bounds.width / 2, y: bounds.height / 2)
         
@@ -132,7 +132,7 @@ public struct TallyMarkView: View {
             CGPoint(x: center.x - gateSize * 0.8, y: center.y + gateSize * 0.8), // 4 - SW
         ]
         
-        // Draw completed 5-gates
+        // Draw only completed 5-gates (no partial strokes)
         for i in 0..<min(fiveGates, 4) {
             let pos = positions[i]
             let gateBounds = CGRect(
@@ -146,24 +146,6 @@ public struct TallyMarkView: View {
             drawFiveGate(
                 in: gateContext,
                 bounds: CGRect(origin: .zero, size: gateBounds.size)
-            )
-        }
-        
-        // Draw partial strokes in next position
-        if remainder > 0 && fiveGates < 4 {
-            let pos = positions[min(fiveGates, 4)]
-            let gateBounds = CGRect(
-                x: pos.x - gateSize / 2,
-                y: pos.y - gateSize / 2,
-                width: gateSize,
-                height: gateSize
-            )
-            var gateContext = context
-            gateContext.translateBy(x: gateBounds.origin.x, y: gateBounds.origin.y)
-            drawVerticalStrokes(
-                in: gateContext,
-                bounds: CGRect(origin: .zero, size: gateBounds.size),
-                count: remainder
             )
         }
     }

@@ -107,6 +107,50 @@ public actor APIClient {
             logger.debug("Response body: \(json.prefix(1000))")
         }
         
+        // Handle 401 - try refreshing token once before throwing notAuthenticated
+        if httpResponse.statusCode == 401 {
+            logger.info("Got 401, attempting token refresh")
+            
+            // Try to refresh token using the global refresher (set by AuthManager)
+            let newToken = await tokenRefresher?.refreshToken()
+            
+            if let token = newToken {
+                logger.info("Token refreshed successfully, retrying request")
+                var retryRequest = request
+                retryRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                
+                do {
+                    let (retryData, retryResponse) = try await session.data(for: retryRequest)
+                    guard let retryHttpResponse = retryResponse as? HTTPURLResponse else {
+                        throw APIError.unknown
+                    }
+                    
+                    logger.info("Retry response status: \(retryHttpResponse.statusCode)")
+                    
+                    // If still 401 after refresh, user is truly not authenticated
+                    if retryHttpResponse.statusCode == 401 {
+                        logger.warning("Still 401 after token refresh")
+                        throw APIError.notAuthenticated
+                    }
+                    
+                    // Handle other error responses
+                    if retryHttpResponse.statusCode >= 400 {
+                        try handleErrorResponse(data: retryData, statusCode: retryHttpResponse.statusCode)
+                    }
+                    
+                    // Decode successful retry response
+                    return try decoder.decode(T.self, from: retryData)
+                } catch let error as APIError {
+                    throw error
+                } catch {
+                    throw APIError.networkError(error)
+                }
+            } else {
+                logger.warning("Token refresh failed, throwing notAuthenticated")
+                throw APIError.notAuthenticated
+            }
+        }
+        
         // Handle error responses
         if httpResponse.statusCode >= 400 {
             try handleErrorResponse(data: data, statusCode: httpResponse.statusCode)

@@ -17,6 +17,7 @@
 		6E060E7C50F664AED595B9E0 /* TallyFeatureAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305ECDF737F7774EEDD6C00C /* TallyFeatureAPIClient.swift */; };
 		A7BA89E25DB4ED8D6DFF5669 /* TallyCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A3793A314F767E2F7821222 /* TallyCore.framework */; };
 		C7A74DE50D80A38D9697475D /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4099556AF22BEA1C7439F16 /* Models.swift */; };
+		C98D09D077E60E5F7D2184C3 /* TokenRefresher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75700159DA690459861CF4A0 /* TokenRefresher.swift */; };
 		ECE886C16463156518A49C31 /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01DB47505B999F03B12A3B05 /* APIError.swift */; };
 		F117193EF524FD56FB30910A /* TallyFeatureAPIClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA1D7C2842ABCD52010D6C9 /* TallyFeatureAPIClient.framework */; };
 /* End PBXBuildFile section */
@@ -63,6 +64,7 @@
 		33431C5F68CCC8AA65811BDB /* TallyFeatureAPIClientTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TallyFeatureAPIClientTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C7CD6A00ADAF1EE138DCBA1 /* EntryDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryDefaults.swift; sourceTree = "<group>"; };
 		71DF8D0D463EC07B9E08009F /* TallyFeatureAPIClientTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyFeatureAPIClientTests-Info.plist"; sourceTree = "<group>"; };
+		75700159DA690459861CF4A0 /* TokenRefresher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenRefresher.swift; sourceTree = "<group>"; };
 		8A3793A314F767E2F7821222 /* TallyCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D274037A57EF39CF7874FDF /* Responses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Responses.swift; sourceTree = "<group>"; };
 		9EA1D7C2842ABCD52010D6C9 /* TallyFeatureAPIClient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureAPIClient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -110,6 +112,7 @@
 				1C04BC1F204A993A36052284 /* Requests.swift */,
 				9D274037A57EF39CF7874FDF /* Responses.swift */,
 				305ECDF737F7774EEDD6C00C /* TallyFeatureAPIClient.swift */,
+				75700159DA690459861CF4A0 /* TokenRefresher.swift */,
 			);
 			path = TallyFeatureAPIClient;
 			sourceTree = "<group>";
@@ -279,6 +282,7 @@
 				3FCFA9E5B8B5905B457C0F17 /* Requests.swift in Sources */,
 				3C4ED4FC79481899848B0515 /* Responses.swift in Sources */,
 				6E060E7C50F664AED595B9E0 /* TallyFeatureAPIClient.swift in Sources */,
+				C98D09D077E60E5F7D2184C3 /* TokenRefresher.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

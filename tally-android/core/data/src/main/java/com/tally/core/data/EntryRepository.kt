@@ -182,7 +182,7 @@ class EntryRepository(
     private fun updateSyncState() {
         val pendingCount = localStore.loadPendingChanges().size
         _syncState.value = when {
-            !_isOnline.value -> SyncState.OFFLINE
+            !_isOnline.value -> SyncState.LOCAL_ONLY
             pendingCount > 0 -> SyncState.PENDING
             else -> SyncState.SYNCED
         }
@@ -197,5 +197,5 @@ enum class SyncState {
     SYNCING,
     PENDING,
     FAILED,
-    OFFLINE
+    LOCAL_ONLY
 }

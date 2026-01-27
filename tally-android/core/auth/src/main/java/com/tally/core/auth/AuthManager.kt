@@ -33,7 +33,7 @@ class AuthManager(
     private var isInitialized = false
     
     companion object {
-        private const val KEY_OFFLINE_MODE = "offline_mode_enabled"
+        private const val KEY_LOCAL_ONLY_MODE = "local_only_mode_enabled"
     }
 
     /**
@@ -43,8 +43,8 @@ class AuthManager(
         if (isInitialized) return
         isInitialized = true
         
-        // Check if user previously chose offline mode
-        if (isOfflineModeEnabled()) {
+        // Check if user previously chose local-only mode
+        if (isLocalOnlyModeEnabled()) {
             _authState.value = AuthState.OfflineMode
             return
         }
@@ -54,25 +54,25 @@ class AuthManager(
     }
     
     /**
-     * Check if offline mode is enabled.
+     * Check if local-only mode is enabled.
      */
-    fun isOfflineModeEnabled(): Boolean {
-        return prefs.getBoolean(KEY_OFFLINE_MODE, false)
+    fun isLocalOnlyModeEnabled(): Boolean {
+        return prefs.getBoolean(KEY_LOCAL_ONLY_MODE, false)
     }
     
     /**
-     * Enable offline/local-only mode (user choice).
+     * Enable local-only mode (user choice).
      */
-    fun enableOfflineMode() {
-        prefs.edit().putBoolean(KEY_OFFLINE_MODE, true).apply()
+    fun enableLocalOnlyMode() {
+        prefs.edit().putBoolean(KEY_LOCAL_ONLY_MODE, true).apply()
         _authState.value = AuthState.OfflineMode
     }
     
     /**
-     * Disable offline mode and return to sign-in.
+     * Disable local-only mode and return to sign-in.
      */
-    suspend fun disableOfflineMode() {
-        prefs.edit().putBoolean(KEY_OFFLINE_MODE, false).apply()
+    suspend fun disableLocalOnlyMode() {
+        prefs.edit().putBoolean(KEY_LOCAL_ONLY_MODE, false).apply()
         checkSession()
     }
 
@@ -98,10 +98,15 @@ class AuthManager(
 
     /**
      * Launch Clerk OAuth sign-in via CustomTabs.
-     * The web app will handle the OAuth flow and redirect back with a token.
+     * Flow:
+     * 1. Opens /sign-in with forceRedirectUrl to /auth/native-callback
+     * 2. User signs in via Clerk
+     * 3. After sign-in, Clerk redirects to /auth/native-callback
+     * 4. Native callback page gets JWT and redirects to tally://auth/callback?token=xxx
      */
     fun launchSignIn(context: Context) {
-        val signInUrl = "$apiBaseUrl/sign-in?redirect_url=tally://auth/callback"
+        // Open sign-in page that will redirect to native-callback after auth
+        val signInUrl = "$apiBaseUrl/sign-in?force_redirect_url=${Uri.encode("$apiBaseUrl/auth/native-callback")}"
         val customTabsIntent = CustomTabsIntent.Builder()
             .setShowTitle(true)
             .build()
@@ -130,7 +135,7 @@ class AuthManager(
      */
     suspend fun signOut() {
         tokenStorage.clearToken()
-        prefs.edit().putBoolean(KEY_OFFLINE_MODE, false).apply()
+        prefs.edit().putBoolean(KEY_LOCAL_ONLY_MODE, false).apply()
         _authState.value = AuthState.SignedOut
     }
 

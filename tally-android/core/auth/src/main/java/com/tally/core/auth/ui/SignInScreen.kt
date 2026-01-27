@@ -122,7 +122,7 @@ fun SignInScreen(
 
         // Secondary text
         Text(
-            text = "Your data stays on this device in offline mode.",
+            text = "Your data stays on this device in local-only mode.",
             style = MaterialTheme.typography.bodyMedium,
             color = TallyColors.inkC3(),
             textAlign = TextAlign.Center

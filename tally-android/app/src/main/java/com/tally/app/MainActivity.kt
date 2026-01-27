@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                             authManager.launchSignIn(context)
                         },
                         onContinueWithoutAccount = {
-                            authManager.enableOfflineMode()
+                            authManager.enableLocalOnlyMode()
                         }
                     )
                     is AuthState.OfflineMode -> TallyApp(

@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 enum class SyncState {
     SYNCED,
     SYNCING,
-    OFFLINE,
+    LOCAL_ONLY,
     PENDING,
     FAILED
 }
@@ -47,7 +47,7 @@ fun SyncStatusIndicator(
     val (text, backgroundColor, textColor) = when (state) {
         SyncState.SYNCED -> Triple("Synced", Color(0xFFE8F5E9), Color(0xFF2E7D32))
         SyncState.SYNCING -> Triple("Syncing…", Color(0xFFFFF8E1), Color(0xFFF57F17))
-        SyncState.OFFLINE -> Triple("Offline", Color(0xFFECEFF1), Color(0xFF546E7A))
+        SyncState.LOCAL_ONLY -> Triple("Local only", Color(0xFFECEFF1), Color(0xFF546E7A))
         SyncState.PENDING -> Triple("Pending", Color(0xFFFFF3E0), Color(0xFFE65100))
         SyncState.FAILED -> Triple("Sync failed", Color(0xFFFFEBEE), Color(0xFFC62828))
     }
@@ -55,7 +55,7 @@ fun SyncStatusIndicator(
     val description = when (state) {
         SyncState.SYNCED -> "All changes synced"
         SyncState.SYNCING -> "Syncing changes"
-        SyncState.OFFLINE -> "Working offline"
+        SyncState.LOCAL_ONLY -> "Data stored locally only"
         SyncState.PENDING -> "Changes waiting to sync"
         SyncState.FAILED -> "Sync failed, will retry"
     }
@@ -90,7 +90,7 @@ private fun SyncStatusPreview() {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             SyncStatusIndicator(state = SyncState.SYNCED)
             SyncStatusIndicator(state = SyncState.SYNCING)
-            SyncStatusIndicator(state = SyncState.OFFLINE)
+            SyncStatusIndicator(state = SyncState.LOCAL_ONLY)
         }
     }
 }

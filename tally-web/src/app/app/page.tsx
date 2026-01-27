@@ -6,7 +6,7 @@ import { UndoToast } from "@/components/ui/undo-toast";
 import { ChallengeList } from "@/components/challenges";
 import { DashboardHighlights, PersonalRecords, WeeklySummary, ProgressGraph, BurnUpChart } from "@/components/stats";
 import { FollowedChallengesSection, CommunitySection } from "@/components/community";
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useChallenges } from "@/hooks/use-challenges";
 import { useStats, useEntries } from "@/hooks/use-stats";
@@ -34,8 +34,9 @@ export default function AppPage() {
   const [deletedChallenge, setDeletedChallenge] = useState<DeletedChallenge | null>(null);
   const [panelConfig, setPanelConfig] = useState<DashboardConfig>(DEFAULT_DASHBOARD_CONFIG);
   const [showConfigMenu, setShowConfigMenu] = useState(false);
+  const configLoadedFromApi = useRef(false);
 
-  // Check for deleted challenge in session storage (from challenge detail page)
+  // Load config from API (primary) with localStorage fallback
   useEffect(() => {
     const stored = sessionStorage.getItem("deletedChallenge");
     if (stored) {
@@ -47,12 +48,12 @@ export default function AppPage() {
         // Ignore parse errors
       }
     }
-    // Load panel config from localStorage with defaults merge
+    
+    // Load from localStorage first (instant)
     const savedConfig = localStorage.getItem("dashboardConfig");
     if (savedConfig) {
       try {
         const parsed = JSON.parse(savedConfig);
-        // Merge with defaults so new panel keys are visible
         const merged = {
           ...DEFAULT_DASHBOARD_CONFIG,
           ...parsed,
@@ -62,19 +63,50 @@ export default function AppPage() {
           },
         };
         setPanelConfig(merged);
-        // Persist merged config
-        localStorage.setItem("dashboardConfig", JSON.stringify(merged));
       } catch {
         // Use default
       }
     }
-  }, []);
+    
+    // Then fetch from API (authoritative)
+    if (isLoaded && isSignedIn) {
+      fetch("/api/v1/auth/user/preferences")
+        .then(res => res.json())
+        .then(data => {
+          if (data.dashboardConfig?.panels) {
+            const merged = {
+              ...DEFAULT_DASHBOARD_CONFIG,
+              ...data.dashboardConfig,
+              panels: {
+                ...DEFAULT_DASHBOARD_CONFIG.panels,
+                ...data.dashboardConfig.panels,
+              },
+            };
+            setPanelConfig(merged);
+            localStorage.setItem("dashboardConfig", JSON.stringify(merged));
+            configLoadedFromApi.current = true;
+          }
+        })
+        .catch(() => {
+          // Use localStorage fallback
+        });
+    }
+  }, [isLoaded, isSignedIn]);
 
   // Save panel config when it changes
   const updatePanelConfig = useCallback((key: keyof DashboardConfig["panels"], value: boolean) => {
     setPanelConfig(prev => {
       const newConfig = { ...prev, panels: { ...prev.panels, [key]: value } };
+      // Save to localStorage (instant)
       localStorage.setItem("dashboardConfig", JSON.stringify(newConfig));
+      // Sync to API (background)
+      fetch("/api/v1/auth/user/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dashboardConfig: newConfig }),
+      }).catch(() => {
+        // Silently fail - localStorage has the value
+      });
       return newConfig;
     });
   }, []);

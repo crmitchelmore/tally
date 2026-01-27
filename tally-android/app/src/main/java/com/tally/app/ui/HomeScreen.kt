@@ -56,6 +56,9 @@ import java.time.LocalDate
 fun HomeScreen(authManager: AuthManager? = null) {
     val context = LocalContext.current
     
+    // Determine if we're in local-only mode (no auth manager = local only)
+    val isLocalOnlyMode = authManager == null
+    
     // Create API client and manager
     val apiClient = remember(authManager) {
         TallyApiClient(
@@ -73,6 +76,19 @@ fun HomeScreen(authManager: AuthManager? = null) {
     val isLoading by challengesManager.isLoading.collectAsStateWithLifecycle()
     val isRefreshing by challengesManager.isRefreshing.collectAsStateWithLifecycle()
     val syncState by challengesManager.syncState.collectAsStateWithLifecycle()
+    
+    // Compute display sync state (local-only mode overrides)
+    val displaySyncState = if (isLocalOnlyMode) {
+        com.tally.core.design.SyncState.LOCAL_ONLY
+    } else {
+        when (syncState) {
+            SyncState.SYNCED -> com.tally.core.design.SyncState.SYNCED
+            SyncState.SYNCING -> com.tally.core.design.SyncState.SYNCING
+            SyncState.PENDING -> com.tally.core.design.SyncState.PENDING
+            SyncState.FAILED -> com.tally.core.design.SyncState.FAILED
+            SyncState.LOCAL_ONLY -> com.tally.core.design.SyncState.LOCAL_ONLY
+        }
+    }
     
     // Dialog state
     var selectedChallenge by remember { mutableStateOf<Challenge?>(null) }
@@ -108,15 +124,7 @@ fun HomeScreen(authManager: AuthManager? = null) {
                     )
                 }
             }
-            SyncStatusIndicator(
-                state = when (syncState) {
-                    SyncState.SYNCED -> com.tally.core.design.SyncState.SYNCED
-                    SyncState.SYNCING -> com.tally.core.design.SyncState.SYNCING
-                    SyncState.PENDING -> com.tally.core.design.SyncState.PENDING
-                    SyncState.FAILED -> com.tally.core.design.SyncState.FAILED
-                    SyncState.OFFLINE -> com.tally.core.design.SyncState.OFFLINE
-                }
-            )
+            SyncStatusIndicator(state = displaySyncState)
         }
 
         Spacer(modifier = Modifier.height(TallySpacing.lg))

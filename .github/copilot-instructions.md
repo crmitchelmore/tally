@@ -18,6 +18,22 @@ Reference ./design-philosophy.md whenever building anything new to remember the 
 
 Reference ./tech-stack-requirements.md to pick the right tools and technologies.
 
+## Cross-Platform API Contracts
+
+When modifying API endpoints:
+1. **Document the response shape** - iOS/Android decoders are strict
+2. **Verify all platforms consume the same format** - especially nested objects
+3. Web API returns camelCase JSON; do NOT use snake_case conversion on clients
+
+### Common API Formats
+- `/api/v1/challenges` returns `{ challenges: [{ challenge: Challenge, stats: ChallengeStats }] }`
+- Stats are embedded per-challenge, not fetched separately
+
+### Debugging Decode Errors (iOS/Android)
+1. Log raw API response JSON
+2. Compare expected model structure vs actual response
+3. Check for missing fields, wrong nesting, or case mismatches
+
 ## Convex Deployment
 
 Convex functions are deployed **separately** from Vercel. After changing:
@@ -44,6 +60,19 @@ Common pitfall: Vercel deploys but Convex is stale → 500 errors on new fields.
 1. Check if schema changes were deployed: `npx convex deploy`
 2. Verify mutation args match schema fields
 3. Check Convex dashboard logs at https://dashboard.convex.dev
+
+## UI Reactivity Pattern
+
+After data mutations, ALL related UI must update:
+
+### Web (SWR)
+- Use `refreshEntries()` / `refreshChallenges()` from `use-data-refresh.ts`
+- These call `mutate()` on all related SWR cache keys
+
+### iOS (Observable)
+- Route mutations through `ChallengesManager` (not direct `APIClient` calls)
+- `ChallengesManager.createEntry()` / `updateEntry()` / `deleteEntry()` auto-refresh stats
+- Dashboard stats refresh happens in `refreshChallengeStats()`
 
 ## Available .env secrets
 

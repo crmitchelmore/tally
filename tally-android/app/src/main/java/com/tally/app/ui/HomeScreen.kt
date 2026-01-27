@@ -1,279 +1,237 @@
 package com.tally.app.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tally.app.BuildConfig
 import com.tally.app.R
-import com.tally.app.data.ChallengesViewModel
-import com.tally.app.ui.dashboard.ActivityHeatmap
-import com.tally.app.ui.dashboard.BurnUpChart
-import com.tally.app.ui.dashboard.DashboardHighlights
-import com.tally.app.ui.dashboard.PersonalRecordsCard
-import com.tally.app.ui.dashboard.ProgressChart
-import com.tally.core.design.SyncState
+import com.tally.app.ui.components.AddEntryDialog
+import com.tally.core.auth.AuthManager
+import com.tally.core.data.ChallengesManager
+import com.tally.core.data.SyncState
 import com.tally.core.design.SyncStatusIndicator
+import com.tally.core.design.TallyMark
 import com.tally.core.design.TallySpacing
-import com.tally.core.network.Entry
+import com.tally.core.design.TallyTheme
+import com.tally.core.network.Challenge
+import com.tally.core.network.ChallengeStats
+import com.tally.core.network.TallyApiClient
 import java.time.LocalDate
 
 /**
- * Home screen showing dashboard and user's challenges with create and add entry functionality.
+ * Home screen showing user's challenges with optimistic saves.
+ * Loads from cache instantly, refreshes in background.
  */
 @Composable
-fun HomeScreen(
-    viewModel: ChallengesViewModel
-) {
-    val challengesWithCounts by viewModel.challengesWithCounts.collectAsState()
-    val dashboardStats by viewModel.dashboardStats.collectAsState()
-    val personalRecords by viewModel.personalRecords.collectAsState()
-    val dashboardConfig by viewModel.dashboardConfig.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
-    val showCreateDialog by viewModel.showCreateDialog.collectAsState()
-    val showEntryDialog by viewModel.showEntryDialog.collectAsState()
-
-    // Track expanded dashboard state
-    var dashboardExpanded by rememberSaveable { mutableStateOf(false) }
-
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    // Show error in snackbar
-    LaunchedEffect(error) {
-        error?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.clearError()
-        }
-    }
-
-    // Mock all entries for charts (in production, get from repository)
-    val allEntries = remember { mutableListOf<Entry>() }
-
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { viewModel.showCreateDialog() },
-                modifier = Modifier.testTag("create_challenge_fab")
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Create challenge")
-            }
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                // Header with sync status
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(TallySpacing.md),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Dashboard",
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.testTag("dashboard_title")
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(TallySpacing.sm)
-                    ) {
-                        IconButton(
-                            onClick = { dashboardExpanded = !dashboardExpanded }
-                        ) {
-                            Icon(
-                                imageVector = if (dashboardExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = if (dashboardExpanded) "Collapse" else "Expand"
-                            )
-                        }
-                        SyncStatusIndicator(state = SyncState.SYNCED)
-                    }
-                }
-
-                when {
-                    isLoading && challengesWithCounts.isEmpty() -> {
-                        // Initial loading
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                    challengesWithCounts.isEmpty() -> {
-                        // Empty state
-                        EmptyState(
-                            onCreateClick = { viewModel.showCreateDialog() }
-                        )
-                    }
-                    else -> {
-                        // Main content with dashboard and challenges
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .testTag("challenges_list"),
-                            contentPadding = PaddingValues(TallySpacing.md),
-                            verticalArrangement = Arrangement.spacedBy(TallySpacing.md)
-                        ) {
-                            // Dashboard highlights (always visible)
-                            if (dashboardConfig.panels.highlights) {
-                                item(key = "highlights") {
-                                    DashboardHighlights(stats = dashboardStats)
-                                }
-                            }
-
-                            // Expanded dashboard panels
-                            if (dashboardExpanded) {
-                                if (dashboardConfig.panels.personalRecords) {
-                                    item(key = "records") {
-                                        PersonalRecordsCard(records = personalRecords)
-                                    }
-                                }
-
-                                item(key = "heatmap") {
-                                    ActivityHeatmap(entries = allEntries)
-                                }
-
-                                if (dashboardConfig.panels.progressGraph) {
-                                    item(key = "progress") {
-                                        ProgressChart(
-                                            challenges = challengesWithCounts.map { it.challenge },
-                                            entries = allEntries
-                                        )
-                                    }
-                                }
-
-                                if (dashboardConfig.panels.burnUpChart && challengesWithCounts.isNotEmpty()) {
-                                    item(key = "burnup") {
-                                        BurnUpChart(
-                                            challenge = challengesWithCounts.first().challenge,
-                                            entries = allEntries.filter { 
-                                                it.challengeId == challengesWithCounts.first().challenge.id 
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-
-                            // Challenges header
-                            item(key = "challenges_header") {
-                                Text(
-                                    text = "My Challenges",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    modifier = Modifier.padding(top = TallySpacing.md)
-                                )
-                            }
-
-                            // Challenge cards
-                            items(
-                                items = challengesWithCounts,
-                                key = { it.challenge.id }
-                            ) { item ->
-                                ChallengeCard(
-                                    challengeWithCount = item,
-                                    onClick = { viewModel.selectChallenge(item.challenge) },
-                                    onAddEntry = { viewModel.showEntryDialog(item.challenge) }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Create challenge dialog
-    if (showCreateDialog) {
-        CreateChallengeDialog(
-            onDismiss = { viewModel.hideCreateDialog() },
-            onCreate = { name, target, timeframe, countType, unitLabel, defaultIncrement, isPublic ->
-                viewModel.createChallenge(
-                    name = name,
-                    target = target,
-                    timeframeType = timeframe,
-                    countType = countType,
-                    unitLabel = unitLabel,
-                    defaultIncrement = defaultIncrement,
-                    isPublic = isPublic
-                )
-            }
+fun HomeScreen(authManager: AuthManager? = null) {
+    val context = LocalContext.current
+    
+    // Create API client and manager
+    val apiClient = remember(authManager) {
+        TallyApiClient(
+            baseUrl = BuildConfig.API_BASE_URL,
+            getAuthToken = { authManager?.getToken() }
         )
     }
+    val challengesManager = remember(apiClient) {
+        ChallengesManager.getInstance(context, apiClient)
+    }
+    
+    // Collect state
+    val challenges by challengesManager.challenges.collectAsStateWithLifecycle()
+    val stats by challengesManager.stats.collectAsStateWithLifecycle()
+    val isLoading by challengesManager.isLoading.collectAsStateWithLifecycle()
+    val isRefreshing by challengesManager.isRefreshing.collectAsStateWithLifecycle()
+    val syncState by challengesManager.syncState.collectAsStateWithLifecycle()
+    
+    // Dialog state
+    var selectedChallenge by remember { mutableStateOf<Challenge?>(null) }
+    
+    // Refresh on mount
+    LaunchedEffect(Unit) {
+        challengesManager.refreshChallenges()
+    }
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(TallySpacing.md),
+        verticalArrangement = Arrangement.spacedBy(TallySpacing.md)
+    ) {
+        // Header with sync status
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = "Tally",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                if (isRefreshing) {
+                    Text(
+                        text = "Updating...",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            SyncStatusIndicator(
+                state = when (syncState) {
+                    SyncState.SYNCED -> com.tally.core.design.SyncState.SYNCED
+                    SyncState.SYNCING -> com.tally.core.design.SyncState.SYNCING
+                    SyncState.PENDING -> com.tally.core.design.SyncState.PENDING
+                    SyncState.FAILED -> com.tally.core.design.SyncState.FAILED
+                    SyncState.OFFLINE -> com.tally.core.design.SyncState.OFFLINE
+                }
+            )
+        }
 
+        Spacer(modifier = Modifier.height(TallySpacing.lg))
+
+        when {
+            isLoading && challenges.isEmpty() -> {
+                // Show loading only when no cache
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            challenges.isEmpty() -> {
+                // Empty state
+                EmptyState()
+            }
+            else -> {
+                // Challenge list
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(TallySpacing.md)
+                ) {
+                    items(challenges) { challenge ->
+                        val challengeStats = stats[challenge.id]
+                        ChallengeCard(
+                            challenge = challenge,
+                            stats = challengeStats,
+                            onClick = { selectedChallenge = challenge }
+                        )
+                    }
+                }
+            }
+        }
+    }
+    
     // Add entry dialog
-    showEntryDialog?.let { challenge ->
+    selectedChallenge?.let { challenge ->
+        val recentEntries = remember(challenge.id) {
+            challengesManager.recentEntries(challenge.id)
+        }
+        
         AddEntryDialog(
             challenge = challenge,
-            onDismiss = { viewModel.hideEntryDialog() },
-            onSave = { request ->
-                viewModel.addEntry(
-                    challenge = challenge,
-                    count = request.count,
-                    date = LocalDate.parse(request.date),
-                    sets = request.sets,
-                    note = request.note,
-                    feeling = request.feeling
+            recentEntries = recentEntries,
+            onSubmit = { count, sets, feeling ->
+                // Optimistic save - returns immediately
+                challengesManager.addEntry(
+                    challengeId = challenge.id,
+                    count = count,
+                    sets = sets,
+                    feeling = feeling
                 )
-            }
+                selectedChallenge = null
+            },
+            onDismiss = { selectedChallenge = null }
         )
     }
 }
 
 @Composable
-private fun EmptyState(
-    onCreateClick: () -> Unit
+private fun ChallengeCard(
+    challenge: Challenge,
+    stats: ChallengeStats?,
+    onClick: () -> Unit
 ) {
-    Box(
+    Card(
         modifier = Modifier
-            .fillMaxSize()
-            .testTag("empty_state"),
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(TallySpacing.lg),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(TallySpacing.xs)
+            ) {
+                Text(
+                    text = "${challenge.icon} ${challenge.name}",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                
+                stats?.let {
+                    Text(
+                        text = "${it.totalCount} / ${challenge.target} ${challenge.resolvedUnitLabel}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            // Tally visualization of today's progress
+            TallyMark(
+                count = stats?.totalCount?.rem(100) ?: 0,
+                modifier = Modifier.size(48.dp),
+                animated = false
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(TallySpacing.md)
+            verticalArrangement = Arrangement.spacedBy(TallySpacing.sm)
         ) {
             Text(
                 text = stringResource(R.string.empty_challenges),
@@ -281,12 +239,17 @@ private fun EmptyState(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
-            Button(
-                onClick = onCreateClick,
-                modifier = Modifier.testTag("create_first_challenge_button")
-            ) {
+            Button(onClick = { /* TODO: Create challenge flow */ }) {
                 Text(stringResource(R.string.create_challenge))
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HomeScreenPreview() {
+    TallyTheme {
+        HomeScreen()
     }
 }

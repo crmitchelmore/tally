@@ -7,6 +7,7 @@ public final class LocalChallengeStore: @unchecked Sendable {
     public static let shared = LocalChallengeStore()
     
     private let challengesKey = "tally.challenges.data"
+    private let statsKey = "tally.challenges.stats"
     private let pendingChangesKey = "tally.challenges.pending"
     private let defaults: UserDefaults
     private let encoder: JSONEncoder
@@ -61,6 +62,41 @@ public final class LocalChallengeStore: @unchecked Sendable {
         var challenges = loadChallenges()
         challenges.removeAll { $0.id == id }
         saveChallenges(challenges)
+        
+        // Also remove stats for this challenge
+        var statsMap = loadStats()
+        statsMap.removeValue(forKey: id)
+        saveStats(statsMap)
+    }
+    
+    // MARK: - Stats Storage
+    
+    /// Load all cached stats (keyed by challenge ID)
+    public func loadStats() -> [String: ChallengeStats] {
+        queue.sync {
+            guard let data = defaults.data(forKey: statsKey) else { return [:] }
+            return (try? decoder.decode([String: ChallengeStats].self, from: data)) ?? [:]
+        }
+    }
+    
+    /// Save stats to local storage
+    public func saveStats(_ stats: [String: ChallengeStats]) {
+        queue.sync {
+            guard let data = try? encoder.encode(stats) else { return }
+            defaults.set(data, forKey: statsKey)
+        }
+    }
+    
+    /// Get stats for a specific challenge
+    public func getStats(for challengeId: String) -> ChallengeStats? {
+        loadStats()[challengeId]
+    }
+    
+    /// Update stats for a single challenge
+    public func upsertStats(_ stats: ChallengeStats, for challengeId: String) {
+        var allStats = loadStats()
+        allStats[challengeId] = stats
+        saveStats(allStats)
     }
     
     // MARK: - Pending Changes Queue
@@ -106,34 +142,44 @@ public final class LocalChallengeStore: @unchecked Sendable {
     
     /// Merge server challenges with local data
     /// Keeps local pending changes, updates synced items
-    public func mergeWithServer(_ serverChallenges: [Challenge]) {
+    public func mergeWithServer(_ serverData: [ChallengeWithStats]) {
         let pendingIds = Set(loadPendingChanges().map { $0.challengeId })
-        var merged: [Challenge] = []
+        var mergedChallenges: [Challenge] = []
+        var mergedStats: [String: ChallengeStats] = [:]
         
-        // Add server challenges, but keep local versions if pending
-        for serverChallenge in serverChallenges {
-            if pendingIds.contains(serverChallenge.id),
-               let local = getChallenge(id: serverChallenge.id) {
-                merged.append(local)
+        // Add server challenges/stats, but keep local versions if pending
+        for item in serverData {
+            if pendingIds.contains(item.challenge.id),
+               let local = getChallenge(id: item.challenge.id) {
+                mergedChallenges.append(local)
+                // Keep optimistic stats if we have them, otherwise use server stats
+                if let localStats = getStats(for: item.challenge.id) {
+                    mergedStats[item.challenge.id] = localStats
+                } else {
+                    mergedStats[item.challenge.id] = item.stats
+                }
             } else {
-                merged.append(serverChallenge)
+                mergedChallenges.append(item.challenge)
+                mergedStats[item.challenge.id] = item.stats
             }
         }
         
         // Add any local-only challenges (created offline)
-        let serverIds = Set(serverChallenges.map { $0.id })
+        let serverIds = Set(serverData.map { $0.challenge.id })
         let localChallenges = loadChallenges()
         for local in localChallenges where !serverIds.contains(local.id) && pendingIds.contains(local.id) {
-            merged.append(local)
+            mergedChallenges.append(local)
         }
         
-        saveChallenges(merged)
+        saveChallenges(mergedChallenges)
+        saveStats(mergedStats)
     }
     
     /// Clear all local data (for logout)
     public func clearAll() {
         queue.sync {
             defaults.removeObject(forKey: challengesKey)
+            defaults.removeObject(forKey: statsKey)
             defaults.removeObject(forKey: pendingChangesKey)
         }
     }

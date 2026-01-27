@@ -2,85 +2,100 @@ import SwiftUI
 import TallyDesign
 import TallyFeatureAPIClient
 
-/// Sheet for adding an entry to a challenge
+/// Sheet for adding a new entry with sets/reps support
+/// First set defaults to average of first sets over last 10 days
+/// Subsequent sets copy previous set value
 public struct AddEntrySheet: View {
     let challenge: Challenge
-    let manager: ChallengesManager?
-    let onSave: () -> Void
-    let onCancel: () -> Void
+    let recentEntries: [Entry]
+    let onSubmit: (CreateEntryRequest) -> Void
+    let onDismiss: () -> Void
     
-    // Simple mode state
-    @State private var count: Int = 1
-    
-    // Sets mode state
-    @State private var sets: [Int] = [1]
-    
-    @State private var selectedDate: Date = Date()
+    @State private var sets: [String] = ["1"]
+    @State private var simpleCount: String = "1"
+    @State private var date: Date = Date()
     @State private var note: String = ""
-    @State private var selectedFeeling: Feeling?
-    @State private var isSaving = false
-    @State private var errorMessage: String?
-    @State private var showSuccess = false
+    @State private var feeling: Feeling?
+    @State private var showOptions = false
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
-    // Cached formatter for performance
-    private static let dateFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withFullDate]
-        return formatter
-    }()
+    private let feelings: [(Feeling, String, String)] = [
+        (.great, "Great", "🔥"),
+        (.good, "Good", "😊"),
+        (.okay, "Okay", "😐"),
+        (.tough, "Tough", "😤"),
+    ]
     
     public init(
         challenge: Challenge,
-        manager: ChallengesManager? = nil,
-        onSave: @escaping () -> Void,
-        onCancel: @escaping () -> Void
+        recentEntries: [Entry] = [],
+        onSubmit: @escaping (CreateEntryRequest) -> Void,
+        onDismiss: @escaping () -> Void
     ) {
         self.challenge = challenge
-        self.manager = manager
-        self.onSave = onSave
-        self.onCancel = onCancel
+        self.recentEntries = recentEntries
+        self.onSubmit = onSubmit
+        self.onDismiss = onDismiss
     }
     
-    private var isSetsBased: Bool {
-        challenge.countType == .sets
+    private var countType: CountType {
+        challenge.resolvedCountType
     }
     
-    private var totalCount: Int {
-        isSetsBased ? sets.reduce(0, +) : count
+    private var unitLabel: String {
+        challenge.resolvedUnitLabel
     }
+    
+    /// Calculate the average first-set value from recent entries
+    private var averageFirstSet: Int {
+        let entriesWithSets = recentEntries
+            .filter { $0.sets != nil && !($0.sets ?? []).isEmpty }
+            .prefix(10)
+        
+        guard !entriesWithSets.isEmpty else { return 1 }
+        
+        let firstSets = entriesWithSets.compactMap { $0.sets?.first }
+        guard !firstSets.isEmpty else { return 1 }
+        
+        let sum = firstSets.reduce(0, +)
+        return max(1, sum / firstSets.count)
+    }
+    
+    private var setsTotal: Int {
+        sets.reduce(0) { $0 + (Int($1) ?? 0) }
+    }
+    
+    private var displayCount: Int {
+        countType == .sets ? setsTotal : (Int(simpleCount) ?? 0)
+    }
+    
+    private var today: Date { Date() }
+    private var isFutureDate: Bool { date > today }
     
     public var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: TallySpacing.xl) {
-                    // Tally preview
-                    tallyPreview
-                    
-                    // Count input (mode-specific)
-                    if isSetsBased {
-                        setsSection
+                VStack(spacing: TallySpacing.lg) {
+                    // Count input
+                    if countType == .sets {
+                        setsInputSection
                     } else {
-                        countSection
-                        quickAddButtons
+                        simpleInputSection
                     }
                     
                     // Date picker
                     dateSection
                     
-                    // Feeling selector
-                    feelingSection
+                    // Options toggle
+                    optionsToggle
                     
-                    // Note input
-                    noteSection
-                    
-                    // Error message
-                    if let error = errorMessage {
-                        Text(error)
-                            .font(.tallyLabelSmall)
-                            .foregroundColor(.red)
+                    if showOptions {
+                        optionsSection
                     }
+                    
+                    // Submit button
+                    submitButton
                 }
                 .tallyPadding()
             }
@@ -89,402 +104,400 @@ public struct AddEntrySheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        onCancel()
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        Task { await saveEntry() }
-                    }
-                    .fontWeight(.semibold)
-                    .disabled(isSaving || totalCount < 1)
+                    Button("Cancel") { onDismiss() }
                 }
             }
-            .overlay {
-                if showSuccess {
-                    successOverlay
-                }
+            .onAppear {
+                initializeDefaults()
             }
-            .accessibilityIdentifier("addEntrySheet")
         }
     }
     
-    // MARK: - Tally Preview
+    // MARK: - Initialize Defaults
     
-    private var tallyPreview: some View {
-        VStack(spacing: TallySpacing.md) {
-            TallyMarkView(
-                count: totalCount,
-                animated: !reduceMotion,
-                size: 80
-            )
-            
-            Text("\(totalCount) \(challenge.resolvedUnitLabel)")
-                .font(.tallyMonoDisplay)
-                .foregroundColor(Color.tallyInk)
-            
-            if isSetsBased {
-                Text("\(sets.count) set\(sets.count == 1 ? "" : "s")")
-                    .font(.tallyLabelMedium)
-                    .foregroundColor(Color.tallyInkSecondary)
-            }
+    private func initializeDefaults() {
+        if countType == .sets {
+            // First set defaults to average of recent first sets
+            sets = [String(averageFirstSet)]
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, TallySpacing.xl)
-        .background(Color.tallyPaperTint)
-        .cornerRadius(16)
     }
     
-    // MARK: - Sets Section
+    // MARK: - Sets Input Section
     
-    private var setsSection: some View {
+    private var setsInputSection: some View {
         VStack(spacing: TallySpacing.md) {
-            Text("Sets")
+            Text("Sets & \(unitLabel)")
                 .font(.tallyLabelMedium)
                 .foregroundColor(Color.tallyInkSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
             
-            ForEach(Array(sets.enumerated()), id: \.offset) { index, setCount in
-                setCard(index: index, count: setCount)
+            ForEach(Array(sets.enumerated()), id: \.offset) { index, setVal in
+                setRow(index: index, value: setVal)
             }
             
             // Add set button
             Button {
-                // Use last set value as initial for new set
-                let lastValue = sets.last ?? challenge.resolvedDefaultIncrement
-                sets.append(lastValue)
+                addSet()
             } label: {
                 HStack {
-                    Image(systemName: "plus.circle.fill")
+                    Image(systemName: "plus")
                     Text("Add Set")
                 }
                 .font(.tallyLabelMedium)
-                .foregroundColor(Color.tallyAccent)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, TallySpacing.md)
-                .background(Color.tallyPaperTint)
-                .cornerRadius(12)
-            }
-            .accessibilityIdentifier("addSetButton")
-        }
-    }
-    
-    private func setCard(index: Int, count: Int) -> some View {
-        VStack(spacing: TallySpacing.sm) {
-            // Header with set number and remove button
-            HStack {
-                Text("Set \(index + 1)")
-                    .font(.tallyLabelMedium)
-                    .foregroundColor(Color.tallyInk)
-                
-                Spacer()
-                
-                if sets.count > 1 {
-                    Button {
-                        sets.remove(at: index)
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(Color.tallyInkTertiary)
-                    }
-                    .accessibilityLabel("Remove set \(index + 1)")
-                }
-            }
-            
-            // Count display
-            Text("\(count)")
-                .font(.tallyMonoDisplay)
-                .foregroundColor(Color.tallyInk)
-            
-            // -10/-1/+1/+10 buttons
-            HStack(spacing: TallySpacing.sm) {
-                setButton("-10", index: index, increment: -10, enabled: sets[index] > 10)
-                setButton("-1", index: index, increment: -1, enabled: sets[index] > 1)
-                setButton("+1", index: index, increment: 1, enabled: true)
-                setButton("+10", index: index, increment: 10, enabled: true)
-            }
-        }
-        .padding(TallySpacing.md)
-        .background(Color.tallyPaperTint)
-        .cornerRadius(12)
-        .accessibilityIdentifier("setCard\(index)")
-    }
-    
-    private func setButton(_ title: String, index: Int, increment: Int, enabled: Bool) -> some View {
-        Button {
-            sets[index] = max(1, sets[index] + increment)
-        } label: {
-            Text(title)
-                .font(.tallyLabelMedium)
-                .fontWeight(.medium)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, TallySpacing.sm)
-                .background(enabled ? Color.tallyPaper : Color.tallyPaper.opacity(0.5))
-                .foregroundColor(enabled ? Color.tallyInk : Color.tallyInkTertiary)
-                .cornerRadius(8)
-        }
-        .disabled(!enabled)
-    }
-    
-    // MARK: - Count Section (Simple mode)
-    
-    private var countSection: some View {
-        VStack(spacing: TallySpacing.sm) {
-            Text("Count")
-                .font(.tallyLabelMedium)
                 .foregroundColor(Color.tallyInkSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            HStack(spacing: TallySpacing.lg) {
-                Button {
-                    if count > 1 { count -= 1 }
-                } label: {
-                    Image(systemName: "minus.circle.fill")
-                        .font(.system(size: 44))
-                        .foregroundColor(count > 1 ? Color.tallyAccent : Color.tallyInkTertiary)
-                }
-                .disabled(count <= 1)
-                .accessibilityIdentifier("decrementButton")
-                
-                TextField("", value: $count, format: .number)
-                    .font(.tallyMonoDisplay)
-                    .multilineTextAlignment(.center)
-                    .keyboardType(.numberPad)
-                    .frame(width: 100)
-                    .padding(.vertical, TallySpacing.sm)
-                    .background(Color.tallyPaperTint)
-                    .cornerRadius(8)
-                    .accessibilityIdentifier("countInput")
-                
-                Button {
-                    count += 1
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 44))
-                        .foregroundColor(Color.tallyAccent)
-                }
-                .accessibilityIdentifier("incrementButton")
             }
             .frame(maxWidth: .infinity)
+            .tallyPadding(.vertical, TallySpacing.sm)
+            .background(Color.tallyPaperTint)
+            .cornerRadius(8)
+            
+            // Total display with tally
+            HStack(spacing: TallySpacing.lg) {
+                VStack(spacing: TallySpacing.xs) {
+                    Text("\(setsTotal)")
+                        .font(.tallyMonoDisplay)
+                        .foregroundColor(Color.tallyInk)
+                    Text(unitLabel)
+                        .font(.tallyLabelSmall)
+                        .foregroundColor(Color.tallyInkSecondary)
+                }
+                
+                TallyMarkView(
+                    count: min(setsTotal, 25),
+                    animated: !reduceMotion,
+                    size: 60
+                )
+            }
+            .tallyPadding(.top, TallySpacing.sm)
         }
     }
     
-    // MARK: - Quick Add Buttons
-    
-    private var quickAddButtons: some View {
-        VStack(spacing: TallySpacing.sm) {
-            HStack(spacing: TallySpacing.md) {
-                quickButton("+1", increment: 1)
-                quickButton("+10", increment: 10)
-                quickButton("+100", increment: 100)
+    private func setRow(index: Int, value: String) -> some View {
+        HStack(spacing: TallySpacing.sm) {
+            Text("Set \(index + 1)")
+                .font(.tallyLabelSmall)
+                .foregroundColor(Color.tallyInkSecondary)
+                .frame(width: 50, alignment: .leading)
+            
+            // Decrement button
+            Button {
+                incrementSet(index: index, by: -1)
+            } label: {
+                Image(systemName: "minus")
+                    .font(.system(size: 14, weight: .medium))
             }
-            HStack(spacing: TallySpacing.md) {
-                quickButton("-1", increment: -1, enabled: count > 1)
-                quickButton("-10", increment: -10, enabled: count > 10)
-                quickButton("-100", increment: -100, enabled: count > 100)
+            .frame(width: 32, height: 32)
+            .background(Color.tallyPaperTint)
+            .cornerRadius(8)
+            .foregroundColor(Color.tallyInk)
+            
+            // Value input
+            TextField("0", text: Binding(
+                get: { sets[index] },
+                set: { sets[index] = $0 }
+            ))
+            .keyboardType(.numberPad)
+            .font(.tallyMonoBody)
+            .multilineTextAlignment(.center)
+            .frame(width: 60, height: 40)
+            .background(Color.tallyPaperTint)
+            .cornerRadius(8)
+            
+            // Increment button
+            Button {
+                incrementSet(index: index, by: 1)
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .frame(width: 32, height: 32)
+            .background(Color.tallyPaperTint)
+            .cornerRadius(8)
+            .foregroundColor(Color.tallyInk)
+            
+            Spacer()
+            
+            // Remove button (only if more than 1 set)
+            if sets.count > 1 {
+                Button {
+                    removeSet(at: index)
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(Color.tallyInkSecondary)
+                }
+                .frame(width: 28, height: 28)
             }
         }
+        .tallyPadding(.horizontal, TallySpacing.sm)
+        .tallyPadding(.vertical, TallySpacing.xs)
+        .background(Color.tallyPaperTint.opacity(0.5))
+        .cornerRadius(8)
     }
     
-    private func quickButton(_ title: String, increment: Int, enabled: Bool = true) -> some View {
-        Button {
-            count = max(1, count + increment)
-        } label: {
-            Text(title)
+    private func addSet() {
+        // New set defaults to the previous set's value
+        let previousValue = sets.last ?? "1"
+        sets.append(previousValue)
+    }
+    
+    private func removeSet(at index: Int) {
+        guard sets.count > 1 else { return }
+        sets.remove(at: index)
+    }
+    
+    private func incrementSet(index: Int, by delta: Int) {
+        let current = Int(sets[index]) ?? 0
+        sets[index] = String(max(0, current + delta))
+    }
+    
+    // MARK: - Simple Count Input
+    
+    private var simpleInputSection: some View {
+        VStack(spacing: TallySpacing.md) {
+            Text("How many \(unitLabel)?")
                 .font(.tallyLabelMedium)
-                .fontWeight(.medium)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, TallySpacing.sm)
-                .background(enabled ? Color.tallyPaperTint : Color.tallyPaperTint.opacity(0.5))
-                .foregroundColor(enabled ? Color.tallyInk : Color.tallyInkTertiary)
-                .cornerRadius(8)
+                .foregroundColor(Color.tallyInkSecondary)
+            
+            // Decrement buttons row
+            HStack(spacing: TallySpacing.sm) {
+                Button { incrementSimple(by: -100) } label: {
+                    Text("−100")
+                        .font(.tallyLabelSmall)
+                }
+                .buttonStyle(IncrementButtonStyle())
+                
+                Button { incrementSimple(by: -10) } label: {
+                    Text("−10")
+                        .font(.tallyLabelSmall)
+                }
+                .buttonStyle(IncrementButtonStyle())
+                
+                Button { incrementSimple(by: -1) } label: {
+                    Text("−1")
+                        .font(.tallyLabelMedium)
+                }
+                .buttonStyle(IncrementButtonStyle())
+            }
+            
+            // Main input
+            TextField("0", text: $simpleCount)
+                .keyboardType(.numberPad)
+                .font(.system(size: 48, weight: .semibold, design: .monospaced))
+                .multilineTextAlignment(.center)
+                .frame(width: 140, height: 60)
+            
+            // Increment buttons row
+            HStack(spacing: TallySpacing.sm) {
+                Button { incrementSimple(by: 1) } label: {
+                    Text("+1")
+                        .font(.tallyLabelMedium)
+                }
+                .buttonStyle(IncrementButtonStyle())
+                
+                Button { incrementSimple(by: 10) } label: {
+                    Text("+10")
+                        .font(.tallyLabelSmall)
+                }
+                .buttonStyle(IncrementButtonStyle())
+                
+                Button { incrementSimple(by: 100) } label: {
+                    Text("+100")
+                        .font(.tallyLabelSmall)
+                }
+                .buttonStyle(IncrementButtonStyle())
+            }
+            
+            // Tally preview
+            TallyMarkView(
+                count: min(Int(simpleCount) ?? 0, 25),
+                animated: !reduceMotion,
+                size: 60
+            )
         }
-        .disabled(!enabled)
+    }
+    
+    private func incrementSimple(by delta: Int) {
+        let current = Int(simpleCount) ?? 0
+        simpleCount = String(max(0, current + delta))
     }
     
     // MARK: - Date Section
     
     private var dateSection: some View {
-        VStack(spacing: TallySpacing.sm) {
+        HStack {
             Text("Date")
                 .font(.tallyLabelMedium)
                 .foregroundColor(Color.tallyInkSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            Spacer()
             
             DatePicker(
                 "",
-                selection: $selectedDate,
-                in: ...Date(),
+                selection: $date,
+                in: ...today,
                 displayedComponents: .date
             )
-            .datePickerStyle(.compact)
             .labelsHidden()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityIdentifier("datePicker")
         }
+        .tallyPadding()
+        .background(Color.tallyPaperTint)
+        .cornerRadius(12)
     }
     
-    // MARK: - Feeling Section
+    // MARK: - Options Section
     
-    private var feelingSection: some View {
-        VStack(spacing: TallySpacing.sm) {
-            Text("How did it feel?")
-                .font(.tallyLabelMedium)
-                .foregroundColor(Color.tallyInkSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            HStack(spacing: TallySpacing.md) {
-                feelingButton(.great, emoji: "🔥", label: "Great")
-                feelingButton(.good, emoji: "😊", label: "Good")
-                feelingButton(.okay, emoji: "😐", label: "Okay")
-                feelingButton(.tough, emoji: "😤", label: "Tough")
-            }
-        }
-    }
-    
-    private func feelingButton(_ feeling: Feeling, emoji: String, label: String) -> some View {
+    private var optionsToggle: some View {
         Button {
-            if selectedFeeling == feeling {
-                selectedFeeling = nil
-            } else {
-                selectedFeeling = feeling
+            withAnimation(.easeInOut(duration: 0.2)) {
+                showOptions.toggle()
             }
         } label: {
-            VStack(spacing: 4) {
-                Text(emoji)
-                    .font(.system(size: 28))
-                Text(label)
+            HStack {
+                Text("More options")
+                    .font(.tallyLabelMedium)
+                    .foregroundColor(Color.tallyInkSecondary)
+                
+                Spacer()
+                
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(Color.tallyInkSecondary)
+                    .rotationEffect(.degrees(showOptions ? 180 : 0))
+            }
+        }
+    }
+    
+    private var optionsSection: some View {
+        VStack(spacing: TallySpacing.md) {
+            // Feeling selector
+            VStack(alignment: .leading, spacing: TallySpacing.sm) {
+                Text("How did it feel?")
                     .font(.tallyLabelSmall)
-                    .foregroundColor(selectedFeeling == feeling ? Color.tallyInk : Color.tallyInkSecondary)
+                    .foregroundColor(Color.tallyInkSecondary)
+                
+                HStack(spacing: TallySpacing.sm) {
+                    ForEach(feelings, id: \.0) { feelingOption, label, emoji in
+                        Button {
+                            feeling = feeling == feelingOption ? nil : feelingOption
+                        } label: {
+                            VStack(spacing: 2) {
+                                Text(emoji)
+                                    .font(.system(size: 24))
+                                Text(label)
+                                    .font(.tallyLabelSmall)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .tallyPadding(.vertical, TallySpacing.sm)
+                            .background(
+                                feeling == feelingOption
+                                    ? Color.tallyAccent.opacity(0.1)
+                                    : Color.tallyPaperTint
+                            )
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(
+                                        feeling == feelingOption
+                                            ? Color.tallyAccent
+                                            : Color.clear,
+                                        lineWidth: 2
+                                    )
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, TallySpacing.sm)
-            .background(selectedFeeling == feeling ? Color.tallyAccent.opacity(0.2) : Color.tallyPaperTint)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(selectedFeeling == feeling ? Color.tallyAccent : Color.clear, lineWidth: 2)
-            )
+            
+            // Note input
+            VStack(alignment: .leading, spacing: TallySpacing.xs) {
+                Text("Note")
+                    .font(.tallyLabelSmall)
+                    .foregroundColor(Color.tallyInkSecondary)
+                
+                TextField("Any thoughts...", text: $note, axis: .vertical)
+                    .font(.tallyBodyMedium)
+                    .lineLimit(2...4)
+                    .tallyPadding()
+                    .background(Color.tallyPaperTint)
+                    .cornerRadius(8)
+            }
         }
-        .accessibilityIdentifier("feeling\(feeling.rawValue.capitalized)")
     }
     
-    // MARK: - Note Section
+    // MARK: - Submit Button
     
-    private var noteSection: some View {
-        VStack(spacing: TallySpacing.sm) {
-            Text("Note (optional)")
-                .font(.tallyLabelMedium)
-                .foregroundColor(Color.tallyInkSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            TextField("Add a note...", text: $note, axis: .vertical)
-                .lineLimit(3...6)
-                .padding(TallySpacing.md)
-                .background(Color.tallyPaperTint)
+    private var submitButton: some View {
+        Button {
+            submit()
+        } label: {
+            Text("Add \(displayCount) \(unitLabel)")
+                .font(.tallyTitleSmall)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .tallyPadding()
+                .background(Color.tallyAccent)
                 .cornerRadius(12)
-                .accessibilityIdentifier("noteInput")
         }
+        .disabled(isFutureDate || displayCount <= 0)
+        .opacity((isFutureDate || displayCount <= 0) ? 0.5 : 1)
     }
     
-    // MARK: - Success Overlay
+    // MARK: - Submit
     
-    private var successOverlay: some View {
-        VStack(spacing: TallySpacing.lg) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 64))
-                .foregroundColor(.green)
-            
-            Text("Entry Added!")
-                .font(.tallyTitleMedium)
-                .foregroundColor(Color.tallyInk)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.tallyPaper.opacity(0.95))
-        .transition(.opacity)
-    }
-    
-    // MARK: - Actions
-    
-    private func saveEntry() async {
-        guard totalCount >= 1 else {
-            errorMessage = "Count must be at least 1"
-            return
-        }
+    private func submit() {
+        guard !isFutureDate, displayCount > 0 else { return }
         
-        isSaving = true
-        errorMessage = nil
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: date)
         
-        do {
-            let dateString = Self.dateFormatter.string(from: selectedDate)
-            
-            let request = CreateEntryRequest(
-                challengeId: challenge.id,
-                date: dateString,
-                count: totalCount,
-                sets: isSetsBased ? sets : nil,
-                note: note.isEmpty ? nil : note,
-                feeling: selectedFeeling
-            )
-            
-            // Use manager if available (updates stats reactively), fallback to direct API call
-            if let manager = manager {
-                _ = try await manager.createEntry(request)
-            } else {
-                _ = try await APIClient.shared.createEntry(request)
-            }
-            
-            // Show success briefly then dismiss
-            withAnimation {
-                showSuccess = true
-            }
-            
-            try? await Task.sleep(nanoseconds: 800_000_000)
-            
-            onSave()
-        } catch {
-            errorMessage = "Failed to save entry. Please try again."
-            print("[AddEntrySheet] Error saving entry: \(error)")
-        }
+        let numericSets: [Int]? = countType == .sets
+            ? sets.compactMap { Int($0) }.filter { $0 > 0 }
+            : nil
         
-        isSaving = false
+        let request = CreateEntryRequest(
+            challengeId: challenge.id,
+            date: dateString,
+            count: displayCount,
+            sets: numericSets,
+            note: note.isEmpty ? nil : note,
+            feeling: feeling
+        )
+        
+        // Optimistic save - call synchronously and dismiss immediately
+        onSubmit(request)
+        onDismiss()
     }
 }
 
-#Preview("Simple Mode") {
-    AddEntrySheet(
-        challenge: Challenge(
-            id: "1",
-            userId: "user1",
-            name: "Read 100 Books",
-            target: 100,
-            timeframeType: .year,
-            startDate: "2026-01-01",
-            endDate: "2026-12-31",
-            color: "#D94343",
-            icon: "book.fill",
-            isPublic: false,
-            isArchived: false,
-            createdAt: "2026-01-01T00:00:00Z",
-            updatedAt: "2026-01-01T00:00:00Z"
-        ),
-        onSave: {},
-        onCancel: {}
-    )
+// MARK: - Increment Button Style
+
+private struct IncrementButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundColor(configuration.isPressed ? Color.tallyInk : Color.tallyInkSecondary)
+            .frame(width: 52, height: 36)
+            .background(Color.tallyPaperTint)
+            .cornerRadius(8)
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+    }
 }
+
+// MARK: - Preview
 
 #Preview("Sets Mode") {
     AddEntrySheet(
         challenge: Challenge(
-            id: "2",
+            id: "1",
             userId: "user1",
             name: "Push-ups",
             target: 10000,
             timeframeType: .year,
             startDate: "2026-01-01",
             endDate: "2026-12-31",
-            color: "#3B82F6",
-            icon: "dumbbell.fill",
+            color: "#D94343",
+            icon: "figure.strengthtraining.traditional",
             isPublic: false,
             isArchived: false,
             countType: .sets,
@@ -492,7 +505,51 @@ public struct AddEntrySheet: View {
             createdAt: "2026-01-01T00:00:00Z",
             updatedAt: "2026-01-01T00:00:00Z"
         ),
-        onSave: {},
-        onCancel: {}
+        recentEntries: [
+            Entry(
+                id: "e1",
+                userId: "user1",
+                challengeId: "1",
+                date: "2026-01-26",
+                count: 75,
+                sets: [25, 25, 25],
+                createdAt: "2026-01-26T10:00:00Z",
+                updatedAt: "2026-01-26T10:00:00Z"
+            ),
+            Entry(
+                id: "e2",
+                userId: "user1",
+                challengeId: "1",
+                date: "2026-01-25",
+                count: 60,
+                sets: [20, 20, 20],
+                createdAt: "2026-01-25T10:00:00Z",
+                updatedAt: "2026-01-25T10:00:00Z"
+            ),
+        ],
+        onSubmit: { _ in },
+        onDismiss: {}
+    )
+}
+
+#Preview("Simple Mode") {
+    AddEntrySheet(
+        challenge: Challenge(
+            id: "2",
+            userId: "user1",
+            name: "Read Books",
+            target: 100,
+            timeframeType: .year,
+            startDate: "2026-01-01",
+            endDate: "2026-12-31",
+            color: "#4B5563",
+            icon: "book.fill",
+            isPublic: false,
+            isArchived: false,
+            createdAt: "2026-01-01T00:00:00Z",
+            updatedAt: "2026-01-01T00:00:00Z"
+        ),
+        onSubmit: { _ in },
+        onDismiss: {}
     )
 }

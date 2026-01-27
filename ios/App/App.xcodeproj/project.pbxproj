@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		01B39DA68B92A61CFC098DE2 /* BackgroundRefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE72813B11206E3D723C13DD /* BackgroundRefreshManager.swift */; };
 		0283E423EB3C277E2A12E108 /* TallyFeatureChallenges.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C8EC6562F91FECF24EA9DF1A /* TallyFeatureChallenges.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		19601A31CB3100FC2E4EAA13 /* AuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5342D0099CF90011A046F568 /* AuthTests.swift */; };
 		1E54BBB9B4C5BAC7E3D34A50 /* OfflineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08F19A63DA8D9F3330470832 /* OfflineTests.swift */; };
@@ -142,6 +143,7 @@
 		BC8584F946B6DF00D152E3D0 /* DashboardPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardPage.swift; sourceTree = "<group>"; };
 		C8EC6562F91FECF24EA9DF1A /* TallyFeatureChallenges.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureChallenges.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CFF01A1C3CB0DA38D6414E62 /* ChallengeDialogPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeDialogPage.swift; sourceTree = "<group>"; };
+		DE72813B11206E3D723C13DD /* BackgroundRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshManager.swift; sourceTree = "<group>"; };
 		DFB51575A475ABC13347374E /* SyncStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatusView.swift; sourceTree = "<group>"; };
 		E74CEC688AF06E6C2810EF30 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		F6BADD4378FD7BA41B6122F3 /* TallyCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -249,6 +251,7 @@
 			isa = PBXGroup;
 			children = (
 				513115D93DAEA724AA14D1CE /* AppView.swift */,
+				DE72813B11206E3D723C13DD /* BackgroundRefreshManager.swift */,
 				3A24F21BB46A01D26C10D7A1 /* CommunityView.swift */,
 				E74CEC688AF06E6C2810EF30 /* HomeView.swift */,
 				8D159BCAB94FE2D241967AF6 /* SettingsView.swift */,
@@ -462,6 +465,7 @@
 				2E743A6F76CCB6064D781210 /* TuistAssets+App.swift in Sources */,
 				FE078F42728C23B77EE02A1B /* TuistBundle+App.swift in Sources */,
 				DBE7F137FA9A27BFB3915B6F /* AppView.swift in Sources */,
+				01B39DA68B92A61CFC098DE2 /* BackgroundRefreshManager.swift in Sources */,
 				BD70BA0F49FB2796CEE04222 /* CommunityView.swift in Sources */,
 				E0B4EC345FB962097386663C /* HomeView.swift in Sources */,
 				A283D6B6B7AF6EFE72F8D220 /* SettingsView.swift in Sources */,

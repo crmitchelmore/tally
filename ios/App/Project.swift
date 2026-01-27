@@ -43,6 +43,8 @@ let project = Project(
                         "UIApplicationSupportsMultipleScenes": false,
                         "UISceneConfigurations": [:]
                     ],
+                    "UIBackgroundModes": ["fetch"],
+                    "BGTaskSchedulerPermittedIdentifiers": ["com.tally.app.refresh"],
                     "CLERK_PUBLISHABLE_KEY": "$(CLERK_PUBLISHABLE_KEY)",
                     "API_BASE_URL": "$(API_BASE_URL)",
                     "ITSAppUsesNonExemptEncryption": false

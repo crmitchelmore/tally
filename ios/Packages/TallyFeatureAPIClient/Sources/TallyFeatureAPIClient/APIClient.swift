@@ -1,8 +1,5 @@
 import Foundation
 import TallyCore
-import os.log
-
-private let logger = Logger(subsystem: "com.tally.app", category: "APIClient")
 
 /// HTTP client for Tally API with Bearer token authentication
 public actor APIClient {
@@ -21,28 +18,18 @@ public actor APIClient {
     public init(session: URLSession = .shared) {
         self.session = session
         
-        // API uses camelCase (JavaScript convention)
         self.encoder = JSONEncoder()
-        // Don't convert to snake_case - API expects camelCase
+        self.encoder.keyEncodingStrategy = .convertToSnakeCase
         
         self.decoder = JSONDecoder()
-        // Don't convert from snake_case - API returns camelCase
+        self.decoder.keyDecodingStrategy = .convertFromSnakeCase
     }
     
     // MARK: - Token Management
     
     /// Get Bearer token from Keychain
     private func getAuthToken() -> String? {
-        let token = KeychainService.shared.retrieveToken()
-        #if DEBUG
-        if let token = token {
-            let prefix = String(token.prefix(20))
-            print("[APIClient] Token found: \(prefix)...")
-        } else {
-            print("[APIClient] No token in Keychain")
-        }
-        #endif
-        return token
+        KeychainService.shared.retrieveToken()
     }
     
     // MARK: - Request Building
@@ -70,17 +57,8 @@ public actor APIClient {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
-        #if DEBUG
-        print("[APIClient] \(method) \(url.absoluteString)")
-        #endif
-        
         if let body = body {
             request.httpBody = body
-            #if DEBUG
-            if let json = String(data: body, encoding: .utf8) {
-                print("[APIClient] Body: \(json)")
-            }
-            #endif
         }
         
         return request
@@ -102,55 +80,6 @@ public actor APIClient {
             throw APIError.unknown
         }
         
-        logger.info("Response status: \(httpResponse.statusCode)")
-        if let json = String(data: data, encoding: .utf8) {
-            logger.debug("Response body: \(json.prefix(1000))")
-        }
-        
-        // Handle 401 - try refreshing token once before throwing notAuthenticated
-        if httpResponse.statusCode == 401 {
-            logger.info("Got 401, attempting token refresh")
-            
-            // Try to refresh token using the global refresher (set by AuthManager)
-            let newToken = await tokenRefresher?.refreshToken()
-            
-            if let token = newToken {
-                logger.info("Token refreshed successfully, retrying request")
-                var retryRequest = request
-                retryRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-                
-                do {
-                    let (retryData, retryResponse) = try await session.data(for: retryRequest)
-                    guard let retryHttpResponse = retryResponse as? HTTPURLResponse else {
-                        throw APIError.unknown
-                    }
-                    
-                    logger.info("Retry response status: \(retryHttpResponse.statusCode)")
-                    
-                    // If still 401 after refresh, user is truly not authenticated
-                    if retryHttpResponse.statusCode == 401 {
-                        logger.warning("Still 401 after token refresh")
-                        throw APIError.notAuthenticated
-                    }
-                    
-                    // Handle other error responses
-                    if retryHttpResponse.statusCode >= 400 {
-                        try handleErrorResponse(data: retryData, statusCode: retryHttpResponse.statusCode)
-                    }
-                    
-                    // Decode successful retry response
-                    return try decoder.decode(T.self, from: retryData)
-                } catch let error as APIError {
-                    throw error
-                } catch {
-                    throw APIError.networkError(error)
-                }
-            } else {
-                logger.warning("Token refresh failed, throwing notAuthenticated")
-                throw APIError.notAuthenticated
-            }
-        }
-        
         // Handle error responses
         if httpResponse.statusCode >= 400 {
             try handleErrorResponse(data: data, statusCode: httpResponse.statusCode)
@@ -160,10 +89,6 @@ public actor APIClient {
         do {
             return try decoder.decode(T.self, from: data)
         } catch {
-            logger.error("Decode error: \(error.localizedDescription)")
-            if let json = String(data: data, encoding: .utf8) {
-                logger.error("Failed to decode JSON: \(json)")
-            }
             throw APIError.decodingError(error)
         }
     }
@@ -194,22 +119,16 @@ public actor APIClient {
     
     // MARK: - Challenges API
     
-    /// List user's challenges with stats
-    public func listChallengesWithStats(includeArchived: Bool = false) async throws -> [ChallengeWithStatsResponse.ChallengeWithStats] {
+    /// List user's challenges with embedded stats
+    public func listChallenges(includeArchived: Bool = false) async throws -> [ChallengeWithStats] {
         var queryItems: [URLQueryItem] = []
         if includeArchived {
             queryItems.append(URLQueryItem(name: "includeArchived", value: "true"))
         }
         
         let request = try buildRequest(path: "/api/v1/challenges", method: "GET", queryItems: queryItems)
-        let response: ChallengeWithStatsResponse = try await execute(request)
+        let response: ChallengesResponse = try await execute(request)
         return response.challenges
-    }
-    
-    /// List user's challenges (without stats for backward compatibility)
-    public func listChallenges(includeArchived: Bool = false) async throws -> [Challenge] {
-        let withStats = try await listChallengesWithStats(includeArchived: includeArchived)
-        return withStats.map { $0.challenge }
     }
     
     /// Get a specific challenge
@@ -291,84 +210,34 @@ public actor APIClient {
         let request = try buildRequest(path: "/api/v1/entries/\(id)", method: "DELETE")
         let _: DeleteResponse = try await execute(request)
     }
-
-    /// Restore a deleted entry
-    public func restoreEntry(id: String) async throws -> Entry {
-        let request = try buildRequest(path: "/api/v1/entries/\(id)/restore", method: "POST")
-        let response: EntryResponse = try await execute(request)
-        return response.entry
-    }
     
     // MARK: - Stats API
     
     /// Get stats for a specific challenge
     public func getChallengeStats(challengeId: String) async throws -> ChallengeStats {
-        let request = try buildRequest(path: "/api/v1/challenges/\(challengeId)/stats", method: "GET")
+        let request = try buildRequest(path: "/api/v1/stats/\(challengeId)", method: "GET")
         let response: StatsResponse = try await execute(request)
         return response.stats
     }
     
-    /// Get dashboard statistics and personal records
-    public func getDashboardData() async throws -> (stats: DashboardStats, records: PersonalRecords) {
-        let request = try buildRequest(path: "/api/v1/stats", method: "GET")
-        let response: DashboardResponse = try await execute(request)
-        return (response.dashboard, response.records)
+    /// Get dashboard statistics
+    public func getDashboardStats() async throws -> DashboardStats {
+        let request = try buildRequest(path: "/api/v1/stats/dashboard", method: "GET")
+        let response: DashboardStatsResponse = try await execute(request)
+        return response.stats
     }
     
-    // MARK: - Community API
-    
-    /// List public challenges
-    public func listPublicChallenges(search: String? = nil) async throws -> [PublicChallenge] {
-        var queryItems: [URLQueryItem] = []
-        if let search = search, !search.isEmpty {
-            queryItems.append(URLQueryItem(name: "search", value: search))
-        }
-        
-        let request = try buildRequest(path: "/api/v1/public/challenges", method: "GET", queryItems: queryItems)
-        let response: PublicChallengesResponse = try await execute(request)
-        return response.challenges
+    /// Get personal records
+    public func getPersonalRecords() async throws -> PersonalRecords {
+        let request = try buildRequest(path: "/api/v1/stats/records", method: "GET")
+        let response: PersonalRecordsResponse = try await execute(request)
+        return response.records
     }
     
-    /// List followed challenges
-    public func listFollowedChallenges() async throws -> [PublicChallenge] {
-        let request = try buildRequest(path: "/api/v1/followed", method: "GET")
-        let response: FollowedChallengesResponse = try await execute(request)
-        return response.challenges
-    }
-    
-    /// Follow a challenge
-    public func followChallenge(challengeId: String) async throws {
-        let body = try encoder.encode(FollowRequest(challengeId: challengeId))
-        let request = try buildRequest(path: "/api/v1/follow", method: "POST", body: body)
-        let _: FollowResponse = try await execute(request)
-    }
-    
-    /// Unfollow a challenge
-    public func unfollowChallenge(challengeId: String) async throws {
-        let body = try encoder.encode(FollowRequest(challengeId: challengeId))
-        let request = try buildRequest(path: "/api/v1/follow", method: "DELETE", body: body)
-        let _: UnfollowResponse = try await execute(request)
-    }
-    
-    // MARK: - Data Management API
-    
-    /// Export all user data
-    public func exportData() async throws -> ExportDataResponse {
-        let request = try buildRequest(path: "/api/v1/data", method: "GET")
-        return try await execute(request)
-    }
-    
-    /// Import user data
-    public func importData(_ data: ImportDataRequest) async throws -> ImportDataResponse {
-        let body = try encoder.encode(data)
-        let request = try buildRequest(path: "/api/v1/data", method: "POST", body: body)
-        return try await execute(request)
-    }
-    
-    /// Clear all user data
-    public func clearData() async throws {
-        let request = try buildRequest(path: "/api/v1/data", method: "DELETE")
-        struct ClearResponse: Codable { let cleared: Bool }
-        let _: ClearResponse = try await execute(request)
+    /// Get weekly summary
+    public func getWeeklySummary() async throws -> WeeklySummary {
+        let request = try buildRequest(path: "/api/v1/stats/weekly", method: "GET")
+        let response: WeeklySummaryResponse = try await execute(request)
+        return response.summary
     }
 }

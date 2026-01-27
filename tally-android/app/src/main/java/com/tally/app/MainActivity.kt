@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
                     )
                     is AuthState.OfflineMode -> TallyApp(
                         user = null,
+                        authManager = null,
                         onSignOut = {
                             scope.launch {
                                 authManager.signOut()
@@ -64,6 +65,7 @@ class MainActivity : ComponentActivity() {
                     )
                     is AuthState.SignedIn -> TallyApp(
                         user = state.user,
+                        authManager = authManager,
                         onSignOut = {
                             scope.launch {
                                 authManager.signOut()

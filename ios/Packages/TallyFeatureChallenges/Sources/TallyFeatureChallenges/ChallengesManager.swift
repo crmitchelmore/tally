@@ -2,7 +2,6 @@ import Foundation
 import SwiftUI
 import TallyCore
 import TallyFeatureAPIClient
-import TallyFeatureAuth
 
 /// Observable state manager for challenges with offline-first behavior
 @MainActor
@@ -10,23 +9,20 @@ import TallyFeatureAuth
 public final class ChallengesManager {
     // MARK: - State
     
-    /// Current list of challenges with stats
-    public private(set) var challengesWithStats: [(challenge: Challenge, stats: ChallengeStats)] = []
+    /// Current list of challenges
+    public private(set) var challenges: [Challenge] = []
     
-    /// Dashboard stats
-    public private(set) var dashboardStats: DashboardStats?
-    
-    /// Personal records
-    public private(set) var personalRecords: PersonalRecords?
-    
-    /// All entries (for charts/heatmap)
-    public private(set) var allEntries: [Entry] = []
+    /// Stats for each challenge (keyed by challenge ID)
+    public private(set) var stats: [String: ChallengeStats] = [:]
     
     /// Overall sync state
     public private(set) var syncState: SyncState = .synced
     
-    /// Loading state for initial fetch
+    /// Loading state for initial fetch (only true when no cached data)
     public private(set) var isLoading: Bool = false
+    
+    /// Whether a background refresh is in progress (data shown, refreshing in background)
+    public private(set) var isRefreshing: Bool = false
     
     /// Error message if something went wrong
     public private(set) var errorMessage: String?
@@ -34,103 +30,57 @@ public final class ChallengesManager {
     /// Whether we're currently connected to the network
     public private(set) var isOnline: Bool = true
     
-    // MARK: - Convenience accessors
-    
-    /// Current list of challenges (for backward compatibility)
-    public var challenges: [Challenge] {
-        challengesWithStats.map { $0.challenge }
-    }
-    
-    /// Get stats for a challenge
-    public func stats(for challengeId: String) -> ChallengeStats? {
-        challengesWithStats.first { $0.challenge.id == challengeId }?.stats
-    }
-    
     // MARK: - Dependencies
     
     private let apiClient: APIClient
     private let localStore: LocalChallengeStore
+    private let localEntryStore: LocalEntryStore
     
     // MARK: - Initialization
     
     public init(
         apiClient: APIClient = .shared,
-        localStore: LocalChallengeStore = .shared
+        localStore: LocalChallengeStore = .shared,
+        localEntryStore: LocalEntryStore = .shared
     ) {
         self.apiClient = apiClient
         self.localStore = localStore
+        self.localEntryStore = localEntryStore
         
-        // Load cached data immediately
-        let cachedChallenges = localStore.loadChallenges()
-        // Initially show challenges without stats until we fetch from server
-        self.challengesWithStats = cachedChallenges.map { challenge in
-            (challenge, defaultStats(for: challenge))
-        }
+        // Load cached data immediately - this is synchronous
+        self.challenges = localStore.loadChallenges()
+        self.stats = localStore.loadStats()
         updateSyncState()
-    }
-    
-    /// Create default stats for a challenge when offline
-    private func defaultStats(for challenge: Challenge) -> ChallengeStats {
-        ChallengeStats(
-            challengeId: challenge.id,
-            totalCount: 0,
-            remaining: challenge.target,
-            daysElapsed: 0,
-            daysRemaining: 365,
-            perDayRequired: Double(challenge.target) / 365.0,
-            currentPace: 0,
-            paceStatus: .none,
-            streakCurrent: 0,
-            streakBest: 0,
-            bestDay: nil,
-            dailyAverage: 0
-        )
     }
     
     // MARK: - Public API
     
+    /// Get stats for a specific challenge
+    public func stats(for challengeId: String) -> ChallengeStats? {
+        stats[challengeId]
+    }
+    
     /// Refresh challenges from server (called on app launch, pull-to-refresh)
     public func refresh() async {
-        isLoading = challengesWithStats.isEmpty
+        // Only show loading spinner if we have no cached data
+        // Otherwise just refresh silently in background
+        if challenges.isEmpty {
+            isLoading = true
+        } else {
+            isRefreshing = true
+        }
         errorMessage = nil
         
-        // In local-only mode, skip API calls entirely
-        let isLocalOnly = AuthManager.shared.isLocalOnlyMode || 
-            CommandLine.arguments.contains("--offline-mode")
-        
-        if isLocalOnly {
-            isOnline = false
-            syncState = .offline
-            isLoading = false
-            return
-        }
-        
         do {
-            // Fetch challenges with stats in one call
-            let serverData = try await apiClient.listChallengesWithStats(includeArchived: true)
-            
-            // Update local store and state
-            for item in serverData {
-                localStore.upsertChallenge(item.challenge)
-            }
-            
-            challengesWithStats = serverData.map { ($0.challenge, $0.stats) }
+            let serverData = try await apiClient.listChallenges(includeArchived: true)
+            localStore.mergeWithServer(serverData)
+            challenges = localStore.loadChallenges()
+            stats = localStore.loadStats()
             isOnline = true
-            
-            // Fetch dashboard stats and personal records
-            let (stats, records) = try await apiClient.getDashboardData()
-            dashboardStats = stats
-            personalRecords = records
-            
-            // Fetch all entries for charts
-            allEntries = try await apiClient.listEntries()
             
             // Try to sync any pending changes
             await syncPendingChanges()
         } catch let error as APIError {
-            #if DEBUG
-            print("[ChallengesManager] API error: \(error)")
-            #endif
             if error.isRecoverable {
                 isOnline = false
                 syncState = .offline
@@ -138,14 +88,12 @@ public final class ChallengesManager {
                 errorMessage = error.errorDescription
             }
         } catch {
-            #if DEBUG
-            print("[ChallengesManager] Error: \(error)")
-            #endif
             isOnline = false
             syncState = .offline
         }
         
         isLoading = false
+        isRefreshing = false
         updateSyncState()
     }
     
@@ -158,10 +106,7 @@ public final class ChallengesManager {
         endDate: Date,
         color: String = "#4B5563",
         icon: String = "checkmark",
-        isPublic: Bool = false,
-        countType: CountType = .simple,
-        unitLabel: String? = nil,
-        defaultIncrement: Int = 1
+        isPublic: Bool = false
     ) async {
         let tempId = UUID().uuidString
         let now = ISO8601DateFormatter().string(from: Date())
@@ -181,24 +126,36 @@ public final class ChallengesManager {
             icon: icon,
             isPublic: isPublic,
             isArchived: false,
-            countType: countType,
-            unitLabel: unitLabel,
-            defaultIncrement: defaultIncrement,
             createdAt: now,
             updatedAt: now
         )
         
-        localStore.upsertChallenge(challenge)
-        localStore.addPendingChange(.create(id: tempId))
+        // Create initial stats for new challenge
+        let initialStats = ChallengeStats(
+            challengeId: tempId,
+            totalCount: 0,
+            remaining: target,
+            daysElapsed: 0,
+            daysRemaining: Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 365,
+            perDayRequired: Double(target) / Double(max(1, Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 365)),
+            currentPace: 0,
+            paceStatus: .none,
+            streakCurrent: 0,
+            streakBest: 0,
+            bestDay: nil,
+            dailyAverage: 0
+        )
         
-        // Add to state with default stats
-        challengesWithStats.append((challenge, defaultStats(for: challenge)))
+        localStore.upsertChallenge(challenge)
+        localStore.upsertStats(initialStats, for: tempId)
+        localStore.addPendingChange(.create(id: tempId))
+        challenges = localStore.loadChallenges()
+        stats = localStore.loadStats()
         updateSyncState()
         
         // Try to sync immediately if online
         if isOnline {
             await syncPendingChanges()
-            await refresh() // Refresh to get actual stats
         }
     }
     
@@ -212,34 +169,28 @@ public final class ChallengesManager {
         isPublic: Bool? = nil,
         isArchived: Bool? = nil
     ) async {
-        guard let index = challengesWithStats.firstIndex(where: { $0.challenge.id == id }) else { return }
-        let existing = challengesWithStats[index].challenge
+        guard let challenge = localStore.getChallenge(id: id) else { return }
         
         // Create updated challenge
         let updated = Challenge(
-            id: existing.id,
-            userId: existing.userId,
-            name: name ?? existing.name,
-            target: target ?? existing.target,
-            timeframeType: existing.timeframeType,
-            startDate: existing.startDate,
-            endDate: existing.endDate,
-            color: color ?? existing.color,
-            icon: icon ?? existing.icon,
-            isPublic: isPublic ?? existing.isPublic,
-            isArchived: isArchived ?? existing.isArchived,
-            countType: existing.countType,
-            unitLabel: existing.unitLabel,
-            createdAt: existing.createdAt,
+            id: challenge.id,
+            userId: challenge.userId,
+            name: name ?? challenge.name,
+            target: target ?? challenge.target,
+            timeframeType: challenge.timeframeType,
+            startDate: challenge.startDate,
+            endDate: challenge.endDate,
+            color: color ?? challenge.color,
+            icon: icon ?? challenge.icon,
+            isPublic: isPublic ?? challenge.isPublic,
+            isArchived: isArchived ?? challenge.isArchived,
+            createdAt: challenge.createdAt,
             updatedAt: ISO8601DateFormatter().string(from: Date())
         )
         
         localStore.upsertChallenge(updated)
         localStore.addPendingChange(.update(id: id))
-        
-        // Update state keeping existing stats
-        let existingStats = challengesWithStats[index].stats
-        challengesWithStats[index] = (updated, existingStats)
+        challenges = localStore.loadChallenges()
         updateSyncState()
         
         if isOnline {
@@ -261,7 +212,8 @@ public final class ChallengesManager {
     public func deleteChallenge(id: String) async {
         localStore.removeChallenge(id: id)
         localStore.addPendingChange(.delete(id: id))
-        challengesWithStats.removeAll { $0.challenge.id == id }
+        challenges = localStore.loadChallenges()
+        stats = localStore.loadStats()
         updateSyncState()
         
         if isOnline {
@@ -271,22 +223,123 @@ public final class ChallengesManager {
     
     /// Get challenge by ID
     public func challenge(id: String) -> Challenge? {
-        challengesWithStats.first { $0.challenge.id == id }?.challenge
-    }
-    
-    /// Active (non-archived) challenges with stats
-    public var activeChallengesWithStats: [(challenge: Challenge, stats: ChallengeStats)] {
-        challengesWithStats.filter { !$0.challenge.isArchived }
+        challenges.first { $0.id == id }
     }
     
     /// Active (non-archived) challenges
     public var activeChallenges: [Challenge] {
-        challengesWithStats.filter { !$0.challenge.isArchived }.map { $0.challenge }
+        challenges.filter { !$0.isArchived }
     }
     
     /// Archived challenges
     public var archivedChallenges: [Challenge] {
-        challengesWithStats.filter { $0.challenge.isArchived }.map { $0.challenge }
+        challenges.filter { $0.isArchived }
+    }
+    
+    // MARK: - Entry Management (Optimistic)
+    
+    /// Add an entry optimistically - saves locally first, syncs in background
+    /// Returns immediately after local save for instant UI feedback
+    public func addEntry(_ request: CreateEntryRequest) {
+        let tempId = UUID().uuidString
+        let now = ISO8601DateFormatter().string(from: Date())
+        
+        // Create local entry immediately (optimistic)
+        let entry = Entry(
+            id: tempId,
+            userId: "",  // Will be set by server
+            challengeId: request.challengeId,
+            date: request.date,
+            count: request.count,
+            sets: request.sets,
+            note: request.note,
+            feeling: request.feeling,
+            createdAt: now,
+            updatedAt: now
+        )
+        
+        // Save locally and queue for sync
+        localEntryStore.upsertEntry(entry)
+        localEntryStore.addPendingChange(.create(id: tempId, request: request))
+        
+        // Update stats optimistically
+        updateStatsOptimistically(for: request.challengeId, addedCount: request.count)
+        
+        updateSyncState()
+        
+        // Try to sync immediately in background if online
+        if isOnline {
+            Task {
+                await syncPendingEntries()
+            }
+        }
+    }
+    
+    /// Update stats locally after adding entry (optimistic update)
+    private func updateStatsOptimistically(for challengeId: String, addedCount: Int) {
+        guard var currentStats = stats[challengeId] else { return }
+        
+        // Update stats optimistically
+        let newTotal = currentStats.totalCount + addedCount
+        let challenge = challenges.first { $0.id == challengeId }
+        let target = challenge?.target ?? currentStats.totalCount + currentStats.remaining
+        let newRemaining = max(0, target - newTotal)
+        
+        // Calculate new pace
+        let daysElapsed = max(1, currentStats.daysElapsed)
+        let newPace = Double(newTotal) / Double(daysElapsed)
+        
+        // Determine pace status
+        let newPaceStatus: PaceStatus
+        if currentStats.perDayRequired > 0 {
+            let ratio = newPace / currentStats.perDayRequired
+            if ratio >= 1.1 {
+                newPaceStatus = .ahead
+            } else if ratio >= 0.9 {
+                newPaceStatus = .onPace
+            } else {
+                newPaceStatus = .behind
+            }
+        } else {
+            newPaceStatus = .none
+        }
+        
+        let updatedStats = ChallengeStats(
+            challengeId: challengeId,
+            totalCount: newTotal,
+            remaining: newRemaining,
+            daysElapsed: currentStats.daysElapsed,
+            daysRemaining: currentStats.daysRemaining,
+            perDayRequired: currentStats.perDayRequired,
+            currentPace: newPace,
+            paceStatus: newPaceStatus,
+            streakCurrent: currentStats.streakCurrent,
+            streakBest: currentStats.streakBest,
+            bestDay: currentStats.bestDay,
+            dailyAverage: newPace
+        )
+        
+        // Update in-memory and persisted stats
+        stats[challengeId] = updatedStats
+        localStore.upsertStats(updatedStats, for: challengeId)
+    }
+    
+    /// Get recent entries for a challenge (from local cache)
+    public func recentEntries(for challengeId: String, limit: Int = 10) -> [Entry] {
+        localEntryStore.loadEntries(forChallenge: challengeId)
+            .sorted { $0.date > $1.date }
+            .prefix(limit)
+            .map { $0 }
+    }
+    
+    /// Fetch and cache entries for a challenge from server
+    public func fetchEntries(for challengeId: String) async {
+        do {
+            let serverEntries = try await apiClient.listEntries(challengeId: challengeId)
+            localEntryStore.mergeWithServer(serverEntries, forChallenge: challengeId)
+        } catch {
+            // Failed to fetch, local cache remains
+        }
     }
     
     // MARK: - Private Helpers
@@ -314,10 +367,7 @@ public final class ChallengesManager {
                             endDate: local.endDate,
                             color: local.color,
                             icon: local.icon,
-                            isPublic: local.isPublic,
-                            countType: local.countType,
-                            unitLabel: local.unitLabel,
-                            defaultIncrement: local.defaultIncrement
+                            isPublic: local.isPublic
                         )
                         let serverChallenge = try await apiClient.createChallenge(request)
                         
@@ -363,170 +413,89 @@ public final class ChallengesManager {
             }
         }
         
-        // Reload from local store
-        let cachedChallenges = localStore.loadChallenges()
-        // Keep existing stats where available
-        var updatedWithStats: [(Challenge, ChallengeStats)] = []
-        for challenge in cachedChallenges {
-            if let existingStats = stats(for: challenge.id) {
-                updatedWithStats.append((challenge, existingStats))
-            } else {
-                updatedWithStats.append((challenge, defaultStats(for: challenge)))
+        challenges = localStore.loadChallenges()
+        stats = localStore.loadStats()
+        updateSyncState()
+    }
+    
+    /// Sync all pending entry changes to server
+    private func syncPendingEntries() async {
+        let pendingChanges = localEntryStore.loadPendingChanges()
+        guard !pendingChanges.isEmpty else {
+            updateSyncState()
+            return
+        }
+        
+        syncState = .syncing
+        
+        for change in pendingChanges {
+            do {
+                switch change {
+                case .create(let tempId, let request):
+                    // Create on server
+                    let serverEntry = try await apiClient.createEntry(request)
+                    
+                    // Replace temp entry with server entry
+                    localEntryStore.removeEntry(id: tempId)
+                    localEntryStore.upsertEntry(serverEntry)
+                    localEntryStore.removePendingChange(for: tempId)
+                    
+                case .update(let id):
+                    // TODO: Implement update sync if needed
+                    localEntryStore.removePendingChange(for: id)
+                    
+                case .delete(let id):
+                    try await apiClient.deleteEntry(id: id)
+                    localEntryStore.removePendingChange(for: id)
+                }
+                
+            } catch let error as APIError {
+                if !error.isRecoverable {
+                    // Remove failed non-recoverable changes
+                    localEntryStore.removePendingChange(for: change.entryId)
+                }
+                // Keep recoverable errors in queue for retry
+            } catch {
+                // Network errors - keep in queue for retry
             }
         }
-        challengesWithStats = updatedWithStats
+        
+        // After syncing entries, refresh to get updated stats from server
+        // This ensures stats are accurate after server-side recalculation
+        if isOnline {
+            do {
+                let serverData = try await apiClient.listChallenges(includeArchived: true)
+                localStore.mergeWithServer(serverData)
+                stats = localStore.loadStats()
+            } catch {
+                // Failed to refresh stats, keep optimistic values
+            }
+        }
         
         updateSyncState()
     }
     
     /// Update sync state based on pending changes
     private func updateSyncState() {
-        let pendingCount = localStore.loadPendingChanges().count
+        let challengePendingCount = localStore.loadPendingChanges().count
+        let entryPendingCount = localEntryStore.loadPendingChanges().count
+        let totalPending = challengePendingCount + entryPendingCount
         
         if !isOnline {
             syncState = .offline
-        } else if pendingCount > 0 {
-            syncState = .pending(count: pendingCount)
+        } else if totalPending > 0 {
+            syncState = .pending(count: totalPending)
         } else {
             syncState = .synced
         }
     }
     
-
-    // MARK: - Entry Management
-    
-    /// Get entries for a specific challenge
-    public func getEntries(for challengeId: String) async -> [Entry] {
-        do {
-            let entries = try await apiClient.listEntries(challengeId: challengeId)
-            // Update cached entries for this challenge
-            allEntries.removeAll { $0.challengeId == challengeId }
-            allEntries.append(contentsOf: entries)
-            return entries
-        } catch {
-            #if DEBUG
-            print("[ChallengesManager] Error fetching entries: \(error)")
-            #endif
-            // Return cached entries for this challenge
-            return allEntries.filter { $0.challengeId == challengeId }
-        }
-    }
-    
-    /// Create a new entry and refresh stats
-    public func createEntry(_ request: CreateEntryRequest) async throws -> Entry {
-        let entry = try await apiClient.createEntry(request)
-        
-        // Add to local cache
-        allEntries.append(entry)
-        
-        // Refresh stats for the affected challenge and dashboard
-        await refreshChallengeStats(challengeId: request.challengeId)
-        
-        return entry
-    }
-    
-    /// Update an entry
-    public func updateEntry(id: String, data: UpdateEntryRequest) async throws {
-        // Optimistically update local cache
-        if let index = allEntries.firstIndex(where: { $0.id == id }) {
-            let existing = allEntries[index]
-            let updated = Entry(
-                id: existing.id,
-                userId: existing.userId,
-                challengeId: existing.challengeId,
-                date: data.date ?? existing.date,
-                count: data.count ?? existing.count,
-                sets: data.sets ?? existing.sets,
-                note: data.note ?? existing.note,
-                feeling: data.feeling ?? existing.feeling,
-                createdAt: existing.createdAt,
-                updatedAt: ISO8601DateFormatter().string(from: Date())
-            )
-            allEntries[index] = updated
-        }
-        
-        do {
-            let serverEntry = try await apiClient.updateEntry(id: id, data: data)
-            // Update with server response
-            if let index = allEntries.firstIndex(where: { $0.id == id }) {
-                allEntries[index] = serverEntry
-            }
-            
-            // Refresh stats for the affected challenge
-            if let entry = allEntries.first(where: { $0.id == id }) {
-                await refreshChallengeStats(challengeId: entry.challengeId)
-            }
-        } catch {
-            // Rollback on error - reload entries
-            if let entry = allEntries.first(where: { $0.id == id }) {
-                _ = await getEntries(for: entry.challengeId)
-            }
-            throw error
-        }
-    }
-    
-    /// Delete an entry with optimistic update
-    public func deleteEntry(id: String) async throws -> Entry {
-        // Find and remove from cache
-        guard let index = allEntries.firstIndex(where: { $0.id == id }) else {
-            throw APIError.notFound("Entry not found")
-        }
-        
-        let deletedEntry = allEntries[index]
-        allEntries.remove(at: index)
-        
-        do {
-            try await apiClient.deleteEntry(id: id)
-            
-            // Refresh stats for the affected challenge
-            await refreshChallengeStats(challengeId: deletedEntry.challengeId)
-            
-            return deletedEntry
-        } catch {
-            // Rollback on error
-            allEntries.insert(deletedEntry, at: index)
-            throw error
-        }
-    }
-    
-    /// Restore a deleted entry
-    public func restoreEntry(id: String) async throws {
-        let restoredEntry = try await apiClient.restoreEntry(id: id)
-        
-        // Add back to cache
-        allEntries.append(restoredEntry)
-        
-        // Refresh stats for the affected challenge
-        await refreshChallengeStats(challengeId: restoredEntry.challengeId)
-    }
-    
-    /// Refresh stats for a specific challenge and dashboard
-    private func refreshChallengeStats(challengeId: String) async {
-        do {
-            // Refresh the individual challenge stats
-            let stats = try await apiClient.getChallengeStats(challengeId: challengeId)
-            if let index = challengesWithStats.firstIndex(where: { $0.challenge.id == challengeId }) {
-                challengesWithStats[index].stats = stats
-            }
-            
-            // Also refresh dashboard stats since they depend on entry counts
-            let (dashStats, records) = try await apiClient.getDashboardData()
-            dashboardStats = dashStats
-            personalRecords = records
-        } catch {
-            #if DEBUG
-            print("[ChallengesManager] Error refreshing stats: \(error)")
-            #endif
-        }
-    }
-
     /// Clear all local data (for logout)
     public func clearLocalData() {
         localStore.clearAll()
-        challengesWithStats = []
-        dashboardStats = nil
-        personalRecords = nil
-        allEntries = []
+        localEntryStore.clearAll()
+        challenges = []
+        stats = [:]
         syncState = .synced
     }
 }

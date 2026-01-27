@@ -13,8 +13,14 @@ data class ChallengeResponse(
 )
 
 @Serializable
+data class ChallengeWithStats(
+    val challenge: Challenge,
+    val stats: ChallengeStats
+)
+
+@Serializable
 data class ChallengesResponse(
-    val challenges: List<Challenge>
+    val challenges: List<ChallengeWithStats>
 )
 
 @Serializable

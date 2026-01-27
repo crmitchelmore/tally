@@ -25,13 +25,13 @@ public struct ChallengeListView: View {
     
     public var body: some View {
         Group {
-            if manager.isLoading && manager.challengesWithStats.isEmpty {
+            if manager.isLoading && manager.challenges.isEmpty {
                 LoadingStateView()
             } else if let error = manager.errorMessage {
                 ErrorStateView(message: error) {
                     Task { await manager.refresh() }
                 }
-            } else if manager.challengesWithStats.isEmpty {
+            } else if manager.challenges.isEmpty {
                 EmptyStateView(onCreateChallenge: onCreateChallenge)
             } else {
                 challengesList
@@ -54,19 +54,19 @@ public struct ChallengeListView: View {
                         .tallyPadding(.horizontal)
                 }
                 
-                // Active challenges with stats
-                if !manager.activeChallengesWithStats.isEmpty {
+                // Active challenges
+                if !manager.activeChallenges.isEmpty {
                     Section {
-                        ForEach(manager.activeChallengesWithStats, id: \.challenge.id) { item in
+                        ForEach(manager.activeChallenges) { challenge in
                             ChallengeCardView(
-                                challenge: item.challenge,
-                                stats: item.stats,
-                                onTap: { onSelectChallenge(item.challenge) },
-                                onQuickAdd: { onQuickAdd(item.challenge) }
+                                challenge: challenge,
+                                stats: manager.stats(for: challenge.id),
+                                onTap: { onSelectChallenge(challenge) },
+                                onQuickAdd: { onQuickAdd(challenge) }
                             )
                         }
                     } header: {
-                        SectionHeader(title: "Active", count: manager.activeChallengesWithStats.count)
+                        SectionHeader(title: "Active", count: manager.activeChallenges.count)
                     }
                     .tallyPadding(.horizontal)
                 }
@@ -76,10 +76,9 @@ public struct ChallengeListView: View {
                     Section {
                         DisclosureGroup(isExpanded: $showArchived) {
                             ForEach(manager.archivedChallenges) { challenge in
-                                let stats = manager.stats(for: challenge.id)
                                 ChallengeCardView(
                                     challenge: challenge,
-                                    stats: stats,
+                                    stats: manager.stats(for: challenge.id),
                                     onTap: { onSelectChallenge(challenge) },
                                     onQuickAdd: { onQuickAdd(challenge) }
                                 )
@@ -104,7 +103,7 @@ struct SectionHeader: View {
     let title: String
     let count: Int
     
-    public var body: some View {
+    var body: some View {
         HStack {
             Text(title)
                 .font(.tallyTitleSmall)
@@ -124,11 +123,10 @@ struct SectionHeader: View {
     }
 }
 
-public struct SyncStatusBanner: View {
-    public init(state: SyncState) { self.state = state }
+struct SyncStatusBanner: View {
     let state: SyncState
     
-    public var body: some View {
+    var body: some View {
         HStack(spacing: TallySpacing.sm) {
             Image(systemName: iconName)
                 .foregroundColor(iconColor)
@@ -180,8 +178,27 @@ public struct SyncStatusBanner: View {
     }
 }
 
+/// Subtle indicator shown when refreshing with cached data already displayed
+struct RefreshingIndicator: View {
+    var body: some View {
+        HStack(spacing: TallySpacing.xs) {
+            ProgressView()
+                .scaleEffect(0.7)
+            Text("Updating…")
+                .font(.tallyLabelSmall)
+                .foregroundColor(Color.tallyInkSecondary)
+        }
+        .padding(.horizontal, TallySpacing.sm)
+        .padding(.vertical, TallySpacing.xs)
+        .background(Color.tallyPaper.opacity(0.95))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.1), radius: 4, y: 2)
+        .padding(.top, TallySpacing.xs)
+    }
+}
+
 struct LoadingStateView: View {
-    public var body: some View {
+    var body: some View {
         VStack(spacing: TallySpacing.lg) {
             ProgressView()
                 .scaleEffect(1.2)
@@ -198,7 +215,7 @@ struct ErrorStateView: View {
     let message: String
     let onRetry: () -> Void
     
-    public var body: some View {
+    var body: some View {
         VStack(spacing: TallySpacing.lg) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 48))
@@ -225,7 +242,7 @@ struct ErrorStateView: View {
 struct EmptyStateView: View {
     let onCreateChallenge: () -> Void
     
-    public var body: some View {
+    var body: some View {
         VStack(spacing: TallySpacing.lg) {
             // Tally mark illustration
             TallyMarkView(count: 5, size: 80)
@@ -248,11 +265,9 @@ struct EmptyStateView: View {
             .buttonStyle(.borderedProminent)
             .tint(Color.tallyAccent)
             .tallyPadding(.top, TallySpacing.sm)
-            .accessibilityIdentifier("create-challenge-button")
         }
         .tallyPadding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .accessibilityIdentifier("empty-state")
     }
 }
 

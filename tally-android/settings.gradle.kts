@@ -23,6 +23,7 @@ dependencyResolutionManagement {
 rootProject.name = "Tally"
 
 include(":app")
+include(":core:data")
 include(":core:design")
 include(":core:auth")
 include(":core:network")

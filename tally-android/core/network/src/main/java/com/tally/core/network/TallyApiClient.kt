@@ -15,17 +15,23 @@ import java.net.URL
  */
 class TallyApiClient(
     private val baseUrl: String,
-    private val authManager: AuthManager
+    private val getAuthToken: () -> String?
 ) {
     private val json = Json {
         ignoreUnknownKeys = true
         encodeDefaults = true
     }
+    
+    /** Convenience constructor using AuthManager */
+    constructor(baseUrl: String, authManager: AuthManager) : this(
+        baseUrl = baseUrl,
+        getAuthToken = { authManager.getToken() }
+    )
 
     // ===== Challenges API =====
 
     /** List all challenges for the current user */
-    suspend fun listChallenges(): ApiResult<List<Challenge>> {
+    suspend fun listChallenges(): ApiResult<List<ChallengeWithStats>> {
         return get<ChallengesResponse>("/api/v1/challenges").map { it.challenges }
     }
 
@@ -195,7 +201,7 @@ class TallyApiClient(
         body: String?
     ): ApiResult<T> = withContext(Dispatchers.IO) {
         try {
-            val token = authManager.getToken()
+            val token = getAuthToken()
             if (token == null) {
                 return@withContext ApiResult.Failure(ApiError.Unauthorized())
             }
@@ -262,7 +268,7 @@ class TallyApiClient(
         path: String
     ): ApiResult<Unit> = withContext(Dispatchers.IO) {
         try {
-            val token = authManager.getToken()
+            val token = getAuthToken()
             if (token == null) {
                 return@withContext ApiResult.Failure(ApiError.Unauthorized())
             }

@@ -232,7 +232,9 @@ private fun DrawScope.drawFiveGate(
 }
 
 /**
- * Draws 6-24 as multiple 5-gates in X layout.
+ * Draws 6-24 as multiple 5-gates.
+ * For 6-9: Uses side-by-side layout (5-gate left, partial strokes right)
+ * For 10-24: Uses X layout (center, NE, NW, SE, SW)
  */
 private fun DrawScope.drawMultipleFiveGates(
     count: Int,
@@ -247,6 +249,26 @@ private fun DrawScope.drawMultipleFiveGates(
     val w = size.width
     val h = size.height
 
+    // For 6-9: Use side-by-side layout instead of X layout
+    if (count in 6..9) {
+        val gateSize = w * 0.45f
+        val gap = w * 0.05f
+        
+        // Draw 5-gate on the left
+        translate(left = gap, top = (h - gateSize) / 2) {
+            drawMiniGate(inkColor, accentColor, strokeWidth * 0.7f, gateSize, 5, progress)
+        }
+        
+        // Draw remaining strokes on the right
+        if (remaining > 0) {
+            translate(left = w / 2 + gap, top = (h - gateSize) / 2) {
+                drawMiniGate(inkColor, accentColor, strokeWidth * 0.7f, gateSize, remaining, progress)
+            }
+        }
+        return
+    }
+
+    // For 10+: Use X layout
     // Positions in X layout: center, NE, NW, SE, SW
     val positions = listOf(
         Offset(0.5f, 0.5f),  // center

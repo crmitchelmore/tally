@@ -2,7 +2,7 @@ import SwiftUI
 import TallyDesign
 import TallyFeatureAPIClient
 
-/// Detail view for a challenge showing stats, heatmap, and actions
+/// Detail view for a challenge showing stats, burn-up chart, and actions
 public struct ChallengeDetailView: View {
     let challenge: Challenge
     @Bindable var manager: ChallengesManager
@@ -15,9 +15,6 @@ public struct ChallengeDetailView: View {
     @State private var isLoadingStats = false
     @State private var showDeleteConfirmation = false
     @State private var showArchiveConfirmation = false
-    @State private var showEditEntry: Entry?
-    @State private var deletedEntry: Entry?
-    @State private var showUndoBanner = false
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
@@ -47,11 +44,13 @@ public struct ChallengeDetailView: View {
                 // Stats grid
                 if let stats = stats {
                     statsGrid(stats)
-                }
-                
-                // Recent entries
-                if !entries.isEmpty {
-                    entriesSection
+                    
+                    // Burn-up chart showing full duration with projection
+                    BurnUpChartView(
+                        challenge: challenge,
+                        stats: stats,
+                        entries: entries
+                    )
                 }
                 
                 // Actions section
@@ -90,7 +89,7 @@ public struct ChallengeDetailView: View {
             }
         }
         .task {
-            await loadData()
+            await loadStats()
         }
         .confirmationDialog(
             "Archive Challenge",
@@ -121,29 +120,6 @@ public struct ChallengeDetailView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This will permanently delete the challenge and all its entries.")
-        }
-        .sheet(item: $showEditEntry) { entry in
-            EditEntrySheet(
-                entry: entry,
-                challenge: challenge,
-                onSave: {
-                    showEditEntry = nil
-                    Task { await loadData() }
-                },
-                onDelete: {
-                    showEditEntry = nil
-                    Task { await loadData() }
-                },
-                onCancel: {
-                    showEditEntry = nil
-                }
-            )
-        }
-        .overlay(alignment: .bottom) {
-            if showUndoBanner, let entry = deletedEntry {
-                undoBanner(entry: entry)
-                    .transition(.move(edge: .bottom))
-            }
         }
     }
     
@@ -247,126 +223,6 @@ public struct ChallengeDetailView: View {
         }
     }
     
-    // MARK: - Entries Section
-    
-    private var entriesSection: some View {
-        VStack(spacing: TallySpacing.md) {
-            HStack {
-                Text("Recent Entries")
-                    .font(.tallyTitleSmall)
-                    .foregroundColor(Color.tallyInk)
-                Spacer()
-            }
-            
-            VStack(spacing: TallySpacing.sm) {
-                ForEach(entries.prefix(10)) { entry in
-                    entryRow(entry)
-                        .onTapGesture {
-                            showEditEntry = entry
-                        }
-                }
-            }
-        }
-    }
-    
-    private func entryRow(_ entry: Entry) -> some View {
-        HStack(spacing: TallySpacing.md) {
-            // Date
-            VStack(alignment: .leading, spacing: 2) {
-                Text(formatEntryDate(entry.date))
-                    .font(.tallyLabelMedium)
-                    .foregroundColor(Color.tallyInk)
-                
-                if let feeling = entry.feeling {
-                    Text(feelingEmoji(feeling))
-                        .font(.caption)
-                }
-            }
-            
-            Spacer()
-            
-            // Count
-            VStack(alignment: .trailing, spacing: 2) {
-                Text("\(entry.count)")
-                    .font(.tallyMonoBody)
-                    .foregroundColor(Color.tallyInk)
-                
-                if let sets = entry.sets, sets.count > 1 {
-                    Text("\(sets.count) sets")
-                        .font(.tallyLabelSmall)
-                        .foregroundColor(Color.tallyInkSecondary)
-                }
-            }
-            
-            // Note indicator
-            if entry.note != nil && !(entry.note?.isEmpty ?? true) {
-                Image(systemName: "note.text")
-                    .font(.caption)
-                    .foregroundColor(Color.tallyInkTertiary)
-            }
-        }
-        .padding(TallySpacing.md)
-        .background(Color.tallyPaperTint)
-        .cornerRadius(12)
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            Button(role: .destructive) {
-                Task {
-                    await deleteEntryWithUndo(entry)
-                }
-            } label: {
-                Label("Delete", systemImage: "trash")
-            }
-        }
-        .contextMenu {
-            Button {
-                showEditEntry = entry
-            } label: {
-                Label("Edit", systemImage: "pencil")
-            }
-            
-            Button(role: .destructive) {
-                Task {
-                    await deleteEntryWithUndo(entry)
-                }
-            } label: {
-                Label("Delete", systemImage: "trash")
-            }
-        }
-        .accessibilityIdentifier("entryRow_\(entry.id)")
-    }
-    
-    private func undoBanner(entry: Entry) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Entry deleted")
-                    .font(.tallyLabelMedium)
-                    .foregroundColor(Color.tallyPaper)
-                
-                Text("\(entry.count) \(challenge.resolvedUnitLabel) on \(formatEntryDate(entry.date))")
-                    .font(.tallyLabelSmall)
-                    .foregroundColor(Color.tallyPaper.opacity(0.8))
-            }
-            
-            Spacer()
-            
-            Button {
-                Task {
-                    await restoreDeletedEntry()
-                }
-            } label: {
-                Text("Undo")
-                    .font(.tallyLabelMedium)
-                    .fontWeight(.semibold)
-                    .foregroundColor(Color.tallyAccent)
-            }
-        }
-        .padding(TallySpacing.md)
-        .background(Color.tallyInk)
-        .cornerRadius(12)
-        .padding(TallySpacing.md)
-        .shadow(radius: 8)
-    }
-    
     // MARK: - Actions Section
     
     private var actionsSection: some View {
@@ -426,92 +282,19 @@ public struct ChallengeDetailView: View {
         return displayFormatter.string(from: date)
     }
     
-    private func formatEntryDate(_ isoString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withFullDate]
-        
-        guard let date = formatter.date(from: isoString) else {
-            return isoString
-        }
-        
-        let displayFormatter = DateFormatter()
-        displayFormatter.dateFormat = "MMM d"
-        return displayFormatter.string(from: date)
-    }
-    
-    private func feelingEmoji(_ feeling: Feeling) -> String {
-        switch feeling {
-        case .great: return "🔥"
-        case .good: return "😊"
-        case .okay: return "😐"
-        case .tough: return "😤"
-        }
-    }
-    
-    private func loadData() async {
+    private func loadStats() async {
         isLoadingStats = true
         
-        async let statsTask: ChallengeStats? = {
-            do {
-                return try await APIClient.shared.getChallengeStats(challengeId: challenge.id)
-            } catch {
-                return nil
-            }
-        }()
+        // Load entries for the burn-up chart
+        await manager.fetchEntries(for: challenge.id)
+        entries = manager.recentEntries(for: challenge.id)
         
-        async let entriesTask = manager.getEntries(for: challenge.id)
-        
-        let (fetchedStats, fetchedEntries) = await (statsTask, entriesTask)
-        
-        stats = fetchedStats
-        entries = fetchedEntries.sorted { $0.date > $1.date }
+        do {
+            stats = try await APIClient.shared.getChallengeStats(challengeId: challenge.id)
+        } catch {
+            // Stats loading failed, show challenge without stats
+        }
         isLoadingStats = false
-    }
-    
-    private func deleteEntryWithUndo(_ entry: Entry) async {
-        do {
-            let deleted = try await manager.deleteEntry(id: entry.id)
-            deletedEntry = deleted
-            
-            // Remove from local list
-            entries.removeAll { $0.id == entry.id }
-            
-            // Show undo banner
-            withAnimation {
-                showUndoBanner = true
-            }
-            
-            // Auto-dismiss after 5 seconds
-            try? await Task.sleep(nanoseconds: 5_000_000_000)
-            
-            withAnimation {
-                showUndoBanner = false
-            }
-            
-            // Clear deleted entry after animation
-            try? await Task.sleep(nanoseconds: 300_000_000)
-            deletedEntry = nil
-            
-        } catch {
-            print("[ChallengeDetailView] Error deleting entry: \(error)")
-        }
-    }
-    
-    private func restoreDeletedEntry() async {
-        guard let entry = deletedEntry else { return }
-        
-        withAnimation {
-            showUndoBanner = false
-        }
-        
-        do {
-            try await manager.restoreEntry(id: entry.id)
-            await loadData()
-        } catch {
-            print("[ChallengeDetailView] Error restoring entry: \(error)")
-        }
-        
-        deletedEntry = nil
     }
 }
 

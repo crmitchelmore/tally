@@ -69,7 +69,7 @@ public struct UpdateChallengeRequest: Codable, Sendable {
 }
 
 /// Request to create a new entry
-public struct CreateEntryRequest: Codable, Sendable {
+public struct CreateEntryRequest: Codable, Sendable, Equatable {
     public let challengeId: String
     public let date: String
     public let count: Int

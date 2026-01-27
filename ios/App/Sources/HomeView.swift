@@ -11,36 +11,34 @@ struct HomeView: View {
     @State private var selectedChallenge: Challenge?
     @State private var editingChallenge: Challenge?
     @State private var addEntryChallenge: Challenge?
-    @State private var showDashboard = false
+    @State private var recentEntriesForAdd: [Entry] = []
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
     var body: some View {
-        ScrollView {
-            LazyVStack(spacing: TallySpacing.lg) {
-                // Dashboard section (highlights, records)
-                dashboardSection
-                
-                // Challenges list
-                challengesSection
+        ChallengeListView(
+            manager: challengesManager,
+            onSelectChallenge: { challenge in
+                selectedChallenge = challenge
+            },
+            onCreateChallenge: {
+                showCreateSheet = true
+            },
+            onQuickAdd: { challenge in
+                // Open add entry sheet
+                Task {
+                    await prepareAndShowAddEntry(for: challenge)
+                }
             }
-            .tallyPadding(.vertical)
-        }
-        .background(Color.tallyPaper)
-        .refreshable {
-            await challengesManager.refresh()
-        }
-        .task {
-            await challengesManager.refresh()
-        }
+        )
         .navigationTitle("Tally")
         .toolbar {
+            // Sync status in leading position (won't overlap with title)
             ToolbarItem(placement: .navigationBarLeading) {
-                Button {
-                    showDashboard.toggle()
-                } label: {
-                    Image(systemName: showDashboard ? "chart.bar.fill" : "chart.bar")
-                }
+                SyncStatusToolbarItem(
+                    syncState: challengesManager.syncState,
+                    isRefreshing: challengesManager.isRefreshing
+                )
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -49,7 +47,6 @@ struct HomeView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
-                .accessibilityIdentifier("create-challenge-button")
             }
         }
         .sheet(isPresented: $showCreateSheet) {
@@ -70,7 +67,9 @@ struct HomeView: View {
                     manager: challengesManager,
                     onAddEntry: {
                         selectedChallenge = nil
-                        addEntryChallenge = challenge
+                        Task {
+                            await prepareAndShowAddEntry(for: challenge)
+                        }
                     },
                     onEdit: {
                         selectedChallenge = nil
@@ -97,146 +96,84 @@ struct HomeView: View {
         .sheet(item: $addEntryChallenge) { challenge in
             AddEntrySheet(
                 challenge: challenge,
-                manager: challengesManager,
-                onSave: {
-                    addEntryChallenge = nil
+                recentEntries: recentEntriesForAdd,
+                onSubmit: { request in
+                    // Optimistic save - returns immediately, syncs in background
+                    challengesManager.addEntry(request)
                 },
-                onCancel: {
+                onDismiss: {
                     addEntryChallenge = nil
                 }
             )
         }
     }
     
-    // MARK: - Dashboard Section
-    
-    @ViewBuilder
-    private var dashboardSection: some View {
-        if showDashboard {
-            DashboardView(manager: challengesManager)
-        } else {
-            // Compact highlights
-            if let stats = challengesManager.dashboardStats {
-                compactHighlights(stats: stats)
-            }
-        }
+    /// Fetch recent entries and show the add entry sheet
+    private func prepareAndShowAddEntry(for challenge: Challenge) async {
+        // First show the sheet with cached entries (instant)
+        recentEntriesForAdd = challengesManager.recentEntries(for: challenge.id)
+        addEntryChallenge = challenge
+        
+        // Then fetch fresh entries in background for next time
+        await challengesManager.fetchEntries(for: challenge.id)
     }
+}
+
+/// Compact sync status for toolbar - shows only when there's something to show
+struct SyncStatusToolbarItem: View {
+    let syncState: SyncState
+    let isRefreshing: Bool
     
-    private func compactHighlights(stats: DashboardStats) -> some View {
-        HStack(spacing: TallySpacing.md) {
-            compactStat(value: "\(stats.today)", label: "Today")
-            compactStat(value: "\(stats.totalMarks)", label: "Week")
-            compactStat(value: "\(stats.bestStreak)d", label: "Streak")
-        }
-        .tallyPadding(.horizontal)
-    }
-    
-    private func compactStat(value: String, label: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.tallyMonoBody)
-                .foregroundColor(Color.tallyInk)
-            Text(label)
-                .font(.tallyLabelSmall)
-                .foregroundColor(Color.tallyInkSecondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, TallySpacing.sm)
-        .background(Color.tallyPaperTint)
-        .cornerRadius(8)
-    }
-    
-    // MARK: - Challenges Section
-    
-    @ViewBuilder
-    private var challengesSection: some View {
-        if challengesManager.isLoading && challengesManager.challengesWithStats.isEmpty {
-            loadingState
-        } else if let error = challengesManager.errorMessage {
-            errorState(error)
-        } else if challengesManager.challengesWithStats.isEmpty {
-            emptyState
-        } else {
-            challengesList
-        }
-    }
-    
-    private var loadingState: some View {
-        VStack(spacing: TallySpacing.lg) {
-            ProgressView()
-                .scaleEffect(1.2)
-            Text("Loading challenges…")
-                .font(.tallyBodyMedium)
-                .foregroundColor(Color.tallyInkSecondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, TallySpacing.xxl)
-    }
-    
-    private func errorState(_ message: String) -> some View {
-        VStack(spacing: TallySpacing.lg) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 48))
-                .foregroundColor(Color.tallyWarning)
-            Text("Something went wrong")
-                .font(.tallyTitleSmall)
-                .foregroundColor(Color.tallyInk)
-            Text(message)
-                .font(.tallyBodySmall)
-                .foregroundColor(Color.tallyInkSecondary)
-                .multilineTextAlignment(.center)
-            Button("Try Again") {
-                Task { await challengesManager.refresh() }
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(Color.tallyAccent)
-        }
-        .tallyPadding()
-    }
-    
-    private var emptyState: some View {
-        VStack(spacing: TallySpacing.lg) {
-            TallyMarkView(count: 5, size: 80)
-            
-            Text("No challenges yet")
-                .font(.tallyTitleMedium)
-                .foregroundColor(Color.tallyInk)
-            
-            Text("Create your first challenge and start tracking your progress.")
-                .font(.tallyBodyMedium)
-                .foregroundColor(Color.tallyInkSecondary)
-                .multilineTextAlignment(.center)
-            
-            Button {
-                showCreateSheet = true
-            } label: {
-                Label("Create Challenge", systemImage: "plus")
-                    .font(.tallyTitleSmall)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(Color.tallyAccent)
-        }
-        .tallyPadding()
-        .accessibilityIdentifier("empty-state")
-    }
-    
-    private var challengesList: some View {
-        VStack(spacing: TallySpacing.md) {
-            // Sync banner
-            if challengesManager.syncState != .synced {
-                SyncStatusBanner(state: challengesManager.syncState)
-                    .tallyPadding(.horizontal)
-            }
-            
-            // Active challenges
-            ForEach(challengesManager.activeChallengesWithStats, id: \.challenge.id) { item in
-                ChallengeCardView(
-                    challenge: item.challenge,
-                    stats: item.stats,
-                    onTap: { selectedChallenge = item.challenge },
-                    onQuickAdd: { addEntryChallenge = item.challenge }
-                )
-                .tallyPadding(.horizontal)
+    var body: some View {
+        Group {
+            if isRefreshing {
+                HStack(spacing: 4) {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                    Text("Updating")
+                        .font(.caption)
+                        .foregroundColor(Color.tallyInkSecondary)
+                }
+            } else {
+                switch syncState {
+                case .synced:
+                    // Show checkmark briefly or just "Up to date" text
+                    Text("Up to date")
+                        .font(.caption)
+                        .foregroundColor(Color.tallyInkTertiary)
+                case .pending(let count):
+                    HStack(spacing: 4) {
+                        Image(systemName: "clock.fill")
+                            .font(.caption)
+                        Text("\(count) pending")
+                            .font(.caption)
+                    }
+                    .foregroundColor(Color.tallyWarning)
+                case .syncing:
+                    HStack(spacing: 4) {
+                        ProgressView()
+                            .scaleEffect(0.6)
+                        Text("Syncing")
+                            .font(.caption)
+                    }
+                    .foregroundColor(Color.tallyInkSecondary)
+                case .offline:
+                    HStack(spacing: 4) {
+                        Image(systemName: "wifi.slash")
+                            .font(.caption)
+                        Text("Offline")
+                            .font(.caption)
+                    }
+                    .foregroundColor(Color.tallyInkSecondary)
+                case .failed:
+                    HStack(spacing: 4) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.caption)
+                        Text("Sync failed")
+                            .font(.caption)
+                    }
+                    .foregroundColor(Color.tallyError)
+                }
             }
         }
     }

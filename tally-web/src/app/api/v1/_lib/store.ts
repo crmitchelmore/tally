@@ -43,6 +43,26 @@ export async function updateUser(user: User): Promise<User> {
   });
 }
 
+export async function updateUserPreferences(
+  userId: string,
+  preferences: {
+    dashboardConfig?: {
+      panels: {
+        highlights: boolean;
+        personalRecords: boolean;
+        progressGraph: boolean;
+        burnUpChart: boolean;
+        setsStats: boolean;
+      };
+    };
+  }
+): Promise<void> {
+  await convexUsers.updatePreferences({
+    id: userId as Id<"users">,
+    ...preferences,
+  });
+}
+
 // Challenge operations
 export async function getChallengesByUserId(userId: string): Promise<Challenge[]> {
   return await convexChallenges.listByUser(userId);

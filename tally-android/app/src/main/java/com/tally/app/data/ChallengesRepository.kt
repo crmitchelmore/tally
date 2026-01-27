@@ -196,6 +196,7 @@ class ChallengesRepository(
         name: String,
         target: Int,
         timeframeType: TimeframeType,
+        periodOffset: Int = 0,
         color: String = "#4F46E5",
         icon: String = "star",
         isPublic: Boolean = false,
@@ -206,12 +207,13 @@ class ChallengesRepository(
         _isLoading.value = true
 
         val challenge = if (isOfflineMode || apiClient == null) {
-            createLocalChallenge(name, target, timeframeType, color, icon, countType, unitLabel, defaultIncrement)
+            createLocalChallenge(name, target, timeframeType, periodOffset, color, icon, countType, unitLabel, defaultIncrement)
         } else {
             val request = CreateChallengeRequest(
                 name = name,
                 target = target,
                 timeframeType = timeframeType,
+                periodOffset = periodOffset,
                 color = color,
                 icon = icon,
                 isPublic = isPublic,
@@ -223,7 +225,7 @@ class ChallengesRepository(
                 is ApiResult.Success -> result.data
                 is ApiResult.Failure -> {
                     _error.value = result.error.message
-                    createLocalChallenge(name, target, timeframeType, color, icon, countType, unitLabel, defaultIncrement)
+                    createLocalChallenge(name, target, timeframeType, periodOffset, color, icon, countType, unitLabel, defaultIncrement)
                 }
             }
         }
@@ -455,6 +457,7 @@ class ChallengesRepository(
         name: String,
         target: Int,
         timeframeType: TimeframeType,
+        periodOffset: Int,
         color: String,
         icon: String,
         countType: CountType,
@@ -462,7 +465,7 @@ class ChallengesRepository(
         defaultIncrement: Int?
     ): Challenge {
         val now = java.time.Instant.now().toString()
-        val (startDate, endDate) = calculateDateRange(timeframeType)
+        val (startDate, endDate) = calculateDateRange(timeframeType, periodOffset)
         
         return Challenge(
             id = UUID.randomUUID().toString(),
@@ -507,19 +510,21 @@ class ChallengesRepository(
         )
     }
 
-    private fun calculateDateRange(timeframeType: TimeframeType): Pair<String, String> {
+    private fun calculateDateRange(timeframeType: TimeframeType, periodOffset: Int = 0): Pair<String, String> {
         val now = LocalDate.now()
         val formatter = DateTimeFormatter.ISO_LOCAL_DATE
         
         return when (timeframeType) {
             TimeframeType.YEAR -> {
-                val start = now.withDayOfYear(1)
-                val end = now.withDayOfYear(now.lengthOfYear())
+                val targetYear = now.plusYears(periodOffset.toLong())
+                val start = targetYear.withDayOfYear(1)
+                val end = targetYear.withDayOfYear(targetYear.lengthOfYear())
                 start.format(formatter) to end.format(formatter)
             }
             TimeframeType.MONTH -> {
-                val start = now.withDayOfMonth(1)
-                val end = now.withDayOfMonth(now.lengthOfMonth())
+                val targetMonth = now.plusMonths(periodOffset.toLong())
+                val start = targetMonth.withDayOfMonth(1)
+                val end = targetMonth.withDayOfMonth(targetMonth.lengthOfMonth())
                 start.format(formatter) to end.format(formatter)
             }
             TimeframeType.CUSTOM -> {

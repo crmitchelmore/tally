@@ -14,6 +14,7 @@ function toApiFormat(user: Doc<"users">) {
     clerkId: user.clerkId,
     email: user.email,
     name: user.name,
+    dashboardConfig: user.dashboardConfig,
     createdAt: new Date(user.createdAt).toISOString(),
     updatedAt: new Date(user.updatedAt || user.createdAt).toISOString(),
   };
@@ -113,6 +114,35 @@ export const restore = mutation({
     });
     const user = await ctx.db.get(args.id);
     if (!user) throw new Error("User not found after restore");
+    return toApiFormat(user);
+  },
+});
+
+/**
+ * Update user preferences (dashboard config, etc.)
+ */
+export const updatePreferences = mutation({
+  args: {
+    id: v.id("users"),
+    dashboardConfig: v.optional(v.object({
+      panels: v.object({
+        highlights: v.boolean(),
+        personalRecords: v.boolean(),
+        progressGraph: v.boolean(),
+        burnUpChart: v.boolean(),
+        setsStats: v.boolean(),
+      }),
+    })),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...updates } = args;
+    await ctx.db.patch(id, {
+      ...updates,
+      updatedAt: Date.now(),
+    });
+    const user = await ctx.db.get(id);
+    if (!user) throw new Error("User not found");
+    
     return toApiFormat(user);
   },
 });

@@ -15,6 +15,7 @@ public struct ChallengeFormView: View {
     @State private var name: String = ""
     @State private var target: Int = 100
     @State private var timeframeType: TimeframeType = .year
+    @State private var periodOffset: Int = 0 // 0 = this period, 1 = next period
     @State private var startDate: Date = Date()
     @State private var endDate: Date = Calendar.current.date(byAdding: .year, value: 1, to: Date()) ?? Date()
     @State private var selectedColor: String = "#4B5563"
@@ -144,7 +145,8 @@ public struct ChallengeFormView: View {
                     .pickerStyle(.segmented)
                     .accessibilityIdentifier("timeframe-picker")
                     .onChange(of: timeframeType) { _, newValue in
-                        updateDatesForTimeframe(newValue)
+                        periodOffset = 0 // Reset to "this period" when changing type
+                        updateDatesForTimeframe(newValue, offset: periodOffset)
                     }
                     
                     if timeframeType == .custom {
@@ -153,8 +155,19 @@ public struct ChallengeFormView: View {
                         DatePicker("End Date", selection: $endDate, in: startDate..., displayedComponents: .date)
                             .accessibilityIdentifier("end-date-picker")
                     } else {
+                        // Period selector (this/next)
+                        Picker("Period", selection: $periodOffset) {
+                            Text("This \(timeframeType == .year ? "year" : "month")").tag(0)
+                            Text("Next \(timeframeType == .year ? "year" : "month")").tag(1)
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityIdentifier("period-picker")
+                        .onChange(of: periodOffset) { _, newOffset in
+                            updateDatesForTimeframe(timeframeType, offset: newOffset)
+                        }
+                        
                         HStack {
-                            Text("Period")
+                            Text("Dates")
                             Spacer()
                             Text(periodText)
                                 .foregroundColor(Color.tallyInkSecondary)
@@ -304,21 +317,23 @@ public struct ChallengeFormView: View {
         return "\(formatter.string(from: startDate)) – \(formatter.string(from: endDate))"
     }
     
-    private func updateDatesForTimeframe(_ type: TimeframeType) {
+    private func updateDatesForTimeframe(_ type: TimeframeType, offset: Int = 0) {
         let calendar = Calendar.current
         let now = Date()
         
         switch type {
         case .year:
-            // Current year
-            let year = calendar.component(.year, from: now)
+            // Year with offset (0 = this year, 1 = next year)
+            let year = calendar.component(.year, from: now) + offset
             startDate = calendar.date(from: DateComponents(year: year, month: 1, day: 1)) ?? now
             endDate = calendar.date(from: DateComponents(year: year, month: 12, day: 31)) ?? now
             
         case .month:
-            // Current month
+            // Month with offset (0 = this month, 1 = next month)
             let components = calendar.dateComponents([.year, .month], from: now)
-            startDate = calendar.date(from: components) ?? now
+            let targetDate = calendar.date(byAdding: .month, value: offset, to: calendar.date(from: components) ?? now) ?? now
+            let targetComponents = calendar.dateComponents([.year, .month], from: targetDate)
+            startDate = calendar.date(from: targetComponents) ?? now
             endDate = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startDate) ?? now
             
         case .custom:

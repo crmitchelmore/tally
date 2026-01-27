@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
       // Calculate dates based on timeframe
       const { startDate, endDate } = calculateTimeframeDates(
         body.timeframeType as TimeframeType,
+        body.periodOffset ?? 0,
         body.startDate,
         body.endDate
       );
@@ -141,24 +142,30 @@ export async function POST(request: NextRequest) {
 
 function calculateTimeframeDates(
   type: TimeframeType,
+  periodOffset: number = 0,
   customStart?: string,
   customEnd?: string
 ): { startDate: string; endDate: string } {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  let year = now.getFullYear();
+  let month = now.getMonth();
 
   switch (type) {
     case "year":
+      year += periodOffset;
       return {
         startDate: `${year}-01-01`,
         endDate: `${year}-12-31`,
       };
     case "month":
-      const lastDay = new Date(year, month + 1, 0).getDate();
+      // Add offset months
+      const targetDate = new Date(year, month + periodOffset, 1);
+      const targetYear = targetDate.getFullYear();
+      const targetMonth = targetDate.getMonth();
+      const lastDay = new Date(targetYear, targetMonth + 1, 0).getDate();
       return {
-        startDate: `${year}-${String(month + 1).padStart(2, "0")}-01`,
-        endDate: `${year}-${String(month + 1).padStart(2, "0")}-${lastDay}`,
+        startDate: `${targetYear}-${String(targetMonth + 1).padStart(2, "0")}-01`,
+        endDate: `${targetYear}-${String(targetMonth + 1).padStart(2, "0")}-${lastDay}`,
       };
     case "custom":
       return {

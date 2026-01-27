@@ -51,6 +51,7 @@ fun CreateChallengeDialog(
         name: String,
         target: Int,
         timeframe: TimeframeType,
+        periodOffset: Int,
         countType: CountType,
         unitLabel: String?,
         defaultIncrement: Int?,
@@ -60,6 +61,7 @@ fun CreateChallengeDialog(
     var name by remember { mutableStateOf("") }
     var targetStr by remember { mutableStateOf("") }
     var timeframe by remember { mutableStateOf(TimeframeType.YEAR) }
+    var periodOffset by remember { mutableStateOf(0) } // 0 = this period, 1 = next
     var countType by remember { mutableStateOf(CountType.SIMPLE) }
     var unitLabel by remember { mutableStateOf("") }
     var defaultIncrement by remember { mutableFloatStateOf(1f) }
@@ -114,19 +116,50 @@ fun CreateChallengeDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                Column(Modifier.selectableGroup()) {
-                    TimeframeOption(
-                        label = "This Year",
+                SingleChoiceSegmentedButtonRow(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    SegmentedButton(
                         selected = timeframe == TimeframeType.YEAR,
-                        onClick = { timeframe = TimeframeType.YEAR },
-                        testTag = "timeframe_year"
-                    )
-                    TimeframeOption(
-                        label = "This Month",
+                        onClick = { 
+                            timeframe = TimeframeType.YEAR
+                            periodOffset = 0
+                        },
+                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
+                    ) {
+                        Text("Year")
+                    }
+                    SegmentedButton(
                         selected = timeframe == TimeframeType.MONTH,
-                        onClick = { timeframe = TimeframeType.MONTH },
-                        testTag = "timeframe_month"
-                    )
+                        onClick = { 
+                            timeframe = TimeframeType.MONTH
+                            periodOffset = 0
+                        },
+                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
+                    ) {
+                        Text("Month")
+                    }
+                }
+
+                // Period selector (this/next)
+                SingleChoiceSegmentedButtonRow(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val periodLabel = if (timeframe == TimeframeType.YEAR) "year" else "month"
+                    SegmentedButton(
+                        selected = periodOffset == 0,
+                        onClick = { periodOffset = 0 },
+                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
+                    ) {
+                        Text("This $periodLabel")
+                    }
+                    SegmentedButton(
+                        selected = periodOffset == 1,
+                        onClick = { periodOffset = 1 },
+                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
+                    ) {
+                        Text("Next $periodLabel")
+                    }
                 }
 
                 // Count type selection
@@ -225,6 +258,7 @@ fun CreateChallengeDialog(
                         name,
                         target,
                         timeframe,
+                        periodOffset,
                         countType,
                         unitLabel.takeIf { it.isNotBlank() },
                         if (countType == CountType.SETS) defaultIncrement.toInt() else null,
@@ -246,35 +280,4 @@ fun CreateChallengeDialog(
             }
         }
     )
-}
-
-@Composable
-private fun TimeframeOption(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    testTag: String
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .selectable(
-                selected = selected,
-                onClick = onClick,
-                role = Role.RadioButton
-            )
-            .padding(vertical = 8.dp)
-            .testTag(testTag),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RadioButton(
-            selected = selected,
-            onClick = null // handled by selectable
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(start = 8.dp)
-        )
-    }
 }

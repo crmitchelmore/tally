@@ -8,6 +8,7 @@ export interface User {
   clerkId: string;
   email: string;
   name: string;
+  dashboardConfig?: DashboardConfig;
   createdAt: string;
   updatedAt: string;
 }
@@ -79,8 +80,9 @@ export interface CreateChallengeRequest {
   name: string;
   target: number;
   timeframeType: TimeframeType;
-  startDate?: string;
-  endDate?: string;
+  periodOffset?: number; // 0 = current period, 1 = next period (for year/month)
+  startDate?: string; // For custom timeframe
+  endDate?: string; // For custom timeframe
   color?: string;
   icon?: string;
   isPublic?: boolean;

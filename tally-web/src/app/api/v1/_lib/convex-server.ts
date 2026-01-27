@@ -23,6 +23,19 @@ export const convexUsers = {
   
   update: (args: { id: Id<"users">; email?: string; name?: string }) =>
     client.mutation(api.users.update, args),
+  
+  updatePreferences: (args: {
+    id: Id<"users">;
+    dashboardConfig?: {
+      panels: {
+        highlights: boolean;
+        personalRecords: boolean;
+        progressGraph: boolean;
+        burnUpChart: boolean;
+        setsStats: boolean;
+      };
+    };
+  }) => client.mutation(api.users.updatePreferences, args),
 };
 
 // Challenge operations

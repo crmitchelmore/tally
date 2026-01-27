@@ -52,6 +52,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
   const [name, setName] = useState("");
   const [target, setTarget] = useState("");
   const [timeframeType, setTimeframeType] = useState<TimeframeType>("year");
+  const [periodOffset, setPeriodOffset] = useState(0); // 0 = this period, 1 = next period
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
   const [color, setColor] = useState(PRESET_COLORS[0]);
@@ -129,6 +130,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
         name: name.trim(),
         target: parseInt(target, 10),
         timeframeType,
+        periodOffset: timeframeType !== "custom" ? periodOffset : undefined,
         color,
         icon,
         isPublic,
@@ -148,7 +150,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
     } finally {
       setSubmitting(false);
     }
-  }, [name, target, timeframeType, customStart, customEnd, color, icon, isPublic, countType, unitLabel, customUnit, onSubmit, onClose]);
+  }, [name, target, timeframeType, periodOffset, customStart, customEnd, color, icon, isPublic, countType, unitLabel, customUnit, onSubmit, onClose]);
 
   if (!open) return null;
 
@@ -254,7 +256,10 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
                 <button
                   key={tf}
                   type="button"
-                  onClick={() => setTimeframeType(tf)}
+                  onClick={() => {
+                    setTimeframeType(tf);
+                    setPeriodOffset(0); // Reset to "this period" when changing type
+                  }}
                   className={`
                     flex-1 px-3 py-2 rounded-lg text-sm font-medium
                     border transition-colors
@@ -268,6 +273,40 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
                 </button>
               ))}
             </div>
+
+            {/* Period selector for year/month */}
+            {timeframeType !== "custom" && (
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPeriodOffset(0)}
+                  className={`
+                    flex-1 px-3 py-2 rounded-lg text-sm font-medium
+                    border transition-colors
+                    ${periodOffset === 0
+                      ? "bg-ink/10 border-ink/30 text-ink"
+                      : "bg-paper border-border text-muted hover:bg-border/50"
+                    }
+                  `}
+                >
+                  This {timeframeType}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPeriodOffset(1)}
+                  className={`
+                    flex-1 px-3 py-2 rounded-lg text-sm font-medium
+                    border transition-colors
+                    ${periodOffset === 1
+                      ? "bg-ink/10 border-ink/30 text-ink"
+                      : "bg-paper border-border text-muted hover:bg-border/50"
+                    }
+                  `}
+                >
+                  Next {timeframeType}
+                </button>
+              </div>
+            )}
 
             {/* Custom date range */}
             {timeframeType === "custom" && (

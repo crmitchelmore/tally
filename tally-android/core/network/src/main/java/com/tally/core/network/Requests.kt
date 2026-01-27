@@ -12,6 +12,7 @@ data class CreateChallengeRequest(
     val name: String,
     val target: Int,
     @SerialName("timeframe_type") val timeframeType: TimeframeType,
+    @SerialName("period_offset") val periodOffset: Int? = null, // 0 = this period, 1 = next
     @SerialName("start_date") val startDate: String? = null,
     @SerialName("end_date") val endDate: String? = null,
     val color: String? = null,

@@ -5,6 +5,7 @@ import TallyFeatureAPIClient
 /// Sheet for adding an entry to a challenge
 public struct AddEntrySheet: View {
     let challenge: Challenge
+    let manager: ChallengesManager?
     let onSave: () -> Void
     let onCancel: () -> Void
     
@@ -32,10 +33,12 @@ public struct AddEntrySheet: View {
     
     public init(
         challenge: Challenge,
+        manager: ChallengesManager? = nil,
         onSave: @escaping () -> Void,
         onCancel: @escaping () -> Void
     ) {
         self.challenge = challenge
+        self.manager = manager
         self.onSave = onSave
         self.onCancel = onCancel
     }
@@ -424,7 +427,12 @@ public struct AddEntrySheet: View {
                 feeling: selectedFeeling
             )
             
-            _ = try await APIClient.shared.createEntry(request)
+            // Use manager if available (updates stats reactively), fallback to direct API call
+            if let manager = manager {
+                _ = try await manager.createEntry(request)
+            } else {
+                _ = try await APIClient.shared.createEntry(request)
+            }
             
             // Show success briefly then dismiss
             withAnimation {

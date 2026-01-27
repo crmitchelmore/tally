@@ -97,9 +97,9 @@ struct HomeView: View {
         .sheet(item: $addEntryChallenge) { challenge in
             AddEntrySheet(
                 challenge: challenge,
+                manager: challengesManager,
                 onSave: {
                     addEntryChallenge = nil
-                    Task { await challengesManager.refresh() }
                 },
                 onCancel: {
                     addEntryChallenge = nil

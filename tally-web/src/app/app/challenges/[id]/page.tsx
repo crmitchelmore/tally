@@ -7,6 +7,7 @@ import { TallyMark } from "@/components/ui/tally-mark";
 import { UndoToast } from "@/components/ui/undo-toast";
 import { ActivityHeatmap } from "@/components/challenges/activity-heatmap";
 import { AddEntryDialog, EntryList, DayDrilldown, EditEntryDialog } from "@/components/entries";
+import { refreshEntries, refreshChallenges } from "@/hooks/use-data-refresh";
 import type { Challenge, ChallengeStats, Entry, CreateEntryRequest, UpdateEntryRequest } from "@/app/api/v1/_lib/types";
 import { getIconEmoji } from "@/lib/challenge-icons";
 
@@ -103,8 +104,9 @@ export default function ChallengeDetailPage() {
         throw new Error(errData.error || "Failed to add entry");
       }
 
-      // Refresh data to get updated stats
+      // Refresh local data and global SWR caches
       await fetchData();
+      refreshEntries();
     },
     [challengeId, fetchData]
   );
@@ -124,6 +126,7 @@ export default function ChallengeDetailPage() {
       }
 
       await fetchData();
+      refreshEntries();
     },
     [fetchData]
   );
@@ -148,6 +151,7 @@ export default function ChallengeDetailPage() {
       });
 
       await fetchData();
+      refreshEntries();
     },
     [fetchData, data?.entries]
   );
@@ -166,6 +170,7 @@ export default function ChallengeDetailPage() {
 
     setDeletedEntry(null);
     await fetchData();
+    refreshEntries();
   }, [deletedEntry, fetchData]);
 
   // Heatmap day click handler
@@ -189,6 +194,7 @@ export default function ChallengeDetailPage() {
       });
       if (res.ok) {
         fetchData();
+        refreshChallenges();
       }
     } catch {
       // Ignore
@@ -206,6 +212,7 @@ export default function ChallengeDetailPage() {
       });
       if (res.ok) {
         fetchData();
+        refreshChallenges();
       }
     } catch {
       // Ignore

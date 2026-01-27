@@ -412,6 +412,19 @@ public final class ChallengesManager {
         }
     }
     
+    /// Create a new entry and refresh stats
+    public func createEntry(_ request: CreateEntryRequest) async throws -> Entry {
+        let entry = try await apiClient.createEntry(request)
+        
+        // Add to local cache
+        allEntries.append(entry)
+        
+        // Refresh stats for the affected challenge and dashboard
+        await refreshChallengeStats(challengeId: request.challengeId)
+        
+        return entry
+    }
+    
     /// Update an entry
     public func updateEntry(id: String, data: UpdateEntryRequest) async throws {
         // Optimistically update local cache
@@ -487,13 +500,19 @@ public final class ChallengesManager {
         await refreshChallengeStats(challengeId: restoredEntry.challengeId)
     }
     
-    /// Refresh stats for a specific challenge
+    /// Refresh stats for a specific challenge and dashboard
     private func refreshChallengeStats(challengeId: String) async {
         do {
+            // Refresh the individual challenge stats
             let stats = try await apiClient.getChallengeStats(challengeId: challengeId)
             if let index = challengesWithStats.firstIndex(where: { $0.challenge.id == challengeId }) {
                 challengesWithStats[index].stats = stats
             }
+            
+            // Also refresh dashboard stats since they depend on entry counts
+            let (dashStats, records) = try await apiClient.getDashboardData()
+            dashboardStats = dashStats
+            personalRecords = records
         } catch {
             #if DEBUG
             print("[ChallengesManager] Error refreshing stats: \(error)")

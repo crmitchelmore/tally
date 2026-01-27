@@ -1,6 +1,6 @@
 "use client";
 
-import useSWR from "swr";
+import useSWR, { mutate as globalMutate } from "swr";
 import { useCallback, useEffect } from "react";
 import type { Challenge, ChallengeStats, CreateChallengeRequest } from "@/app/api/v1/_lib/types";
 
@@ -80,8 +80,9 @@ export function useChallenges(enabled = true) {
       throw new Error(errorData.error || "Failed to create challenge");
     }
     
-    // Revalidate to get the new challenge
+    // Revalidate all related caches
     await mutate();
+    globalMutate("dashboard-stats");
     return res.json();
   }, [mutate]);
   

@@ -19,7 +19,8 @@ on:
 
 env:
   # NOTE: Apple requires Xcode 26+ (iOS 26 SDK) for App Store Connect uploads starting April 2026.
-  XCODE_VERSION: "26.0"
+  # GitHub macOS runners don't currently have Xcode 26 installed, so we use the latest available.
+  XCODE_VERSION: "16.2.0"
   IOS_APP_ID: ${{ secrets.IOS_APP_ID }}
   IOS_BUNDLE_ID: "app.tally.ios"
 

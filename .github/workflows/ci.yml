@@ -42,6 +42,11 @@ jobs:
         working-directory: ios
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          # Must be new enough for Clerk's Swift macros/attributes used by our auth UI.
+          xcode-version: "16.2.0"
       - name: Install Tuist via mise
         uses: jdx/mise-action@v2
         with:

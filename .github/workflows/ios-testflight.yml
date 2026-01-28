@@ -221,7 +221,7 @@ jobs:
     name: Poll & Distribute to TestFlight
     needs: build-and-upload
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
 
     steps:
       - name: Wait for App Store Connect processing
@@ -278,7 +278,7 @@ jobs:
             const buildNumber = process.env.BUILD_NUMBER;
             
             // Poll for processed build
-            const maxAttempts = 90; // 90 minutes max
+            const maxAttempts = 150; // 150 minutes max (Apple processing can be slow)
             const intervalMs = 60000; // 1 minute
             
             for (let attempt = 1; attempt <= maxAttempts; attempt++) {

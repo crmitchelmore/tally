@@ -180,7 +180,10 @@ private fun SimpleAddEntryDialog(
                     }
                 },
                 enabled = count > 0,
-                modifier = Modifier.testTag("entry_save_button")
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .testTag("entry_save_button")
             ) {
                 Text("Save")
             }
@@ -281,7 +284,10 @@ private fun SetsBasedAddEntryDialog(
                     }
                 },
                 enabled = totalCount > 0,
-                modifier = Modifier.testTag("entry_save_button")
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .testTag("entry_save_button")
             ) {
                 Text("Save")
             }

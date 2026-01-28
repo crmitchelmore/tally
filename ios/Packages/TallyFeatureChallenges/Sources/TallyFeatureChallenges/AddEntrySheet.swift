@@ -99,12 +99,20 @@ public struct AddEntrySheet: View {
                 }
                 .tallyPadding()
             }
+            .accessibilityIdentifier("addEntrySheet")
             .background(Color.tallyPaper)
             .navigationTitle("Add Entry")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") { onDismiss() }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        submit()
+                    }
+                    .fontWeight(.semibold)
+                    .disabled(isFutureDate || displayCount <= 0)
                 }
             }
             .onAppear {
@@ -431,7 +439,7 @@ public struct AddEntrySheet: View {
         Button {
             submit()
         } label: {
-            Text("Add \(displayCount) \(unitLabel)")
+            Text("Save")
                 .font(.tallyTitleSmall)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)

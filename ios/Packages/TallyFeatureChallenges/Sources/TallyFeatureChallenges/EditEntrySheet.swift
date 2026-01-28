@@ -90,6 +90,9 @@ public struct EditEntrySheet: View {
                     // Note input
                     noteSection
                     
+                    // Bottom save button (in addition to top-right Save)
+                    bottomSaveButton
+                    
                     // Delete button
                     deleteButton
                     
@@ -416,6 +419,24 @@ public struct EditEntrySheet: View {
         }
     }
     
+    // MARK: - Bottom Save Button
+    
+    private var bottomSaveButton: some View {
+        Button {
+            Task { await saveEntry() }
+        } label: {
+            Text(isSaving ? "Saving..." : "Save")
+                .font(.tallyTitleSmall)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, TallySpacing.md)
+                .background(Color.tallyAccent)
+                .cornerRadius(12)
+        }
+        .disabled(isSaving || totalCount < 1)
+        .opacity((isSaving || totalCount < 1) ? 0.5 : 1)
+    }
+
     // MARK: - Delete Button
     
     private var deleteButton: some View {

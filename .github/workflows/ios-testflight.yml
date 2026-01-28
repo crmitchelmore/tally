@@ -18,7 +18,8 @@ on:
         type: string
 
 env:
-  XCODE_VERSION: "16.2"
+  # NOTE: Apple requires Xcode 26+ (iOS 26 SDK) for App Store Connect uploads starting April 2026.
+  XCODE_VERSION: "26.0"
   IOS_APP_ID: ${{ secrets.IOS_APP_ID }}
   IOS_BUNDLE_ID: "app.tally.ios"
 
@@ -348,15 +349,16 @@ jobs:
             function makeJWT(keyId, issuerId, privateKey) {
               const header = { alg: 'ES256', kid: keyId, typ: 'JWT' };
               const now = Math.floor(Date.now() / 1000);
-              const payload = { iss: issuerId, exp: now + 900, aud: 'appstoreconnect-v1' };
+              const payload = { iss: issuerId, iat: now, exp: now + 900, aud: 'appstoreconnect-v1' };
               
               const base64Header = Buffer.from(JSON.stringify(header)).toString('base64url');
               const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64url');
               const signatureInput = `${base64Header}.${base64Payload}`;
               
+              const keyObject = crypto.createPrivateKey(privateKey);
               const sign = crypto.createSign('SHA256');
               sign.update(signatureInput);
-              const signature = sign.sign(privateKey, 'base64url');
+              const signature = sign.sign({ key: keyObject, dsaEncoding: 'ieee-p1363' }, 'base64url');
               
               return `${signatureInput}.${signature}`;
             }

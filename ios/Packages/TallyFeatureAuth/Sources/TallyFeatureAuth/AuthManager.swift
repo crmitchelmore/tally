@@ -143,64 +143,21 @@ public final class AuthManager: TokenRefresher {
     }
     
     /// Import local data to server (called when user chooses to sync local data after login)
+    /// NOTE: Not yet implemented - API endpoint and types needed
     public func syncLocalDataToServer(localChallenges: [Challenge], localEntries: [Entry]) async throws {
-        print("[AuthManager] Syncing local data to server: \(localChallenges.count) challenges, \(localEntries.count) entries")
-        logger.info("Syncing local data to server: \(localChallenges.count) challenges, \(localEntries.count) entries")
-        
-        let importData = ImportDataRequest(
-            version: "1.0",
-            challenges: localChallenges,
-            entries: localEntries,
-            dashboardConfig: nil
-        )
-        
-        do {
-            let response = try await APIClient.shared.importData(importData)
-            print("[AuthManager] Sync complete: imported \(response.imported.challenges) challenges, \(response.imported.entries) entries")
-            logger.info("Sync complete: imported \(response.imported.challenges) challenges, \(response.imported.entries) entries")
-        } catch {
-            print("[AuthManager] Sync failed: \(error)")
-            logger.error("Sync failed: \(error.localizedDescription)")
-            throw error
-        }
+        print("[AuthManager] syncLocalDataToServer: Not yet implemented")
+        logger.warning("syncLocalDataToServer: Not yet implemented - need import API endpoint")
+        // TODO: Implement when /api/v1/import endpoint is ready
+        // For now, this is a no-op - data stays local until manually created on server
     }
     
     /// Merge local and server data (called when user chooses to merge)
+    /// NOTE: Not yet implemented - API endpoint and types needed
     public func mergeLocalAndServerData(localChallenges: [Challenge], localEntries: [Entry]) async throws {
-        print("[AuthManager] Merging local and server data...")
-        logger.info("Merging local and server data...")
-        
-        // First, get current server data
-        let serverChallenges = try await APIClient.shared.listChallenges(includeArchived: true)
-        let serverEntries = try await APIClient.shared.listEntries()
-        
-        // Create sets of server IDs to avoid duplicates
-        let serverChallengeIds = Set(serverChallenges.map { $0.id })
-        let serverEntryIds = Set(serverEntries.map { $0.id })
-        
-        // Filter out local items that already exist on server
-        let newChallenges = localChallenges.filter { !serverChallengeIds.contains($0.id) }
-        let newEntries = localEntries.filter { !serverEntryIds.contains($0.id) }
-        
-        print("[AuthManager] Merging \(newChallenges.count) new challenges, \(newEntries.count) new entries")
-        logger.info("Merging \(newChallenges.count) new challenges, \(newEntries.count) new entries")
-        
-        // Import only the new items
-        if !newChallenges.isEmpty || !newEntries.isEmpty {
-            let importData = ImportDataRequest(
-                version: "1.0",
-                challenges: newChallenges,
-                entries: newEntries,
-                dashboardConfig: nil
-            )
-            
-            let response = try await APIClient.shared.importData(importData)
-            print("[AuthManager] Merge complete: \(response.imported.challenges) challenges, \(response.imported.entries) entries")
-            logger.info("Merge complete: \(response.imported.challenges) challenges, \(response.imported.entries) entries")
-        } else {
-            print("[AuthManager] No new data to merge")
-            logger.info("No new data to merge")
-        }
+        print("[AuthManager] mergeLocalAndServerData: Not yet implemented")
+        logger.warning("mergeLocalAndServerData: Not yet implemented - need import API endpoint")
+        // TODO: Implement when /api/v1/import endpoint is ready
+        // For now, this is a no-op - data stays local until manually created on server
     }
     
     /// Discard local data and use only server data (called when user chooses "Start Fresh")

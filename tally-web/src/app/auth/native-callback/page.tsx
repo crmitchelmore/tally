@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 /**
@@ -65,9 +66,9 @@ export default function NativeCallbackPage() {
         {isLoaded && !isSignedIn && !error && (
           <>
             <p className="text-ink mb-4">Redirecting to sign in...</p>
-            <a href="/sign-in" className="text-accent hover:underline">
+            <Link href="/sign-in" className="text-accent hover:underline">
               Click here if not redirected
-            </a>
+            </Link>
           </>
         )}
         
@@ -84,9 +85,9 @@ export default function NativeCallbackPage() {
         {error && (
           <>
             <p className="text-red-600 mb-4">{error}</p>
-            <a href="/sign-in" className="text-accent hover:underline">
+            <Link href="/sign-in" className="text-accent hover:underline">
               Try signing in again
-            </a>
+            </Link>
           </>
         )}
       </div>

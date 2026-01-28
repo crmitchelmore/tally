@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -88,6 +89,7 @@ private fun SimpleAddEntryDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.testTag("entry_dialog"),
         title = { Text("Add to ${challenge.name}") },
         text = {
             Column(
@@ -108,7 +110,9 @@ private fun SimpleAddEntryDialog(
                     onValueChange = { countStr = it.filter { c -> c.isDigit() } },
                     label = { Text(challenge.resolvedUnitLabel) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("entry_count_input"),
                     singleLine = true
                 )
                 
@@ -175,7 +179,8 @@ private fun SimpleAddEntryDialog(
                         onSubmit(count, null, null)
                     }
                 },
-                enabled = count > 0
+                enabled = count > 0,
+                modifier = Modifier.testTag("entry_save_button")
             ) {
                 Text("Save")
             }
@@ -219,6 +224,7 @@ private fun SetsBasedAddEntryDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.testTag("entry_dialog"),
         title = { Text("Add to ${challenge.name}") },
         text = {
             Column(
@@ -274,7 +280,8 @@ private fun SetsBasedAddEntryDialog(
                         onSubmit(totalCount, sets.toList(), null)
                     }
                 },
-                enabled = totalCount > 0
+                enabled = totalCount > 0,
+                modifier = Modifier.testTag("entry_save_button")
             ) {
                 Text("Save")
             }

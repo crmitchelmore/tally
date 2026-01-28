@@ -249,6 +249,7 @@ private fun ChallengeCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .testTag("challenge_card_${challenge.id}")
             .clickable(onClick = onClick)
     ) {
         Row(
@@ -264,14 +265,16 @@ private fun ChallengeCard(
             ) {
                 Text(
                     text = "${challenge.icon} ${challenge.name}",
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.testTag("challenge_name_${challenge.id}")
                 )
                 
                 stats?.let {
                     Text(
                         text = "${it.totalCount} / ${challenge.target} ${challenge.resolvedUnitLabel}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.testTag("challenge_progress_${challenge.id}")
                     )
                 }
             }

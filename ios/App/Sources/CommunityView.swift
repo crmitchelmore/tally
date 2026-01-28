@@ -193,10 +193,10 @@ struct CommunityView: View {
     private func toggleFollow(_ challenge: PublicChallenge) async {
         do {
             if isFollowing(challenge) {
-                _ = try await APIClient.shared.unfollowChallenge(challengeId: challenge.id)
+                try await APIClient.shared.unfollowChallenge(id: challenge.id)
                 followedChallenges.removeAll { $0.id == challenge.id }
             } else {
-                _ = try await APIClient.shared.followChallenge(challengeId: challenge.id)
+                try await APIClient.shared.followChallenge(id: challenge.id)
                 followedChallenges.append(challenge)
             }
         } catch {

@@ -116,3 +116,16 @@ public struct UpdateEntryRequest: Codable, Sendable {
         self.feeling = feeling
     }
 }
+
+/// Request to import user data
+public struct ImportDataRequest: Codable, Sendable {
+    public let version: String
+    public let challenges: [Challenge]
+    public let entries: [Entry]
+    
+    public init(version: String, challenges: [Challenge], entries: [Entry]) {
+        self.version = version
+        self.challenges = challenges
+        self.entries = entries
+    }
+}

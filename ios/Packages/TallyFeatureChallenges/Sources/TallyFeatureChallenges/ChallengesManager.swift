@@ -30,6 +30,67 @@ public final class ChallengesManager {
     /// Whether we're currently connected to the network
     public private(set) var isOnline: Bool = true
     
+    /// Dashboard stats computed from all challenges
+    public var dashboardStats: DashboardStats? {
+        guard !challenges.isEmpty else { return nil }
+        
+        let allStats = stats.values
+        let totalMarks = allStats.reduce(0) { $0 + $1.totalCount }
+        let today = allStats.reduce(0) { sum, stat in
+            // Estimate today's count from daily average (rough approximation)
+            sum + Int(stat.dailyAverage)
+        }
+        let bestStreak = allStats.map { $0.streakBest }.max() ?? 0
+        
+        // Overall pace status - use worst performing challenge
+        // Priority: behind > none > onPace > ahead (lower index = worse)
+        let paceOrder: [PaceStatus] = [.behind, .none, .onPace, .ahead]
+        let overallPaceStatus = allStats.map { $0.paceStatus }.min(by: { a, b in
+            (paceOrder.firstIndex(of: a) ?? 0) < (paceOrder.firstIndex(of: b) ?? 0)
+        }) ?? .none
+        
+        return DashboardStats(
+            totalMarks: totalMarks,
+            today: today,
+            bestStreak: bestStreak,
+            overallPaceStatus: overallPaceStatus
+        )
+    }
+    
+    /// Personal records computed from all challenges
+    public var personalRecords: PersonalRecords? {
+        guard !challenges.isEmpty else { return nil }
+        
+        let allStats = stats.values
+        let longestStreak = allStats.map { $0.streakBest }.max() ?? 0
+        let mostActiveDays = allStats.map { $0.streakCurrent }.max() ?? 0
+        
+        // Find best single day across challenges
+        var bestSingleDay: PersonalRecords.BestDay? = nil
+        for stat in allStats {
+            if let best = stat.bestDay {
+                if bestSingleDay == nil || best.count > (bestSingleDay?.count ?? 0) {
+                    bestSingleDay = PersonalRecords.BestDay(date: best.date, count: best.count)
+                }
+            }
+        }
+        
+        return PersonalRecords(
+            bestSingleDay: bestSingleDay,
+            longestStreak: longestStreak,
+            highestDailyAverage: nil,
+            mostActiveDays: mostActiveDays,
+            biggestSingleEntry: nil,
+            bestSet: nil,
+            avgSetValue: nil
+        )
+    }
+    
+    /// All entries across all challenges
+    public var allEntries: [Entry] {
+        localEntryStore.loadEntries()
+    }
+    
     // MARK: - Dependencies
     
     private let apiClient: APIClient
@@ -106,7 +167,10 @@ public final class ChallengesManager {
         endDate: Date,
         color: String = "#4B5563",
         icon: String = "checkmark",
-        isPublic: Bool = false
+        isPublic: Bool = false,
+        countType: CountType = .simple,
+        unitLabel: String? = nil,
+        defaultIncrement: Int? = nil
     ) async {
         let tempId = UUID().uuidString
         let now = ISO8601DateFormatter().string(from: Date())
@@ -126,6 +190,9 @@ public final class ChallengesManager {
             icon: icon,
             isPublic: isPublic,
             isArchived: false,
+            countType: countType,
+            unitLabel: unitLabel,
+            defaultIncrement: defaultIncrement,
             createdAt: now,
             updatedAt: now
         )

@@ -240,4 +240,51 @@ public actor APIClient {
         let response: WeeklySummaryResponse = try await execute(request)
         return response.summary
     }
+    
+    // MARK: - Public Challenges (Community)
+    
+    /// List public challenges for community view
+    public func listPublicChallenges(search: String? = nil) async throws -> [PublicChallenge] {
+        var queryItems: [URLQueryItem] = []
+        if let search = search, !search.isEmpty {
+            queryItems.append(URLQueryItem(name: "search", value: search))
+        }
+        let request = try buildRequest(path: "/api/v1/public/challenges", method: "GET", queryItems: queryItems.isEmpty ? nil : queryItems)
+        let response: PublicChallengesResponse = try await execute(request)
+        return response.challenges
+    }
+    
+    /// List followed challenges
+    public func listFollowedChallenges() async throws -> [PublicChallenge] {
+        let request = try buildRequest(path: "/api/v1/public/challenges/following", method: "GET")
+        let response: PublicChallengesResponse = try await execute(request)
+        return response.challenges
+    }
+    
+    /// Follow a challenge
+    public func followChallenge(id: String) async throws {
+        let request = try buildRequest(path: "/api/v1/public/challenges/\(id)/follow", method: "POST")
+        let _: EmptyResponse = try await execute(request)
+    }
+    
+    /// Unfollow a challenge
+    public func unfollowChallenge(id: String) async throws {
+        let request = try buildRequest(path: "/api/v1/public/challenges/\(id)/follow", method: "DELETE")
+        let _: EmptyResponse = try await execute(request)
+    }
+    
+    // MARK: - Export/Import
+    
+    /// Export user data
+    public func exportData() async throws -> ExportDataResponse {
+        let request = try buildRequest(path: "/api/v1/data/export", method: "GET")
+        return try await execute(request)
+    }
+    
+    /// Import user data
+    public func importData(_ data: ImportDataRequest) async throws -> ImportDataResponse {
+        let body = try encoder.encode(data)
+        let request = try buildRequest(path: "/api/v1/data/import", method: "POST", body: body)
+        return try await execute(request)
+    }
 }

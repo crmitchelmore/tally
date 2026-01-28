@@ -348,8 +348,7 @@ struct SettingsView: View {
                     version: "1.0",
                     exportedAt: ISO8601DateFormatter().string(from: Date()),
                     challenges: localChallenges,
-                    entries: [], // TODO: Get entries from ChallengesManager
-                    dashboardConfig: nil
+                    entries: [] // TODO: Get entries from ChallengesManager
                 )
             } else {
                 data = try await APIClient.shared.exportData()

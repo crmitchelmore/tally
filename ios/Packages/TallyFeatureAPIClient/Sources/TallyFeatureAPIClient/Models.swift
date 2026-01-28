@@ -344,3 +344,52 @@ public struct WeeklySummary: Codable, Sendable, Equatable {
         public let count: Int
     }
 }
+
+// MARK: - Public Challenge (Community)
+
+/// Public challenge with aggregated metadata for community view
+public struct PublicChallenge: Codable, Identifiable, Sendable, Equatable {
+    public let id: String
+    public let userId: String
+    public let name: String
+    public let target: Int
+    public let timeframeType: TimeframeType
+    public let startDate: String
+    public let endDate: String
+    public let color: String
+    public let icon: String
+    public let isPublic: Bool
+    public let isArchived: Bool
+    public let createdAt: String
+    public let updatedAt: String
+    
+    // Aggregated metadata
+    public let totalReps: Int
+    public let progress: Double
+    public let followerCount: Int
+    public let isFollowing: Bool
+    public let isOwner: Bool
+    public let owner: Owner
+    
+    public struct Owner: Codable, Sendable, Equatable {
+        public let id: String
+        public let name: String
+    }
+}
+
+// MARK: - Export/Import Data
+
+/// Export data response for user data export
+public struct ExportDataResponse: Codable, Sendable, Equatable {
+    public let version: String
+    public let exportedAt: String
+    public let challenges: [Challenge]
+    public let entries: [Entry]
+    
+    public init(version: String, exportedAt: String, challenges: [Challenge], entries: [Entry]) {
+        self.version = version
+        self.exportedAt = exportedAt
+        self.challenges = challenges
+        self.entries = entries
+    }
+}

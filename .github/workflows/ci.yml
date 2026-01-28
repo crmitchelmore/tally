@@ -53,15 +53,27 @@ jobs:
           tuist generate --no-open
       - name: Build iOS app
         run: |
-          xcodebuild \
-            -workspace Tally.xcworkspace \
-            -scheme App \
-            -configuration Debug \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
-            build \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            | xcpretty || true
+          set -o pipefail
+          if command -v xcpretty >/dev/null 2>&1; then
+            xcodebuild \
+              -workspace Tally.xcworkspace \
+              -scheme App \
+              -configuration Debug \
+              -destination 'platform=iOS Simulator,name=iPhone 16' \
+              build \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO \
+              | xcpretty
+          else
+            xcodebuild \
+              -workspace Tally.xcworkspace \
+              -scheme App \
+              -configuration Debug \
+              -destination 'platform=iOS Simulator,name=iPhone 16' \
+              build \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO
+          fi
 
   # ─────────────────────────────────────────────────────────────
   # Android: lint + build (ubuntu runner)

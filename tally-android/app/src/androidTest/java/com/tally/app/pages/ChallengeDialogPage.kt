@@ -14,38 +14,25 @@ class ChallengeDialogPage(private val composeRule: ComposeTestRule) {
     
     // MARK: - Element Finders
     
-    fun dialog() = composeRule.onNodeWithTag("challenge-dialog")
+    fun dialog() = composeRule.onNodeWithTag("challenge_form")
     
-    fun nameTextField() = composeRule.onNodeWithTag("challenge-name-input")
+    fun nameTextField() = composeRule.onNodeWithTag("challenge_name_input")
     
-    fun targetTextField() = composeRule.onNodeWithTag("challenge-target-input")
+    fun targetTextField() = composeRule.onNodeWithTag("challenge_target_input")
     
-    fun timeframePicker() = composeRule.onNodeWithTag("challenge-timeframe-picker")
+    fun timeframePicker() = composeRule.onNodeWithTag("challenge_timeframe_picker")
     
-    fun publicToggle() = composeRule.onNodeWithTag("challenge-public-toggle")
+    fun publicToggle() = composeRule.onNodeWithTag("challenge_public_toggle")
     
-    fun saveButton() = try {
-        composeRule.onNodeWithText("Save")
-    } catch (e: Exception) {
-        composeRule.onNodeWithText("Create")
-    }
+    fun saveButton() = composeRule.onNodeWithTag("save_challenge_button")
     
-    fun cancelButton() = composeRule.onNodeWithText("Cancel")
+    fun cancelButton() = composeRule.onNodeWithTag("cancel_challenge_button")
     
     // MARK: - Actions
     
     fun fillChallenge(name: String, target: String, timeframe: String? = null) {
-        try {
-            composeRule.onNodeWithTag("challenge-name-input").performTextInput(name)
-        } catch (e: Exception) {
-            composeRule.onNodeWithText("Name", substring = true).performTextInput(name)
-        }
-        
-        try {
-            composeRule.onNodeWithTag("challenge-target-input").performTextInput(target)
-        } catch (e: Exception) {
-            composeRule.onNodeWithText("Target", substring = true).performTextInput(target)
-        }
+        nameTextField().performTextInput(name)
+        targetTextField().performTextInput(target)
         
         timeframe?.let {
             try {
@@ -58,11 +45,7 @@ class ChallengeDialogPage(private val composeRule: ComposeTestRule) {
     }
     
     fun tapSave() {
-        try {
-            composeRule.onNodeWithText("Save").performClick()
-        } catch (e: Exception) {
-            composeRule.onNodeWithText("Create").performClick()
-        }
+        saveButton().performClick()
     }
     
     fun tapCancel() {
@@ -72,10 +55,6 @@ class ChallengeDialogPage(private val composeRule: ComposeTestRule) {
     // MARK: - Assertions
     
     fun assertIsVisible() {
-        try {
-            dialog().assertIsDisplayed()
-        } catch (e: Exception) {
-            nameTextField().assertIsDisplayed()
-        }
+        dialog().assertIsDisplayed()
     }
 }

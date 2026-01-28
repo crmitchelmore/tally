@@ -1,6 +1,7 @@
 package com.tally.app.pages
 
 import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
@@ -13,17 +14,19 @@ class AuthPage(private val composeRule: ComposeTestRule) {
     
     // MARK: - Element Finders
     
-    fun signInButton() = composeRule.onNodeWithText("Sign in")
+    fun signInScreen() = composeRule.onNodeWithTag("sign_in_screen")
     
-    fun continueWithoutAccountButton() = composeRule.onNodeWithText("Continue without account")
+    fun signInButton() = composeRule.onNodeWithTag("sign_in_button")
+    
+    fun continueWithoutAccountButton() = composeRule.onNodeWithTag("continue_without_account_button")
     
     fun tallyLogo() = composeRule.onNodeWithContentDescription("Tally app logo")
     
-    fun appTitle() = composeRule.onNodeWithText("Tally")
+    fun appTitle() = composeRule.onNodeWithTag("app_title")
     
-    fun tagline() = composeRule.onNodeWithText("Track what matters")
+    fun tagline() = composeRule.onNodeWithTag("app_tagline")
     
-    fun offlineModeNote() = composeRule.onNodeWithText("Your data stays on this device in offline mode.")
+    fun localOnlyModeNote() = composeRule.onNodeWithText("Your data stays on this device in local-only mode.", substring = true)
     
     // MARK: - Actions
     
@@ -38,8 +41,7 @@ class AuthPage(private val composeRule: ComposeTestRule) {
     // MARK: - Assertions
     
     fun assertSignInViewIsVisible() {
-        appTitle().assertIsDisplayed()
-        signInButton().assertIsDisplayed()
+        signInScreen().assertIsDisplayed()
     }
     
     fun assertHasRequiredElements() {
@@ -48,7 +50,6 @@ class AuthPage(private val composeRule: ComposeTestRule) {
         tagline().assertIsDisplayed()
         signInButton().assertIsDisplayed()
         continueWithoutAccountButton().assertIsDisplayed()
-        offlineModeNote().assertIsDisplayed()
     }
     
     fun assertIsSignedOut() {

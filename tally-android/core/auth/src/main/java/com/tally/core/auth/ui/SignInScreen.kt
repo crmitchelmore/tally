@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -48,7 +49,8 @@ fun SignInScreen(
         modifier = modifier
             .fillMaxSize()
             .background(TallyColors.paper())
-            .padding(TallySpacing.xl),
+            .padding(TallySpacing.xl)
+            .testTag("sign_in_screen"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -66,7 +68,8 @@ fun SignInScreen(
             text = "Tally",
             style = MaterialTheme.typography.displayLarge,
             fontWeight = FontWeight.Bold,
-            color = TallyColors.inkC1()
+            color = TallyColors.inkC1(),
+            modifier = Modifier.testTag("app_title")
         )
 
         Spacer(modifier = Modifier.height(TallySpacing.md))
@@ -76,7 +79,8 @@ fun SignInScreen(
             text = "Track what matters",
             style = MaterialTheme.typography.titleLarge,
             color = TallyColors.inkC2(),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            modifier = Modifier.testTag("app_tagline")
         )
 
         Spacer(modifier = Modifier.height(TallySpacing.xxxl))
@@ -86,7 +90,8 @@ fun SignInScreen(
             onClick = { onSignInClick(context) },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
+                .height(56.dp)
+                .testTag("sign_in_button"),
             colors = ButtonDefaults.buttonColors(
                 containerColor = TallyColors.inkC1()
             )
@@ -105,7 +110,8 @@ fun SignInScreen(
             onClick = onContinueWithoutAccount,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
+                .height(56.dp)
+                .testTag("continue_without_account_button"),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = TallyColors.inkC2()

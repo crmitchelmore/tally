@@ -1,10 +1,13 @@
 package com.tally.app
 
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tally.app.pages.AuthPage
 import com.tally.app.pages.ChallengeDialogPage
 import com.tally.app.pages.DashboardPage
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,30 +22,59 @@ class OfflineTests {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
     
+    private val authPage by lazy { AuthPage(composeRule) }
     private val dashboardPage by lazy { DashboardPage(composeRule) }
     private val challengeDialog by lazy { ChallengeDialogPage(composeRule) }
+    
+    /**
+     * Navigate to dashboard, either by entering local-only mode from sign-in
+     * or continuing if already on dashboard.
+     */
+    private fun navigateToDashboard() {
+        composeRule.waitForIdle()
+        
+        // Try to find sign-in screen first
+        val isOnSignIn = try {
+            composeRule.onNodeWithTag("sign_in_screen").assertExists()
+            true
+        } catch (e: AssertionError) {
+            false
+        }
+        
+        if (isOnSignIn) {
+            authPage.tapContinueWithoutAccount()
+            composeRule.waitForIdle()
+        }
+        
+        // Verify we're on dashboard
+        composeRule.onNodeWithTag("dashboard").assertExists()
+    }
     
     // MARK: - Starting as Offline User
     
     @Test
     fun testLaunchingAppWithoutAccount() {
-        // App should launch and show dashboard
-        composeRule.waitForIdle()
+        navigateToDashboard()
         
-        // Should be able to use app without account
-        try {
-            dashboardPage.createChallengeButton().assertExists()
-        } catch (e: Exception) {
-            composeRule.onNodeWithText("Create", substring = true).assertExists()
+        // Should be on dashboard with empty state or create button
+        val hasDashboard = try {
+            composeRule.onNodeWithTag("dashboard").assertExists()
+            true
+        } catch (e: AssertionError) {
+            false
         }
+        
+        assert(hasDashboard) { "Should be on dashboard" }
     }
     
     @Test
     fun testCanCreateChallengeWhileOffline() {
+        navigateToDashboard()
+        
+        // Create a challenge (should work in local-only mode)
+        dashboardPage.tapCreateChallenge()
         composeRule.waitForIdle()
         
-        // Create a challenge (should work offline)
-        dashboardPage.tapCreateChallenge()
         challengeDialog.fillChallenge(name = "Offline Challenge", target = "1000")
         challengeDialog.tapSave()
         
@@ -55,14 +87,13 @@ class OfflineTests {
     
     @Test
     fun testViewSyncStatusAsOfflineUser() {
-        composeRule.waitForIdle()
+        navigateToDashboard()
         
-        // Look for sync status indicator
-        try {
-            val syncStatus = dashboardPage.syncStatus()
-            syncStatus.assertExists()
-        } catch (e: Exception) {
-            // Sync status might not be visible, which is also acceptable
-        }
+        // Look for sync status indicator showing LOCAL_ONLY
+        val syncStatus = composeRule.onNodeWithTag("sync_status")
+        syncStatus.assertExists()
+        
+        // Should show "Local only" text
+        composeRule.onNodeWithText("Local only", substring = true).assertExists()
     }
 }

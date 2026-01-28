@@ -1,9 +1,11 @@
 package com.tally.app
 
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tally.app.pages.AuthPage
 import com.tally.app.pages.ChallengeDialogPage
 import com.tally.app.pages.ChallengeDetailPage
 import com.tally.app.pages.DashboardPage
@@ -22,19 +24,44 @@ class ChallengeTests {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
     
+    private val authPage by lazy { AuthPage(composeRule) }
     private val dashboardPage by lazy { DashboardPage(composeRule) }
     private val challengeDialog by lazy { ChallengeDialogPage(composeRule) }
     private val challengeDetail by lazy { ChallengeDetailPage(composeRule) }
+    
+    /**
+     * Navigate to dashboard, either by entering local-only mode from sign-in
+     * or continuing if already on dashboard.
+     */
+    private fun navigateToDashboard() {
+        composeRule.waitForIdle()
+        
+        // Try to find sign-in screen first
+        val isOnSignIn = try {
+            composeRule.onNodeWithTag("sign_in_screen").assertExists()
+            true
+        } catch (e: AssertionError) {
+            false
+        }
+        
+        if (isOnSignIn) {
+            authPage.tapContinueWithoutAccount()
+            composeRule.waitForIdle()
+        }
+        
+        // Verify we're on dashboard
+        composeRule.onNodeWithTag("dashboard").assertExists()
+    }
     
     // MARK: - Creating Challenges
     
     @Test
     fun testCreateYearlyChallengeWithMinimalInput() {
-        // Given I am on my dashboard
-        composeRule.waitForIdle()
+        navigateToDashboard()
         
         // When I tap create challenge
         dashboardPage.tapCreateChallenge()
+        composeRule.waitForIdle()
         
         // Then I should see the challenge creation dialog
         challengeDialog.assertIsVisible()
@@ -54,9 +81,11 @@ class ChallengeTests {
     
     @Test
     fun testCreateMonthlyChallenge() {
-        composeRule.waitForIdle()
+        navigateToDashboard()
         
         dashboardPage.tapCreateChallenge()
+        composeRule.waitForIdle()
+        
         challengeDialog.assertIsVisible()
         
         challengeDialog.fillChallenge(
@@ -74,9 +103,12 @@ class ChallengeTests {
     
     @Test
     fun testEditExistingChallenge() {
+        navigateToDashboard()
+        
         // First create a challenge
-        composeRule.waitForIdle()
         dashboardPage.tapCreateChallenge()
+        composeRule.waitForIdle()
+        
         challengeDialog.fillChallenge(name = "Edit Test", target = "1000")
         challengeDialog.tapSave()
         
@@ -102,9 +134,12 @@ class ChallengeTests {
     
     @Test
     fun testDeleteChallengeWithConfirmation() {
+        navigateToDashboard()
+        
         // Create a challenge to delete
-        composeRule.waitForIdle()
         dashboardPage.tapCreateChallenge()
+        composeRule.waitForIdle()
+        
         challengeDialog.fillChallenge(name = "Delete Test", target = "100")
         challengeDialog.tapSave()
         
@@ -130,9 +165,12 @@ class ChallengeTests {
     
     @Test
     fun testViewChallengeInformationOnDashboard() {
+        navigateToDashboard()
+        
         // Create a challenge
-        composeRule.waitForIdle()
         dashboardPage.tapCreateChallenge()
+        composeRule.waitForIdle()
+        
         challengeDialog.fillChallenge(name = "Dashboard Test", target = "5000")
         challengeDialog.tapSave()
         

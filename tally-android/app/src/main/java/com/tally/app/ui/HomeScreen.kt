@@ -14,20 +14,27 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,6 +53,7 @@ import com.tally.core.design.TallyTheme
 import com.tally.core.network.Challenge
 import com.tally.core.network.ChallengeStats
 import com.tally.core.network.TallyApiClient
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 /**
@@ -55,6 +63,7 @@ import java.time.LocalDate
 @Composable
 fun HomeScreen(authManager: AuthManager? = null) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     
     // Determine if we're in local-only mode (no auth manager = local only)
     val isLocalOnlyMode = authManager == null
@@ -92,73 +101,119 @@ fun HomeScreen(authManager: AuthManager? = null) {
     
     // Dialog state
     var selectedChallenge by remember { mutableStateOf<Challenge?>(null) }
+    var showCreateDialog by remember { mutableStateOf(false) }
     
     // Refresh on mount
     LaunchedEffect(Unit) {
         challengesManager.refreshChallenges()
     }
     
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(TallySpacing.md),
-        verticalArrangement = Arrangement.spacedBy(TallySpacing.md)
-    ) {
-        // Header with sync status
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = "Tally",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                if (isRefreshing) {
-                    Text(
-                        text = "Updating...",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+    Scaffold(
+        floatingActionButton = {
+            // Show FAB when there are challenges
+            if (challenges.isNotEmpty()) {
+                FloatingActionButton(
+                    onClick = { showCreateDialog = true },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.testTag("create_challenge_fab")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(R.string.create_challenge)
                     )
                 }
             }
-            SyncStatusIndicator(state = displaySyncState)
         }
-
-        Spacer(modifier = Modifier.height(TallySpacing.lg))
-
-        when {
-            isLoading && challenges.isEmpty() -> {
-                // Show loading only when no cache
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-            challenges.isEmpty() -> {
-                // Empty state
-                EmptyState()
-            }
-            else -> {
-                // Challenge list
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(TallySpacing.md)
-                ) {
-                    items(challenges) { challenge ->
-                        val challengeStats = stats[challenge.id]
-                        ChallengeCard(
-                            challenge = challenge,
-                            stats = challengeStats,
-                            onClick = { selectedChallenge = challenge }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(paddingValues)
+                .padding(TallySpacing.md)
+                .testTag("dashboard"),
+            verticalArrangement = Arrangement.spacedBy(TallySpacing.md)
+        ) {
+            // Header with sync status
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Tally",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                    if (isRefreshing) {
+                        Text(
+                            text = "Updating...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                    }
+                }
+                SyncStatusIndicator(
+                    state = displaySyncState,
+                    modifier = Modifier.testTag("sync_status")
+                )
+            }
+
+            Spacer(modifier = Modifier.height(TallySpacing.lg))
+
+            when {
+                isLoading && challenges.isEmpty() -> {
+                    // Show loading only when no cache
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                challenges.isEmpty() -> {
+                    // Empty state
+                    EmptyState(onCreateClick = { showCreateDialog = true })
+                }
+                else -> {
+                    // Challenge list
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(TallySpacing.md)
+                    ) {
+                        items(challenges) { challenge ->
+                            val challengeStats = stats[challenge.id]
+                            ChallengeCard(
+                                challenge = challenge,
+                                stats = challengeStats,
+                                onClick = { selectedChallenge = challenge }
+                            )
+                        }
                     }
                 }
             }
         }
+    }
+    
+    // Create challenge dialog
+    if (showCreateDialog) {
+        CreateChallengeDialog(
+            onCreate = { name, target, timeframeType, periodOffset, countType, unitLabel, defaultIncrement, isPublic ->
+                scope.launch {
+                    challengesManager.createChallenge(
+                        name = name,
+                        target = target,
+                        timeframeType = timeframeType,
+                        periodOffset = periodOffset,
+                        countType = countType,
+                        unitLabel = unitLabel,
+                        defaultIncrement = defaultIncrement,
+                        isPublic = isPublic
+                    )
+                }
+                showCreateDialog = false
+            },
+            onDismiss = { showCreateDialog = false }
+        )
     }
     
     // Add entry dialog
@@ -232,9 +287,11 @@ private fun ChallengeCard(
 }
 
 @Composable
-private fun EmptyState() {
+private fun EmptyState(onCreateClick: () -> Unit) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("empty_state"),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -247,7 +304,10 @@ private fun EmptyState() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
-            Button(onClick = { /* TODO: Create challenge flow */ }) {
+            Button(
+                onClick = onCreateClick,
+                modifier = Modifier.testTag("create_challenge_button")
+            ) {
                 Text(stringResource(R.string.create_challenge))
             }
         }

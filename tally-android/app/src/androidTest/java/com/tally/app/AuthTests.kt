@@ -2,7 +2,7 @@ package com.tally.app
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tally.app.pages.AuthPage
 import com.tally.app.pages.DashboardPage
@@ -48,34 +48,12 @@ class AuthTests {
         // Wait for sign-in view to load
         composeRule.waitForIdle()
         
-        // Tap offline mode button
+        // Tap local-only mode button
         authPage.tapContinueWithoutAccount()
         composeRule.waitForIdle()
         
-        // Should enter the app - look for dashboard elements
-        val enteredApp = try {
-            // Look for any of these indicators that we're in the app
-            val hasNoChallengText = try {
-                composeRule.onNodeWithText("No challenges yet").assertIsDisplayed()
-                true
-            } catch (e: Exception) { false }
-            
-            val hasCreateButton = try {
-                dashboardPage.createChallengeButton().assertIsDisplayed()
-                true
-            } catch (e: Exception) { false }
-            
-            val hasHomeTab = try {
-                composeRule.onNodeWithText("Home").assertIsDisplayed()
-                true
-            } catch (e: Exception) { false }
-            
-            hasNoChallengText || hasCreateButton || hasHomeTab
-        } catch (e: Exception) {
-            false
-        }
-        
-        assert(enteredApp) { "Should enter app in offline mode" }
+        // Should enter the app - verify dashboard is shown
+        composeRule.onNodeWithTag("dashboard").assertIsDisplayed()
     }
     
     // MARK: - Sign In with Test User

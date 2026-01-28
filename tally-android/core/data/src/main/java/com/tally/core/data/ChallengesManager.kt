@@ -4,10 +4,14 @@ import android.content.Context
 import com.tally.core.network.ApiResult
 import com.tally.core.network.Challenge
 import com.tally.core.network.ChallengeStats
+import com.tally.core.network.CountType
+import com.tally.core.network.CreateChallengeRequest
 import com.tally.core.network.CreateEntryRequest
 import com.tally.core.network.Entry
 import com.tally.core.network.Feeling
+import com.tally.core.network.PaceStatus
 import com.tally.core.network.TallyApiClient
+import com.tally.core.network.TimeframeType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -179,6 +183,128 @@ class ChallengesManager(
             
             // Also update cache
             challengeStore.saveStats(currentStats)
+        }
+    }
+    
+    // MARK: - Challenge Operations
+    
+    /**
+     * Create a challenge - saves locally immediately, syncs in background for online mode.
+     * Returns the created challenge.
+     */
+    suspend fun createChallenge(
+        name: String,
+        target: Int,
+        timeframeType: TimeframeType,
+        periodOffset: Int = 0,
+        color: String = "#4F46E5",
+        icon: String = "star",
+        isPublic: Boolean = false,
+        countType: CountType = CountType.SIMPLE,
+        unitLabel: String? = null,
+        defaultIncrement: Int? = null
+    ): Challenge {
+        val now = Instant.now().toString()
+        val (startDate, endDate) = calculateDateRange(timeframeType, periodOffset)
+        
+        // Create local challenge
+        val challenge = Challenge(
+            id = UUID.randomUUID().toString(),
+            userId = "", // Set by server or remains empty for local
+            name = name,
+            target = target,
+            timeframeType = timeframeType,
+            startDate = startDate,
+            endDate = endDate,
+            color = color,
+            icon = icon,
+            isPublic = isPublic,
+            isArchived = false,
+            countType = countType,
+            unitLabel = unitLabel,
+            defaultIncrement = defaultIncrement,
+            createdAt = now,
+            updatedAt = now
+        )
+        
+        // Save locally immediately
+        val updated = _challenges.value + challenge
+        _challenges.value = updated
+        challengeStore.saveChallenges(updated)
+        
+        // Initialize empty stats for the new challenge
+        val newStats = ChallengeStats(
+            challengeId = challenge.id,
+            totalCount = 0,
+            remaining = target,
+            daysElapsed = 0,
+            daysRemaining = 365, // Will be calculated properly on refresh
+            perDayRequired = target.toDouble() / 365,
+            currentPace = 0.0,
+            paceStatus = PaceStatus.ON_PACE,
+            streakCurrent = 0,
+            streakBest = 0,
+            bestDay = null,
+            dailyAverage = 0.0
+        )
+        val statsMap = _stats.value.toMutableMap()
+        statsMap[challenge.id] = newStats
+        _stats.value = statsMap
+        challengeStore.saveStats(statsMap)
+        
+        // Try to sync to server in background (if online)
+        scope.launch {
+            val request = CreateChallengeRequest(
+                name = name,
+                target = target,
+                timeframeType = timeframeType,
+                periodOffset = periodOffset,
+                color = color,
+                icon = icon,
+                isPublic = isPublic,
+                countType = countType,
+                unitLabel = unitLabel,
+                defaultIncrement = defaultIncrement
+            )
+            when (val result = apiClient.createChallenge(request)) {
+                is ApiResult.Success -> {
+                    // Replace local challenge with server version
+                    val serverChallenge = result.data
+                    val newList = _challenges.value.map { 
+                        if (it.id == challenge.id) serverChallenge else it 
+                    }
+                    _challenges.value = newList
+                    challengeStore.saveChallenges(newList)
+                }
+                is ApiResult.Failure -> {
+                    // Keep local challenge - will sync later or user will see local only
+                }
+            }
+        }
+        
+        return challenge
+    }
+    
+    private fun calculateDateRange(timeframeType: TimeframeType, periodOffset: Int): Pair<String, String> {
+        val now = LocalDate.now()
+        return when (timeframeType) {
+            TimeframeType.YEAR -> {
+                val targetYear = now.plusYears(periodOffset.toLong())
+                val start = targetYear.withDayOfYear(1)
+                val end = targetYear.withDayOfYear(targetYear.lengthOfYear())
+                start.toString() to end.toString()
+            }
+            TimeframeType.MONTH -> {
+                val targetMonth = now.plusMonths(periodOffset.toLong())
+                val start = targetMonth.withDayOfMonth(1)
+                val end = targetMonth.withDayOfMonth(targetMonth.lengthOfMonth())
+                start.toString() to end.toString()
+            }
+            TimeframeType.CUSTOM -> {
+                val start = now
+                val end = now.plusMonths(1)
+                start.toString() to end.toString()
+            }
         }
     }
     

@@ -123,6 +123,7 @@ public final class ChallengesManager {
     
     /// Refresh challenges from server (called on app launch, pull-to-refresh)
     public func refresh() async {
+        print("[ChallengesManager] refresh() called, current challenges: \(challenges.count)")
         // Only show loading spinner if we have no cached data
         // Otherwise just refresh silently in background
         if challenges.isEmpty {
@@ -138,19 +139,30 @@ public final class ChallengesManager {
             challenges = localStore.loadChallenges()
             stats = localStore.loadStats()
             isOnline = true
+            print("[ChallengesManager] refresh() success, challenges: \(challenges.count)")
             
             // Try to sync any pending changes
             await syncPendingChanges()
         } catch let error as APIError {
+            print("[ChallengesManager] refresh() APIError: \(error.localizedDescription)")
             if error.isRecoverable {
                 isOnline = false
                 syncState = .offline
             } else {
                 errorMessage = error.errorDescription
             }
+            // Reload from local storage on error
+            challenges = localStore.loadChallenges()
+            stats = localStore.loadStats()
+            print("[ChallengesManager] refresh() loaded from local: \(challenges.count) challenges")
         } catch {
+            print("[ChallengesManager] refresh() error: \(error.localizedDescription)")
             isOnline = false
             syncState = .offline
+            // Reload from local storage on error
+            challenges = localStore.loadChallenges()
+            stats = localStore.loadStats()
+            print("[ChallengesManager] refresh() loaded from local: \(challenges.count) challenges")
         }
         
         isLoading = false
@@ -218,6 +230,7 @@ public final class ChallengesManager {
         localStore.addPendingChange(.create(id: tempId))
         challenges = localStore.loadChallenges()
         stats = localStore.loadStats()
+        print("[ChallengesManager] Created challenge '\(name)' with id \(tempId), total challenges: \(challenges.count)")
         updateSyncState()
         
         // Try to sync immediately if online

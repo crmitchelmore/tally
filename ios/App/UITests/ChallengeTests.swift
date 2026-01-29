@@ -26,7 +26,7 @@ final class ChallengeTests: TallyUITestCase {
             target: TestData.challengeTarget,
             timeframe: "Year"
         )
-        challengeDialog.tapSave()
+        challengeDialog.tapSaveAndWaitForDismiss()
         
         // Then I should see the challenge on my dashboard
         dashboardPage.assertChallengeExists(named: TestData.challengeName)
@@ -43,7 +43,7 @@ final class ChallengeTests: TallyUITestCase {
             target: "4",
             timeframe: "Month"
         )
-        challengeDialog.tapSave()
+        challengeDialog.tapSaveAndWaitForDismiss()
         
         dashboardPage.assertChallengeExists(named: "Reading")
     }
@@ -55,7 +55,7 @@ final class ChallengeTests: TallyUITestCase {
         _ = waitForElement(dashboardPage.createChallengeButton)
         dashboardPage.tapCreateChallenge()
         challengeDialog.fillChallenge(name: "Edit Test", target: "1000")
-        challengeDialog.tapSave()
+        challengeDialog.tapSaveAndWaitForDismiss()
         dashboardPage.assertChallengeExists(named: "Edit Test")
         
         // Tap to view detail
@@ -68,7 +68,7 @@ final class ChallengeTests: TallyUITestCase {
             // Change target
             if challengeDialog.targetTextField.waitForExistence(timeout: 5) {
                 clearAndType(challengeDialog.targetTextField, text: "1500")
-                challengeDialog.tapSave()
+                challengeDialog.tapSaveAndWaitForDismiss()
             }
         }
         
@@ -81,7 +81,7 @@ final class ChallengeTests: TallyUITestCase {
         _ = waitForElement(dashboardPage.createChallengeButton)
         dashboardPage.tapCreateChallenge()
         challengeDialog.fillChallenge(name: "Delete Test", target: "100")
-        challengeDialog.tapSave()
+        challengeDialog.tapSaveAndWaitForDismiss()
         dashboardPage.assertChallengeExists(named: "Delete Test")
         
         // Open detail
@@ -109,7 +109,7 @@ final class ChallengeTests: TallyUITestCase {
         _ = waitForElement(dashboardPage.createChallengeButton)
         dashboardPage.tapCreateChallenge()
         challengeDialog.fillChallenge(name: "Dashboard Test", target: "5000")
-        challengeDialog.tapSave()
+        challengeDialog.tapSaveAndWaitForDismiss()
         
         let card = dashboardPage.challengeCard(named: "Dashboard Test")
         XCTAssertTrue(card.waitForExistence(timeout: 5))
@@ -128,7 +128,7 @@ final class ChallengeTests: TallyUITestCase {
         _ = waitForElement(dashboardPage.createChallengeButton)
         dashboardPage.tapCreateChallenge()
         challengeDialog.fillChallenge(name: "Detail Test", target: "10000")
-        challengeDialog.tapSave()
+        challengeDialog.tapSaveAndWaitForDismiss()
         dashboardPage.assertChallengeExists(named: "Detail Test")
         
         // Open detail

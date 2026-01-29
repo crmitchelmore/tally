@@ -53,6 +53,7 @@ public final class AuthManager: TokenRefresher {
             print("[AuthManager] Clearing all data for testing")
             // Clear challenges local store
             UserDefaults.standard.removeObject(forKey: "tally.challenges.data")
+            UserDefaults.standard.removeObject(forKey: "tally.challenges.stats")
             UserDefaults.standard.removeObject(forKey: "tally.challenges.pending")
         }
     }

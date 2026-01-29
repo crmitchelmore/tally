@@ -365,8 +365,10 @@ public struct ChallengeFormView: View {
     }
     
     private func save() async {
+        print("[ChallengeFormView] save() called, name='\(name)', isValid=\(isValid)")
         guard isValid else {
             validationError = "Please fill in all required fields."
+            print("[ChallengeFormView] validation failed")
             return
         }
         
@@ -375,6 +377,7 @@ public struct ChallengeFormView: View {
         
         if let existing = existingChallenge {
             // Update existing
+            print("[ChallengeFormView] updating existing challenge")
             await manager.updateChallenge(
                 id: existing.id,
                 name: name.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -385,6 +388,7 @@ public struct ChallengeFormView: View {
             )
         } else {
             // Create new
+            print("[ChallengeFormView] creating new challenge '\(name)'")
             await manager.createChallenge(
                 name: name.trimmingCharacters(in: .whitespacesAndNewlines),
                 target: target,
@@ -400,6 +404,7 @@ public struct ChallengeFormView: View {
             )
         }
         
+        print("[ChallengeFormView] save completed, manager has \(manager.challenges.count) challenges")
         isSaving = false
         onSave()
     }

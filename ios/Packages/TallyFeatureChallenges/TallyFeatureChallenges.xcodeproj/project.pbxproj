@@ -7,20 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A2FDEF6A4522DC202420069 /* TallyFeatureAuth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F8CDE9B6B221451A546D75B /* TallyFeatureAuth.framework */; };
 		0F524706C9CCE2A7039533E5 /* TallyFeatureAPIClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E452F31BD486FD47DA56A716 /* TallyFeatureAPIClient.framework */; };
 		1EFF3D2F96A1F20B75AC22BC /* ChallengeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC840F2E23CFA878144B1C8 /* ChallengeDetailView.swift */; };
 		2BDB5F6BDC2F4350C9F407B8 /* TallyDesign.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7CA40CCB627392D00BB5E97C /* TallyDesign.framework */; };
+		2E0D01A39D7FDF32E0019481 /* DashboardHighlightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19CA6B6593FFC13873608925 /* DashboardHighlightsView.swift */; };
 		30C69BD4B1998605D55D463A /* TallyFeatureChallenges.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62F0B2F57AA7C76E1EC43CC5 /* TallyFeatureChallenges.swift */; };
 		340EFDA62B0AC6625CA1EE97 /* ChallengesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E98A1FD9C79A45DF0704D43 /* ChallengesManager.swift */; };
 		35B7E4C972345C438CD99F41 /* LocalEntryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C301A4E032BA5DF1D8B9482 /* LocalEntryStore.swift */; };
 		40A806FDEF5F63155A7F9DCA /* SyncState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76BE200EEDB3C3925D518F6C /* SyncState.swift */; };
 		42BCA8C509C34C2A9E733A14 /* BurnUpChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C01A66A4875430B774F8B03 /* BurnUpChartView.swift */; };
+		6B8B603BF843226E8B314C0E /* ProgressChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DF05061CFB17597176559F /* ProgressChartView.swift */; };
 		7508EF49E0C3A8ECB0935A60 /* LocalChallengeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB4FD752C37812C94A4D9B1 /* LocalChallengeStore.swift */; };
+		7CFFB50B4CEC3E5A34D81E5B /* PersonalRecordsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93A6077BAE90728036DEA05 /* PersonalRecordsView.swift */; };
 		8AA0E102CAE9F8D30463CCDA /* ChallengeFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAF0EE032D8F3740CAEE0B7B /* ChallengeFormView.swift */; };
 		95537127361E6F07F785140B /* ChallengeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29C418E03FC5CD8B6EA5BB43 /* ChallengeListView.swift */; };
+		B561CC3482081546D48C459A /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C9265A655F3E6B45EC7018 /* DashboardView.swift */; };
+		C163D3A06531D20731095942 /* EditEntrySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ABF4CA1FAAA3A997F66C390 /* EditEntrySheet.swift */; };
 		C9DCDFC9D91F2D6D5231EFFA /* TallyCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A6F1581E3759DC694C2A8BA /* TallyCore.framework */; };
 		CFC909EAC8B84899B4B8F3E4 /* SyncStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8B7783E2F741E7F64CDACC /* SyncStateTests.swift */; };
 		D3F2284382E4A3D2F9D68D4B /* ChallengeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F29FEC7062998014601BBF /* ChallengeCardView.swift */; };
+		D9B44BEB5957CE362D2CE1E2 /* ActivityHeatmapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC43FAB8136B5F466E268243 /* ActivityHeatmapView.swift */; };
 		F00EFA1052F897B12802AFB3 /* LocalChallengeStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B9FD574685B796F9DA80596 /* LocalChallengeStoreTests.swift */; };
 		FABF1C16E985CC09432EBBB0 /* TallyFeatureChallenges.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45F79BE7914DE65A4793080 /* TallyFeatureChallenges.framework */; };
 		FB271D56F5B1B4ECBAF416A3 /* AddEntrySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC40CE5FDE612AB35A6DE643 /* AddEntrySheet.swift */; };
@@ -61,25 +68,32 @@
 
 /* Begin PBXFileReference section */
 		0EB4FD752C37812C94A4D9B1 /* LocalChallengeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalChallengeStore.swift; sourceTree = "<group>"; };
+		19CA6B6593FFC13873608925 /* DashboardHighlightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardHighlightsView.swift; sourceTree = "<group>"; };
 		1C301A4E032BA5DF1D8B9482 /* LocalEntryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalEntryStore.swift; sourceTree = "<group>"; };
 		29C418E03FC5CD8B6EA5BB43 /* ChallengeListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeListView.swift; sourceTree = "<group>"; };
 		2B9FD574685B796F9DA80596 /* LocalChallengeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalChallengeStoreTests.swift; sourceTree = "<group>"; };
 		302EF75DB6310865638AE0C8 /* TallyFeatureChallengesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TallyFeatureChallengesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3C01A66A4875430B774F8B03 /* BurnUpChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BurnUpChartView.swift; sourceTree = "<group>"; };
 		4F8B7783E2F741E7F64CDACC /* SyncStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStateTests.swift; sourceTree = "<group>"; };
+		4F8CDE9B6B221451A546D75B /* TallyFeatureAuth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureAuth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		62F0B2F57AA7C76E1EC43CC5 /* TallyFeatureChallenges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallyFeatureChallenges.swift; sourceTree = "<group>"; };
 		6BC840F2E23CFA878144B1C8 /* ChallengeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeDetailView.swift; sourceTree = "<group>"; };
 		6E98A1FD9C79A45DF0704D43 /* ChallengesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengesManager.swift; sourceTree = "<group>"; };
 		76BE200EEDB3C3925D518F6C /* SyncState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncState.swift; sourceTree = "<group>"; };
 		76F29FEC7062998014601BBF /* ChallengeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeCardView.swift; sourceTree = "<group>"; };
 		7CA40CCB627392D00BB5E97C /* TallyDesign.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyDesign.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		84DF05061CFB17597176559F /* ProgressChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressChartView.swift; sourceTree = "<group>"; };
 		9A6F1581E3759DC694C2A8BA /* TallyCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9ABF4CA1FAAA3A997F66C390 /* EditEntrySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditEntrySheet.swift; sourceTree = "<group>"; };
 		B77512E1A0DDA95D3634978E /* TallyFeatureChallenges-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyFeatureChallenges-Info.plist"; sourceTree = "<group>"; };
 		C4446CC1A503FC0B185FDC54 /* TallyFeatureChallengesTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyFeatureChallengesTests-Info.plist"; sourceTree = "<group>"; };
+		D93A6077BAE90728036DEA05 /* PersonalRecordsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalRecordsView.swift; sourceTree = "<group>"; };
 		DAF0EE032D8F3740CAEE0B7B /* ChallengeFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeFormView.swift; sourceTree = "<group>"; };
 		E452F31BD486FD47DA56A716 /* TallyFeatureAPIClient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureAPIClient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EC40CE5FDE612AB35A6DE643 /* AddEntrySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEntrySheet.swift; sourceTree = "<group>"; };
 		F45F79BE7914DE65A4793080 /* TallyFeatureChallenges.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureChallenges.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F5C9265A655F3E6B45EC7018 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		FC43FAB8136B5F466E268243 /* ActivityHeatmapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityHeatmapView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +104,7 @@
 				C9DCDFC9D91F2D6D5231EFFA /* TallyCore.framework in Frameworks */,
 				2BDB5F6BDC2F4350C9F407B8 /* TallyDesign.framework in Frameworks */,
 				0F524706C9CCE2A7039533E5 /* TallyFeatureAPIClient.framework in Frameworks */,
+				0A2FDEF6A4522DC202420069 /* TallyFeatureAuth.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,6 +119,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		00E06025F22A28B6B365F154 /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				FC43FAB8136B5F466E268243 /* ActivityHeatmapView.swift */,
+				19CA6B6593FFC13873608925 /* DashboardHighlightsView.swift */,
+				F5C9265A655F3E6B45EC7018 /* DashboardView.swift */,
+				D93A6077BAE90728036DEA05 /* PersonalRecordsView.swift */,
+				84DF05061CFB17597176559F /* ProgressChartView.swift */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
 		071A0E6A81B417E1627A4FE5 = {
 			isa = PBXGroup;
 			children = (
@@ -170,6 +197,7 @@
 				9A6F1581E3759DC694C2A8BA /* TallyCore.framework */,
 				7CA40CCB627392D00BB5E97C /* TallyDesign.framework */,
 				E452F31BD486FD47DA56A716 /* TallyFeatureAPIClient.framework */,
+				4F8CDE9B6B221451A546D75B /* TallyFeatureAuth.framework */,
 				F45F79BE7914DE65A4793080 /* TallyFeatureChallenges.framework */,
 				302EF75DB6310865638AE0C8 /* TallyFeatureChallengesTests.xctest */,
 			);
@@ -179,6 +207,7 @@
 		F54C27069017488B8B960689 /* TallyFeatureChallenges */ = {
 			isa = PBXGroup;
 			children = (
+				00E06025F22A28B6B365F154 /* Dashboard */,
 				EC40CE5FDE612AB35A6DE643 /* AddEntrySheet.swift */,
 				3C01A66A4875430B774F8B03 /* BurnUpChartView.swift */,
 				76F29FEC7062998014601BBF /* ChallengeCardView.swift */,
@@ -186,6 +215,7 @@
 				DAF0EE032D8F3740CAEE0B7B /* ChallengeFormView.swift */,
 				29C418E03FC5CD8B6EA5BB43 /* ChallengeListView.swift */,
 				6E98A1FD9C79A45DF0704D43 /* ChallengesManager.swift */,
+				9ABF4CA1FAAA3A997F66C390 /* EditEntrySheet.swift */,
 				0EB4FD752C37812C94A4D9B1 /* LocalChallengeStore.swift */,
 				1C301A4E032BA5DF1D8B9482 /* LocalEntryStore.swift */,
 				76BE200EEDB3C3925D518F6C /* SyncState.swift */,
@@ -305,6 +335,12 @@
 				8AA0E102CAE9F8D30463CCDA /* ChallengeFormView.swift in Sources */,
 				95537127361E6F07F785140B /* ChallengeListView.swift in Sources */,
 				340EFDA62B0AC6625CA1EE97 /* ChallengesManager.swift in Sources */,
+				D9B44BEB5957CE362D2CE1E2 /* ActivityHeatmapView.swift in Sources */,
+				2E0D01A39D7FDF32E0019481 /* DashboardHighlightsView.swift in Sources */,
+				B561CC3482081546D48C459A /* DashboardView.swift in Sources */,
+				7CFFB50B4CEC3E5A34D81E5B /* PersonalRecordsView.swift in Sources */,
+				6B8B603BF843226E8B314C0E /* ProgressChartView.swift in Sources */,
+				C163D3A06531D20731095942 /* EditEntrySheet.swift in Sources */,
 				7508EF49E0C3A8ECB0935A60 /* LocalChallengeStore.swift in Sources */,
 				35B7E4C972345C438CD99F41 /* LocalEntryStore.swift in Sources */,
 				40A806FDEF5F63155A7F9DCA /* SyncState.swift in Sources */,

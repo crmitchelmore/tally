@@ -15,7 +15,7 @@ final class EntryTests: TallyUITestCase {
         _ = waitForElement(dashboardPage.createChallengeButton)
         dashboardPage.tapCreateChallenge()
         challengeDialog.fillChallenge(name: name, target: "10000")
-        challengeDialog.tapSave()
+        challengeDialog.tapSaveAndWaitForDismiss()
         dashboardPage.assertChallengeExists(named: name)
     }
     

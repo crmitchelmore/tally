@@ -52,7 +52,7 @@ final class OnboardingTests: TallyUITestCase {
             target: "10000",
             timeframe: "Year"
         )
-        challengeDialog.tapSave()
+        challengeDialog.tapSaveAndWaitForDismiss()
         
         // Should see challenge on dashboard
         dashboardPage.assertChallengeExists(named: "Push-ups")
@@ -69,7 +69,7 @@ final class OnboardingTests: TallyUITestCase {
         _ = waitForElement(dashboardPage.createChallengeButton)
         dashboardPage.tapCreateChallenge()
         challengeDialog.fillChallenge(name: "Layout Test", target: "5000")
-        challengeDialog.tapSave()
+        challengeDialog.tapSaveAndWaitForDismiss()
         
         // Verify dashboard elements
         let card = dashboardPage.challengeCard(named: "Layout Test")

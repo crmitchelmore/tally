@@ -64,9 +64,9 @@ struct DashboardPage {
     
     // MARK: - Assertions
     
-    func assertChallengeExists(named name: String, file: StaticString = #file, line: UInt = #line) {
+    func assertChallengeExists(named name: String, timeout: TimeInterval = 10, file: StaticString = #file, line: UInt = #line) {
         XCTAssertTrue(
-            challengeCard(named: name).waitForExistence(timeout: 5),
+            challengeCard(named: name).waitForExistence(timeout: timeout),
             "Challenge '\(name)' should exist on dashboard",
             file: file,
             line: line

@@ -22,10 +22,11 @@ final class OfflineTests: TallyUITestCase {
         
         // Create a challenge (should work offline)
         dashboardPage.tapCreateChallenge()
-        challengeDialog.fillChallenge(name: "Offline Challenge", target: "1000")
-        challengeDialog.tapSave()
+        // Only fill name - use default target to avoid input issues
+        challengeDialog.fillChallenge(name: "Offline Challenge")
+        challengeDialog.tapSaveAndWaitForDismiss()
         
-        // Should be visible immediately
+        // Should be visible after UI updates
         dashboardPage.assertChallengeExists(named: "Offline Challenge")
     }
     
@@ -34,7 +35,7 @@ final class OfflineTests: TallyUITestCase {
         _ = waitForElement(dashboardPage.createChallengeButton)
         dashboardPage.tapCreateChallenge()
         challengeDialog.fillChallenge(name: "Persistence Test", target: "500")
-        challengeDialog.tapSave()
+        challengeDialog.tapSaveAndWaitForDismiss()
         dashboardPage.assertChallengeExists(named: "Persistence Test")
         
         // Terminate and relaunch

@@ -47,6 +47,7 @@ struct HomeView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
+                .accessibilityIdentifier("create-challenge-button")
             }
         }
         .sheet(isPresented: $showCreateSheet) {

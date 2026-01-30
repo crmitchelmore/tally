@@ -44,6 +44,28 @@ jobs:
         with:
           install_args: tuist@4.32.0
 
+      - name: Read tracked version
+        id: tracked_version
+        run: |
+          VERSION_FILE="ios/VERSION"
+          if [ ! -f "$VERSION_FILE" ]; then
+            echo "Missing $VERSION_FILE. Add it to track iOS release versions." >&2
+            exit 1
+          fi
+          TRACKED_VERSION=$(tr -d '[:space:]' < "$VERSION_FILE")
+          if [ -z "$TRACKED_VERSION" ]; then
+            echo "Tracked version is empty in $VERSION_FILE." >&2
+            exit 1
+          fi
+          echo "TRACKED_VERSION=$TRACKED_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Validate version input
+        run: |
+          if [ "${{ inputs.version }}" != "${{ steps.tracked_version.outputs.TRACKED_VERSION }}" ]; then
+            echo "Input version '${{ inputs.version }}' does not match tracked ios/VERSION '${{ steps.tracked_version.outputs.TRACKED_VERSION }}'." >&2
+            exit 1
+          fi
+
       - name: Calculate build number
         id: build_number
         run: |

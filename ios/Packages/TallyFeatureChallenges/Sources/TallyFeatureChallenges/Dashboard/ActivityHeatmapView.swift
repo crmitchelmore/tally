@@ -5,14 +5,28 @@ import TallyFeatureAPIClient
 /// GitHub-style activity heatmap
 public struct ActivityHeatmapView: View {
     let entries: [Entry]
+    let startDate: String?
+    let endDate: String?
+    let colorHex: String?
+    let onDayTap: ((String) -> Void)?
     
     // Computed properties for heatmap
     private let calendar = Calendar.current
     private let weeksToShow = 26 // ~6 months
     private let daysInWeek = 7
     
-    public init(entries: [Entry]) {
+    public init(
+        entries: [Entry],
+        startDate: String? = nil,
+        endDate: String? = nil,
+        colorHex: String? = nil,
+        onDayTap: ((String) -> Void)? = nil
+    ) {
         self.entries = entries
+        self.startDate = startDate
+        self.endDate = endDate
+        self.colorHex = colorHex
+        self.onDayTap = onDayTap
     }
     
     public var body: some View {
@@ -54,9 +68,19 @@ public struct ActivityHeatmapView: View {
                                     let date = dateFor(weekIndex: weekIndex, dayIndex: dayIndex)
                                     let count = countFor(date: date)
                                     
-                                    RoundedRectangle(cornerRadius: 2)
-                                        .fill(heatmapColor(for: count))
-                                        .frame(width: 10, height: 10)
+                                    Button {
+                                        if count > 0 {
+                                            let formatter = ISO8601DateFormatter()
+                                            formatter.formatOptions = [.withFullDate]
+                                            onDayTap?(formatter.string(from: date))
+                                        }
+                                    } label: {
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(heatmapColor(for: count))
+                                            .frame(width: 10, height: 10)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .disabled(count == 0 || onDayTap == nil)
                                 }
                             }
                         }
@@ -91,11 +115,21 @@ public struct ActivityHeatmapView: View {
     
     private func dateFor(weekIndex: Int, dayIndex: Int) -> Date {
         let today = Date()
-        let daysBack = (weeksToShow - 1 - weekIndex) * 7 + (6 - dayIndex)
-        return calendar.date(byAdding: .day, value: -daysBack, to: today) ?? today
+        let start = resolvedStartDate ?? calendar.date(byAdding: .month, value: -6, to: today) ?? today
+        let weekday = calendar.component(.weekday, from: start)
+        let offsetToSunday = weekday == 1 ? 0 : -(weekday - 1)
+        let gridStart = calendar.date(byAdding: .day, value: offsetToSunday, to: start) ?? start
+        let daysForward = weekIndex * 7 + dayIndex
+        return calendar.date(byAdding: .day, value: daysForward, to: gridStart) ?? today
     }
     
     private func countFor(date: Date) -> Int {
+        if let start = resolvedStartDate, date < start {
+            return 0
+        }
+        if let end = resolvedEndDate, date > end {
+            return 0
+        }
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withFullDate]
         let dateString = formatter.string(from: date)
@@ -103,22 +137,24 @@ public struct ActivityHeatmapView: View {
     }
     
     private func heatmapColor(for count: Int) -> Color {
+        let base = Color(hex: colorHex ?? "") ?? Color.tallySuccess
         switch count {
         case 0: return Color.tallyPaper.opacity(0.5)
-        case 1...5: return Color.tallySuccess.opacity(0.3)
-        case 6...15: return Color.tallySuccess.opacity(0.5)
-        case 16...30: return Color.tallySuccess.opacity(0.7)
-        default: return Color.tallySuccess
+        case 1...5: return base.opacity(0.3)
+        case 6...15: return base.opacity(0.5)
+        case 16...30: return base.opacity(0.7)
+        default: return base
         }
     }
     
     private func heatmapColorForLevel(_ level: Int) -> Color {
+        let base = Color(hex: colorHex ?? "") ?? Color.tallySuccess
         switch level {
         case 0: return Color.tallyPaper.opacity(0.5)
-        case 1: return Color.tallySuccess.opacity(0.3)
-        case 2: return Color.tallySuccess.opacity(0.5)
-        case 3: return Color.tallySuccess.opacity(0.7)
-        default: return Color.tallySuccess
+        case 1: return base.opacity(0.3)
+        case 2: return base.opacity(0.5)
+        case 3: return base.opacity(0.7)
+        default: return base
         }
     }
     
@@ -139,6 +175,20 @@ public struct ActivityHeatmapView: View {
         }
         
         return labels
+    }
+    
+    private var resolvedStartDate: Date? {
+        guard let startDate else { return nil }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        return formatter.date(from: startDate)
+    }
+
+    private var resolvedEndDate: Date? {
+        guard let endDate else { return nil }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        return formatter.date(from: endDate)
     }
 }
 

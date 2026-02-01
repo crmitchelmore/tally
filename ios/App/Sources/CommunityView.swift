@@ -8,7 +8,7 @@ import TallyFeatureAPIClient
 struct CommunityView: View {
     @State private var publicChallenges: [PublicChallenge] = []
     @State private var followedChallenges: [PublicChallenge] = []
-    @State private var isLoading = true
+    @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var searchText = ""
     @State private var selectedTab = 0
@@ -24,9 +24,7 @@ struct CommunityView: View {
             .tallyPadding(.horizontal)
             .tallyPadding(.vertical, TallySpacing.sm)
             
-            if isLoading {
-                loadingView
-            } else if let error = errorMessage {
+            if let error = errorMessage {
                 errorView(error)
             } else if selectedTab == 0 {
                 discoverView
@@ -41,20 +39,6 @@ struct CommunityView: View {
         }
         .task {
             await loadChallenges()
-        }
-    }
-    
-    // MARK: - Loading View
-    
-    private var loadingView: some View {
-        VStack(spacing: TallySpacing.lg) {
-            Spacer()
-            ProgressView()
-                .scaleEffect(1.2)
-            Text("Loading challenges…")
-                .font(.tallyBodyMedium)
-                .foregroundColor(Color.tallyInkSecondary)
-            Spacer()
         }
     }
     

@@ -12,6 +12,7 @@
 		33D3DD11521C893C8876E707 /* TallyDesignTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 628FBC4F30598BC1819D2613 /* TallyDesignTests.swift */; };
 		B231731608AB57A566504EFE /* SpacingTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D79EFD4379DEDF158A54FE8 /* SpacingTokens.swift */; };
 		CA2FABEFA44C235C694B9E57 /* TypographyTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F711C393BA52168848E86D /* TypographyTokens.swift */; };
+		F751CFECF058A578C6ED7ECA /* UndoToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42EF21272F618FC61BB66B11 /* UndoToastView.swift */; };
 		F8816E3217EBDAE3BAACA8A4 /* TallyDesign.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E94D5C288AF8899C5A6E3B12 /* TallyDesign.framework */; };
 		FF9883BE82BB9AC2F14ABF1A /* TallyMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78BFBDC5EFF396315C94A308 /* TallyMarkView.swift */; };
 /* End PBXBuildFile section */
@@ -51,6 +52,7 @@
 
 /* Begin PBXFileReference section */
 		209B32FAA184D0985147E953 /* TallyDesignTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TallyDesignTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		42EF21272F618FC61BB66B11 /* UndoToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UndoToastView.swift; sourceTree = "<group>"; };
 		58D6FAAE6DA9A4B50F6D3FAF /* TallyDesign-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyDesign-Info.plist"; sourceTree = "<group>"; };
 		5D79EFD4379DEDF158A54FE8 /* SpacingTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacingTokens.swift; sourceTree = "<group>"; };
 		628FBC4F30598BC1819D2613 /* TallyDesignTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallyDesignTests.swift; sourceTree = "<group>"; };
@@ -85,6 +87,7 @@
 			isa = PBXGroup;
 			children = (
 				78BFBDC5EFF396315C94A308 /* TallyMarkView.swift */,
+				42EF21272F618FC61BB66B11 /* UndoToastView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -273,6 +276,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FF9883BE82BB9AC2F14ABF1A /* TallyMarkView.swift in Sources */,
+				F751CFECF058A578C6ED7ECA /* UndoToastView.swift in Sources */,
 				3183439DF63CCB80ACEC591B /* ColorTokens.swift in Sources */,
 				2026D7EEB4CEA3225EA0D218 /* MotionTokens.swift in Sources */,
 				B231731608AB57A566504EFE /* SpacingTokens.swift in Sources */,

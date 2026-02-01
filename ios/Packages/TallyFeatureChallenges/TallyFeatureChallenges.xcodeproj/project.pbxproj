@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0A2FDEF6A4522DC202420069 /* TallyFeatureAuth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F8CDE9B6B221451A546D75B /* TallyFeatureAuth.framework */; };
 		0F524706C9CCE2A7039533E5 /* TallyFeatureAPIClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E452F31BD486FD47DA56A716 /* TallyFeatureAPIClient.framework */; };
+		1AF079E4A3F4031BB569C833 /* BurnUpDashboardSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4679DA3CFFC11E92EB8D6C /* BurnUpDashboardSection.swift */; };
 		1EFF3D2F96A1F20B75AC22BC /* ChallengeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC840F2E23CFA878144B1C8 /* ChallengeDetailView.swift */; };
 		2BDB5F6BDC2F4350C9F407B8 /* TallyDesign.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7CA40CCB627392D00BB5E97C /* TallyDesign.framework */; };
 		2E0D01A39D7FDF32E0019481 /* DashboardHighlightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19CA6B6593FFC13873608925 /* DashboardHighlightsView.swift */; };
@@ -17,10 +18,14 @@
 		35B7E4C972345C438CD99F41 /* LocalEntryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C301A4E032BA5DF1D8B9482 /* LocalEntryStore.swift */; };
 		40A806FDEF5F63155A7F9DCA /* SyncState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76BE200EEDB3C3925D518F6C /* SyncState.swift */; };
 		42BCA8C509C34C2A9E733A14 /* BurnUpChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C01A66A4875430B774F8B03 /* BurnUpChartView.swift */; };
+		549897E69857D91259638927 /* CommunityPreviewSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D8F85DAA27F9B0F360C6F18 /* CommunityPreviewSection.swift */; };
+		699C853A578E37F0C20DCC7F /* FollowedChallengesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178DC078E17D05F27E2830DC /* FollowedChallengesSection.swift */; };
 		6B8B603BF843226E8B314C0E /* ProgressChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DF05061CFB17597176559F /* ProgressChartView.swift */; };
 		7508EF49E0C3A8ECB0935A60 /* LocalChallengeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB4FD752C37812C94A4D9B1 /* LocalChallengeStore.swift */; };
+		7B28D470BB106568A43E57F8 /* WeeklySummarySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B49F921048B612060CD13D /* WeeklySummarySheet.swift */; };
 		7CFFB50B4CEC3E5A34D81E5B /* PersonalRecordsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D93A6077BAE90728036DEA05 /* PersonalRecordsView.swift */; };
 		8AA0E102CAE9F8D30463CCDA /* ChallengeFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAF0EE032D8F3740CAEE0B7B /* ChallengeFormView.swift */; };
+		93026138B77442CD0D46CFC3 /* DashboardConfigSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B2C34C3570B661BAC2D683 /* DashboardConfigSheet.swift */; };
 		95537127361E6F07F785140B /* ChallengeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29C418E03FC5CD8B6EA5BB43 /* ChallengeListView.swift */; };
 		B561CC3482081546D48C459A /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C9265A655F3E6B45EC7018 /* DashboardView.swift */; };
 		C163D3A06531D20731095942 /* EditEntrySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ABF4CA1FAAA3A997F66C390 /* EditEntrySheet.swift */; };
@@ -68,6 +73,7 @@
 
 /* Begin PBXFileReference section */
 		0EB4FD752C37812C94A4D9B1 /* LocalChallengeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalChallengeStore.swift; sourceTree = "<group>"; };
+		178DC078E17D05F27E2830DC /* FollowedChallengesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowedChallengesSection.swift; sourceTree = "<group>"; };
 		19CA6B6593FFC13873608925 /* DashboardHighlightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardHighlightsView.swift; sourceTree = "<group>"; };
 		1C301A4E032BA5DF1D8B9482 /* LocalEntryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalEntryStore.swift; sourceTree = "<group>"; };
 		29C418E03FC5CD8B6EA5BB43 /* ChallengeListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeListView.swift; sourceTree = "<group>"; };
@@ -82,14 +88,18 @@
 		76BE200EEDB3C3925D518F6C /* SyncState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncState.swift; sourceTree = "<group>"; };
 		76F29FEC7062998014601BBF /* ChallengeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeCardView.swift; sourceTree = "<group>"; };
 		7CA40CCB627392D00BB5E97C /* TallyDesign.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyDesign.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7D8F85DAA27F9B0F360C6F18 /* CommunityPreviewSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityPreviewSection.swift; sourceTree = "<group>"; };
 		84DF05061CFB17597176559F /* ProgressChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressChartView.swift; sourceTree = "<group>"; };
 		9A6F1581E3759DC694C2A8BA /* TallyCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9ABF4CA1FAAA3A997F66C390 /* EditEntrySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditEntrySheet.swift; sourceTree = "<group>"; };
+		B2B49F921048B612060CD13D /* WeeklySummarySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklySummarySheet.swift; sourceTree = "<group>"; };
 		B77512E1A0DDA95D3634978E /* TallyFeatureChallenges-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyFeatureChallenges-Info.plist"; sourceTree = "<group>"; };
 		C4446CC1A503FC0B185FDC54 /* TallyFeatureChallengesTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyFeatureChallengesTests-Info.plist"; sourceTree = "<group>"; };
+		CE4679DA3CFFC11E92EB8D6C /* BurnUpDashboardSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BurnUpDashboardSection.swift; sourceTree = "<group>"; };
 		D93A6077BAE90728036DEA05 /* PersonalRecordsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalRecordsView.swift; sourceTree = "<group>"; };
 		DAF0EE032D8F3740CAEE0B7B /* ChallengeFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeFormView.swift; sourceTree = "<group>"; };
 		E452F31BD486FD47DA56A716 /* TallyFeatureAPIClient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureAPIClient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E8B2C34C3570B661BAC2D683 /* DashboardConfigSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardConfigSheet.swift; sourceTree = "<group>"; };
 		EC40CE5FDE612AB35A6DE643 /* AddEntrySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEntrySheet.swift; sourceTree = "<group>"; };
 		F45F79BE7914DE65A4793080 /* TallyFeatureChallenges.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureChallenges.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5C9265A655F3E6B45EC7018 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
@@ -123,10 +133,15 @@
 			isa = PBXGroup;
 			children = (
 				FC43FAB8136B5F466E268243 /* ActivityHeatmapView.swift */,
+				CE4679DA3CFFC11E92EB8D6C /* BurnUpDashboardSection.swift */,
+				7D8F85DAA27F9B0F360C6F18 /* CommunityPreviewSection.swift */,
+				E8B2C34C3570B661BAC2D683 /* DashboardConfigSheet.swift */,
 				19CA6B6593FFC13873608925 /* DashboardHighlightsView.swift */,
 				F5C9265A655F3E6B45EC7018 /* DashboardView.swift */,
+				178DC078E17D05F27E2830DC /* FollowedChallengesSection.swift */,
 				D93A6077BAE90728036DEA05 /* PersonalRecordsView.swift */,
 				84DF05061CFB17597176559F /* ProgressChartView.swift */,
+				B2B49F921048B612060CD13D /* WeeklySummarySheet.swift */,
 			);
 			path = Dashboard;
 			sourceTree = "<group>";
@@ -336,10 +351,15 @@
 				95537127361E6F07F785140B /* ChallengeListView.swift in Sources */,
 				340EFDA62B0AC6625CA1EE97 /* ChallengesManager.swift in Sources */,
 				D9B44BEB5957CE362D2CE1E2 /* ActivityHeatmapView.swift in Sources */,
+				1AF079E4A3F4031BB569C833 /* BurnUpDashboardSection.swift in Sources */,
+				549897E69857D91259638927 /* CommunityPreviewSection.swift in Sources */,
+				93026138B77442CD0D46CFC3 /* DashboardConfigSheet.swift in Sources */,
 				2E0D01A39D7FDF32E0019481 /* DashboardHighlightsView.swift in Sources */,
 				B561CC3482081546D48C459A /* DashboardView.swift in Sources */,
+				699C853A578E37F0C20DCC7F /* FollowedChallengesSection.swift in Sources */,
 				7CFFB50B4CEC3E5A34D81E5B /* PersonalRecordsView.swift in Sources */,
 				6B8B603BF843226E8B314C0E /* ProgressChartView.swift in Sources */,
+				7B28D470BB106568A43E57F8 /* WeeklySummarySheet.swift in Sources */,
 				C163D3A06531D20731095942 /* EditEntrySheet.swift in Sources */,
 				7508EF49E0C3A8ECB0935A60 /* LocalChallengeStore.swift in Sources */,
 				35B7E4C972345C438CD99F41 /* LocalEntryStore.swift in Sources */,

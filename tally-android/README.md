@@ -1,6 +1,6 @@
 # Tally Android
 
-Android app for Tally, built with Jetpack Compose and Material 3.
+Android app for Tally, built with Jetpack Compose and Material 3. Uses Clerk web OAuth, offline-first caching, and the shared REST API.
 
 ## Requirements
 
@@ -20,15 +20,12 @@ tally-android/
 │       │   └── ui/                  # Screen composables
 │       └── res/                     # Resources
 ├── core/
-│   └── design/             # Design system module
-│       └── src/main/java/com/tally/core/design/
-│           ├── TallyTheme.kt        # Material 3 theme
-│           ├── TallyColors.kt       # Color tokens
-│           ├── TallyTypography.kt   # Typography scale
-│           ├── TallySpacing.kt      # Spacing tokens
-│           ├── TallyMotion.kt       # Animation timing
-│           ├── TallyMark.kt         # Fractal completion tally component
-│           └── SyncStatusIndicator.kt
+│   ├── auth/               # Clerk OAuth + token storage
+│   ├── billing/            # Tip jar (Google Play Billing)
+│   ├── data/               # Offline-first stores + sync manager
+│   ├── design/             # Design system module
+│   ├── network/            # REST API client + models
+│   └── telemetry/          # PostHog + structured logging
 └── gradle/                 # Gradle wrapper and version catalog
 ```
 
@@ -43,6 +40,26 @@ export ANDROID_HOME=~/Library/Android/sdk
 
 # Output: app/build/outputs/apk/debug/app-debug.apk
 ```
+
+## Configuration
+- `CLERK_PUBLISHABLE_KEY` and `API_BASE_URL` are read from env vars at build time.
+- Defaults fall back to production values if env vars are unset.
+
+## Auth + API
+- `core/auth` uses Clerk hosted sign-in via CustomTabs and deep link callback (`tally://auth/callback`).
+- Tokens stored in `EncryptedSharedPreferences`.
+- `core/network` provides typed REST client (`TallyApiClient`) using Bearer auth.
+
+## Known API mismatches (audit)
+- `TallyApiClient` uses snake_case query params (e.g., `challenge_id`, `start_date`) while the web API expects camelCase (e.g., `challengeId`, `startDate`).
+- Some endpoints referenced by `TallyApiClient` are not implemented on the server (e.g., `/api/v1/stats/dashboard`, `/api/v1/stats/records`, `/api/v1/data/export`, `/api/v1/data/import`).
+
+## Offline-first data
+- `core/data/ChallengesManager` loads cached challenges/entries immediately, then syncs in background.
+- Pending entry changes are queued and retried.
+
+## Tip Jar
+- `core/billing` implements consumable tips via Google Play Billing (`TipManager`, `TipJarScreen`).
 
 ## Design System
 

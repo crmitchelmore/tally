@@ -6,6 +6,7 @@ import TallyFeatureAPIClient
 public struct EditEntrySheet: View {
     let entry: Entry
     let challenge: Challenge
+    let manager: ChallengesManager
     let onSave: () -> Void
     let onDelete: () -> Void
     let onCancel: () -> Void
@@ -37,12 +38,14 @@ public struct EditEntrySheet: View {
     public init(
         entry: Entry,
         challenge: Challenge,
+        manager: ChallengesManager,
         onSave: @escaping () -> Void,
         onDelete: @escaping () -> Void,
         onCancel: @escaping () -> Void
     ) {
         self.entry = entry
         self.challenge = challenge
+        self.manager = manager
         self.onSave = onSave
         self.onDelete = onDelete
         self.onCancel = onCancel
@@ -483,32 +486,18 @@ public struct EditEntrySheet: View {
         isSaving = true
         errorMessage = nil
         
-        do {
-            let dateString = Self.dateFormatter.string(from: selectedDate)
-            
-            let request = UpdateEntryRequest(
-                date: dateString,
-                count: totalCount,
-                sets: isSetsBased ? sets : nil,
-                note: note.isEmpty ? nil : note,
-                feeling: selectedFeeling
-            )
-            
-            _ = try await APIClient.shared.updateEntry(id: entry.id, data: request)
-            
-            // Show success briefly then dismiss
-            withAnimation {
-                showSuccess = true
-            }
-            
-            try? await Task.sleep(nanoseconds: 800_000_000)
-            
-            onSave()
-        } catch {
-            errorMessage = "Failed to update entry. Please try again."
-            print("[EditEntrySheet] Error updating entry: \(error)")
-        }
+        let dateString = Self.dateFormatter.string(from: selectedDate)
         
+        let request = UpdateEntryRequest(
+            date: dateString,
+            count: totalCount,
+            sets: isSetsBased ? sets : nil,
+            note: note.isEmpty ? nil : note,
+            feeling: selectedFeeling
+        )
+        
+        manager.updateEntry(entry, request: request)
+        onSave()
         isSaving = false
     }
     
@@ -516,18 +505,9 @@ public struct EditEntrySheet: View {
         isDeleting = true
         errorMessage = nil
         
-        do {
-            try await APIClient.shared.deleteEntry(id: entry.id)
-            
-            // Brief delay for visual feedback
-            try? await Task.sleep(nanoseconds: 300_000_000)
-            
-            onDelete()
-        } catch {
-            errorMessage = "Failed to delete entry. Please try again."
-            print("[EditEntrySheet] Error deleting entry: \(error)")
-            isDeleting = false
-        }
+        manager.deleteEntry(entry)
+        onDelete()
+        isDeleting = false
     }
 }
 
@@ -559,6 +539,7 @@ public struct EditEntrySheet: View {
             createdAt: "2026-01-01T00:00:00Z",
             updatedAt: "2026-01-01T00:00:00Z"
         ),
+        manager: ChallengesManager(),
         onSave: {},
         onDelete: {},
         onCancel: {}
@@ -596,6 +577,7 @@ public struct EditEntrySheet: View {
             createdAt: "2026-01-01T00:00:00Z",
             updatedAt: "2026-01-01T00:00:00Z"
         ),
+        manager: ChallengesManager(),
         onSave: {},
         onDelete: {},
         onCancel: {}

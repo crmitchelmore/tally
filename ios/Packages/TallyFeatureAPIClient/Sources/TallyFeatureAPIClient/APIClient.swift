@@ -19,10 +19,7 @@ public actor APIClient {
         self.session = session
         
         self.encoder = JSONEncoder()
-        self.encoder.keyEncodingStrategy = .convertToSnakeCase
-        
         self.decoder = JSONDecoder()
-        self.decoder.keyDecodingStrategy = .convertFromSnakeCase
     }
     
     // MARK: - Token Management
@@ -215,30 +212,30 @@ public actor APIClient {
     
     /// Get stats for a specific challenge
     public func getChallengeStats(challengeId: String) async throws -> ChallengeStats {
-        let request = try buildRequest(path: "/api/v1/stats/\(challengeId)", method: "GET")
+        let request = try buildRequest(path: "/api/v1/challenges/\(challengeId)/stats", method: "GET")
         let response: StatsResponse = try await execute(request)
         return response.stats
     }
     
-    /// Get dashboard statistics
-    public func getDashboardStats() async throws -> DashboardStats {
-        let request = try buildRequest(path: "/api/v1/stats/dashboard", method: "GET")
-        let response: DashboardStatsResponse = try await execute(request)
-        return response.stats
+    /// Get dashboard statistics and personal records
+    public func getDashboardSummary() async throws -> StatsSummaryResponse {
+        let request = try buildRequest(path: "/api/v1/stats", method: "GET")
+        return try await execute(request)
+    }
+
+    // MARK: - User Preferences
+    
+    /// Get user preferences (dashboard config, etc.)
+    public func getUserPreferences() async throws -> UserPreferencesResponse {
+        let request = try buildRequest(path: "/api/v1/auth/user/preferences", method: "GET")
+        return try await execute(request)
     }
     
-    /// Get personal records
-    public func getPersonalRecords() async throws -> PersonalRecords {
-        let request = try buildRequest(path: "/api/v1/stats/records", method: "GET")
-        let response: PersonalRecordsResponse = try await execute(request)
-        return response.records
-    }
-    
-    /// Get weekly summary
-    public func getWeeklySummary() async throws -> WeeklySummary {
-        let request = try buildRequest(path: "/api/v1/stats/weekly", method: "GET")
-        let response: WeeklySummaryResponse = try await execute(request)
-        return response.summary
+    /// Update user preferences
+    public func updateUserPreferences(dashboardConfig: DashboardConfig) async throws -> UserPreferencesResponse {
+        let body = try encoder.encode(UserPreferencesRequest(dashboardConfig: dashboardConfig))
+        let request = try buildRequest(path: "/api/v1/auth/user/preferences", method: "PATCH", body: body)
+        return try await execute(request)
     }
     
     // MARK: - Public Challenges (Community)
@@ -256,20 +253,22 @@ public actor APIClient {
     
     /// List followed challenges
     public func listFollowedChallenges() async throws -> [PublicChallenge] {
-        let request = try buildRequest(path: "/api/v1/public/challenges/following", method: "GET")
+        let request = try buildRequest(path: "/api/v1/followed", method: "GET")
         let response: PublicChallengesResponse = try await execute(request)
         return response.challenges
     }
     
     /// Follow a challenge
     public func followChallenge(id: String) async throws {
-        let request = try buildRequest(path: "/api/v1/public/challenges/\(id)/follow", method: "POST")
+        let body = try encoder.encode(FollowRequest(challengeId: id))
+        let request = try buildRequest(path: "/api/v1/follow", method: "POST", body: body)
         let _: EmptyResponse = try await execute(request)
     }
     
     /// Unfollow a challenge
     public func unfollowChallenge(id: String) async throws {
-        let request = try buildRequest(path: "/api/v1/public/challenges/\(id)/follow", method: "DELETE")
+        let body = try encoder.encode(FollowRequest(challengeId: id))
+        let request = try buildRequest(path: "/api/v1/follow", method: "DELETE", body: body)
         let _: EmptyResponse = try await execute(request)
     }
     
@@ -277,14 +276,28 @@ public actor APIClient {
     
     /// Export user data
     public func exportData() async throws -> ExportDataResponse {
-        let request = try buildRequest(path: "/api/v1/data/export", method: "GET")
+        let request = try buildRequest(path: "/api/v1/data", method: "GET")
         return try await execute(request)
     }
     
     /// Import user data
     public func importData(_ data: ImportDataRequest) async throws -> ImportDataResponse {
         let body = try encoder.encode(data)
-        let request = try buildRequest(path: "/api/v1/data/import", method: "POST", body: body)
+        let request = try buildRequest(path: "/api/v1/data", method: "POST", body: body)
         return try await execute(request)
+    }
+
+    /// Restore a deleted challenge
+    public func restoreChallenge(id: String) async throws -> Challenge {
+        let request = try buildRequest(path: "/api/v1/challenges/\(id)/restore", method: "POST")
+        let response: ChallengeResponse = try await execute(request)
+        return response.challenge
+    }
+
+    /// Restore a deleted entry
+    public func restoreEntry(id: String) async throws -> Entry {
+        let request = try buildRequest(path: "/api/v1/entries/\(id)/restore", method: "POST")
+        let response: EntryResponse = try await execute(request)
+        return response.entry
     }
 }

@@ -145,14 +145,14 @@ public final class LocalEntryStore: @unchecked Sendable {
 }
 
 /// Types of entry changes that can be queued for sync
-public enum EntryPendingChange: Codable, Equatable, Sendable {
+public enum EntryPendingChange: Codable, Sendable {
     case create(id: String, request: CreateEntryRequest)
-    case update(id: String)
+    case update(id: String, request: UpdateEntryRequest)
     case delete(id: String)
     
     var entryId: String {
         switch self {
-        case .create(let id, _), .update(let id), .delete(let id):
+        case .create(let id, _), .update(let id, _), .delete(let id):
             return id
         }
     }

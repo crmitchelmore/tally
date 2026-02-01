@@ -37,7 +37,8 @@ struct EntryDialogPage {
     }
     
     var saveButton: XCUIElement {
-        app.buttons["Save"].firstMatch
+        let byId = app.buttons["saveEntryButton"].firstMatch
+        return byId.exists ? byId : app.buttons["Save"].firstMatch
     }
     
     var cancelButton: XCUIElement {

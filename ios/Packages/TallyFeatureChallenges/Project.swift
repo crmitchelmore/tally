@@ -10,7 +10,7 @@ let project = Project(
             bundleId: "com.tally.feature.challenges",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
-            sources: ["Sources/TallyFeatureChallenges/**"],
+            sources: ["Sources/**"],
             dependencies: [
                 .project(target: "TallyCore", path: "../TallyCore"),
                 .project(target: "TallyDesign", path: "../TallyDesign"),
@@ -25,7 +25,7 @@ let project = Project(
             bundleId: "com.tally.feature.challenges.tests",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
-            sources: ["Tests/TallyFeatureChallengesTests/**"],
+            sources: ["Tests/**"],
             dependencies: [
                 .target(name: "TallyFeatureChallenges")
             ]

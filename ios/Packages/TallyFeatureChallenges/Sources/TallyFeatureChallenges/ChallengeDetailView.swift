@@ -9,12 +9,20 @@ public struct ChallengeDetailView: View {
     let onAddEntry: () -> Void
     let onEdit: () -> Void
     let onDismiss: () -> Void
+    let onDeleteChallenge: ((Challenge) -> Void)?
     
     @State private var stats: ChallengeStats?
     @State private var entries: [Entry] = []
     @State private var isLoadingStats = false
     @State private var showDeleteConfirmation = false
     @State private var showArchiveConfirmation = false
+    @State private var selectedEntry: Entry?
+    @State private var showAddEntrySheet = false
+    @State private var drilldownDate: String?
+    @State private var deletedEntry: Entry?
+    @State private var showMoreEntries = false
+    @State private var sortField: SortField = .date
+    @State private var sortDirection: SortDirection = .desc
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
@@ -23,13 +31,15 @@ public struct ChallengeDetailView: View {
         manager: ChallengesManager,
         onAddEntry: @escaping () -> Void,
         onEdit: @escaping () -> Void,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        onDeleteChallenge: ((Challenge) -> Void)? = nil
     ) {
         self.challenge = challenge
         self.manager = manager
         self.onAddEntry = onAddEntry
         self.onEdit = onEdit
         self.onDismiss = onDismiss
+        self.onDeleteChallenge = onDeleteChallenge
     }
     
     public var body: some View {
@@ -40,6 +50,11 @@ public struct ChallengeDetailView: View {
                 
                 // Progress section with tally marks
                 progressSection
+                
+                if let stats = stats {
+                    paceCallout(stats)
+                    streaksAndRecordsSection(stats)
+                }
                 
                 // Stats grid
                 if let stats = stats {
@@ -53,6 +68,21 @@ public struct ChallengeDetailView: View {
                     )
                 }
                 
+                if let stats = stats {
+                    ActivityHeatmapView(
+                        entries: entries,
+                        startDate: challenge.startDate,
+                        endDate: challenge.endDate,
+                        colorHex: challenge.color,
+                        onDayTap: { date in
+                            drilldownDate = date
+                        }
+                    )
+                    .accessibilityIdentifier("activity-heatmap")
+                }
+                
+                entriesHistorySection
+                
                 // Actions section
                 actionsSection
             }
@@ -61,7 +91,17 @@ public struct ChallengeDetailView: View {
         .background(Color.tallyPaper)
         .navigationTitle(challenge.name)
         .navigationBarTitleDisplayMode(.large)
+        .accessibilityIdentifier("challenge-title")
         .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showAddEntrySheet = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel("Add entry")
+            }
+            
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
                     Button("Edit", systemImage: "pencil") {
@@ -91,6 +131,65 @@ public struct ChallengeDetailView: View {
         .task {
             await loadStats()
         }
+        .sheet(isPresented: $showAddEntrySheet) {
+            AddEntrySheet(
+                challenge: challenge,
+                recentEntries: entries,
+                onSubmit: { request in
+                    manager.addEntry(request)
+                    entries = manager.entries(for: challenge.id)
+                },
+                onDismiss: {
+                    showAddEntrySheet = false
+                    entries = manager.entries(for: challenge.id)
+                }
+            )
+        }
+        .sheet(item: $selectedEntry) { entry in
+            EditEntrySheet(
+                entry: entry,
+                challenge: challenge,
+                manager: manager,
+                onSave: {
+                    selectedEntry = nil
+                    entries = manager.entries(for: challenge.id)
+                },
+                onDelete: {
+                    deletedEntry = entry
+                    manager.deleteEntry(entry)
+                    entries = manager.entries(for: challenge.id)
+                    selectedEntry = nil
+                },
+                onCancel: {
+                    selectedEntry = nil
+                }
+            )
+        }
+        .sheet(isPresented: Binding(
+            get: { drilldownDate != nil },
+            set: { if !$0 { drilldownDate = nil } }
+        )) {
+            if let date = drilldownDate {
+                DayDrilldownSheet(
+                    date: date,
+                    entries: entries.filter { $0.date == date },
+                    unitLabel: challenge.resolvedUnitLabel,
+                    challengeColor: challenge.color,
+                    onEdit: { entry in
+                        selectedEntry = entry
+                    },
+                    onDelete: { entry in
+                        deletedEntry = entry
+                        manager.deleteEntry(entry)
+                        entries = manager.entries(for: challenge.id)
+                    },
+                    onAddEntry: {
+                        drilldownDate = nil
+                        showAddEntrySheet = true
+                    }
+                )
+            }
+        }
         .confirmationDialog(
             "Archive Challenge",
             isPresented: $showArchiveConfirmation,
@@ -114,12 +213,34 @@ public struct ChallengeDetailView: View {
             Button("Delete", role: .destructive) {
                 Task {
                     await manager.deleteChallenge(id: challenge.id)
+                    onDeleteChallenge?(challenge)
                     onDismiss()
                 }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This will permanently delete the challenge and all its entries.")
+            Text("You can undo this for a short time after deleting.")
+        }
+        .overlay(alignment: .bottom) {
+            if let deletedEntry {
+                UndoToastView(
+                    message: "Entry deleted",
+                    onUndo: {
+                        Task {
+                            _ = try? await APIClient.shared.restoreEntry(id: deletedEntry.id)
+                            await loadStats()
+                            await manager.fetchEntries(for: challenge.id)
+                            entries = manager.entries(for: challenge.id)
+                        }
+                        self.deletedEntry = nil
+                    },
+                    onDismiss: {
+                        self.deletedEntry = nil
+                    }
+                )
+                .tallyPadding(.horizontal)
+                .tallyPadding(.bottom, TallySpacing.lg)
+            }
         }
     }
     
@@ -129,7 +250,7 @@ public struct ChallengeDetailView: View {
         VStack(spacing: TallySpacing.md) {
             // Icon and timeframe
             HStack {
-                Image(systemName: challenge.icon)
+                Image(systemName: IconMapper.sfSymbol(for: challenge.icon))
                     .font(.system(size: 24))
                     .foregroundColor(challengeColor)
                 
@@ -168,6 +289,7 @@ public struct ChallengeDetailView: View {
                 animated: !reduceMotion,
                 size: 120
             )
+            .accessibilityIdentifier("progress-ring")
             
             // Total / Target
             HStack(alignment: .firstTextBaseline, spacing: TallySpacing.xs) {
@@ -175,7 +297,7 @@ public struct ChallengeDetailView: View {
                     .font(.tallyMonoDisplay)
                     .foregroundColor(Color.tallyInk)
                 
-                Text("/ \(challenge.target)")
+                Text("/ \(challenge.target) \(challenge.resolvedUnitLabel)")
                     .font(.tallyMonoBody)
                     .foregroundColor(Color.tallyInkSecondary)
             }
@@ -183,23 +305,40 @@ public struct ChallengeDetailView: View {
             // Pace status
             if let stats = stats {
                 PaceIndicator(status: stats.paceStatus)
+                    .accessibilityIdentifier("pace-status")
             }
             
-            // Add entry button
-            Button {
-                onAddEntry()
-            } label: {
-                Label("Add Entry", systemImage: "plus")
-                    .font(.tallyTitleSmall)
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(Color.tallyAccent)
-            .controlSize(.large)
+                // Add entry button
+                Button {
+                    showAddEntrySheet = true
+                } label: {
+                    Label("Add Entry", systemImage: "plus")
+                        .font(.tallyTitleSmall)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Color.tallyAccent)
+                .controlSize(.large)
         }
         .tallyPadding()
         .background(Color.tallyPaperTint)
         .cornerRadius(16)
+    }
+
+    private func paceCallout(_ stats: ChallengeStats) -> some View {
+        let paceMessage = paceMessage(for: stats)
+        return VStack(alignment: .leading, spacing: TallySpacing.xs) {
+            Text(paceMessage.title)
+                .font(.tallyLabelMedium)
+                .foregroundColor(paceMessage.color)
+            Text(paceMessage.subtitle)
+                .font(.tallyLabelSmall)
+                .foregroundColor(Color.tallyInkSecondary)
+        }
+        .tallyPadding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.tallyPaperTint)
+        .cornerRadius(12)
     }
     
     // MARK: - Stats Grid
@@ -218,9 +357,106 @@ public struct ChallengeDetailView: View {
             StatCard(label: "Daily Average", value: String(format: "%.1f", stats.dailyAverage))
             
             if let bestDay = stats.bestDay {
-                StatCard(label: "Best Day", value: "\(bestDay.count)")
+                StatCard(label: "Best Day", value: "\(bestDay.count) \(challenge.resolvedUnitLabel)")
             }
         }
+    }
+
+    private func streaksAndRecordsSection(_ stats: ChallengeStats) -> some View {
+        VStack(alignment: .leading, spacing: TallySpacing.md) {
+            Text("Streaks & Records")
+                .font(.tallyTitleSmall)
+                .foregroundColor(Color.tallyInk)
+            
+            VStack(spacing: TallySpacing.sm) {
+                RecordRow(
+                    label: "Current Streak",
+                    value: "\(stats.streakCurrent) days"
+                )
+                
+                RecordRow(
+                    label: "Best Streak",
+                    value: "\(stats.streakBest) days"
+                )
+                
+                if let bestDay = stats.bestDay {
+                    RecordRow(
+                        label: "Best Day",
+                        value: "\(bestDay.count) \(challenge.resolvedUnitLabel)",
+                        subvalue: formatDate(bestDay.date)
+                    )
+                }
+                
+                RecordRow(
+                    label: "Daily Average",
+                    value: String(format: "%.1f", stats.dailyAverage)
+                )
+            }
+            .padding(TallySpacing.md)
+            .background(Color.tallyPaperTint)
+            .cornerRadius(12)
+        }
+        .tallyPadding(.horizontal)
+    }
+    
+    private var entriesHistorySection: some View {
+        VStack(alignment: .leading, spacing: TallySpacing.md) {
+            Text("Entry History")
+                .font(.tallyTitleSmall)
+                .foregroundColor(Color.tallyInk)
+            
+            if entries.isEmpty {
+                Text("No entries yet")
+                    .font(.tallyBodyMedium)
+                    .foregroundColor(Color.tallyInkSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                VStack(spacing: TallySpacing.md) {
+                    entrySortControls
+                    ForEach(sortedEntryDates, id: \.self) { date in
+                        VStack(alignment: .leading, spacing: TallySpacing.sm) {
+                            HStack {
+                                Text(formatDate(date))
+                                    .font(.tallyLabelMedium)
+                                    .foregroundColor(Color.tallyInkSecondary)
+                                Spacer()
+                                Text("\(totalForDate(date)) total")
+                                    .font(.tallyLabelSmall)
+                                    .foregroundColor(Color.tallyInkSecondary)
+                            }
+                            
+                            VStack(spacing: TallySpacing.sm) {
+                                ForEach(entriesForDate(date)) { entry in
+                                    RecentEntryRow(
+                                        entry: entry,
+                                        challenge: challenge,
+                                        onEdit: { selectedEntry = entry },
+                                        onDelete: {
+                                            deletedEntry = entry
+                                            manager.deleteEntry(entry)
+                                            entries = manager.entries(for: challenge.id)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    if entries.count > 20 {
+                        Button(showMoreEntries ? "Show Less" : "Show More") {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                showMoreEntries.toggle()
+                            }
+                        }
+                        .font(.tallyLabelMedium)
+                        .foregroundColor(Color.tallyAccent)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, TallySpacing.sm)
+                    }
+                }
+            }
+        }
+        .tallyPadding(.horizontal)
     }
     
     // MARK: - Actions Section
@@ -281,20 +517,247 @@ public struct ChallengeDetailView: View {
         displayFormatter.dateStyle = .medium
         return displayFormatter.string(from: date)
     }
+
+    private var visibleEntries: [Entry] {
+        let sorted = entries.sorted { lhs, rhs in
+            switch sortField {
+            case .date:
+                if lhs.date == rhs.date {
+                    return sortDirection == .desc ? lhs.createdAt > rhs.createdAt : lhs.createdAt < rhs.createdAt
+                }
+                return sortDirection == .desc ? lhs.date > rhs.date : lhs.date < rhs.date
+            case .count:
+                if lhs.count == rhs.count {
+                    return sortDirection == .desc ? lhs.createdAt > rhs.createdAt : lhs.createdAt < rhs.createdAt
+                }
+                return sortDirection == .desc ? lhs.count > rhs.count : lhs.count < rhs.count
+            }
+        }
+        if showMoreEntries {
+            return sorted
+        }
+        return Array(sorted.prefix(20))
+    }
+
+    private var sortedEntryDates: [String] {
+        let dates = Set(visibleEntries.map { $0.date })
+        return dates.sorted(by: sortDirection == .desc ? (>) : (<))
+    }
+
+    private func entriesForDate(_ date: String) -> [Entry] {
+        let entries = visibleEntries.filter { $0.date == date }
+        if sortField == .count {
+            return entries.sorted {
+                sortDirection == .desc ? $0.count > $1.count : $0.count < $1.count
+            }
+        }
+        return entries.sorted {
+            sortDirection == .desc ? $0.createdAt > $1.createdAt : $0.createdAt < $1.createdAt
+        }
+    }
+
+    private func totalForDate(_ date: String) -> Int {
+        entriesForDate(date).reduce(0) { $0 + $1.count }
+    }
+
+    private func paceMessage(for stats: ChallengeStats) -> (title: String, subtitle: String, color: Color) {
+        let unitLabel = challenge.resolvedUnitLabel
+        let behindBy = max(0, expectedByNow(for: stats) - stats.totalCount)
+        let bestDayCount = stats.bestDay?.count ?? 0
+        switch stats.paceStatus {
+        case .ahead:
+            return ("You're ahead of pace!", "Current pace: \(String(format: "%.1f", stats.currentPace))/day · Best day: \(bestDayCount) \(unitLabel)", Color.tallySuccess)
+        case .onPace:
+            return ("Right on track.", "Current pace: \(String(format: "%.1f", stats.currentPace))/day · Best day: \(bestDayCount) \(unitLabel)", Color.tallyInk)
+        case .behind:
+            return ("Behind by \(behindBy) \(unitLabel)", "Current pace: \(String(format: "%.1f", stats.currentPace))/day · Best day: \(bestDayCount) \(unitLabel)", Color.tallyWarning)
+        case .none:
+            return ("Set your pace", "Log an entry to see pace insights.", Color.tallyInkSecondary)
+        }
+    }
+
+    private func expectedByNow(for stats: ChallengeStats) -> Int {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        guard let startDate = formatter.date(from: challenge.startDate),
+              let endDate = formatter.date(from: challenge.endDate) else {
+            return 0
+        }
+        let totalDays = max(1, Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 0)
+        let expected = (Double(stats.daysElapsed) / Double(totalDays)) * Double(challenge.target)
+        return Int(expected.rounded(.up))
+    }
+    
+    private var entrySortControls: some View {
+        HStack(spacing: TallySpacing.sm) {
+            Text("Sort by")
+                .font(.tallyLabelSmall)
+                .foregroundColor(Color.tallyInkSecondary)
+            
+            sortButton(title: "Date", field: .date)
+            sortButton(title: "Count", field: .count)
+        }
+    }
+    
+    private func sortButton(title: String, field: SortField) -> some View {
+        Button {
+            if sortField == field {
+                sortDirection = sortDirection == .desc ? .asc : .desc
+            } else {
+                sortField = field
+                sortDirection = .desc
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text(title)
+                    .font(.tallyLabelSmall)
+                if sortField == field {
+                    Image(systemName: sortDirection == .desc ? "arrow.down" : "arrow.up")
+                        .font(.system(size: 10, weight: .semibold))
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(sortField == field ? Color.tallyAccent.opacity(0.12) : Color.clear)
+            .cornerRadius(6)
+        }
+        .buttonStyle(.plain)
+        .foregroundColor(sortField == field ? Color.tallyAccent : Color.tallyInkSecondary)
+    }
     
     private func loadStats() async {
         isLoadingStats = true
         
         // Load entries for the burn-up chart
+        entries = manager.entries(for: challenge.id)
         await manager.fetchEntries(for: challenge.id)
-        entries = manager.recentEntries(for: challenge.id)
+        entries = manager.entries(for: challenge.id)
         
         do {
             stats = try await APIClient.shared.getChallengeStats(challengeId: challenge.id)
         } catch {
-            // Stats loading failed, show challenge without stats
+            stats = manager.stats(for: challenge.id)
         }
         isLoadingStats = false
+    }
+}
+
+private struct DayDrilldownSheet: View {
+    let date: String
+    let entries: [Entry]
+    let unitLabel: String
+    let challengeColor: String
+    let onEdit: (Entry) -> Void
+    let onDelete: (Entry) -> Void
+    let onAddEntry: () -> Void
+    
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: TallySpacing.md) {
+                if entries.isEmpty {
+                    Text("No entries for this day.")
+                        .font(.tallyBodyMedium)
+                        .foregroundColor(Color.tallyInkSecondary)
+                } else {
+                    VStack(spacing: TallySpacing.sm) {
+                        ForEach(entries) { entry in
+                            DayEntryRow(
+                                entry: entry,
+                                unitLabel: unitLabel,
+                                colorHex: challengeColor,
+                                onEdit: { onEdit(entry) },
+                                onDelete: { onDelete(entry) }
+                            )
+                        }
+                    }
+                }
+                Spacer()
+            }
+            .tallyPadding()
+            .navigationTitle(formattedDate(date))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Close") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Add Entry") {
+                        dismiss()
+                        onAddEntry()
+                    }
+                }
+            }
+        }
+    }
+    
+    private func formattedDate(_ iso: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        guard let date = formatter.date(from: iso) else { return iso }
+        let display = DateFormatter()
+        display.dateStyle = .medium
+        return display.string(from: date)
+    }
+}
+
+private struct DayEntryRow: View {
+    let entry: Entry
+    let unitLabel: String
+    let colorHex: String
+    let onEdit: () -> Void
+    let onDelete: () -> Void
+    
+    var body: some View {
+        HStack(spacing: TallySpacing.md) {
+            TallyMarkView(count: entry.count, size: 32)
+            
+            VStack(alignment: .leading, spacing: TallySpacing.xs) {
+                Text("\(entry.count) \(unitLabel)")
+                    .font(.tallyLabelMedium)
+                    .foregroundColor(Color.tallyInk)
+                
+                if let sets = entry.sets, !sets.isEmpty {
+                    Text("\(sets.count) sets: \(sets.map { String($0) }.joined(separator: " + ")) = \(entry.count)")
+                        .font(.tallyLabelSmall)
+                        .foregroundColor(Color.tallyInkSecondary)
+                }
+                
+                if let note = entry.note, !note.isEmpty {
+                    Text(note)
+                        .font(.tallyLabelSmall)
+                        .foregroundColor(Color.tallyInkSecondary)
+                        .lineLimit(2)
+                }
+            }
+            
+            Spacer()
+            
+            Button(action: onEdit) {
+                Image(systemName: "pencil")
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(Color.tallyInkSecondary)
+            
+            Button(action: onDelete) {
+                Image(systemName: "trash")
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(Color.tallyError)
+        }
+        .tallyPadding()
+        .background(Color.tallyPaperTint)
+        .cornerRadius(12)
+        .overlay(alignment: .leading) {
+            Rectangle()
+                .fill(Color(hex: colorHex) ?? Color.tallyAccent)
+                .frame(width: 3)
+                .cornerRadius(1.5)
+                .padding(.vertical, 8)
+        }
     }
 }
 
@@ -319,6 +782,127 @@ struct StatCard: View {
         .background(Color.tallyPaperTint)
         .cornerRadius(8)
     }
+}
+
+private struct RecentEntryRow: View {
+    let entry: Entry
+    let challenge: Challenge
+    let onEdit: () -> Void
+    let onDelete: () -> Void
+    
+    static let dateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        return formatter
+    }()
+    
+    static let dateDisplayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter
+    }()
+    
+    static let timeFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+    
+    static let timeDisplayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        return formatter
+    }()
+    
+    var body: some View {
+        HStack(spacing: TallySpacing.md) {
+            TallyMarkView(count: entry.count, size: 36)
+            
+            VStack(alignment: .leading, spacing: TallySpacing.xs) {
+                HStack(spacing: TallySpacing.xs) {
+                    Text("\(entry.count) \(challenge.resolvedUnitLabel)")
+                        .font(.tallyLabelMedium)
+                        .foregroundColor(Color.tallyInk)
+                    
+                    if let feeling = entry.feeling {
+                        Text(feelingLabel(feeling))
+                            .font(.tallyLabelSmall)
+                            .foregroundColor(Color.tallyInkSecondary)
+                    }
+                }
+                
+                if let sets = entry.sets, !sets.isEmpty {
+                    Text("\(sets.count) sets: \(sets.map { String($0) }.joined(separator: " + ")) = \(entry.count)")
+                        .font(.tallyLabelSmall)
+                        .foregroundColor(Color.tallyInkSecondary)
+                }
+                
+                if let note = entry.note, !note.isEmpty {
+                    Text(note)
+                        .font(.tallyLabelSmall)
+                        .foregroundColor(Color.tallyInkSecondary)
+                        .lineLimit(2)
+                }
+                
+                Text(entryTimestamp(entry))
+                    .font(.tallyLabelSmall)
+                    .foregroundColor(Color.tallyInkTertiary)
+            }
+            
+            Spacer()
+            
+            Button(action: onEdit) {
+                Image(systemName: "pencil")
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(Color.tallyInkSecondary)
+            .accessibilityLabel("Edit entry")
+            
+            Button(action: onDelete) {
+                Image(systemName: "trash")
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(Color.tallyError)
+            .accessibilityLabel("Delete entry")
+        }
+        .tallyPadding()
+        .background(Color.tallyPaperTint)
+        .cornerRadius(12)
+    }
+}
+
+private func entryTimestamp(_ entry: Entry) -> String {
+    let dateText: String
+    if let date = RecentEntryRow.dateFormatter.date(from: entry.date) {
+        dateText = RecentEntryRow.dateDisplayFormatter.string(from: date)
+    } else {
+        dateText = entry.date
+    }
+    
+    if let date = RecentEntryRow.timeFormatter.date(from: entry.createdAt) {
+        let time = RecentEntryRow.timeDisplayFormatter.string(from: date)
+        return "\(dateText) \(time)"
+    }
+    return dateText
+}
+
+private func feelingLabel(_ feeling: Feeling) -> String {
+    switch feeling {
+    case .great: return "Great"
+    case .good: return "Good"
+    case .okay: return "Okay"
+    case .tough: return "Tough"
+    }
+}
+
+private enum SortField {
+    case date
+    case count
+}
+
+private enum SortDirection {
+    case asc
+    case desc
 }
 
 #Preview {

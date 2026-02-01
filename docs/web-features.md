@@ -18,12 +18,18 @@
 ## Architecture Overview
 
 ### Tech Stack
-- **Framework:** Next.js 14 (App Router) with TypeScript
+- **Framework:** Next.js 15 (App Router) with TypeScript
 - **Package Manager:** Bun (enforced via preinstall hook)
 - **Database:** Convex (real-time database with functions)
 - **Authentication:** Clerk
 - **Hosting:** Vercel
 - **DNS:** Cloudflare
+
+### Convex Integration
+- API routes call Convex using `ConvexHttpClient` (`src/app/api/v1/_lib/convex-server.ts`).
+- Client components use `ConvexReactClient` via `ConvexClientProvider` (`src/lib/convex.tsx`).
+- `NEXT_PUBLIC_CONVEX_URL` must be set for both API routes and client provider.
+- After modifying `convex/schema.ts` or `convex/*.ts`, run `npx convex deploy` (Convex deploys separately from Vercel).
 
 ### Key Directories
 ```
@@ -115,7 +121,7 @@ tally-web/
 **Sets Mode:**
 - Smart defaults: initial value = 2-week average
 - When adding sets: new set starts at previous set's value
-- Visual: card-based UI with -10/-1/+1/+10 buttons
+- Visual: card-based UI with -100/-10/-1/+1/+10/+100 buttons
 
 ### 3. Dashboard Statistics
 
@@ -134,7 +140,7 @@ User can show/hide:
 - Burn-Up Chart
 - Sets Stats
 
-Configuration stored in localStorage and included in data export.
+Configuration stored in localStorage and synced via `/api/v1/auth/user/preferences`.
 
 ### 4. Activity Heatmap
 
@@ -163,7 +169,7 @@ Configuration stored in localStorage and included in data export.
 **Export:**
 - JSON format with all challenges and entries
 - Includes sets data, notes, feelings
-- Dashboard config included
+- Dashboard config is stored in localStorage and synced via preferences (not included in API export)
 - Filename: `tally-export-YYYY-MM-DD.json`
 
 **Import:**
@@ -171,6 +177,7 @@ Configuration stored in localStorage and included in data export.
 - Validates structure
 - Replace-all semantics
 - Error reporting for invalid data
+- Dashboard config is not imported (stored locally)
 
 **Clear All:**
 - Confirmation required
@@ -308,6 +315,9 @@ interface PersonalRecords {
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/v1/auth/user` | Get current user info |
+| POST | `/api/v1/auth/user` | Provision user (mobile) |
+| GET | `/api/v1/auth/user/preferences` | Get dashboard preferences |
+| PATCH | `/api/v1/auth/user/preferences` | Update dashboard preferences |
 
 ### Challenges
 | Method | Endpoint | Description |
@@ -323,7 +333,7 @@ interface PersonalRecords {
 ### Entries
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/entries` | List entries (with pagination) |
+| GET | `/api/v1/entries` | List entries (with filters) |
 | POST | `/api/v1/entries` | Create entry |
 | GET | `/api/v1/entries/[id]` | Get entry by ID |
 | PATCH | `/api/v1/entries/[id]` | Update entry |
@@ -483,16 +493,16 @@ Confirm replace -> All data updated
 
 ### Storage Keys
 ```
-offlineChallenges  - Challenge array
-offlineEntries     - Entry array
-offlineMode        - Boolean flag
-dashboardConfig    - Panel visibility
+tally_offline_challenges  - Challenge array
+tally_offline_entries     - Entry array
+tally_offline_user        - Offline flag
+dashboardConfig           - Panel visibility (cached, synced)
 ```
 
 ### Sync Behavior
-- Online: Real-time sync via Convex
-- Offline: Queue writes for later sync
-- Visual indicator shows sync status
+- Online: REST API backed by Convex
+- Offline: localStorage only (no automatic sync)
+- Visual indicator shows offline state
 
 ---
 

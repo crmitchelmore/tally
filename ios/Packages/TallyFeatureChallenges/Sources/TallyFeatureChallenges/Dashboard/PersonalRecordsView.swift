@@ -20,51 +20,48 @@ public struct PersonalRecordsView: View {
             }
             
             VStack(spacing: TallySpacing.sm) {
-                RecordRow(
-                    icon: "flame.fill",
-                    iconColor: .orange,
-                    label: "Best Streak",
-                    value: "\(records.longestStreak) days"
-                )
-                
                 if let bestDay = records.bestSingleDay {
                     RecordRow(
-                        icon: "star.fill",
-                        iconColor: .yellow,
                         label: "Best Day",
-                        value: "\(bestDay.count)"
+                        value: "\(bestDay.count)",
+                        subvalue: formattedDate(bestDay.date)
                     )
                 }
                 
                 RecordRow(
-                    icon: "calendar",
-                    iconColor: Color.tallyAccent,
-                    label: "Most Active Days",
+                    label: "Longest Streak",
+                    value: "\(records.longestStreak) days"
+                )
+                
+                RecordRow(
+                    label: "Active Days",
                     value: "\(records.mostActiveDays)"
                 )
                 
                 if let highestAvg = records.highestDailyAverage {
                     RecordRow(
-                        icon: "chart.line.uptrend.xyaxis",
-                        iconColor: Color.tallySuccess,
-                        label: "Highest Average",
+                        label: "Best Daily Avg",
                         value: String(format: "%.1f", highestAvg.average)
                     )
                 }
                 
-                if let bestSet = records.bestSet {
+                if let biggestEntry = records.biggestSingleEntry {
                     RecordRow(
-                        icon: "dumbbell.fill",
-                        iconColor: Color.purple,
-                        label: "Best Set",
-                        value: "\(bestSet.value)"
+                        label: "Biggest Entry",
+                        value: "\(biggestEntry.count)"
                     )
                 }
-                
-                if let avgSet = records.avgSetValue, avgSet > 0 {
+
+                if let bestSet = records.bestSet {
                     RecordRow(
-                        icon: "equal.circle.fill",
-                        iconColor: Color.teal,
+                        label: "Best Set",
+                        value: "\(bestSet.value)",
+                        subvalue: formattedDate(bestSet.date)
+                    )
+                }
+
+                if let avgSet = records.avgSetValue {
+                    RecordRow(
                         label: "Avg Set",
                         value: String(format: "%.1f", avgSet)
                     )
@@ -79,29 +76,51 @@ public struct PersonalRecordsView: View {
 }
 
 struct RecordRow: View {
-    let icon: String
-    let iconColor: Color
     let label: String
     let value: String
+    let subvalue: String?
+    
+    init(label: String, value: String, subvalue: String? = nil) {
+        self.label = label
+        self.value = value
+        self.subvalue = subvalue
+    }
     
     var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .foregroundColor(iconColor)
-                .frame(width: 24)
+        VStack(alignment: .leading, spacing: TallySpacing.xs) {
+            HStack {
+                Text(label)
+                    .font(.tallyLabelSmall)
+                    .foregroundColor(Color.tallyInkSecondary)
+                
+                Spacer()
+                
+                Text(value)
+                    .font(.tallyMonoBody)
+                    .foregroundColor(Color.tallyInk)
+            }
             
-            Text(label)
-                .font(.tallyBodyMedium)
-                .foregroundColor(Color.tallyInk)
-            
-            Spacer()
-            
-            Text(value)
-                .font(.tallyMonoBody)
-                .foregroundColor(Color.tallyInkSecondary)
+            if let subvalue = subvalue {
+                Text(subvalue)
+                    .font(.tallyLabelSmall)
+                    .foregroundColor(Color.tallyInkTertiary)
+            }
         }
         .padding(.vertical, TallySpacing.xs)
     }
+}
+
+private func formattedDate(_ isoString: String) -> String {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withFullDate]
+    
+    guard let date = formatter.date(from: isoString) else {
+        return isoString
+    }
+    
+    let displayFormatter = DateFormatter()
+    displayFormatter.dateStyle = .medium
+    return displayFormatter.string(from: date)
 }
 
 #Preview {

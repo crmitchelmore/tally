@@ -8,6 +8,7 @@ public struct ChallengeListView: View {
     let onSelectChallenge: (Challenge) -> Void
     let onCreateChallenge: () -> Void
     let onQuickAdd: (Challenge) -> Void
+    let onDeleteChallenge: (Challenge) -> Void
     
     @State private var showArchived = false
     
@@ -15,19 +16,19 @@ public struct ChallengeListView: View {
         manager: ChallengesManager,
         onSelectChallenge: @escaping (Challenge) -> Void,
         onCreateChallenge: @escaping () -> Void,
-        onQuickAdd: @escaping (Challenge) -> Void
+        onQuickAdd: @escaping (Challenge) -> Void,
+        onDeleteChallenge: @escaping (Challenge) -> Void
     ) {
         self.manager = manager
         self.onSelectChallenge = onSelectChallenge
         self.onCreateChallenge = onCreateChallenge
         self.onQuickAdd = onQuickAdd
+        self.onDeleteChallenge = onDeleteChallenge
     }
     
     public var body: some View {
         Group {
-            if manager.isLoading && manager.challenges.isEmpty {
-                LoadingStateView()
-            } else if let error = manager.errorMessage {
+            if let error = manager.errorMessage {
                 ErrorStateView(message: error) {
                     Task { await manager.refresh() }
                 }
@@ -46,54 +47,64 @@ public struct ChallengeListView: View {
     }
     
     private var challengesList: some View {
-        ScrollView {
-            LazyVStack(spacing: TallySpacing.md) {
-                // Sync status banner when offline or pending
-                if manager.syncState != .synced {
-                    SyncStatusBanner(state: manager.syncState)
-                        .tallyPadding(.horizontal)
+        LazyVStack(spacing: TallySpacing.md) {
+            // Sync status banner when offline or pending
+            if manager.syncState != .synced {
+                SyncStatusBanner(state: manager.syncState)
+                    .tallyPadding(.horizontal)
+            }
+            
+            // Active challenges
+            if !manager.activeChallenges.isEmpty {
+                Section {
+                    ForEach(manager.activeChallenges) { challenge in
+                        ChallengeCardView(
+                            challenge: challenge,
+                            stats: manager.stats(for: challenge.id),
+                            onTap: { onSelectChallenge(challenge) },
+                            onQuickAdd: { onQuickAdd(challenge) }
+                        )
+                        .accessibilityIdentifier("challenge-card")
+                        .contextMenu {
+                            Button("Delete", role: .destructive) {
+                                onDeleteChallenge(challenge)
+                            }
+                        }
+                    }
+                } header: {
+                    SectionHeader(title: "Active", count: manager.activeChallenges.count)
                 }
-                
-                // Active challenges
-                if !manager.activeChallenges.isEmpty {
-                    Section {
-                        ForEach(manager.activeChallenges) { challenge in
+                .tallyPadding(.horizontal)
+            }
+            
+            // Archived challenges (collapsible)
+            if !manager.archivedChallenges.isEmpty {
+                Section {
+                    DisclosureGroup(isExpanded: $showArchived) {
+                        ForEach(manager.archivedChallenges) { challenge in
                             ChallengeCardView(
                                 challenge: challenge,
                                 stats: manager.stats(for: challenge.id),
                                 onTap: { onSelectChallenge(challenge) },
                                 onQuickAdd: { onQuickAdd(challenge) }
                             )
-                        }
-                    } header: {
-                        SectionHeader(title: "Active", count: manager.activeChallenges.count)
-                    }
-                    .tallyPadding(.horizontal)
-                }
-                
-                // Archived challenges (collapsible)
-                if !manager.archivedChallenges.isEmpty {
-                    Section {
-                        DisclosureGroup(isExpanded: $showArchived) {
-                            ForEach(manager.archivedChallenges) { challenge in
-                                ChallengeCardView(
-                                    challenge: challenge,
-                                    stats: manager.stats(for: challenge.id),
-                                    onTap: { onSelectChallenge(challenge) },
-                                    onQuickAdd: { onQuickAdd(challenge) }
-                                )
-                                .opacity(0.7)
+                            .opacity(0.7)
+                            .accessibilityIdentifier("challenge-card")
+                            .contextMenu {
+                                Button("Delete", role: .destructive) {
+                                    onDeleteChallenge(challenge)
+                                }
                             }
-                        } label: {
-                            SectionHeader(title: "Archived", count: manager.archivedChallenges.count)
                         }
-                        .tint(Color.tallyInkSecondary)
+                    } label: {
+                        SectionHeader(title: "Archived", count: manager.archivedChallenges.count)
                     }
-                    .tallyPadding(.horizontal)
+                    .tint(Color.tallyInkSecondary)
                 }
+                .tallyPadding(.horizontal)
             }
-            .tallyPadding(.vertical)
         }
+        .tallyPadding(.vertical)
     }
 }
 
@@ -272,17 +283,18 @@ struct EmptyStateView: View {
     }
 }
 
-#Preview("List") {
-    NavigationStack {
-        ChallengeListView(
-            manager: ChallengesManager(),
-            onSelectChallenge: { _ in },
-            onCreateChallenge: {},
-            onQuickAdd: { _ in }
-        )
-        .navigationTitle("Challenges")
+    #Preview("List") {
+        NavigationStack {
+            ChallengeListView(
+                manager: ChallengesManager(),
+                onSelectChallenge: { _ in },
+                onCreateChallenge: {},
+                onQuickAdd: { _ in },
+                onDeleteChallenge: { _ in }
+            )
+            .navigationTitle("Challenges")
+        }
     }
-}
 
 #Preview("Empty") {
     EmptyStateView(onCreateChallenge: {})

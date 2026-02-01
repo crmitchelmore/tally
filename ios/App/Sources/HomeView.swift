@@ -12,25 +12,55 @@ struct HomeView: View {
     @State private var editingChallenge: Challenge?
     @State private var addEntryChallenge: Challenge?
     @State private var recentEntriesForAdd: [Entry] = []
+    @State private var showDashboardConfig = false
+    @State private var showWeeklySummary = false
+    @State private var followedChallenges: [PublicChallenge] = []
+    @State private var deletedChallenge: Challenge?
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
     var body: some View {
-        ChallengeListView(
-            manager: challengesManager,
-            onSelectChallenge: { challenge in
-                selectedChallenge = challenge
-            },
-            onCreateChallenge: {
-                showCreateSheet = true
-            },
-            onQuickAdd: { challenge in
-                // Open add entry sheet
-                Task {
-                    await prepareAndShowAddEntry(for: challenge)
-                }
+        ScrollView {
+            VStack(spacing: TallySpacing.lg) {
+                DashboardView(
+                    manager: challengesManager,
+                    onConfigure: {
+                        showDashboardConfig = true
+                    },
+                    onWeeklySummary: {
+                        showWeeklySummary = true
+                    },
+                    followedChallenges: followedChallenges,
+                    onUnfollow: { id in
+                        await handleUnfollow(id)
+                    }
+                )
+                
+                ChallengeListView(
+                    manager: challengesManager,
+                    onSelectChallenge: { challenge in
+                        selectedChallenge = challenge
+                    },
+                    onCreateChallenge: {
+                        showCreateSheet = true
+                    },
+                    onQuickAdd: { challenge in
+                        // Open add entry sheet
+                        Task {
+                            await prepareAndShowAddEntry(for: challenge)
+                        }
+                    },
+                    onDeleteChallenge: { challenge in
+                        deletedChallenge = challenge
+                        Task {
+                            await challengesManager.deleteChallenge(id: challenge.id)
+                        }
+                    }
+                )
             }
-        )
+            .tallyPadding(.vertical)
+        }
+        .accessibilityIdentifier("dashboard")
         .navigationTitle("Tally")
         .toolbar {
             // Sync status in leading position (won't overlap with title)
@@ -49,6 +79,24 @@ struct HomeView: View {
                 }
                 .accessibilityIdentifier("create-challenge-button")
             }
+        }
+        .sheet(isPresented: $showDashboardConfig) {
+            DashboardConfigSheet(
+                config: challengesManager.dashboardConfig,
+                onChange: { config in
+                    challengesManager.updateDashboardConfig(config)
+                }
+            )
+        }
+        .sheet(isPresented: $showWeeklySummary) {
+            WeeklySummarySheet(
+                entries: challengesManager.allEntries,
+                challengesById: Dictionary(uniqueKeysWithValues: challengesManager.challenges.map { ($0.id, $0) }),
+                onClose: {
+                    showWeeklySummary = false
+                }
+            )
+            .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showCreateSheet) {
             ChallengeFormView(
@@ -78,6 +126,9 @@ struct HomeView: View {
                     },
                     onDismiss: {
                         selectedChallenge = nil
+                    },
+                    onDeleteChallenge: { challenge in
+                        deletedChallenge = challenge
                     }
                 )
             }
@@ -107,6 +158,28 @@ struct HomeView: View {
                 }
             )
         }
+        .overlay(alignment: .bottom) {
+            if let deletedChallenge {
+                UndoToastView(
+                    message: "Challenge deleted",
+                    onUndo: {
+                        Task {
+                            _ = try? await APIClient.shared.restoreChallenge(id: deletedChallenge.id)
+                            await challengesManager.refresh()
+                        }
+                        self.deletedChallenge = nil
+                    },
+                    onDismiss: {
+                        self.deletedChallenge = nil
+                    }
+                )
+                .tallyPadding(.horizontal)
+                .tallyPadding(.bottom, TallySpacing.lg)
+            }
+        }
+        .task {
+            await loadFollowedChallenges()
+        }
     }
     
     /// Fetch recent entries and show the add entry sheet
@@ -117,6 +190,25 @@ struct HomeView: View {
         
         // Then fetch fresh entries in background for next time
         await challengesManager.fetchEntries(for: challenge.id)
+    }
+    
+    private func loadFollowedChallenges() async {
+        do {
+            followedChallenges = try await APIClient.shared.listFollowedChallenges()
+        } catch {
+            print("[HomeView] Failed to load followed challenges: \(error.localizedDescription)")
+            followedChallenges = []
+        }
+    }
+    
+    private func handleUnfollow(_ id: String) async {
+        do {
+            try await APIClient.shared.unfollowChallenge(id: id)
+            followedChallenges.removeAll { $0.id == id }
+        } catch {
+            print("[HomeView] Failed to unfollow challenge: \(error.localizedDescription)")
+            await loadFollowedChallenges()
+        }
     }
 }
 

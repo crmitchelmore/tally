@@ -18,7 +18,7 @@ struct DashboardPage {
     }
     
     var challengeCards: XCUIElementQuery {
-        app.otherElements.matching(identifier: "challenge-card")
+        app.descendants(matching: .any).matching(identifier: "challenge-card")
     }
     
     var emptyState: XCUIElement {
@@ -36,12 +36,7 @@ struct DashboardPage {
     // MARK: - Actions
     
     func challengeCard(named name: String) -> XCUIElement {
-        // Try specific identifier first
-        let byId = app.buttons["challenge-card-\(name)"]
-        if byId.exists { return byId }
-        
-        // Fall back to finding by text content
-        return app.buttons.containing(NSPredicate(format: "label CONTAINS[c] %@", name)).firstMatch
+        app.descendants(matching: .any)["challenge-card-\(name)"]
     }
     
     func quickAddButton(forChallenge name: String) -> XCUIElement {
@@ -65,8 +60,21 @@ struct DashboardPage {
     // MARK: - Assertions
     
     func assertChallengeExists(named name: String, timeout: TimeInterval = 10, file: StaticString = #file, line: UInt = #line) {
+        let card = challengeCard(named: name)
+        if !card.waitForExistence(timeout: timeout) {
+            app.swipeUp()
+            let fallback = app.buttons.containing(NSPredicate(format: "label CONTAINS[c] %@", name)).firstMatch
+            XCTAssertTrue(
+                fallback.waitForExistence(timeout: timeout),
+                "Challenge '\(name)' should exist on dashboard",
+                file: file,
+                line: line
+            )
+            return
+        }
+        
         XCTAssertTrue(
-            challengeCard(named: name).waitForExistence(timeout: timeout),
+            card.exists,
             "Challenge '\(name)' should exist on dashboard",
             file: file,
             line: line

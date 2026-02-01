@@ -49,12 +49,101 @@ public final class AuthManager: TokenRefresher {
         }
         
         // Check for clear data flag (for UI tests)
-        if CommandLine.arguments.contains("--clear-data") {
+        let shouldSeedUITestData = CommandLine.arguments.contains("--uitesting")
+        let shouldClearData = CommandLine.arguments.contains("--clear-data")
+
+        if shouldClearData {
             print("[AuthManager] Clearing all data for testing")
             // Clear challenges local store
             UserDefaults.standard.removeObject(forKey: "tally.challenges.data")
             UserDefaults.standard.removeObject(forKey: "tally.challenges.stats")
             UserDefaults.standard.removeObject(forKey: "tally.challenges.pending")
+            // Clear entries local store
+            UserDefaults.standard.removeObject(forKey: "tally.entries.data")
+            UserDefaults.standard.removeObject(forKey: "tally.entries.pending")
+        }
+
+        // Seed deterministic offline data for UI tests
+        if shouldSeedUITestData && !shouldClearData {
+            let hasChallenges = UserDefaults.standard.data(forKey: "tally.challenges.data") != nil
+            if !hasChallenges {
+                let seedChallenges = [
+                    Challenge(
+                        id: "seed-challenge-1",
+                        userId: "seed-user",
+                        name: "Push-ups",
+                        target: 1000,
+                        timeframeType: .year,
+                        startDate: "2026-01-01",
+                        endDate: "2026-12-31",
+                        color: "#D94343",
+                        icon: "dumbbell.fill",
+                        isPublic: false,
+                        isArchived: false,
+                        countType: .simple,
+                        unitLabel: "reps",
+                        createdAt: "2026-01-01T00:00:00Z",
+                        updatedAt: "2026-01-01T00:00:00Z"
+                    ),
+                    Challenge(
+                        id: "seed-challenge-2",
+                        userId: "seed-user",
+                        name: "Layout Test",
+                        target: 5000,
+                        timeframeType: .year,
+                        startDate: "2026-01-01",
+                        endDate: "2026-12-31",
+                        color: "#3B82F6",
+                        icon: "book.fill",
+                        isPublic: false,
+                        isArchived: false,
+                        countType: .simple,
+                        unitLabel: "pages",
+                        createdAt: "2026-01-01T00:00:00Z",
+                        updatedAt: "2026-01-01T00:00:00Z"
+                    )
+                ]
+
+                let seedStats: [String: ChallengeStats] = [
+                    "seed-challenge-1": ChallengeStats(
+                        challengeId: "seed-challenge-1",
+                        totalCount: 0,
+                        remaining: 1000,
+                        daysElapsed: 1,
+                        daysRemaining: 364,
+                        perDayRequired: 2.7,
+                        currentPace: 0,
+                        paceStatus: .none,
+                        streakCurrent: 0,
+                        streakBest: 0,
+                        bestDay: nil,
+                        dailyAverage: 0
+                    ),
+                    "seed-challenge-2": ChallengeStats(
+                        challengeId: "seed-challenge-2",
+                        totalCount: 0,
+                        remaining: 5000,
+                        daysElapsed: 1,
+                        daysRemaining: 364,
+                        perDayRequired: 13.7,
+                        currentPace: 0,
+                        paceStatus: .none,
+                        streakCurrent: 0,
+                        streakBest: 0,
+                        bestDay: nil,
+                        dailyAverage: 0
+                    )
+                ]
+
+                let encoder = JSONEncoder()
+                encoder.keyEncodingStrategy = .convertToSnakeCase
+                if let data = try? encoder.encode(seedChallenges) {
+                    UserDefaults.standard.set(data, forKey: "tally.challenges.data")
+                }
+                if let data = try? encoder.encode(seedStats) {
+                    UserDefaults.standard.set(data, forKey: "tally.challenges.stats")
+                }
+            }
         }
     }
     
@@ -148,7 +237,7 @@ public final class AuthManager: TokenRefresher {
     public func syncLocalDataToServer(localChallenges: [Challenge], localEntries: [Entry]) async throws {
         print("[AuthManager] syncLocalDataToServer: Not yet implemented")
         logger.warning("syncLocalDataToServer: Not yet implemented - need import API endpoint")
-        // TODO: Implement when /api/v1/import endpoint is ready
+        // TODO: Implement using /api/v1/data import endpoint
         // For now, this is a no-op - data stays local until manually created on server
     }
     
@@ -157,7 +246,7 @@ public final class AuthManager: TokenRefresher {
     public func mergeLocalAndServerData(localChallenges: [Challenge], localEntries: [Entry]) async throws {
         print("[AuthManager] mergeLocalAndServerData: Not yet implemented")
         logger.warning("mergeLocalAndServerData: Not yet implemented - need import API endpoint")
-        // TODO: Implement when /api/v1/import endpoint is ready
+        // TODO: Implement using /api/v1/data import endpoint
         // For now, this is a no-op - data stays local until manually created on server
     }
     

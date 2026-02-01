@@ -117,6 +117,24 @@ public struct UpdateEntryRequest: Codable, Sendable {
     }
 }
 
+/// Request to update user preferences
+public struct UserPreferencesRequest: Codable, Sendable {
+    public let dashboardConfig: DashboardConfig
+    
+    public init(dashboardConfig: DashboardConfig) {
+        self.dashboardConfig = dashboardConfig
+    }
+}
+
+/// Request to follow/unfollow a challenge
+public struct FollowRequest: Codable, Sendable {
+    public let challengeId: String
+    
+    public init(challengeId: String) {
+        self.challengeId = challengeId
+    }
+}
+
 /// Request to import user data
 public struct ImportDataRequest: Codable, Sendable {
     public let version: String

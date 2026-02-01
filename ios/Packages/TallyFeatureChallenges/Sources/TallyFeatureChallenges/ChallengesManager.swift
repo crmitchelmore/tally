@@ -15,6 +15,9 @@ public final class ChallengesManager {
     /// Stats for each challenge (keyed by challenge ID)
     public private(set) var stats: [String: ChallengeStats] = [:]
     
+    /// Dashboard panel configuration (cached locally, synced to API)
+    public private(set) var dashboardConfig: DashboardConfig = .default
+    
     /// Overall sync state
     public private(set) var syncState: SyncState = .synced
     
@@ -30,65 +33,123 @@ public final class ChallengesManager {
     /// Whether we're currently connected to the network
     public private(set) var isOnline: Bool = true
     
+    /// Bumps whenever entries change to refresh dependent views
+    public private(set) var entriesVersion: Int = 0
+    
     /// Dashboard stats computed from all challenges
     public var dashboardStats: DashboardStats? {
         guard !challenges.isEmpty else { return nil }
         
+        let entries = allEntries
         let allStats = stats.values
-        let totalMarks = allStats.reduce(0) { $0 + $1.totalCount }
-        let today = allStats.reduce(0) { sum, stat in
-            // Estimate today's count from daily average (rough approximation)
-            sum + Int(stat.dailyAverage)
-        }
+        let totalMarks = entries.reduce(0) { $0 + $1.count }
+        let todayDate = Self.fullDateFormatter.string(from: Date())
+        let today = entries.filter { $0.date == todayDate }.reduce(0) { $0 + $1.count }
         let bestStreak = allStats.map { $0.streakBest }.max() ?? 0
         
-        // Overall pace status - use worst performing challenge
-        // Priority: behind > none > onPace > ahead (lower index = worse)
-        let paceOrder: [PaceStatus] = [.behind, .none, .onPace, .ahead]
-        let overallPaceStatus = allStats.map { $0.paceStatus }.min(by: { a, b in
-            (paceOrder.firstIndex(of: a) ?? 0) < (paceOrder.firstIndex(of: b) ?? 0)
-        }) ?? .none
+        let overallPaceStatus: PaceStatus = {
+            guard !allStats.isEmpty else { return .none }
+            let paceScores = allStats.map { stat -> Double in
+                switch stat.paceStatus {
+                case .ahead: return 1
+                case .behind: return -1
+                case .onPace: return 0
+                case .none: return 0
+                }
+            }
+            let avgPace = paceScores.reduce(0, +) / Double(paceScores.count)
+            if avgPace > 0.3 { return .ahead }
+            if avgPace < -0.3 { return .behind }
+            return .onPace
+        }()
+        
+        let setsStats = EntryDefaults.calculateSetsStats(entries: entries)
+        let bestSet: DashboardStats.BestSet? = {
+            guard let best = setsStats.bestSet else { return nil }
+            let entry = entries.first { $0.id == best.entryId }
+            guard let challengeId = entry?.challengeId else { return nil }
+            return DashboardStats.BestSet(value: best.value, date: best.date, challengeId: challengeId)
+        }()
         
         return DashboardStats(
             totalMarks: totalMarks,
             today: today,
             bestStreak: bestStreak,
-            overallPaceStatus: overallPaceStatus
+            overallPaceStatus: overallPaceStatus,
+            bestSet: bestSet,
+            avgSetValue: setsStats.avgSetValue
         )
     }
     
     /// Personal records computed from all challenges
     public var personalRecords: PersonalRecords? {
         guard !challenges.isEmpty else { return nil }
-        
+        let entries = allEntries
         let allStats = stats.values
-        let longestStreak = allStats.map { $0.streakBest }.max() ?? 0
-        let mostActiveDays = allStats.map { $0.streakCurrent }.max() ?? 0
         
-        // Find best single day across challenges
+        var dayTotals: [String: Int] = [:]
+        for entry in entries {
+            dayTotals[entry.date, default: 0] += entry.count
+        }
+        
         var bestSingleDay: PersonalRecords.BestDay? = nil
-        for stat in allStats {
-            if let best = stat.bestDay {
-                if bestSingleDay == nil || best.count > (bestSingleDay?.count ?? 0) {
-                    bestSingleDay = PersonalRecords.BestDay(date: best.date, count: best.count)
-                }
+        for (date, count) in dayTotals {
+            if bestSingleDay == nil || count > (bestSingleDay?.count ?? 0) {
+                bestSingleDay = PersonalRecords.BestDay(date: date, count: count)
             }
         }
+        
+        let longestStreak = allStats.map { $0.streakBest }.max() ?? 0
+        let mostActiveDays = dayTotals.count
+        
+        var highestDailyAverage: PersonalRecords.HighestAverage? = nil
+        for stat in allStats {
+            if highestDailyAverage == nil || stat.dailyAverage > (highestDailyAverage?.average ?? 0) {
+                highestDailyAverage = PersonalRecords.HighestAverage(challengeId: stat.challengeId, average: stat.dailyAverage)
+            }
+        }
+        
+        var biggestSingleEntry: PersonalRecords.BiggestEntry? = nil
+        for entry in entries {
+            if biggestSingleEntry == nil || entry.count > (biggestSingleEntry?.count ?? 0) {
+                biggestSingleEntry = PersonalRecords.BiggestEntry(
+                    date: entry.date,
+                    count: entry.count,
+                    challengeId: entry.challengeId
+                )
+            }
+        }
+        
+        let setsStats = EntryDefaults.calculateSetsStats(entries: entries)
+        let bestSet: PersonalRecords.BestSet? = {
+            guard let best = setsStats.bestSet else { return nil }
+            let entry = entries.first { $0.id == best.entryId }
+            guard let challengeId = entry?.challengeId else { return nil }
+            return PersonalRecords.BestSet(value: best.value, date: best.date, challengeId: challengeId)
+        }()
         
         return PersonalRecords(
             bestSingleDay: bestSingleDay,
             longestStreak: longestStreak,
-            highestDailyAverage: nil,
+            highestDailyAverage: highestDailyAverage,
             mostActiveDays: mostActiveDays,
-            biggestSingleEntry: nil,
-            bestSet: nil,
-            avgSetValue: nil
+            biggestSingleEntry: biggestSingleEntry,
+            bestSet: bestSet,
+            avgSetValue: setsStats.avgSetValue
         )
     }
     
     /// All entries across all challenges
     public var allEntries: [Entry] {
-        localEntryStore.loadEntries()
+        _ = entriesVersion
+        return localEntryStore.loadEntries()
+    }
+
+    /// Entries for a specific challenge (sorted newest first)
+    public func entries(for challengeId: String) -> [Entry] {
+        _ = entriesVersion
+        return localEntryStore.loadEntries(forChallenge: challengeId)
+            .sorted { $0.date > $1.date }
     }
     
     // MARK: - Dependencies
@@ -96,22 +157,42 @@ public final class ChallengesManager {
     private let apiClient: APIClient
     private let localStore: LocalChallengeStore
     private let localEntryStore: LocalEntryStore
+    private let dashboardConfigDefaults: UserDefaults
+    private let dashboardConfigKey = "tally.dashboard.config"
+    
+    private static let fullDateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        return formatter
+    }()
+    
+    private static let timestampFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
     
     // MARK: - Initialization
     
     public init(
         apiClient: APIClient = .shared,
         localStore: LocalChallengeStore = .shared,
-        localEntryStore: LocalEntryStore = .shared
+        localEntryStore: LocalEntryStore = .shared,
+        dashboardConfigDefaults: UserDefaults = .standard
     ) {
         self.apiClient = apiClient
         self.localStore = localStore
         self.localEntryStore = localEntryStore
+        self.dashboardConfigDefaults = dashboardConfigDefaults
         
         // Load cached data immediately - this is synchronous
         self.challenges = localStore.loadChallenges()
         self.stats = localStore.loadStats()
+        self.dashboardConfig = loadDashboardConfig()
         updateSyncState()
+        Task {
+            await refreshDashboardConfig()
+        }
     }
     
     // MARK: - Public API
@@ -140,12 +221,16 @@ public final class ChallengesManager {
             stats = localStore.loadStats()
             isOnline = true
             print("[ChallengesManager] refresh() success, challenges: \(challenges.count)")
+            Task {
+                await refreshEntriesForDashboard()
+                await refreshDashboardConfig()
+            }
             
             // Try to sync any pending changes
             await syncPendingChanges()
         } catch let error as APIError {
             print("[ChallengesManager] refresh() APIError: \(error.localizedDescription)")
-            if error.isRecoverable {
+            if error.isRecoverable || error.requiresReauth {
                 isOnline = false
                 syncState = .offline
             } else {
@@ -155,6 +240,9 @@ public final class ChallengesManager {
             challenges = localStore.loadChallenges()
             stats = localStore.loadStats()
             print("[ChallengesManager] refresh() loaded from local: \(challenges.count) challenges")
+            Task {
+                await refreshDashboardConfig()
+            }
         } catch {
             print("[ChallengesManager] refresh() error: \(error.localizedDescription)")
             isOnline = false
@@ -163,6 +251,9 @@ public final class ChallengesManager {
             challenges = localStore.loadChallenges()
             stats = localStore.loadStats()
             print("[ChallengesManager] refresh() loaded from local: \(challenges.count) challenges")
+            Task {
+                await refreshDashboardConfig()
+            }
         }
         
         isLoading = false
@@ -344,6 +435,7 @@ public final class ChallengesManager {
         
         // Update stats optimistically
         updateStatsOptimistically(for: request.challengeId, addedCount: request.count)
+        markEntriesUpdated()
         
         updateSyncState()
         
@@ -417,8 +509,66 @@ public final class ChallengesManager {
         do {
             let serverEntries = try await apiClient.listEntries(challengeId: challengeId)
             localEntryStore.mergeWithServer(serverEntries, forChallenge: challengeId)
+            markEntriesUpdated()
         } catch {
             // Failed to fetch, local cache remains
+        }
+    }
+
+    /// Update a cached entry and queue for sync
+    public func updateEntry(_ entry: Entry, request: UpdateEntryRequest) {
+        if let sets = request.sets, !sets.isEmpty {
+            let sum = sets.reduce(0, +)
+            if request.count != nil && request.count != sum {
+                print("[ChallengesManager] updateEntry count mismatch for sets; updating to \(sum)")
+            }
+        }
+        let effectiveCount = request.sets.map { $0.reduce(0, +) } ?? request.count ?? entry.count
+        let updated = Entry(
+            id: entry.id,
+            userId: entry.userId,
+            challengeId: entry.challengeId,
+            date: request.date ?? entry.date,
+            count: effectiveCount,
+            sets: request.sets ?? entry.sets,
+            note: request.note ?? entry.note,
+            feeling: request.feeling ?? entry.feeling,
+            createdAt: entry.createdAt,
+            updatedAt: Self.timestampFormatter.string(from: Date())
+        )
+        
+        let syncRequest = UpdateEntryRequest(
+            date: request.date,
+            count: effectiveCount,
+            sets: request.sets,
+            note: request.note,
+            feeling: request.feeling
+        )
+        localEntryStore.upsertEntry(updated)
+        localEntryStore.addPendingChange(.update(id: entry.id, request: syncRequest))
+        updateStatsForEntryUpdate(entry, updated)
+        markEntriesUpdated()
+        updateSyncState()
+        
+        if isOnline {
+            Task {
+                await syncPendingEntries()
+            }
+        }
+    }
+    
+    /// Delete a cached entry and queue for sync
+    public func deleteEntry(_ entry: Entry) {
+        localEntryStore.removeEntry(id: entry.id)
+        localEntryStore.addPendingChange(.delete(id: entry.id))
+        updateStatsForEntryDelete(entry)
+        markEntriesUpdated()
+        updateSyncState()
+        
+        if isOnline {
+            Task {
+                await syncPendingEntries()
+            }
         }
     }
     
@@ -520,8 +670,9 @@ public final class ChallengesManager {
                     localEntryStore.upsertEntry(serverEntry)
                     localEntryStore.removePendingChange(for: tempId)
                     
-                case .update(let id):
-                    // TODO: Implement update sync if needed
+                case .update(let id, let request):
+                    let serverEntry = try await apiClient.updateEntry(id: id, data: request)
+                    localEntryStore.upsertEntry(serverEntry)
                     localEntryStore.removePendingChange(for: id)
                     
                 case .delete(let id):
@@ -552,7 +703,76 @@ public final class ChallengesManager {
             }
         }
         
+        markEntriesUpdated()
         updateSyncState()
+    }
+
+    /// Load cached dashboard config (local-first)
+    private func loadDashboardConfig() -> DashboardConfig {
+        guard let data = dashboardConfigDefaults.data(forKey: dashboardConfigKey),
+              let config = try? JSONDecoder().decode(DashboardConfig.self, from: data) else {
+            return .default
+        }
+        return config
+    }
+    
+    /// Persist dashboard config to local cache
+    private func saveDashboardConfig(_ config: DashboardConfig) {
+        guard let data = try? JSONEncoder().encode(config) else { return }
+        dashboardConfigDefaults.set(data, forKey: dashboardConfigKey)
+    }
+    
+    /// Update config locally and sync to API in background
+    public func updateDashboardConfig(_ config: DashboardConfig) {
+        dashboardConfig = config
+        saveDashboardConfig(config)
+        Task {
+            await syncDashboardConfig(config)
+        }
+    }
+    
+    /// Fetch config from API and merge with local defaults
+    public func refreshDashboardConfig() async {
+        do {
+            let server = try await apiClient.getUserPreferences()
+            let merged = DashboardConfig(
+                panels: DashboardConfig.Panels(
+                    highlights: server.dashboardConfig.panels.highlights,
+                    personalRecords: server.dashboardConfig.panels.personalRecords,
+                    progressGraph: server.dashboardConfig.panels.progressGraph,
+                    burnUpChart: server.dashboardConfig.panels.burnUpChart,
+                    setsStats: server.dashboardConfig.panels.setsStats
+                )
+            )
+            dashboardConfig = merged
+            saveDashboardConfig(merged)
+        } catch {
+            // Local cache remains
+        }
+    }
+    
+    /// Sync updated config to API (best-effort)
+    private func syncDashboardConfig(_ config: DashboardConfig) async {
+        do {
+            _ = try await apiClient.updateUserPreferences(dashboardConfig: config)
+        } catch {
+            // Best-effort; local cache is source of truth until next sync
+        }
+    }
+    
+    private func updateStatsForEntryUpdate(_ oldEntry: Entry, _ newEntry: Entry) {
+        guard oldEntry.challengeId == newEntry.challengeId else {
+            updateStatsForEntryDelete(oldEntry)
+            updateStatsOptimistically(for: newEntry.challengeId, addedCount: newEntry.count)
+            return
+        }
+        let delta = newEntry.count - oldEntry.count
+        guard delta != 0 else { return }
+        updateStatsOptimistically(for: newEntry.challengeId, addedCount: delta)
+    }
+    
+    private func updateStatsForEntryDelete(_ entry: Entry) {
+        updateStatsOptimistically(for: entry.challengeId, addedCount: -entry.count)
     }
     
     /// Update sync state based on pending changes
@@ -576,6 +796,22 @@ public final class ChallengesManager {
         localEntryStore.clearAll()
         challenges = []
         stats = [:]
+        markEntriesUpdated()
         syncState = .synced
+    }
+
+    private func markEntriesUpdated() {
+        entriesVersion += 1
+    }
+
+    private func refreshEntriesForDashboard() async {
+        let challengeIds = activeChallenges.map { $0.id }
+        await withTaskGroup(of: Void.self) { group in
+            for id in challengeIds {
+                group.addTask {
+                    await self.fetchEntries(for: id)
+                }
+            }
+        }
     }
 }

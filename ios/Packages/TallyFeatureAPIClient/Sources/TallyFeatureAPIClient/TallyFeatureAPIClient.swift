@@ -7,4 +7,3 @@ public typealias _Entry = Entry
 public typealias _ChallengeStats = ChallengeStats
 public typealias _DashboardStats = DashboardStats
 public typealias _PersonalRecords = PersonalRecords
-public typealias _WeeklySummary = WeeklySummary

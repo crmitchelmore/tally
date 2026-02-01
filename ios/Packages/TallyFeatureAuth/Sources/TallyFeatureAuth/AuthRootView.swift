@@ -22,7 +22,11 @@ public struct AuthRootView<SignedInContent: View, SignedOutContent: View>: View 
     public var body: some View {
         Group {
             if authManager.isLoading {
-                LoadingView()
+                if authManager.isLocalOnlyMode || KeychainService.shared.hasToken {
+                    signedInContent()
+                } else {
+                    signedOutContent()
+                }
             } else if authManager.isLocalOnlyMode {
                 // No auth configured - run in local-only mode
                 signedInContent()
@@ -55,28 +59,4 @@ public struct AuthRootView<SignedInContent: View, SignedOutContent: View>: View 
             Text(error.localizedDescription)
         }
     }
-}
-
-/// Loading state view
-private struct LoadingView: View {
-    var body: some View {
-        ZStack {
-            Color.tallyPaper
-                .ignoresSafeArea()
-            
-            VStack(spacing: TallySpacing.md) {
-                // Animated tally mark
-                TallyMarkView(count: 5)
-                    .frame(width: 60, height: 60)
-                
-                ProgressView()
-                    .tint(.tallyInkSecondary)
-            }
-        }
-        .accessibilityLabel("Loading")
-    }
-}
-
-#Preview("Loading") {
-    LoadingView()
 }

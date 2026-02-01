@@ -24,54 +24,28 @@ public struct DashboardHighlightsView: View {
                 GridItem(.flexible())
             ], spacing: TallySpacing.md) {
                 HighlightCard(
+                    title: "Total marks",
+                    value: formatNumber(stats.totalMarks),
+                    tallyCount: stats.totalMarks <= 25 ? stats.totalMarks : nil
+                )
+                
+                HighlightCard(
                     title: "Today",
                     value: "\(stats.today)",
-                    icon: "calendar",
-                    color: Color.tallyAccent
+                    tallyCount: stats.today > 0 && stats.today <= 10 ? stats.today : nil
                 )
                 
                 HighlightCard(
-                    title: "Total",
-                    value: "\(stats.totalMarks)",
-                    icon: "chart.bar.fill",
-                    color: Color.tallySuccess
+                    title: "Best streak",
+                    value: "\(stats.bestStreak) days"
                 )
                 
                 HighlightCard(
-                    title: "Best Streak",
-                    value: "\(stats.bestStreak)d",
-                    icon: "flame.fill",
-                    color: Color.orange
-                )
-                
-                HighlightCard(
-                    title: "Pace",
-                    value: paceStatusText,
-                    icon: paceIcon,
-                    color: paceColor
+                    title: "Overall pace",
+                    value: paceStatusText
                 )
             }
             
-            // Best set stats if available
-            if let bestSet = stats.bestSet {
-                HStack(spacing: TallySpacing.md) {
-                    HighlightCard(
-                        title: "Best Set",
-                        value: "\(bestSet.value)",
-                        icon: "dumbbell.fill",
-                        color: Color.purple
-                    )
-                    
-                    if let avgSet = stats.avgSetValue {
-                        HighlightCard(
-                            title: "Avg Set",
-                            value: String(format: "%.1f", avgSet),
-                            icon: "equal.circle.fill",
-                            color: Color.teal
-                        )
-                    }
-                }
-            }
         }
         .tallyPadding(.horizontal)
     }
@@ -85,50 +59,52 @@ public struct DashboardHighlightsView: View {
         }
     }
     
-    private var paceIcon: String {
-        switch stats.overallPaceStatus {
-        case .ahead: return "arrow.up.right"
-        case .onPace: return "equal"
-        case .behind: return "arrow.down.right"
-        case .none: return "minus"
-        }
-    }
     
-    private var paceColor: Color {
-        switch stats.overallPaceStatus {
-        case .ahead: return Color.tallySuccess
-        case .onPace: return Color.tallyInk
-        case .behind: return Color.tallyWarning
-        case .none: return Color.tallyInkTertiary
-        }
+    private func formatNumber(_ value: Int) -> String {
+        Self.numberFormatter.string(from: NSNumber(value: value)) ?? "\(value)"
     }
 }
 
 struct HighlightCard: View {
     let title: String
     let value: String
-    let icon: String
-    let color: Color
+    let tallyCount: Int?
+    
+    init(title: String, value: String, tallyCount: Int? = nil) {
+        self.title = title
+        self.value = value
+        self.tallyCount = tallyCount
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: TallySpacing.xs) {
-            HStack {
-                Image(systemName: icon)
-                    .foregroundColor(color)
-                Text(title)
-                    .font(.tallyLabelSmall)
-                    .foregroundColor(Color.tallyInkSecondary)
-                Spacer()
-            }
+            Text(title)
+                .font(.tallyLabelSmall)
+                .foregroundColor(Color.tallyInkSecondary)
             
-            Text(value)
-                .font(.tallyMonoDisplay)
-                .foregroundColor(Color.tallyInk)
+            HStack(alignment: .firstTextBaseline, spacing: TallySpacing.xs) {
+                Text(value)
+                    .font(.tallyMonoDisplay)
+                    .foregroundColor(Color.tallyInk)
+                
+                if let tallyCount {
+                    TallyMarkView(count: min(tallyCount, 5), size: 18)
+                        .opacity(0.7)
+                }
+            }
         }
         .padding(TallySpacing.md)
         .background(Color.tallyPaperTint)
         .cornerRadius(12)
     }
+}
+
+private extension DashboardHighlightsView {
+    static let numberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        return formatter
+    }()
 }
 
 #Preview {

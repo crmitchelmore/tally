@@ -17,6 +17,7 @@ public struct AddEntrySheet: View {
     @State private var note: String = ""
     @State private var feeling: Feeling?
     @State private var showOptions = false
+    @State private var showSuccess = false
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
@@ -49,17 +50,7 @@ public struct AddEntrySheet: View {
     
     /// Calculate the average first-set value from recent entries
     private var averageFirstSet: Int {
-        let entriesWithSets = recentEntries
-            .filter { $0.sets != nil && !($0.sets ?? []).isEmpty }
-            .prefix(10)
-        
-        guard !entriesWithSets.isEmpty else { return 1 }
-        
-        let firstSets = entriesWithSets.compactMap { $0.sets?.first }
-        guard !firstSets.isEmpty else { return 1 }
-        
-        let sum = firstSets.reduce(0, +)
-        return max(1, sum / firstSets.count)
+        EntryDefaults.calculateInitialValue(entries: recentEntries, countType: .sets)
     }
     
     private var setsTotal: Int {
@@ -84,15 +75,15 @@ public struct AddEntrySheet: View {
                         simpleInputSection
                     }
                     
-                    // Date picker
-                    dateSection
-                    
                     // Options toggle
                     optionsToggle
                     
                     if showOptions {
                         optionsSection
                     }
+                    
+                    // Date picker
+                    dateSection
                     
                     // Submit button
                     submitButton
@@ -107,15 +98,11 @@ public struct AddEntrySheet: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") { onDismiss() }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        submit()
-                    }
-                    .fontWeight(.semibold)
-                    .disabled(isFutureDate || displayCount <= 0)
-                }
             }
             .onAppear {
+                initializeDefaults()
+            }
+            .onChange(of: countType) { _, _ in
                 initializeDefaults()
             }
         }
@@ -124,10 +111,16 @@ public struct AddEntrySheet: View {
     // MARK: - Initialize Defaults
     
     private func initializeDefaults() {
+        showSuccess = false
         if countType == .sets {
-            // First set defaults to average of recent first sets
             sets = [String(averageFirstSet)]
+        } else {
+            simpleCount = String(EntryDefaults.calculateInitialValue(entries: recentEntries, countType: .simple))
         }
+        date = Date()
+        note = ""
+        feeling = nil
+        showOptions = false
     }
     
     // MARK: - Sets Input Section
@@ -170,7 +163,7 @@ public struct AddEntrySheet: View {
                 }
                 
                 TallyMarkView(
-                    count: min(setsTotal, 25),
+                    count: setsTotal,
                     animated: !reduceMotion,
                     size: 60
                 )
@@ -180,66 +173,47 @@ public struct AddEntrySheet: View {
     }
     
     private func setRow(index: Int, value: String) -> some View {
-        HStack(spacing: TallySpacing.sm) {
-            Text("Set \(index + 1)")
-                .font(.tallyLabelSmall)
-                .foregroundColor(Color.tallyInkSecondary)
-                .frame(width: 50, alignment: .leading)
-            
-            // Decrement button
-            Button {
-                incrementSet(index: index, by: -1)
-            } label: {
-                Image(systemName: "minus")
-                    .font(.system(size: 14, weight: .medium))
-            }
-            .frame(width: 32, height: 32)
-            .background(Color.tallyPaperTint)
-            .cornerRadius(8)
-            .foregroundColor(Color.tallyInk)
-            
-            // Value input
-            TextField("0", text: Binding(
-                get: { sets[index] },
-                set: { sets[index] = $0 }
-            ))
-            .keyboardType(.numberPad)
-            .font(.tallyMonoBody)
-            .multilineTextAlignment(.center)
-            .frame(width: 60, height: 40)
-            .background(Color.tallyPaperTint)
-            .cornerRadius(8)
-            
-            // Increment button
-            Button {
-                incrementSet(index: index, by: 1)
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 14, weight: .medium))
-            }
-            .frame(width: 32, height: 32)
-            .background(Color.tallyPaperTint)
-            .cornerRadius(8)
-            .foregroundColor(Color.tallyInk)
-            
-            Spacer()
-            
-            // Remove button (only if more than 1 set)
-            if sets.count > 1 {
-                Button {
-                    removeSet(at: index)
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(Color.tallyInkSecondary)
+        VStack(spacing: TallySpacing.sm) {
+            HStack {
+                Text("Set \(index + 1)")
+                    .font(.tallyLabelSmall)
+                    .foregroundColor(Color.tallyInkSecondary)
+                
+                Spacer()
+                
+                if sets.count > 1 {
+                    Button("Remove") {
+                        removeSet(at: index)
+                    }
+                    .font(.tallyLabelSmall)
+                    .foregroundColor(Color.tallyInkSecondary)
                 }
-                .frame(width: 28, height: 28)
+            }
+            
+            HStack(spacing: TallySpacing.sm) {
+                setAdjustButton("-10", index: index, delta: -10, enabled: (Int(sets[index]) ?? 0) > 10)
+                setAdjustButton("-1", index: index, delta: -1, enabled: (Int(sets[index]) ?? 0) > 1)
+                
+                TextField("0", text: Binding(
+                    get: { sets[index] },
+                    set: { sets[index] = $0 }
+                ))
+                .keyboardType(.numberPad)
+                .font(.tallyMonoBody)
+                .multilineTextAlignment(.center)
+                .frame(width: 70, height: 44)
+                .background(Color.tallyPaper)
+                .cornerRadius(10)
+                .accessibilityIdentifier("countInput")
+                
+                setAdjustButton("+1", index: index, delta: 1, enabled: true)
+                setAdjustButton("+10", index: index, delta: 10, enabled: true)
             }
         }
         .tallyPadding(.horizontal, TallySpacing.sm)
-        .tallyPadding(.vertical, TallySpacing.xs)
+        .tallyPadding(.vertical, TallySpacing.sm)
         .background(Color.tallyPaperTint.opacity(0.5))
-        .cornerRadius(8)
+        .cornerRadius(10)
     }
     
     private func addSet() {
@@ -258,6 +232,20 @@ public struct AddEntrySheet: View {
         sets[index] = String(max(0, current + delta))
     }
     
+    private func setAdjustButton(_ title: String, index: Int, delta: Int, enabled: Bool) -> some View {
+        Button {
+            incrementSet(index: index, by: delta)
+        } label: {
+            Text(title)
+                .font(.tallyLabelSmall)
+                .frame(width: 44, height: 32)
+                .background(enabled ? Color.tallyPaperTint : Color.tallyPaperTint.opacity(0.4))
+                .foregroundColor(enabled ? Color.tallyInk : Color.tallyInkTertiary)
+                .cornerRadius(8)
+        }
+        .disabled(!enabled)
+    }
+    
     // MARK: - Simple Count Input
     
     private var simpleInputSection: some View {
@@ -273,6 +261,7 @@ public struct AddEntrySheet: View {
                         .font(.tallyLabelSmall)
                 }
                 .buttonStyle(IncrementButtonStyle())
+                .accessibilityIdentifier("decrementButton")
                 
                 Button { incrementSimple(by: -10) } label: {
                     Text("−10")
@@ -293,6 +282,7 @@ public struct AddEntrySheet: View {
                 .font(.system(size: 48, weight: .semibold, design: .monospaced))
                 .multilineTextAlignment(.center)
                 .frame(width: 140, height: 60)
+                .accessibilityIdentifier("countInput")
             
             // Increment buttons row
             HStack(spacing: TallySpacing.sm) {
@@ -313,11 +303,12 @@ public struct AddEntrySheet: View {
                         .font(.tallyLabelSmall)
                 }
                 .buttonStyle(IncrementButtonStyle())
+                .accessibilityIdentifier("incrementButton")
             }
             
             // Tally preview
             TallyMarkView(
-                count: min(Int(simpleCount) ?? 0, 25),
+                count: Int(simpleCount) ?? 0,
                 animated: !reduceMotion,
                 size: 60
             )
@@ -346,6 +337,7 @@ public struct AddEntrySheet: View {
                 displayedComponents: .date
             )
             .labelsHidden()
+            .accessibilityIdentifier("datePicker")
         }
         .tallyPadding()
         .background(Color.tallyPaperTint)
@@ -413,6 +405,7 @@ public struct AddEntrySheet: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .accessibilityIdentifier(feelingIdentifier(feelingOption))
                     }
                 }
             }
@@ -429,6 +422,7 @@ public struct AddEntrySheet: View {
                     .tallyPadding()
                     .background(Color.tallyPaperTint)
                     .cornerRadius(8)
+                    .accessibilityIdentifier("noteInput")
             }
         }
     }
@@ -439,16 +433,22 @@ public struct AddEntrySheet: View {
         Button {
             submit()
         } label: {
-            Text("Save")
-                .font(.tallyTitleSmall)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .tallyPadding()
-                .background(Color.tallyAccent)
-                .cornerRadius(12)
+            HStack(spacing: TallySpacing.sm) {
+                if showSuccess {
+                    Image(systemName: "checkmark")
+                }
+                Text(showSuccess ? "Added!" : "Add \(displayCount) \(unitLabel)")
+            }
+            .font(.tallyTitleSmall)
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .tallyPadding()
+            .background(showSuccess ? Color.tallySuccess : Color.tallyAccent)
+            .cornerRadius(12)
         }
         .disabled(isFutureDate || displayCount <= 0)
         .opacity((isFutureDate || displayCount <= 0) ? 0.5 : 1)
+        .accessibilityIdentifier("saveEntryButton")
     }
     
     // MARK: - Submit
@@ -473,9 +473,21 @@ public struct AddEntrySheet: View {
             feeling: feeling
         )
         
-        // Optimistic save - call synchronously and dismiss immediately
+        // Optimistic save - call synchronously and dismiss after a brief confirmation
         onSubmit(request)
-        onDismiss()
+        showSuccess = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            onDismiss()
+        }
+    }
+
+    private func feelingIdentifier(_ feeling: Feeling) -> String {
+        switch feeling {
+        case .great: return "feelingGreat"
+        case .good: return "feelingGood"
+        case .okay: return "feelingOkay"
+        case .tough: return "feelingTough"
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 # Tally iOS App
 
-iOS implementation of Tally using SwiftUI, Tuist, and the Fractal Completion Tallies design system.
+iOS implementation of Tally using SwiftUI, Tuist, Clerk auth, and the Fractal Completion Tallies design system. Uses the shared REST API (Convex-backed on web).
 
 ## Quick Start
 
@@ -35,27 +35,23 @@ xcodebuild -workspace Tally.xcworkspace \
 ios/
 ├── Workspace.swift              # Tuist workspace definition
 ├── App/
-│   ├── Project.swift            # Main app target
+│   ├── Project.swift            # Main app target + build settings
 │   ├── Sources/
 │   │   ├── TallyApp.swift       # App entry point
 │   │   ├── AppView.swift        # Root TabView
-│   │   ├── HomeView.swift       # Main counting interface
-│   │   ├── CommunityView.swift  # Social features (placeholder)
+│   │   ├── HomeView.swift       # Challenges dashboard
+│   │   ├── CommunityView.swift  # Community (public challenges)
+│   │   ├── SettingsView.swift   # Export/import + tip jar
 │   │   └── SyncStatusView.swift # Offline/sync indicator
 │   └── Tests/
 │       └── AppTests.swift
 └── Packages/
-    └── TallyDesign/             # Design system package
-        ├── Sources/
-        │   ├── Tokens/
-        │   │   ├── ColorTokens.swift      # OKLCH-based colors
-        │   │   ├── TypographyTokens.swift # SF Pro fonts
-        │   │   ├── SpacingTokens.swift    # 8pt scale
-        │   │   └── MotionTokens.swift     # Animation durations
-        │   └── Components/
-        │       └── TallyMarkView.swift    # Fractal completion tallies
-        └── Tests/
-            └── TallyDesignTests.swift
+    ├── TallyCore/               # Shared models + config + keychain
+    ├── TallyDesign/             # Design system (colors, typography, tallies)
+    ├── TallyFeatureAuth/        # Clerk auth + token refresh
+    ├── TallyFeatureAPIClient/   # REST API client (Bearer)
+    ├── TallyFeatureChallenges/  # Offline-first challenges + entries
+    └── TallyFeatureTipJar/      # StoreKit tip jar
 ```
 
 ## Design System
@@ -126,12 +122,27 @@ TallyMarkView(count: 25, animated: true, size: 120)
 ### State Management
 - SwiftUI `@State` for local UI
 - `@Observable` for shared state (Swift 5.9+)
-- Future: SwiftData for persistence
+- Offline-first caching via `LocalChallengeStore` + `LocalEntryStore`
 
 ### Sync Strategy
-- Offline-first (local writes always succeed)
+- Offline-first: local writes succeed immediately; pending changes sync when online
+- `ChallengesManager` refreshes from API and merges cached data
 - SyncStatusView shows queue state
-- Future: Real-time sync with conflict resolution
+
+### Authentication
+- Clerk SDK for iOS with token stored in Keychain
+- AuthManager provisions users via `POST /api/v1/auth/user`
+- Supports local-only/offline mode (user selectable)
+
+### API
+- `TallyFeatureAPIClient` uses Bearer auth and REST API routes under `/api/v1`
+- Default API base URL: `https://tally-tracker.app` (override via `API_BASE_URL`)
+
+### Tip Jar
+- StoreKit 2 tip jar (`TallyFeatureTipJar`) exposed in Settings
+
+### Known API mismatches (audit)
+- None currently. iOS API client aligns with `/api/v1/stats`, `/api/v1/follow`, `/api/v1/followed`, and `/api/v1/data`.
 
 ## Design Philosophy
 
@@ -177,9 +188,8 @@ xcodebuild test \
 
 - [ ] Snapshot tests for TallyMarkView thresholds
 - [ ] Settings screen with theme toggle
-- [ ] Local data persistence (SwiftData)
-- [ ] Sync implementation
-- [ ] Challenge/counter models
+- [ ] Persist settings + user prefs server-side (in progress via /api/v1/auth/user/preferences)
+- [ ] Improve sync conflict resolution
 - [ ] Detail navigation flows
 - [ ] Dynamic Type testing
 - [ ] VoiceOver audit

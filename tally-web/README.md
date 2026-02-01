@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tally Web App
 
-## Getting Started
+Next.js (App Router) web client and REST API backed by Convex. Uses Clerk for auth and Bun for tooling.
 
-First, run the development server:
+## Prerequisites
+- Bun (required; npm/yarn/pnpm are blocked by preinstall)
+- Node.js 20+
+- Convex CLI (optional; `npx convex` works for deploy)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Setup
+1. Copy env file and fill required keys:
+   ```bash
+   cp .env.local.example .env.local
+   ```
+2. Set at minimum:
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+   - `CLERK_SECRET_KEY`
+   - `NEXT_PUBLIC_CONVEX_URL`
+   - `CONVEX_DEPLOYMENT`
+3. Install dependencies and run dev server:
+   ```bash
+   bun install
+   bun dev
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
+- `bun run lint`
+- `bun run build`
+- `bun run test`
+- `bun run test:e2e`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Architecture
+- `src/app/` — App Router pages (landing, auth, app, offline)
+- `src/app/api/v1/` — REST API routes (server-side Convex client)
+- `convex/` — Convex schema + queries/mutations
+- `src/components/` — UI and feature components
+- `src/lib/` — telemetry, offline store, Convex provider, debug bridge
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Convex
+- Server routes call Convex via `ConvexHttpClient` (`src/app/api/v1/_lib/convex-server.ts`).
+- Set `NEXT_PUBLIC_CONVEX_URL` to your deployment.
+- After changing `convex/schema.ts` or `convex/*.ts`, run:
+  ```bash
+  npx convex deploy
+  ```
+  (Convex deploys separately from Vercel.)
 
-## Learn More
+## Offline mode
+- `/offline` uses localStorage only (no auto-sync).
+- Keys:
+  - `tally_offline_challenges`
+  - `tally_offline_entries`
+  - `tally_offline_user`
 
-To learn more about Next.js, take a look at the following resources:
+## Debug bridge (optional)
+Development-only bridge for AI-driven browser automation.
+1. Start bridge server:
+   ```bash
+   npx debug-bridge-cli connect --session tally --port 4000
+   ```
+2. Open the app:
+   ```
+   http://localhost:3000?session=tally&port=4000
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Related docs
+- `docs/web-features.md`
+- `docs/api-reference.md`
+- `DESIGN-PHILOSOPHY.md`

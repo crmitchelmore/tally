@@ -2,11 +2,16 @@
 
 ## Critical Issues
 
-### 1. Data Not Persisting (Expected - In-Memory Store)
-- **Location**: `src/app/api/v1/_lib/store.ts`
-- **Problem**: API uses in-memory Maps that reset on each serverless function invocation
-- **Status**: Expected - comment says "will be replaced with Convex later"
-- **Fix**: Implement Convex database integration
+### 1. Web build fails locally (debug-bridge-browser)
+- **Location**: `tally-web/src/lib/debug-bridge.ts`
+- **Problem**: `bun run build` fails because `debug-bridge-browser` isn't installed in this environment
+- **Status**: Package is listed in devDependencies, but Bun install is missing or incomplete
+- **Fix**: Run `bun install` (or remove the dependency if not needed)
+
+### 2. Mobile API mismatch vs server routes
+- **Android** (`TallyApiClient`):
+  - Uses snake_case query params (`challenge_id`, `start_date`, `end_date`) but server expects camelCase.
+  - Uses `/api/v1/stats/dashboard`, `/api/v1/stats/records`, `/api/v1/data/export`, `/api/v1/data/import` while server uses `/api/v1/stats` and `/api/v1/data`.
 
 ## Fixed Issues ✅
 
@@ -29,12 +34,9 @@
 - "+ New Challenge" button appears in header after first challenge
 
 ### Blocked by In-Memory Store 🔶
-- Challenge persistence after page reload
-- Entry logging and tracking
-- Progress updates over time
-- Community features (public challenges)
+Resolved: API store now uses Convex (`src/app/api/v1/_lib/store.ts`).
 
 ## Next Steps
-1. Implement Convex database integration
-2. Re-run E2E tests after persistence is working
+1. Re-run E2E tests now that Convex persistence is in place
+2. Fix `bun run build` by installing deps
 3. Add Playwright tests for cucumber scenarios

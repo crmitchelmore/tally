@@ -24,40 +24,40 @@ public struct ChallengeCardView: View {
     }
     
     public var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: TallySpacing.md) {
-                // Header: icon, name, badges, pace indicator
+        ZStack(alignment: .topTrailing) {
+            Button(action: onTap) {
+                VStack(alignment: .leading, spacing: TallySpacing.md) {
+                // Header: icon, name, badges
                 HStack {
                     // Challenge icon with tint
                     Image(systemName: iconName)
                         .font(.tallyTitleSmall)
                         .foregroundColor(challengeColor)
                     
+                    Circle()
+                        .fill(challengeColor)
+                        .frame(width: 6, height: 6)
+                    
                     Text(challenge.name)
                         .font(.tallyTitleSmall)
                         .foregroundColor(Color.tallyInk)
                         .lineLimit(1)
                     
-                    // Public badge
                     if challenge.isPublic {
-                        Image(systemName: "globe")
-                            .font(.caption)
+                        Text("Public")
+                            .font(.tallyLabelSmall)
                             .foregroundColor(Color.tallyInkSecondary)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.tallyPaperTint)
+                            .cornerRadius(6)
                     }
                     
                     Spacer()
-                    
-                    // Pace indicator
-                    if let stats = stats {
-                        PaceIndicator(status: stats.paceStatus)
-                    }
                 }
                 
-                // Progress visualization
-                HStack(alignment: .bottom, spacing: TallySpacing.md) {
-                    // Tally marks for current count
-                    TallyMarkView(count: stats?.totalCount ?? 0, size: 48)
-                    
+                // Progress content with ring
+                HStack(alignment: .top, spacing: TallySpacing.md) {
                     VStack(alignment: .leading, spacing: TallySpacing.xs) {
                         // Current / Target
                         HStack(alignment: .firstTextBaseline, spacing: TallySpacing.xs) {
@@ -68,70 +68,59 @@ public struct ChallengeCardView: View {
                             Text("/ \(challenge.target)")
                                 .font(.tallyMonoBody)
                                 .foregroundColor(Color.tallyInkSecondary)
+                            
+                            Text(challenge.resolvedUnitLabel)
+                                .font(.tallyLabelSmall)
+                                .foregroundColor(Color.tallyInkSecondary)
                         }
                         
-                        // Progress bar with challenge color
-                        GeometryReader { geometry in
-                            ZStack(alignment: .leading) {
-                                Rectangle()
-                                    .fill(Color.tallyPaperTint)
-                                    .frame(height: 4)
-                                    .cornerRadius(2)
+                        if let stats = stats {
+                            HStack(spacing: TallySpacing.xs) {
+                                PaceIndicator(status: stats.paceStatus)
                                 
-                                Rectangle()
-                                    .fill(challengeColor)
-                                    .frame(width: progressWidth(for: geometry.size.width), height: 4)
-                                    .cornerRadius(2)
+                                if stats.daysRemaining > 0 {
+                                    Text("· \(stats.daysRemaining) days left")
+                                        .font(.tallyLabelSmall)
+                                        .foregroundColor(Color.tallyInkSecondary)
+                                }
                             }
                         }
-                        .frame(height: 4)
                     }
                     
                     Spacer()
                     
-                    // Quick add button
-                    Button(action: onQuickAdd) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 44))
-                            .foregroundColor(Color.tallyAccent)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Add one to \(challenge.name)")
+                    ProgressRingView(progress: progress, color: challengeColor, size: 56)
+                        .accessibilityHidden(true)
                 }
                 
-                // Footer: days remaining, per-day required
-                if let stats = stats {
-                    HStack {
-                        Label("\(stats.daysRemaining) days left", systemImage: "calendar")
-                            .font(.tallyLabelSmall)
-                            .foregroundColor(Color.tallyInkSecondary)
-                        
-                        Spacer()
-                        
-                        Text("\(String(format: "%.1f", stats.perDayRequired))/day needed")
-                            .font(.tallyLabelSmall)
-                            .foregroundColor(Color.tallyInkSecondary)
-                    }
+                // Mini tally preview
+                TallyMarkView(count: stats?.totalCount ?? 0, size: 28)
+                    .opacity(0.7)
+                }
+                .tallyPadding()
+                .background(Color.tallyPaper)
+                .cornerRadius(12)
+                .shadow(color: Color.tallyInk.opacity(0.06), radius: 4, x: 0, y: 2)
+                // Color accent on left edge
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(challengeColor)
+                        .frame(width: 4)
+                        .cornerRadius(2)
+                        .padding(.vertical, 8)
                 }
             }
-            .tallyPadding()
-            .background(Color.tallyPaper)
-            .cornerRadius(12)
-            .shadow(color: Color.tallyInk.opacity(0.06), radius: 4, x: 0, y: 2)
-            // Color accent on left edge
-            .overlay(alignment: .leading) {
-                Rectangle()
-                    .fill(challengeColor)
-                    .frame(width: 4)
-                    .cornerRadius(2)
-                    .padding(.vertical, 8)
-            }
+            .buttonStyle(.plain)
+            
+            quickAddButton
+                .padding(.top, 12)
+                .padding(.trailing, 12)
         }
-        .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("challenge-card-\(challenge.name)")
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint("Double tap to view details")
+        .accessibilityAddTraits(.isButton)
     }
     
     /// Map web icon names to SF Symbols
@@ -148,8 +137,20 @@ public struct ChallengeCardView: View {
         return min(1.0, Double(stats?.totalCount ?? 0) / Double(challenge.target))
     }
     
-    private func progressWidth(for totalWidth: CGFloat) -> CGFloat {
-        max(0, min(totalWidth, totalWidth * progress))
+    private var quickAddButton: some View {
+        Button(action: onQuickAdd) {
+            Image(systemName: "plus")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 36, height: 36)
+                .background(Color.tallyAccent)
+                .clipShape(Circle())
+                .shadow(color: Color.tallyInk.opacity(0.12), radius: 2, x: 0, y: 1)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Add one to \(challenge.name)")
+        .accessibilityIdentifier("quick-add")
+        .allowsHitTesting(true)
     }
     
     private var accessibilityLabel: String {
@@ -299,6 +300,26 @@ struct PaceIndicator: View {
         case .behind: return Color.tallyWarning
         case .none: return Color.tallyInkTertiary
         }
+    }
+}
+
+private struct ProgressRingView: View {
+    let progress: Double
+    let color: Color
+    let size: CGFloat
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(Color.tallyPaperTint, lineWidth: 4)
+            
+            Circle()
+                .trim(from: 0, to: max(0, min(progress, 1)))
+                .stroke(color, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+                .animation(.easeInOut(duration: 0.25), value: progress)
+        }
+        .frame(width: size, height: size)
     }
 }
 

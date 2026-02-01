@@ -331,20 +331,6 @@ public struct DashboardConfig: Codable, Sendable, Equatable {
 }
 
 /// Weekly summary
-public struct WeeklySummary: Codable, Sendable, Equatable {
-    public let weekStart: String
-    public let weekEnd: String
-    public let totalMarks: Int
-    public let dailyBreakdown: [DayBreakdown]
-    public let activeChallenges: Int
-    public let paceComparison: String
-    
-    public struct DayBreakdown: Codable, Sendable, Equatable {
-        public let date: String
-        public let count: Int
-    }
-}
-
 // MARK: - Public Challenge (Community)
 
 /// Public challenge with aggregated metadata for community view
@@ -368,7 +354,6 @@ public struct PublicChallenge: Codable, Identifiable, Sendable, Equatable {
     public let progress: Double
     public let followerCount: Int
     public let isFollowing: Bool
-    public let isOwner: Bool
     public let owner: Owner
     
     public struct Owner: Codable, Sendable, Equatable {

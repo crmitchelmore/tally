@@ -41,6 +41,7 @@
 		DE6C35D1E77C20E1AE3342EC /* TallyFeatureAPIClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C37768CF8BDE3C3C533AC06 /* TallyFeatureAPIClient.framework */; };
 		E0B4EC345FB962097386663C /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74CEC688AF06E6C2810EF30 /* HomeView.swift */; };
 		E1D7E798236D1E38DB2F616A /* EntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5445B743B2848E62908B578D /* EntryTests.swift */; };
+		E3B6E30CC6BA80CA98D7C7B9 /* ScreenshotFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDFF814C84D490FF369122DD /* ScreenshotFlowTests.swift */; };
 		E6777DDA65665B0B2AF20164 /* ChallengeDialogPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFF01A1C3CB0DA38D6414E62 /* ChallengeDialogPage.swift */; };
 		EDBD7E2A869F3E7CEA274D0B /* ChallengeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEDED3981F54ACD2343FBC9 /* ChallengeTests.swift */; };
 		F3AAD2DEEF2549D6AB7B0BE6 /* FactoryKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7EB5417526AA6171D15EB07D /* FactoryKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -141,6 +142,7 @@
 		B4B5B66D5303483821DD1CE0 /* TallyFeatureAuth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureAuth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAFF060C3D8E68253DF6AABA /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC8584F946B6DF00D152E3D0 /* DashboardPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardPage.swift; sourceTree = "<group>"; };
+		BDFF814C84D490FF369122DD /* ScreenshotFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotFlowTests.swift; sourceTree = "<group>"; };
 		C8EC6562F91FECF24EA9DF1A /* TallyFeatureChallenges.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureChallenges.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CFF01A1C3CB0DA38D6414E62 /* ChallengeDialogPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeDialogPage.swift; sourceTree = "<group>"; };
 		DE72813B11206E3D723C13DD /* BackgroundRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshManager.swift; sourceTree = "<group>"; };
@@ -289,6 +291,7 @@
 				5445B743B2848E62908B578D /* EntryTests.swift */,
 				08F19A63DA8D9F3330470832 /* OfflineTests.swift */,
 				A48178911F257A13AA664AB6 /* OnboardingTests.swift */,
+				BDFF814C84D490FF369122DD /* ScreenshotFlowTests.swift */,
 			);
 			path = UITests;
 			sourceTree = "<group>";
@@ -454,6 +457,7 @@
 				E6777DDA65665B0B2AF20164 /* ChallengeDialogPage.swift in Sources */,
 				C7FD2ACA9A08E0DEA95BD0F5 /* DashboardPage.swift in Sources */,
 				58417CF4849C60023AF62789 /* EntryDialogPage.swift in Sources */,
+				E3B6E30CC6BA80CA98D7C7B9 /* ScreenshotFlowTests.swift in Sources */,
 				6C2C56D877A633E011CBDF2E /* TallyUITestCase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

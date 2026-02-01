@@ -28,16 +28,18 @@ public struct StatsResponse: Codable, Sendable {
     public let stats: ChallengeStats
 }
 
-public struct DashboardStatsResponse: Codable, Sendable {
-    public let stats: DashboardStats
-}
-
-public struct PersonalRecordsResponse: Codable, Sendable {
+public struct StatsSummaryResponse: Codable, Sendable {
+    public let dashboard: DashboardStats
     public let records: PersonalRecords
 }
 
-public struct WeeklySummaryResponse: Codable, Sendable {
-    public let summary: WeeklySummary
+/// User preferences response (dashboard config, etc.)
+public struct UserPreferencesResponse: Codable, Sendable {
+    public let dashboardConfig: DashboardConfig
+
+    private enum CodingKeys: String, CodingKey {
+        case dashboardConfig = "dashboardConfig"
+    }
 }
 
 public struct DeleteResponse: Codable, Sendable {

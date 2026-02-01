@@ -14,7 +14,7 @@ All authenticated endpoints require a Bearer token in the Authorization header:
 Authorization: Bearer <clerk_jwt_token>
 ```
 
-Public endpoints (under `/api/v1/public/`) do not require authentication.
+Public endpoints under `/api/v1/public/` do not require authentication (currently only `/api/v1/public/health`).
 
 ## Error Responses
 
@@ -57,7 +57,60 @@ Get the current authenticated user.
 }
 ```
 
----
+#### POST /api/v1/auth/user
+Provision the authenticated user (used by mobile). Creates or updates the user record.
+
+**Response:**
+```json
+{
+  "user": {
+    "id": "user_123",
+    "clerkId": "clerk_abc",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-15T12:00:00Z"
+  }
+}
+```
+
+#### GET /api/v1/auth/user/preferences
+Get user preferences (dashboard configuration).
+
+**Response:**
+```json
+{
+  "dashboardConfig": {
+    "panels": {
+      "highlights": true,
+      "personalRecords": true,
+      "progressGraph": true,
+      "burnUpChart": true,
+      "setsStats": true
+    }
+  }
+}
+```
+
+#### PATCH /api/v1/auth/user/preferences
+Update user preferences.
+
+**Request Body:**
+```json
+{
+  "dashboardConfig": {
+    "panels": {
+      "highlights": true,
+      "personalRecords": true,
+      "progressGraph": true,
+      "burnUpChart": true,
+      "setsStats": true
+    }
+  }
+}
+```
+
+**Response:** same as GET.
 
 ### Challenges
 
@@ -67,7 +120,7 @@ List all challenges for the authenticated user.
 **Query Parameters:**
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `archived` | boolean | Include archived challenges (default: false) |
+| `includeArchived` | boolean | Include archived challenges (default: false) |
 
 **Response:**
 ```json
@@ -176,8 +229,9 @@ Soft-delete a challenge.
 **Response:**
 ```json
 {
+  "success": true,
   "id": "ch_123",
-  "deleted": true
+  "deletedAt": 1715798400000
 }
 ```
 
@@ -187,6 +241,7 @@ Restore a soft-deleted challenge.
 **Response:**
 ```json
 {
+  "success": true,
   "challenge": { ... }
 }
 ```
@@ -197,7 +252,7 @@ Get detailed statistics for a challenge.
 **Response:**
 ```json
 {
-  "stats": {
+  "dashboard": {
     "challengeId": "ch_123",
     "totalCount": 2500,
     "remaining": 7500,
@@ -210,7 +265,8 @@ Get detailed statistics for a challenge.
     "streakBest": 14,
     "bestDay": { "date": "2024-01-10", "count": 150 },
     "dailyAverage": 55.6
-  }
+  },
+  "records": { ... }
 }
 ```
 
@@ -225,12 +281,7 @@ List entries for the authenticated user.
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `challengeId` | string | Filter by challenge |
-| `startDate` | string | Filter entries after date (YYYY-MM-DD) |
-| `endDate` | string | Filter entries before date (YYYY-MM-DD) |
-| `page` | number | Page number (default: 1) |
-| `pageSize` | number | Items per page (default: 50, max: 100) |
-| `sort` | string | Sort field (date, count, createdAt) |
-| `order` | string | Sort order (asc, desc) |
+| `date` | string | Filter by date (YYYY-MM-DD) |
 
 **Response:**
 ```json
@@ -248,13 +299,7 @@ List entries for the authenticated user.
       "createdAt": "2024-01-15T08:00:00Z",
       "updatedAt": "2024-01-15T08:00:00Z"
     }
-  ],
-  "pagination": {
-    "page": 1,
-    "pageSize": 50,
-    "total": 120,
-    "totalPages": 3
-  }
+  ]
 }
 ```
 
@@ -324,8 +369,9 @@ Soft-delete an entry.
 **Response:**
 ```json
 {
+  "success": true,
   "id": "ent_123",
-  "deleted": true
+  "deletedAt": 1715798400000
 }
 ```
 
@@ -335,6 +381,7 @@ Restore a soft-deleted entry.
 **Response:**
 ```json
 {
+  "success": true,
   "entry": { ... }
 }
 ```
@@ -349,7 +396,7 @@ Get dashboard statistics and personal records.
 **Response:**
 ```json
 {
-  "stats": {
+  "dashboard": {
     "totalMarks": 15000,
     "today": 47,
     "bestStreak": 21,
@@ -374,14 +421,12 @@ Get dashboard statistics and personal records.
 ### Community
 
 #### GET /api/v1/public/challenges
-List all public challenges. No authentication required.
+List all public challenges. Requires authentication (uses follow state).
 
 **Query Parameters:**
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `search` | string | Search by name |
-| `page` | number | Page number |
-| `pageSize` | number | Items per page |
 
 **Response:**
 ```json
@@ -426,6 +471,7 @@ List challenges the user is following.
 }
 ```
 
+
 #### POST /api/v1/follow
 Follow a challenge.
 
@@ -439,12 +485,7 @@ Follow a challenge.
 **Response:** `201 Created`
 ```json
 {
-  "follow": {
-    "id": "fol_123",
-    "userId": "user_123",
-    "challengeId": "ch_456",
-    "createdAt": "2024-01-15T12:00:00Z"
-  }
+  "success": true
 }
 ```
 
@@ -461,7 +502,8 @@ Unfollow a challenge.
 **Response:**
 ```json
 {
-  "unfollowed": true
+  "success": true,
+  "removed": true
 }
 ```
 
@@ -478,16 +520,7 @@ Export all user data.
   "version": "1.0",
   "exportedAt": "2024-01-15T12:00:00Z",
   "challenges": [ ... ],
-  "entries": [ ... ],
-  "dashboardConfig": {
-    "panels": {
-      "highlights": true,
-      "personalRecords": true,
-      "progressGraph": true,
-      "burnUpChart": true,
-      "setsStats": true
-    }
-  }
+  "entries": [ ... ]
 }
 ```
 
@@ -499,14 +532,14 @@ Import user data. Replaces all existing data.
 {
   "version": "1.0",
   "challenges": [ ... ],
-  "entries": [ ... ],
-  "dashboardConfig": { ... }
+  "entries": [ ... ]
 }
 ```
 
 **Response:**
 ```json
 {
+  "success": true,
   "imported": {
     "challenges": 5,
     "entries": 150
@@ -520,7 +553,12 @@ Clear all user data.
 **Response:**
 ```json
 {
-  "cleared": true
+  "success": true,
+  "deleted": {
+    "challenges": 5,
+    "entries": 150,
+    "follows": 2
+  }
 }
 ```
 
@@ -534,53 +572,18 @@ Health check endpoint. No authentication required.
 **Response:**
 ```json
 {
-  "status": "ok",
-  "timestamp": "2024-01-15T12:00:00Z",
-  "services": {
-    "convex": "connected"
-  }
+  "status": "healthy",
+  "checks": {
+    "clerk_secret_key": true,
+    "convex_url": true,
+    "convex_connected": true
+  },
+  "timestamp": "2024-01-15T12:00:00Z"
 }
 ```
 
 ---
 
-## Rate Limits
+## Rate Limits, Pagination, Sorting
 
-- **Authenticated endpoints:** 100 requests per minute
-- **Public endpoints:** 30 requests per minute
-- Rate limit headers included in responses:
-  - `X-RateLimit-Limit`
-  - `X-RateLimit-Remaining`
-  - `X-RateLimit-Reset`
-
----
-
-## Pagination
-
-Endpoints that return lists support pagination:
-
-```json
-{
-  "data": [ ... ],
-  "pagination": {
-    "page": 1,
-    "pageSize": 50,
-    "total": 150,
-    "totalPages": 3
-  }
-}
-```
-
-Use `page` and `pageSize` query parameters to navigate.
-
----
-
-## Sorting
-
-List endpoints support sorting:
-
-```
-GET /api/v1/entries?sort=date&order=desc
-```
-
-Common sort fields: `date`, `count`, `createdAt`, `updatedAt`
+Not currently enforced in API routes.

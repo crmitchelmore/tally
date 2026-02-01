@@ -12,12 +12,14 @@ class TallyUITestCase: XCTestCase {
         continueAfterFailure = false
         
         app = XCUIApplication()
-        app.launchArguments = ["--uitesting", "--reset-offline-mode", "--clear-data"]
+        app.launchArguments = ["--uitesting", "--reset-offline-mode"]
         
         // Use offline mode for most tests (faster, no auth required)
         if useOfflineMode {
             app.launchArguments.append("--offline-mode")
         }
+        
+        app.launchArguments.append("--clear-data")
         
         // Pass environment variables for test credentials
         if let email = ProcessInfo.processInfo.environment["TEST_USER_EMAIL"] {

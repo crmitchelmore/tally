@@ -80,6 +80,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (body.icon !== undefined) challenge.icon = body.icon;
     if (body.isPublic !== undefined) challenge.isPublic = body.isPublic;
     if (body.isArchived !== undefined) challenge.isArchived = body.isArchived;
+    if (body.countType !== undefined) challenge.countType = body.countType;
+    if (body.unitLabel !== undefined) challenge.unitLabel = body.unitLabel;
+    if (body.defaultIncrement !== undefined) challenge.defaultIncrement = body.defaultIncrement;
 
     const updated = await updateChallenge(challenge);
 

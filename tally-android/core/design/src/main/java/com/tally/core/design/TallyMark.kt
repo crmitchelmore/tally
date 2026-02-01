@@ -556,17 +556,19 @@ private fun DrawScope.draw101To999(
     val remaining = count % 100
 
     val blockCount = full100s + (if (remaining > 0) 1 else 0)
-    val blockSize = (w / blockCount.coerceAtLeast(1).toFloat()).coerceAtMost(h * 0.9f)
-    val totalWidth = blockSize * blockCount
+    // Allow up to 9 blocks (900), scale down if needed
+    val displayBlocks = blockCount.coerceAtMost(9)
+    val blockSize = (w / displayBlocks.toFloat()).coerceAtMost(h * 0.9f)
+    val totalWidth = blockSize * displayBlocks
     val startX = (w - totalWidth) / 2
 
-    for (i in 0 until full100s.coerceAtMost(10)) {
+    for (i in 0 until full100s.coerceAtMost(9)) {
         translate(left = startX + i * blockSize, top = (h - blockSize) / 2) {
             drawMini100(xColor, c3, strokeWidth * 0.5f, blockSize)
         }
     }
 
-    if (remaining > 0 && full100s < 10) {
+    if (remaining > 0 && full100s < 9) {
         translate(left = startX + full100s * blockSize, top = (h - blockSize) / 2) {
             // Show partial block as 2x2 grid
             draw26To99Mini(remaining, c1, xColor, accent, strokeWidth * 0.4f, blockSize)
@@ -715,16 +717,17 @@ private fun DrawScope.draw1001To9999(
     val full1000s = count / 1000
     val remaining = count % 1000
 
-    val rowCount = full1000s + (if (remaining > 0) 1 else 0)
-    val rowHeight = (h / rowCount.coerceAtLeast(1).toFloat()).coerceAtMost(h * 0.15f)
+    // Allow up to 9 rows (9000), with proper scaling
+    val displayRows = (full1000s + (if (remaining > 0) 1 else 0)).coerceAtMost(9)
+    val rowHeight = (h / displayRows.toFloat()).coerceAtMost(h * 0.2f)
 
-    for (i in 0 until full1000s.coerceAtMost(10)) {
+    for (i in 0 until full1000s.coerceAtMost(9)) {
         translate(left = 0f, top = i * rowHeight) {
             drawMini1000Row(c3, accent, strokeWidth * 0.4f, w, rowHeight)
         }
     }
 
-    if (remaining > 0 && full1000s < 10) {
+    if (remaining > 0 && full1000s < 9) {
         translate(left = 0f, top = full1000s * rowHeight) {
             val full100s = remaining / 100
             val blockSize = w / 10f
@@ -774,6 +777,7 @@ private fun DrawScope.drawMini1000Row(
 
 /**
  * Draws 10000+ with diagonal closure.
+ * For counts > 10000, shows the grid with a text overlay indicating overflow.
  */
 private fun DrawScope.draw10000Plus(
     count: Int,
@@ -816,8 +820,9 @@ private fun DrawScope.draw10000Plus(
         )
     }
 
-    // Diagonal closure stroke (at exactly 10000)
-    if (count == 10000) {
+    // Diagonal closure stroke (at 10000+)
+    // Always show for 10000 or more to indicate completion
+    if (count >= 10000) {
         drawLine(
             color = accent,
             start = Offset(offsetX, offsetY),
@@ -849,5 +854,29 @@ private fun TallyMark25Preview() {
 private fun TallyMark100Preview() {
     TallyTheme {
         TallyMark(count = 100, size = 64.dp)
+    }
+}
+
+@Preview(showBackground = true, name = "1000+ Count")
+@Composable
+private fun TallyMark1000Preview() {
+    TallyTheme {
+        TallyMark(count = 1234, size = 72.dp)
+    }
+}
+
+@Preview(showBackground = true, name = "5000+ Count")
+@Composable
+private fun TallyMark5000Preview() {
+    TallyTheme {
+        TallyMark(count = 5678, size = 72.dp)
+    }
+}
+
+@Preview(showBackground = true, name = "10000+ Count")
+@Composable
+private fun TallyMark10000Preview() {
+    TallyTheme {
+        TallyMark(count = 12500, size = 72.dp)
     }
 }

@@ -24,6 +24,7 @@ export function ActivityHeatmap({
   onDayClick,
   unitLabel = "marks",
 }: ActivityHeatmapProps) {
+  const isCompact = typeof onDayClick !== "function";
   // Group entries by date
   const entriesByDate = useMemo(() => {
     const map = new Map<string, number>();
@@ -98,6 +99,11 @@ export function ActivityHeatmap({
     return 4;
   };
 
+  const displayedWeeks = useMemo(() => {
+    if (!isCompact) return weeks;
+    return weeks.slice(-8);
+  }, [isCompact, weeks]);
+
   // Generate month labels
   const monthLabels = useMemo(() => {
     const labels: { month: string; weekIndex: number }[] = [];
@@ -123,39 +129,46 @@ export function ActivityHeatmap({
   const dayLabels = ["", "Mon", "", "Wed", "", "Fri", ""];
 
   return (
-    <div className="overflow-x-auto">
+    <div className={isCompact ? "" : "overflow-x-auto"}>
       <div className="inline-block">
-        {/* Month labels */}
-        <div className="flex mb-1 ml-8">
-          {monthLabels.map(({ month, weekIndex }, i) => (
-            <span
-              key={i}
-              className="text-xs text-muted"
-              style={{
-                marginLeft: i === 0 ? `${weekIndex * 14}px` : `${(weekIndex - (monthLabels[i - 1]?.weekIndex || 0)) * 14 - 28}px`,
-              }}
-            >
-              {month}
-            </span>
-          ))}
-        </div>
-
-        <div className="flex gap-0.5">
-          {/* Day labels */}
-          <div className="flex flex-col gap-0.5 pr-1">
-            {dayLabels.map((label, i) => (
-              <span key={i} className="text-[10px] text-muted h-[12px] leading-[12px] w-6 text-right">
-                {label}
+        {!isCompact && (
+          <div className="flex mb-1 ml-8">
+            {monthLabels.map(({ month, weekIndex }, i) => (
+              <span
+                key={i}
+                className="text-xs text-muted"
+                style={{
+                  marginLeft: i === 0 ? `${weekIndex * 14}px` : `${(weekIndex - (monthLabels[i - 1]?.weekIndex || 0)) * 14 - 28}px`,
+                }}
+              >
+                {month}
               </span>
             ))}
           </div>
+        )}
+
+        <div className="flex gap-0.5">
+          {!isCompact && (
+            <div className="flex flex-col gap-0.5 pr-1">
+              {dayLabels.map((label, i) => (
+                <span key={i} className="text-[10px] text-muted h-[12px] leading-[12px] w-6 text-right">
+                  {label}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Heatmap grid */}
-          {weeks.map((week, weekIndex) => (
+          {displayedWeeks.map((week, weekIndex) => (
             <div key={weekIndex} className="flex flex-col gap-0.5">
               {week.map((day, dayIndex) => {
                 if (!day.date) {
-                  return <div key={dayIndex} className="w-[12px] h-[12px]" />;
+                  return (
+                    <div
+                      key={dayIndex}
+                      className={isCompact ? "w-[10px] h-[10px]" : "w-[12px] h-[12px]"}
+                    />
+                  );
                 }
 
                 const intensity = getIntensity(day.count);
@@ -168,7 +181,7 @@ export function ActivityHeatmap({
                     disabled={!isClickable}
                     onClick={() => isClickable && onDayClick(day.date, day.count)}
                     className={`
-                      w-[12px] h-[12px] rounded-sm
+                      ${isCompact ? "w-[10px] h-[10px]" : "w-[12px] h-[12px]"} rounded-sm
                       transition-transform
                       ${isClickable ? "hover:scale-125 cursor-pointer" : "cursor-default"}
                       ${day.isToday ? "ring-1 ring-accent ring-offset-1" : ""}
@@ -195,29 +208,30 @@ export function ActivityHeatmap({
           ))}
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center justify-end gap-2 mt-3">
-          <span className="text-xs text-muted">Less</span>
-          {[0, 1, 2, 3, 4].map((level) => (
-            <div
-              key={level}
-              className="w-[12px] h-[12px] rounded-sm"
-              style={{
-                backgroundColor:
-                  level === 0
-                    ? "var(--color-border)"
-                    : level === 1
-                    ? `color-mix(in oklch, ${color} 25%, var(--color-border))`
-                    : level === 2
-                    ? `color-mix(in oklch, ${color} 50%, var(--color-border))`
-                    : level === 3
-                    ? `color-mix(in oklch, ${color} 75%, var(--color-border))`
-                    : color,
-              }}
-            />
-          ))}
-          <span className="text-xs text-muted">More</span>
-        </div>
+        {!isCompact && (
+          <div className="flex items-center justify-end gap-2 mt-3">
+            <span className="text-xs text-muted">Less</span>
+            {[0, 1, 2, 3, 4].map((level) => (
+              <div
+                key={level}
+                className="w-[12px] h-[12px] rounded-sm"
+                style={{
+                  backgroundColor:
+                    level === 0
+                      ? "var(--color-border)"
+                      : level === 1
+                      ? `color-mix(in oklch, ${color} 25%, var(--color-border))`
+                      : level === 2
+                      ? `color-mix(in oklch, ${color} 50%, var(--color-border))`
+                      : level === 3
+                      ? `color-mix(in oklch, ${color} 75%, var(--color-border))`
+                      : color,
+                }}
+              />
+            ))}
+            <span className="text-xs text-muted">More</span>
+          </div>
+        )}
       </div>
     </div>
   );

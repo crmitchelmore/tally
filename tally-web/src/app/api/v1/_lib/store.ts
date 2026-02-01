@@ -54,6 +54,8 @@ export async function updateUserPreferences(
         burnUpChart: boolean;
         setsStats: boolean;
       };
+      visible?: ("activeChallenges" | "highlights" | "personalRecords" | "progressGraph" | "burnUpChart")[];
+      hidden?: ("activeChallenges" | "highlights" | "personalRecords" | "progressGraph" | "burnUpChart")[];
     };
   }
 ): Promise<void> {
@@ -96,6 +98,9 @@ export async function updateChallenge(challenge: Challenge): Promise<Challenge> 
     icon: challenge.icon,
     isPublic: challenge.isPublic,
     isArchived: challenge.isArchived,
+    countType: challenge.countType,
+    unitLabel: challenge.unitLabel,
+    defaultIncrement: challenge.defaultIncrement,
   });
 }
 

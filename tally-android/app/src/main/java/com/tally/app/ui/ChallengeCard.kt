@@ -59,8 +59,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tally.app.data.ChallengeWithCount
+import com.tally.app.ui.components.MiniHeatmap
 import com.tally.core.design.TallyMark
 import com.tally.core.design.TallySpacing
+import com.tally.core.network.Entry
 import com.tally.core.network.PaceStatus
 import com.tally.core.network.TimeframeType
 import java.text.NumberFormat
@@ -73,7 +75,9 @@ fun ChallengeCard(
     challengeWithCount: ChallengeWithCount,
     onClick: () -> Unit,
     onAddEntry: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    entries: List<Entry> = emptyList(), // Optional entries for mini heatmap
+    showMiniHeatmap: Boolean = false
 ) {
     val challenge = challengeWithCount.challenge
     val stats = challengeWithCount.stats
@@ -176,10 +180,15 @@ fun ChallengeCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Tally mark
+                // Tally mark - larger size for 1000+ to maintain legibility
+                val tallySize = when {
+                    challengeWithCount.totalCount >= 1000 -> 72.dp
+                    challengeWithCount.totalCount >= 100 -> 64.dp
+                    else -> 56.dp
+                }
                 TallyMark(
                     count = challengeWithCount.totalCount,
-                    modifier = Modifier.size(56.dp),
+                    modifier = Modifier.size(tallySize),
                     animated = false
                 )
 
@@ -238,6 +247,16 @@ fun ChallengeCard(
                         )
                     }
                 }
+            }
+            
+            // Mini heatmap (optional)
+            if (showMiniHeatmap && entries.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(TallySpacing.sm))
+                MiniHeatmap(
+                    entries = entries,
+                    tintColor = tintColor,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }

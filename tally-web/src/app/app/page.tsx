@@ -5,12 +5,13 @@ import { TallyMark } from "@/components/ui/tally-mark";
 import { UndoToast } from "@/components/ui/undo-toast";
 import { ChallengeList } from "@/components/challenges";
 import { DashboardHighlights, PersonalRecords, WeeklySummary, ProgressGraph, BurnUpChart } from "@/components/stats";
-import { FollowedChallengesSection, CommunitySection } from "@/components/community";
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { FollowedChallengesSection } from "@/components/community";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import type { DragEvent } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useChallenges } from "@/hooks/use-challenges";
 import { useStats, useEntries } from "@/hooks/use-stats";
-import type { Challenge, DashboardConfig } from "@/app/api/v1/_lib/types";
+import type { Challenge, DashboardConfig, DashboardPanelKey } from "@/app/api/v1/_lib/types";
 
 interface DeletedChallenge {
   id: string;
@@ -26,6 +27,8 @@ const DEFAULT_DASHBOARD_CONFIG: DashboardConfig = {
     burnUpChart: true,
     setsStats: true,
   },
+  visible: ["activeChallenges", "highlights", "personalRecords", "progressGraph", "burnUpChart"],
+  hidden: [],
 };
 
 export default function AppPage() {
@@ -34,18 +37,74 @@ export default function AppPage() {
   const [deletedChallenge, setDeletedChallenge] = useState<DeletedChallenge | null>(null);
   const [panelConfig, setPanelConfig] = useState<DashboardConfig>(DEFAULT_DASHBOARD_CONFIG);
   const [showConfigMenu, setShowConfigMenu] = useState(false);
-  const configLoadedFromApi = useRef(false);
 
-  const basePanelOrder = ["highlights", "personalRecords", "progressGraph", "burnUpChart"] as const;
-  type PanelKey = typeof basePanelOrder[number];
-  const panelOrder: PanelKey[] = panelConfig.order?.length
-    ? panelConfig.order
-    : [...basePanelOrder];
-  const normalizedPanelOrder: PanelKey[] = (() => {
-    const order = panelConfig.order?.length ? panelConfig.order : basePanelOrder;
-    const seen = new Set<PanelKey>(order);
-    return [...order, ...basePanelOrder.filter((panel) => !seen.has(panel))];
-  })();
+  const panelLabels: Record<DashboardPanelKey, string> = {
+    activeChallenges: "Active Challenges",
+    highlights: "Highlights",
+    personalRecords: "Personal Records",
+    progressGraph: "Progress Graph",
+    burnUpChart: "Goal Progress",
+  };
+  const basePanelOrder: DashboardPanelKey[] = [
+    "activeChallenges",
+    "highlights",
+    "personalRecords",
+    "progressGraph",
+    "burnUpChart",
+  ];
+  const visiblePanels = useMemo(() => {
+    const raw = panelConfig.visible?.length ? panelConfig.visible : basePanelOrder;
+    return raw.filter((panel) => basePanelOrder.includes(panel));
+  }, [panelConfig.visible]);
+  const hiddenPanels = useMemo(() => {
+    const raw = panelConfig.hidden ?? [];
+    return raw.filter((panel) => basePanelOrder.includes(panel) && !visiblePanels.includes(panel));
+  }, [panelConfig.hidden, visiblePanels]);
+
+  const normalizeDashboardConfig = useCallback((raw: unknown): DashboardConfig => {
+    const record = (raw ?? {}) as Record<string, unknown>;
+    const rawPanels = (record.panels ?? {}) as Partial<DashboardConfig["panels"]>;
+    const panels = {
+      ...DEFAULT_DASHBOARD_CONFIG.panels,
+      ...rawPanels,
+    };
+
+    const sanitizeList = (value: unknown): DashboardPanelKey[] =>
+      Array.isArray(value)
+        ? value.filter((panel): panel is DashboardPanelKey => basePanelOrder.includes(panel))
+        : [];
+
+    const rawVisible = sanitizeList(record.visible);
+    const rawHidden = sanitizeList(record.hidden);
+    const rawOrder = sanitizeList(record.order);
+    const order = rawOrder.length ? rawOrder : basePanelOrder;
+
+    let visible = rawVisible;
+    let hidden = rawHidden;
+
+    if (visible.length === 0 && hidden.length === 0) {
+      visible = order.filter((panel) =>
+        panel === "activeChallenges" ? true : panels[panel]
+      );
+      hidden = order.filter((panel) =>
+        panel !== "activeChallenges" && !panels[panel]
+      );
+    }
+
+    const visibleSet = new Set(visible);
+    const hiddenSet = new Set(hidden.filter((panel) => !visibleSet.has(panel)));
+    const visibleOrdered = order.filter((panel) => visibleSet.has(panel));
+    const hiddenOrdered = order.filter((panel) => hiddenSet.has(panel));
+    const remaining = order.filter(
+      (panel) => !visibleSet.has(panel) && !hiddenSet.has(panel)
+    );
+
+    return {
+      panels,
+      visible: [...visibleOrdered, ...remaining],
+      hidden: hiddenOrdered,
+    };
+  }, [basePanelOrder]);
 
   // Load config from API (primary) with localStorage fallback
   useEffect(() => {
@@ -65,14 +124,7 @@ export default function AppPage() {
     if (savedConfig) {
       try {
         const parsed = JSON.parse(savedConfig);
-        const merged = {
-          ...DEFAULT_DASHBOARD_CONFIG,
-          ...parsed,
-          panels: {
-            ...DEFAULT_DASHBOARD_CONFIG.panels,
-            ...parsed.panels,
-          },
-        };
+        const merged = normalizeDashboardConfig(parsed);
         setPanelConfig(merged);
       } catch {
         // Use default
@@ -85,17 +137,9 @@ export default function AppPage() {
         .then(res => res.json())
         .then(data => {
           if (data.dashboardConfig?.panels) {
-            const merged = {
-              ...DEFAULT_DASHBOARD_CONFIG,
-              ...data.dashboardConfig,
-              panels: {
-                ...DEFAULT_DASHBOARD_CONFIG.panels,
-                ...data.dashboardConfig.panels,
-              },
-            };
+            const merged = normalizeDashboardConfig(data.dashboardConfig);
             setPanelConfig(merged);
             localStorage.setItem("dashboardConfig", JSON.stringify(merged));
-            configLoadedFromApi.current = true;
           }
         })
         .catch(() => {
@@ -104,43 +148,91 @@ export default function AppPage() {
     }
   }, [isLoaded, isSignedIn]);
 
-  // Save panel config when it changes
-  const updatePanelConfig = useCallback((key: keyof DashboardConfig["panels"], value: boolean) => {
-    setPanelConfig(prev => {
-      const newConfig = { ...prev, panels: { ...prev.panels, [key]: value } };
-      // Save to localStorage (instant)
-      localStorage.setItem("dashboardConfig", JSON.stringify(newConfig));
-      // Sync to API (background)
-      fetch("/api/v1/auth/user/preferences", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dashboardConfig: newConfig }),
-      }).catch(() => {
-        // Silently fail - localStorage has the value
-      });
-      return newConfig;
-    });
+  const persistConfig = useCallback((config: DashboardConfig) => {
+    localStorage.setItem("dashboardConfig", JSON.stringify(config));
+    fetch("/api/v1/auth/user/preferences", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dashboardConfig: config }),
+    }).catch(() => {});
   }, []);
 
-  const movePanel = useCallback((panel: PanelKey, direction: -1 | 1) => {
+  const setPanelLists = useCallback((visible: DashboardPanelKey[], hidden: DashboardPanelKey[]) => {
     setPanelConfig(prev => {
-      const order = prev.order?.length ? [...prev.order] : [...normalizedPanelOrder];
-      const index = order.indexOf(panel);
-      if (index < 0) return prev;
-      const newIndex = index + direction;
-      if (newIndex < 0 || newIndex >= order.length) return prev;
-      order.splice(index, 1);
-      order.splice(newIndex, 0, panel);
-      const newConfig = { ...prev, order };
-      localStorage.setItem("dashboardConfig", JSON.stringify(newConfig));
-      fetch("/api/v1/auth/user/preferences", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dashboardConfig: newConfig }),
-      }).catch(() => {});
+      const newConfig: DashboardConfig = {
+        ...prev,
+        visible,
+        hidden,
+      };
+      persistConfig(newConfig);
       return newConfig;
     });
-  }, [normalizedPanelOrder]);
+  }, [persistConfig]);
+
+  const handleDragStart = useCallback((
+    event: DragEvent<HTMLDivElement>,
+    panel: DashboardPanelKey,
+    from: "visible" | "hidden"
+  ) => {
+    event.dataTransfer.setData("text/plain", JSON.stringify({ panel, from }));
+    event.dataTransfer.effectAllowed = "move";
+  }, []);
+
+  const handleDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const handleDrop = useCallback((
+    event: DragEvent<HTMLDivElement>,
+    to: "visible" | "hidden",
+    targetPanel?: DashboardPanelKey
+  ) => {
+    event.preventDefault();
+    const raw = event.dataTransfer.getData("text/plain");
+    if (!raw) return;
+    let parsed: { panel?: DashboardPanelKey; from?: "visible" | "hidden" };
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return;
+    }
+    const panel = parsed.panel;
+    const from = parsed.from;
+    if (!panel || (from !== "visible" && from !== "hidden")) return;
+
+    const sourcePanels = from === "visible" ? visiblePanels : hiddenPanels;
+    const targetPanels = to === "visible" ? visiblePanels : hiddenPanels;
+    const sourceIndex = sourcePanels.indexOf(panel);
+    const targetIndex = targetPanel ? targetPanels.indexOf(targetPanel) : -1;
+    const isSameList = from === to;
+
+    const nextVisible = visiblePanels.filter((item) => item !== panel);
+    const nextHidden = hiddenPanels.filter((item) => item !== panel);
+
+    if (to === "visible") {
+      let insertIndex = targetPanel ? targetIndex : nextVisible.length;
+      if (isSameList && sourceIndex !== -1 && targetIndex !== -1 && sourceIndex < targetIndex) {
+        insertIndex -= 1;
+      }
+      if (insertIndex < 0) insertIndex = nextVisible.length;
+      if (insertIndex > nextVisible.length) insertIndex = nextVisible.length;
+      const updated = [...nextVisible];
+      updated.splice(insertIndex, 0, panel);
+      setPanelLists(updated, nextHidden);
+      return;
+    }
+
+    let insertIndex = targetPanel ? targetIndex : nextHidden.length;
+    if (isSameList && sourceIndex !== -1 && targetIndex !== -1 && sourceIndex < targetIndex) {
+      insertIndex -= 1;
+    }
+    if (insertIndex < 0) insertIndex = nextHidden.length;
+    if (insertIndex > nextHidden.length) insertIndex = nextHidden.length;
+    const updated = [...nextHidden];
+    updated.splice(insertIndex, 0, panel);
+    setPanelLists(nextVisible, updated);
+  }, [hiddenPanels, setPanelLists, visiblePanels]);
 
   // Data fetching with SWR - shows cached data immediately
   const isReady = isLoaded && isSignedIn;
@@ -163,6 +255,16 @@ export default function AppPage() {
     entries, 
     refresh: refreshEntries 
   } = useEntries(isReady);
+
+  const entriesByChallenge = useMemo(() => {
+    const map = new Map<string, typeof entries>();
+    entries.forEach((entry) => {
+      const list = map.get(entry.challengeId) ?? [];
+      list.push(entry);
+      map.set(entry.challengeId, list);
+    });
+    return map;
+  }, [entries]);
 
   // Map challenge IDs to names for personal records display
   const challengeNames = useMemo(() => {
@@ -270,51 +372,55 @@ export default function AppPage() {
                 </svg>
               </button>
                 {showConfigMenu && (
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-xl shadow-lg z-50 p-2">
-                    <p className="px-3 py-2 text-xs font-medium text-muted uppercase">Show panels</p>
-                    {[
-                      { key: "highlights", label: "Highlights" },
-                      { key: "personalRecords", label: "Personal Records" },
-                      { key: "progressGraph", label: "Progress Graph" },
-                      { key: "burnUpChart", label: "Goal Progress" },
-                    ].map(({ key, label }) => (
-                      <label key={key} className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-border/50 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={panelConfig.panels[key as keyof DashboardConfig["panels"]]}
-                          onChange={(e) => updatePanelConfig(key as keyof DashboardConfig["panels"], e.target.checked)}
-                          className="rounded border-border"
-                        />
-                        <span className="text-sm text-ink">{label}</span>
-                      </label>
-                    ))}
-                    <p className="px-3 py-2 text-xs font-medium text-muted uppercase">Order</p>
-                    {normalizedPanelOrder.map((panel) => (
-                      <div key={panel} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-border/50">
-                        <span className="text-sm text-ink">
-                          {panel === "highlights" && "Highlights"}
-                          {panel === "personalRecords" && "Personal Records"}
-                          {panel === "progressGraph" && "Progress Graph"}
-                          {panel === "burnUpChart" && "Goal Progress"}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => movePanel(panel, -1)}
-                            className="text-xs text-muted hover:text-ink"
-                            aria-label="Move up"
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-surface border border-border rounded-xl shadow-lg z-50 p-3 space-y-3">
+                    <div>
+                      <p className="px-1 pb-2 text-xs font-medium text-muted uppercase">Visible</p>
+                      <div
+                        className="rounded-lg border border-border/60"
+                        onDragOver={handleDragOver}
+                        onDrop={(event) => handleDrop(event, "visible")}
+                      >
+                        {visiblePanels.map((panel) => (
+                          <div
+                            key={panel}
+                            draggable
+                            onDragStart={(event) => handleDragStart(event, panel, "visible")}
+                            onDragOver={handleDragOver}
+                            onDrop={(event) => handleDrop(event, "visible", panel)}
+                            className="flex items-center justify-between px-3 py-2 border-b border-border/60 last:border-b-0 hover:bg-border/50"
                           >
-                            ↑
-                          </button>
-                          <button
-                            onClick={() => movePanel(panel, 1)}
-                            className="text-xs text-muted hover:text-ink"
-                            aria-label="Move down"
-                          >
-                            ↓
-                          </button>
-                        </div>
+                            <span className="text-sm text-ink">{panelLabels[panel]}</span>
+                            <span className="text-xs text-muted">Drag</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+                    <div>
+                      <p className="px-1 pb-2 text-xs font-medium text-muted uppercase">Hidden</p>
+                      <div
+                        className="rounded-lg border border-border/60"
+                        onDragOver={handleDragOver}
+                        onDrop={(event) => handleDrop(event, "hidden")}
+                      >
+                        {hiddenPanels.length === 0 ? (
+                          <p className="px-3 py-2 text-xs text-muted">Everything is visible.</p>
+                        ) : (
+                          hiddenPanels.map((panel) => (
+                            <div
+                              key={panel}
+                              draggable
+                              onDragStart={(event) => handleDragStart(event, panel, "hidden")}
+                              onDragOver={handleDragOver}
+                              onDrop={(event) => handleDrop(event, "hidden", panel)}
+                              className="flex items-center justify-between px-3 py-2 border-b border-border/60 last:border-b-0 hover:bg-border/50"
+                            >
+                              <span className="text-sm text-ink">{panelLabels[panel]}</span>
+                              <span className="text-xs text-muted">Drag</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -323,19 +429,33 @@ export default function AppPage() {
       </section>
 
       {/* Challenges list - shown first when empty for better UX */}
-      <ChallengeList
-        challenges={challenges}
-        loading={challengesLoading}
-        error={error}
-        onCreateChallenge={createChallenge}
-        onRefresh={handleRefresh}
-      />
+      {challenges.length === 0 && (
+        <ChallengeList
+          challenges={challenges}
+          loading={challengesLoading}
+          error={error}
+          onCreateChallenge={createChallenge}
+          onRefresh={handleRefresh}
+        />
+      )}
 
       {/* Dashboard highlights - only show when user has data and panel enabled */}
       {challenges.length > 0 && (
         <>
-          {normalizedPanelOrder.map((panel) => {
+          {visiblePanels.map((panel) => {
             switch (panel) {
+              case "activeChallenges":
+                return (
+                  <ChallengeList
+                    key={panel}
+                    challenges={challenges}
+                    loading={challengesLoading}
+                    error={error}
+                    onCreateChallenge={createChallenge}
+                    onRefresh={handleRefresh}
+                    entriesByChallenge={entriesByChallenge}
+                  />
+                );
               case "highlights":
                 return panelConfig.panels.highlights ? (
                   <DashboardHighlights key={panel} stats={dashboardStats} loading={statsLoading} />
@@ -360,7 +480,7 @@ export default function AppPage() {
                     {challenges.slice(0, 3).map(({ challenge }) => (
                       <BurnUpChart 
                         key={challenge.id}
-                        entries={entries.filter(e => e.challengeId === challenge.id)} 
+                        entries={entriesByChallenge.get(challenge.id) ?? []} 
                         challenge={challenge}
                       />
                     ))}

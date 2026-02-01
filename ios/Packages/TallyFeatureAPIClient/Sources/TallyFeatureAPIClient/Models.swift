@@ -299,6 +299,7 @@ public struct PersonalRecords: Codable, Sendable, Equatable {
 
 /// Dashboard panel identifiers
 public enum DashboardPanel: String, Codable, CaseIterable, Identifiable, Sendable {
+    case activeChallenges
     case highlights
     case personalRecords
     case progressGraph
@@ -308,6 +309,7 @@ public enum DashboardPanel: String, Codable, CaseIterable, Identifiable, Sendabl
     
     public var title: String {
         switch self {
+        case .activeChallenges: return "Active Challenges"
         case .highlights: return "Highlights"
         case .personalRecords: return "Personal Records"
         case .progressGraph: return "Progress Graph"
@@ -316,6 +318,7 @@ public enum DashboardPanel: String, Codable, CaseIterable, Identifiable, Sendabl
     }
     
     public static let defaultOrder: [DashboardPanel] = [
+        .activeChallenges,
         .highlights,
         .personalRecords,
         .progressGraph,
@@ -325,55 +328,81 @@ public enum DashboardPanel: String, Codable, CaseIterable, Identifiable, Sendabl
 
 /// Dashboard panel configuration
 public struct DashboardConfig: Codable, Sendable, Equatable {
-    public var panels: Panels
-    public var order: [DashboardPanel]
+    public var visiblePanels: [DashboardPanel]
+    public var hiddenPanels: [DashboardPanel]
     
-    public struct Panels: Codable, Sendable, Equatable {
-        public var highlights: Bool
-        public var personalRecords: Bool
-        public var progressGraph: Bool
-        public var burnUpChart: Bool
-        public var setsStats: Bool
-        
-        public init(
-            highlights: Bool = true,
-            personalRecords: Bool = true,
-            progressGraph: Bool = true,
-            burnUpChart: Bool = true,
-            setsStats: Bool = true
-        ) {
-            self.highlights = highlights
-            self.personalRecords = personalRecords
-            self.progressGraph = progressGraph
-            self.burnUpChart = burnUpChart
-            self.setsStats = setsStats
-        }
-    }
-    
-    public init(panels: Panels = Panels(), order: [DashboardPanel] = DashboardPanel.defaultOrder) {
-        self.panels = panels
-        self.order = DashboardConfig.normalizedOrder(order)
+    public init(visiblePanels: [DashboardPanel] = DashboardPanel.defaultOrder, hiddenPanels: [DashboardPanel] = []) {
+        self.visiblePanels = visiblePanels
+        self.hiddenPanels = hiddenPanels
     }
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let panels = try container.decodeIfPresent(Panels.self, forKey: .panels) ?? Panels()
-        let order = try container.decodeIfPresent([DashboardPanel].self, forKey: .order)
-        self.init(panels: panels, order: order ?? DashboardPanel.defaultOrder)
+        
+        // Try new format first
+        let visible = try? container.decodeIfPresent([DashboardPanel].self, forKey: .visiblePanels)
+        let hidden = try? container.decodeIfPresent([DashboardPanel].self, forKey: .hiddenPanels)
+        if visible != nil || hidden != nil {
+            self.visiblePanels = visible ?? DashboardPanel.defaultOrder
+            self.hiddenPanels = hidden ?? []
+            return
+        }
+        
+        // Fall back to old format
+        if let oldPanels = try? container.decodeIfPresent(OldPanels.self, forKey: .panels) {
+            let order = (try? container.decodeIfPresent([DashboardPanel].self, forKey: .order)) ?? DashboardPanel.defaultOrder
+            var visible: [DashboardPanel] = []
+            var hidden: [DashboardPanel] = []
+            
+            for panel in order {
+                let isVisible: Bool
+                switch panel {
+                case .activeChallenges: isVisible = true // Default visible for new panel
+                case .highlights: isVisible = oldPanels.highlights
+                case .personalRecords: isVisible = oldPanels.personalRecords
+                case .progressGraph: isVisible = oldPanels.progressGraph
+                case .burnUpChart: isVisible = oldPanels.burnUpChart
+                }
+                
+                if isVisible {
+                    visible.append(panel)
+                } else {
+                    hidden.append(panel)
+                }
+            }
+            
+            self.visiblePanels = visible
+            self.hiddenPanels = hidden
+            return
+        }
+        
+        // Default fallback
+        self.visiblePanels = DashboardPanel.defaultOrder
+        self.hiddenPanels = []
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(visiblePanels, forKey: .visiblePanels)
+        try container.encode(hiddenPanels, forKey: .hiddenPanels)
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case visiblePanels
+        case hiddenPanels
+        case panels  // Old format
+        case order   // Old format
+    }
+    
+    private struct OldPanels: Codable {
+        var highlights: Bool
+        var personalRecords: Bool
+        var progressGraph: Bool
+        var burnUpChart: Bool
+        var setsStats: Bool
     }
     
     public static let `default` = DashboardConfig()
-    
-    public static func normalizedOrder(_ order: [DashboardPanel]) -> [DashboardPanel] {
-        var deduped: [DashboardPanel] = []
-        for panel in order where !deduped.contains(panel) {
-            deduped.append(panel)
-        }
-        for panel in DashboardPanel.defaultOrder where !deduped.contains(panel) {
-            deduped.append(panel)
-        }
-        return deduped
-    }
 }
 
 /// Weekly summary

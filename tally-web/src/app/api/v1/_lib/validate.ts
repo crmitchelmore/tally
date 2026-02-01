@@ -124,6 +124,20 @@ export function validateUpdateChallenge(data: unknown): ValidationResult {
   if (body.isArchived !== undefined && typeof body.isArchived !== "boolean") {
     errors.push({ field: "isArchived", message: "isArchived must be a boolean" });
   }
+  if (body.countType !== undefined) {
+    const validCountTypes = ["simple", "sets", "custom"];
+    if (typeof body.countType !== "string" || !validCountTypes.includes(body.countType)) {
+      errors.push({ field: "countType", message: "countType must be one of: simple, sets, custom" });
+    }
+  }
+  if (body.unitLabel !== undefined && typeof body.unitLabel !== "string") {
+    errors.push({ field: "unitLabel", message: "unitLabel must be a string" });
+  }
+  if (body.defaultIncrement !== undefined) {
+    if (typeof body.defaultIncrement !== "number" || body.defaultIncrement < 1) {
+      errors.push({ field: "defaultIncrement", message: "defaultIncrement must be a positive number" });
+    }
+  }
 
   return { valid: errors.length === 0, errors };
 }

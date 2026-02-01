@@ -99,6 +99,10 @@ export interface UpdateChallengeRequest {
   icon?: string;
   isPublic?: boolean;
   isArchived?: boolean;
+  // Count configuration
+  countType?: CountType;
+  unitLabel?: string;
+  defaultIncrement?: number;
 }
 
 export interface CreateEntryRequest {
@@ -119,6 +123,13 @@ export interface UpdateEntryRequest {
 }
 
 // Dashboard panel configuration
+export type DashboardPanelKey =
+  | "highlights"
+  | "personalRecords"
+  | "progressGraph"
+  | "burnUpChart"
+  | "activeChallenges";
+
 export interface DashboardConfig {
   panels: {
     highlights: boolean;
@@ -127,7 +138,8 @@ export interface DashboardConfig {
     burnUpChart: boolean;
     setsStats: boolean;
   };
-  order?: ("highlights" | "personalRecords" | "progressGraph" | "burnUpChart")[];
+  visible?: DashboardPanelKey[];
+  hidden?: DashboardPanelKey[];
 }
 
 // Stats types

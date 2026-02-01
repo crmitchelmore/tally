@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
@@ -61,6 +62,7 @@ fun SettingsScreen(
 ) {
     var showTipJar by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showDashboardConfig by remember { mutableStateOf(false) }
     var exportResult by remember { mutableStateOf<String?>(null) }
     var importResult by remember { mutableStateOf<String?>(null) }
     
@@ -105,6 +107,22 @@ fun SettingsScreen(
         }
     }
     
+    // Dashboard config sheet
+    if (showDashboardConfig && viewModel != null) {
+        val dashboardConfig by viewModel.dashboardConfig.collectAsState()
+        ModalBottomSheet(
+            onDismissRequest = { showDashboardConfig = false }
+        ) {
+            DashboardConfigSheet(
+                config = dashboardConfig,
+                onDismiss = { showDashboardConfig = false },
+                onChange = { newConfig ->
+                    viewModel.updateDashboardConfig(newConfig)
+                }
+            )
+        }
+    }
+    
     // Delete confirmation dialog
     if (showDeleteConfirm) {
         AlertDialog(
@@ -146,6 +164,48 @@ fun SettingsScreen(
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // Dashboard section
+        Text(
+            text = "DASHBOARD",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ) {
+            Row(
+                modifier = Modifier
+                    .clickable(enabled = viewModel != null) { showDashboardConfig = true }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Dashboard,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Configure Panels",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = "Customize panel visibility and order",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
         
         Spacer(modifier = Modifier.height(24.dp))
         

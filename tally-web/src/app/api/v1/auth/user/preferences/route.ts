@@ -76,7 +76,8 @@ function getDefaultDashboardConfig(): DashboardConfig {
       burnUpChart: true,
       setsStats: true,
     },
-    order: ["highlights", "personalRecords", "progressGraph", "burnUpChart"],
+    visible: ["activeChallenges", "highlights", "personalRecords", "progressGraph", "burnUpChart"],
+    hidden: [],
   };
 }
 
@@ -93,8 +94,20 @@ function isValidDashboardConfig(config: unknown): config is DashboardConfig {
     typeof panels.setsStats === "boolean"
   );
   if (!panelsValid) return false;
-  if (c.order === undefined) return true;
-  if (!Array.isArray(c.order)) return false;
-  const allowed = new Set(["highlights", "personalRecords", "progressGraph", "burnUpChart"]);
-  return c.order.every((item) => typeof item === "string" && allowed.has(item));
+  const allowed = new Set([
+    "activeChallenges",
+    "highlights",
+    "personalRecords",
+    "progressGraph",
+    "burnUpChart",
+  ]);
+
+  const isPanelList = (list: unknown) =>
+    Array.isArray(list) &&
+    list.every((item) => typeof item === "string" && allowed.has(item));
+
+  if (c.visible === undefined && c.hidden === undefined) return true;
+  if (c.visible !== undefined && !isPanelList(c.visible)) return false;
+  if (c.hidden !== undefined && !isPanelList(c.hidden)) return false;
+  return true;
 }

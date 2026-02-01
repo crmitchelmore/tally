@@ -294,6 +294,9 @@ public final class ChallengesManager {
             icon: icon ?? challenge.icon,
             isPublic: isPublic ?? challenge.isPublic,
             isArchived: isArchived ?? challenge.isArchived,
+            countType: challenge.countType,
+            unitLabel: challenge.unitLabel,
+            defaultIncrement: challenge.defaultIncrement,
             createdAt: challenge.createdAt,
             updatedAt: ISO8601DateFormatter().string(from: Date())
         )
@@ -536,7 +539,10 @@ public final class ChallengesManager {
                             endDate: local.endDate,
                             color: local.color,
                             icon: local.icon,
-                            isPublic: local.isPublic
+                            isPublic: local.isPublic,
+                            countType: local.countType,
+                            unitLabel: local.unitLabel,
+                            defaultIncrement: local.defaultIncrement
                         )
                         let serverChallenge = try await apiClient.createChallenge(request)
                         
@@ -554,7 +560,10 @@ public final class ChallengesManager {
                             color: local.color,
                             icon: local.icon,
                             isPublic: local.isPublic,
-                            isArchived: local.isArchived
+                            isArchived: local.isArchived,
+                            countType: local.countType,
+                            unitLabel: local.unitLabel,
+                            defaultIncrement: local.defaultIncrement
                         )
                         let serverChallenge = try await apiClient.updateChallenge(id: id, data: request)
                         localStore.upsertChallenge(serverChallenge)
@@ -674,18 +683,8 @@ public final class ChallengesManager {
     public func refreshDashboardConfig() async {
         do {
             let server = try await apiClient.getUserPreferences()
-            let merged = DashboardConfig(
-                panels: DashboardConfig.Panels(
-                    highlights: server.dashboardConfig.panels.highlights,
-                    personalRecords: server.dashboardConfig.panels.personalRecords,
-                    progressGraph: server.dashboardConfig.panels.progressGraph,
-                    burnUpChart: server.dashboardConfig.panels.burnUpChart,
-                    setsStats: server.dashboardConfig.panels.setsStats
-                ),
-                order: server.dashboardConfig.order
-            )
-            dashboardConfig = merged
-            saveDashboardConfig(merged)
+            dashboardConfig = server.dashboardConfig
+            saveDashboardConfig(server.dashboardConfig)
         } catch {
             // Local cache remains
         }

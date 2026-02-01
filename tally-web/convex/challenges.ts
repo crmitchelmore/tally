@@ -167,6 +167,9 @@ export const update = mutation({
     icon: v.optional(v.string()),
     isPublic: v.optional(v.boolean()),
     isArchived: v.optional(v.boolean()),
+    countType: v.optional(v.union(v.literal("simple"), v.literal("sets"), v.literal("custom"))),
+    unitLabel: v.optional(v.string()),
+    defaultIncrement: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;

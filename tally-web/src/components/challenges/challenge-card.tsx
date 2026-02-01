@@ -1,13 +1,15 @@
 "use client";
 
 import { TallyDisplay } from "@/components/ui/tally-display";
+import { ActivityHeatmap } from "@/components/challenges/activity-heatmap";
 import Link from "next/link";
-import type { Challenge, ChallengeStats } from "@/app/api/v1/_lib/types";
+import type { Challenge, ChallengeStats, Entry } from "@/app/api/v1/_lib/types";
 import { getIconEmoji } from "@/lib/challenge-icons";
 
 export interface ChallengeCardProps {
   challenge: Challenge;
   stats: ChallengeStats;
+  entries?: Entry[];
   className?: string;
   onQuickAdd?: (challengeId: string) => void;
   href?: string | null; // null = no link, undefined = default link
@@ -17,7 +19,14 @@ export interface ChallengeCardProps {
  * Challenge card displaying progress, target, pace status, and mini tally marks.
  * Designed for the dashboard grid view.
  */
-export function ChallengeCard({ challenge, stats, className = "", onQuickAdd, href }: ChallengeCardProps) {
+export function ChallengeCard({
+  challenge,
+  stats,
+  entries = [],
+  className = "",
+  onQuickAdd,
+  href,
+}: ChallengeCardProps) {
   const progress = Math.min(100, (stats.totalCount / challenge.target) * 100);
   
   const paceColors = {
@@ -103,9 +112,20 @@ export function ChallengeCard({ challenge, stats, className = "", onQuickAdd, hr
         </div>
       </div>
       
-      {/* Mini tally preview - always uses ink for strokes, accent for slashes */}
-      <div className="mt-4 pt-4 border-t border-border">
+      {/* Mini tally preview + heatmap */}
+      <div className="mt-4 pt-4 border-t border-border space-y-3">
         <TallyDisplay count={stats.totalCount} size="sm" />
+        {entries.length > 0 && (
+          <div className="overflow-hidden max-w-full">
+            <ActivityHeatmap
+              entries={entries}
+              startDate={challenge.startDate}
+              endDate={challenge.endDate}
+              color={challenge.color}
+              unitLabel={challenge.unitLabel || "marks"}
+            />
+          </div>
+        )}
       </div>
     </>
   );

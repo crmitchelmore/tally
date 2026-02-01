@@ -174,21 +174,45 @@ data class PersonalRecords(
 )
 
 /**
+ * Dashboard panel identifiers
+ */
+@Serializable
+enum class DashboardPanel {
+    @SerialName("activeChallenges") ACTIVE_CHALLENGES,
+    @SerialName("highlights") HIGHLIGHTS,
+    @SerialName("personalRecords") PERSONAL_RECORDS,
+    @SerialName("progressGraph") PROGRESS_GRAPH,
+    @SerialName("burnUpChart") BURN_UP_CHART;
+
+    val title: String
+        get() = when (this) {
+            ACTIVE_CHALLENGES -> "Active Challenges"
+            HIGHLIGHTS -> "Highlights"
+            PERSONAL_RECORDS -> "Personal Records"
+            PROGRESS_GRAPH -> "Progress Graph"
+            BURN_UP_CHART -> "Goal Progress"
+        }
+
+    companion object {
+        val DEFAULT_ORDER = listOf(
+            ACTIVE_CHALLENGES,
+            HIGHLIGHTS,
+            PERSONAL_RECORDS,
+            PROGRESS_GRAPH,
+            BURN_UP_CHART
+        )
+    }
+}
+
+/**
  * Dashboard panel configuration
+ * Supports both new format (visiblePanels/hiddenPanels) and old format (panels/order) for backward compatibility
  */
 @Serializable
 data class DashboardConfig(
-    val panels: Panels = Panels()
+    @SerialName("visiblePanels") val visiblePanels: List<DashboardPanel> = DashboardPanel.DEFAULT_ORDER,
+    @SerialName("hiddenPanels") val hiddenPanels: List<DashboardPanel> = emptyList()
 ) {
-    @Serializable
-    data class Panels(
-        val highlights: Boolean = true,
-        @SerialName("personal_records") val personalRecords: Boolean = true,
-        @SerialName("progress_graph") val progressGraph: Boolean = true,
-        @SerialName("burn_up_chart") val burnUpChart: Boolean = true,
-        @SerialName("sets_stats") val setsStats: Boolean = true
-    )
-
     companion object {
         val DEFAULT = DashboardConfig()
     }

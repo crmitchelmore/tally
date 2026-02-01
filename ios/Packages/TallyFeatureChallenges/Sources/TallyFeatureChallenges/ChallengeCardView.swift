@@ -6,6 +6,7 @@ import TallyFeatureAPIClient
 public struct ChallengeCardView: View {
     let challenge: Challenge
     let stats: ChallengeStats?
+    let entries: [Entry]
     let onTap: () -> Void
     let onQuickAdd: () -> Void
     
@@ -14,11 +15,13 @@ public struct ChallengeCardView: View {
     public init(
         challenge: Challenge,
         stats: ChallengeStats? = nil,
+        entries: [Entry] = [],
         onTap: @escaping () -> Void,
         onQuickAdd: @escaping () -> Void
     ) {
         self.challenge = challenge
         self.stats = stats
+        self.entries = entries
         self.onTap = onTap
         self.onQuickAdd = onQuickAdd
     }
@@ -93,9 +96,12 @@ public struct ChallengeCardView: View {
                         .accessibilityHidden(true)
                 }
                 
-                // Mini tally preview
-                TallyMarkView(count: stats?.totalCount ?? 0, size: 36)
-                    .opacity(0.7)
+                // Mini activity heatmap (last 8 weeks)
+                MiniHeatmapView(
+                    entries: entries,
+                    colorHex: challenge.color,
+                    weeksToShow: 8
+                )
                 }
                 .tallyPadding()
                 .background(Color.tallyPaper)
@@ -321,6 +327,74 @@ private struct ProgressRingView: View {
                 .animation(.easeInOut(duration: 0.25), value: progress)
         }
         .frame(width: size, height: size)
+    }
+}
+
+// MARK: - Mini Heatmap
+
+/// Compact heatmap showing recent activity without labels
+private struct MiniHeatmapView: View {
+    let entries: [Entry]
+    let colorHex: String?
+    let weeksToShow: Int
+    
+    private let calendar = Calendar.current
+    private let daysInWeek = 7
+    
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(0..<weeksToShow, id: \.self) { weekIndex in
+                VStack(spacing: 2) {
+                    ForEach(0..<daysInWeek, id: \.self) { dayIndex in
+                        let date = dateFor(weekIndex: weekIndex, dayIndex: dayIndex)
+                        let count = countFor(date: date)
+                        
+                        RoundedRectangle(cornerRadius: 1.5)
+                            .fill(heatmapColor(for: count))
+                            .frame(width: 8, height: 8)
+                    }
+                }
+            }
+        }
+        .frame(height: 64)
+    }
+    
+    // MARK: - Helpers
+    
+    private var entriesByDate: [String: Int] {
+        var dict: [String: Int] = [:]
+        for entry in entries {
+            dict[entry.date, default: 0] += entry.count
+        }
+        return dict
+    }
+    
+    private func dateFor(weekIndex: Int, dayIndex: Int) -> Date {
+        let today = Date()
+        let start = calendar.date(byAdding: .weekOfYear, value: -weeksToShow, to: today) ?? today
+        let weekday = calendar.component(.weekday, from: start)
+        let offsetToSunday = weekday == 1 ? 0 : -(weekday - 1)
+        let gridStart = calendar.date(byAdding: .day, value: offsetToSunday, to: start) ?? start
+        let daysForward = weekIndex * 7 + dayIndex
+        return calendar.date(byAdding: .day, value: daysForward, to: gridStart) ?? today
+    }
+    
+    private func countFor(date: Date) -> Int {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        let dateString = formatter.string(from: date)
+        return entriesByDate[dateString] ?? 0
+    }
+    
+    private func heatmapColor(for count: Int) -> Color {
+        let base = Color(hex: colorHex ?? "") ?? Color.tallySuccess
+        switch count {
+        case 0: return Color.tallyPaperTint
+        case 1...5: return base.opacity(0.3)
+        case 6...15: return base.opacity(0.5)
+        case 16...30: return base.opacity(0.7)
+        default: return base
+        }
     }
 }
 

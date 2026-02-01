@@ -50,6 +50,10 @@ public struct UpdateChallengeRequest: Codable, Sendable {
     public let icon: String?
     public let isPublic: Bool?
     public let isArchived: Bool?
+    // Count configuration
+    public let countType: CountType?
+    public let unitLabel: String?
+    public let defaultIncrement: Int?
     
     public init(
         name: String? = nil,
@@ -57,7 +61,10 @@ public struct UpdateChallengeRequest: Codable, Sendable {
         color: String? = nil,
         icon: String? = nil,
         isPublic: Bool? = nil,
-        isArchived: Bool? = nil
+        isArchived: Bool? = nil,
+        countType: CountType? = nil,
+        unitLabel: String? = nil,
+        defaultIncrement: Int? = nil
     ) {
         self.name = name
         self.target = target
@@ -65,6 +72,9 @@ public struct UpdateChallengeRequest: Codable, Sendable {
         self.icon = icon
         self.isPublic = isPublic
         self.isArchived = isArchived
+        self.countType = countType
+        self.unitLabel = unitLabel
+        self.defaultIncrement = defaultIncrement
     }
 }
 

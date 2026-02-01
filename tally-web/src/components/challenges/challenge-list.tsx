@@ -4,19 +4,15 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ChallengeCard } from "./challenge-card";
 import { CreateChallengeDialog } from "./create-challenge-dialog";
-import type { Challenge, ChallengeStats, CreateChallengeRequest } from "@/app/api/v1/_lib/types";
-
-interface ChallengeWithStats {
-  challenge: Challenge;
-  stats: ChallengeStats;
-}
+import type { Challenge, ChallengeStats, CreateChallengeRequest, Entry } from "@/app/api/v1/_lib/types";
 
 export interface ChallengeListProps {
-  challenges: ChallengeWithStats[];
+  challenges: Array<{ challenge: Challenge; stats: ChallengeStats }>;
   loading?: boolean;
   error?: string | null;
   onCreateChallenge: (data: CreateChallengeRequest) => Promise<void>;
   onRefresh?: () => void;
+  entriesByChallenge?: Map<string, Entry[]>;
 }
 
 /**
@@ -29,6 +25,7 @@ export function ChallengeList({
   error = null,
   onCreateChallenge,
   onRefresh,
+  entriesByChallenge,
 }: ChallengeListProps) {
   const router = useRouter();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -164,6 +161,7 @@ export function ChallengeList({
             key={challenge.id} 
             challenge={challenge} 
             stats={stats}
+            entries={entriesByChallenge?.get(challenge.id) ?? []}
             onQuickAdd={handleQuickAdd}
           />
         ))}

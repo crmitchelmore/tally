@@ -54,34 +54,66 @@ public struct DashboardView: View {
 
     private var dashboardPanels: some View {
         Group {
-            ForEach(manager.dashboardConfig.order) { panel in
+            ForEach(manager.dashboardConfig.visiblePanels) { panel in
                 switch panel {
+                case .activeChallenges:
+                    activeChallengesPanel
                 case .highlights:
-                    if manager.dashboardConfig.panels.highlights,
-                       let stats = manager.dashboardStats {
+                    if let stats = manager.dashboardStats {
                         DashboardHighlightsView(stats: stats)
                     }
                 case .personalRecords:
-                    if manager.dashboardConfig.panels.personalRecords,
-                       let records = manager.personalRecords {
+                    if let records = manager.personalRecords {
                         PersonalRecordsView(records: records)
                     }
                 case .progressGraph:
-                    if manager.dashboardConfig.panels.progressGraph {
-                        ProgressChartView(
-                            entries: manager.allEntries,
-                            challenges: manager.challenges,
-                            selectedChallengeId: selectedChallengeFilter
-                        )
-                        .tallyPadding(.horizontal)
-                    }
+                    ProgressChartView(
+                        entries: manager.allEntries,
+                        challenges: manager.challenges,
+                        selectedChallengeId: selectedChallengeFilter
+                    )
+                    .tallyPadding(.horizontal)
                 case .burnUpChart:
-                    if manager.dashboardConfig.panels.burnUpChart {
-                        BurnUpDashboardSection(
-                            challenges: manager.challenges,
-                            stats: manager.stats,
-                            entries: manager.allEntries
-                        )
+                    BurnUpDashboardSection(
+                        challenges: manager.challenges,
+                        stats: manager.stats,
+                        entries: manager.allEntries
+                    )
+                }
+            }
+        }
+    }
+    
+    private var activeChallengesPanel: some View {
+        VStack(alignment: .leading, spacing: TallySpacing.sm) {
+            Text("Active Challenges")
+                .font(.tallyTitleSmall)
+                .foregroundColor(Color.tallyInk)
+                .tallyPadding(.horizontal)
+            
+            if manager.activeChallenges.isEmpty {
+                VStack(spacing: TallySpacing.sm) {
+                    Text("No active challenges")
+                        .font(.tallyBodyMedium)
+                        .foregroundColor(Color.tallyInkSecondary)
+                    Text("Create your first challenge to get started")
+                        .font(.tallyBodySmall)
+                        .foregroundColor(Color.tallyInkTertiary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, TallySpacing.lg)
+            } else {
+                LazyVStack(spacing: TallySpacing.sm) {
+                    ForEach(manager.activeChallenges) { challenge in
+                        if let stats = manager.stats[challenge.id] {
+                            ChallengeCardView(
+                                challenge: challenge,
+                                stats: stats,
+                                entries: manager.entries(for: challenge.id),
+                                onQuickAdd: {}
+                            )
+                            .tallyPadding(.horizontal)
+                        }
                     }
                 }
             }

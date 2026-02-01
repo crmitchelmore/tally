@@ -34,7 +34,8 @@ export const convexUsers = {
         burnUpChart: boolean;
         setsStats: boolean;
       };
-      order?: ("highlights" | "personalRecords" | "progressGraph" | "burnUpChart")[];
+      visible?: ("activeChallenges" | "highlights" | "personalRecords" | "progressGraph" | "burnUpChart")[];
+      hidden?: ("activeChallenges" | "highlights" | "personalRecords" | "progressGraph" | "burnUpChart")[];
     };
   }) => client.mutation(api.users.updatePreferences, args),
 };
@@ -79,6 +80,9 @@ export const convexChallenges = {
     icon?: string;
     isPublic?: boolean;
     isArchived?: boolean;
+    countType?: "simple" | "sets" | "custom";
+    unitLabel?: string;
+    defaultIncrement?: number;
   }) => client.mutation(api.challenges.update, args),
   
   remove: (id: Id<"challenges">, deletedBy?: string) =>

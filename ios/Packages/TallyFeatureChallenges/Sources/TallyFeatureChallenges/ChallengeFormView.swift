@@ -25,7 +25,6 @@ public struct ChallengeFormView: View {
     // Count type (simple vs sets)
     @State private var countType: CountType = .simple
     @State private var unitLabel: String = ""
-    @State private var defaultIncrement: Int = 1
     
     @State private var isSaving = false
     @State private var validationError: String?
@@ -113,18 +112,6 @@ public struct ChallengeFormView: View {
                         .font(.tallyBodyMedium)
                         .accessibilityIdentifier("unit-label-input")
                     
-                    if countType == .sets {
-                        // Default increment for sets
-                        Stepper(value: $defaultIncrement, in: 1...100) {
-                            HStack {
-                                Text("Default per set")
-                                Spacer()
-                                Text("\(defaultIncrement)")
-                                    .foregroundColor(Color.tallyInkSecondary)
-                            }
-                        }
-                        .accessibilityIdentifier("default-increment-stepper")
-                    }
                 } header: {
                     Text("Counting Method")
                 } footer: {
@@ -351,7 +338,6 @@ public struct ChallengeFormView: View {
         isPublic = challenge.isPublic
         countType = challenge.countType ?? .simple
         unitLabel = challenge.unitLabel ?? ""
-        defaultIncrement = challenge.defaultIncrement ?? 1
         
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withFullDate]
@@ -400,7 +386,7 @@ public struct ChallengeFormView: View {
                 isPublic: isPublic,
                 countType: countType,
                 unitLabel: unitLabel.isEmpty ? nil : unitLabel,
-                defaultIncrement: defaultIncrement
+                defaultIncrement: nil
             )
         }
         

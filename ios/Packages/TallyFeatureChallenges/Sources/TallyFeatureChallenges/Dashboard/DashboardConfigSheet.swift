@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 import TallyDesign
 import TallyFeatureAPIClient
 
@@ -9,6 +10,7 @@ public struct DashboardConfigSheet: View {
     
     @Environment(\.dismiss) private var dismiss
     @State private var localConfig: DashboardConfig
+    @State private var draggingPanel: DashboardPanel?
     
     public init(config: DashboardConfig, onChange: @escaping (DashboardConfig) -> Void) {
         self.config = config
@@ -18,63 +20,76 @@ public struct DashboardConfigSheet: View {
     
     public var body: some View {
         NavigationStack {
-            VStack(spacing: TallySpacing.lg) {
-                VStack(alignment: .leading, spacing: TallySpacing.sm) {
-                    Text("Show panels")
-                        .font(.tallyTitleSmall)
-                        .foregroundColor(Color.tallyInk)
-                    
-                    Toggle("Highlights", isOn: binding(for: \.highlights))
-                    Toggle("Personal Records", isOn: binding(for: \.personalRecords))
-                    Toggle("Progress Graph", isOn: binding(for: \.progressGraph))
-                    Toggle("Goal Progress", isOn: binding(for: \.burnUpChart))
-                    Toggle("Sets Stats", isOn: binding(for: \.setsStats))
-                }
-                .tallyPadding()
-                .background(Color.tallyPaperTint)
-                .cornerRadius(12)
-                
-                VStack(alignment: .leading, spacing: TallySpacing.sm) {
-                    Text("Panel order")
-                        .font(.tallyTitleSmall)
-                        .foregroundColor(Color.tallyInk)
-                    
-                    ForEach(localConfig.order) { panel in
-                        HStack {
-                            Text(panel.title)
-                                .font(.tallyLabelMedium)
-                                .foregroundColor(Color.tallyInk)
-                            Spacer()
-                            Button {
-                                move(panel: panel, direction: -1)
-                            } label: {
-                                Image(systemName: "chevron.up")
-                                    .font(.system(size: 12, weight: .semibold))
+            ScrollView {
+                VStack(spacing: TallySpacing.lg) {
+                    // Visible panels
+                    VStack(alignment: .leading, spacing: TallySpacing.sm) {
+                        Text("Visible Panels")
+                            .font(.tallyTitleSmall)
+                            .foregroundColor(Color.tallyInk)
+                        
+                        if localConfig.visiblePanels.isEmpty {
+                            Text("No visible panels yet")
+                                .font(.tallyBodySmall)
+                                .foregroundColor(Color.tallyInkTertiary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, TallySpacing.md)
+                        } else {
+                            ForEach(localConfig.visiblePanels) { panel in
+                                PanelRow(panel: panel)
+                                    .onDrag {
+                                        draggingPanel = panel
+                                        return NSItemProvider(object: panel.rawValue as NSString)
+                                    }
+                                    .onDrop(of: [UTType.text], delegate: PanelDropDelegate(panel: panel, panels: $localConfig.visiblePanels, draggingPanel: $draggingPanel))
                             }
-                            .buttonStyle(.plain)
-                            .foregroundColor(canMove(panel: panel, direction: -1) ? Color.tallyInkSecondary : Color.tallyInkTertiary)
-                            .disabled(!canMove(panel: panel, direction: -1))
-                            
-                            Button {
-                                move(panel: panel, direction: 1)
-                            } label: {
-                                Image(systemName: "chevron.down")
-                                    .font(.system(size: 12, weight: .semibold))
-                            }
-                            .buttonStyle(.plain)
-                            .foregroundColor(canMove(panel: panel, direction: 1) ? Color.tallyInkSecondary : Color.tallyInkTertiary)
-                            .disabled(!canMove(panel: panel, direction: 1))
                         }
-                        .padding(.vertical, TallySpacing.xs)
                     }
+                    .onDrop(of: [UTType.text]) { _ in
+                        guard let draggingPanel else { return false }
+                        moveToVisible(draggingPanel)
+                        self.draggingPanel = nil
+                        return true
+                    }
+                    .tallyPadding()
+                    .background(Color.tallyPaperTint)
+                    .cornerRadius(12)
+                    
+                    // Hidden panels
+                    VStack(alignment: .leading, spacing: TallySpacing.sm) {
+                        Text("Hidden Panels")
+                            .font(.tallyTitleSmall)
+                            .foregroundColor(Color.tallyInk)
+                        
+                        if localConfig.hiddenPanels.isEmpty {
+                            Text("All panels are visible")
+                                .font(.tallyBodySmall)
+                                .foregroundColor(Color.tallyInkTertiary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, TallySpacing.md)
+                        } else {
+                            ForEach(localConfig.hiddenPanels) { panel in
+                                HiddenPanelRow(panel: panel)
+                                    .onDrag {
+                                        draggingPanel = panel
+                                        return NSItemProvider(object: panel.rawValue as NSString)
+                                    }
+                                    .onDrop(of: [UTType.text], delegate: PanelDropDelegate(panel: panel, panels: $localConfig.hiddenPanels, draggingPanel: $draggingPanel))
+                            }
+                        }
+                    }
+                    .onDrop(of: [UTType.text]) { _ in
+                        guard let draggingPanel else { return false }
+                        moveToHidden(draggingPanel)
+                        self.draggingPanel = nil
+                        return true
+                    }
+                    .tallyPadding()
+                    .background(Color.tallyPaperTint)
+                    .cornerRadius(12)
                 }
                 .tallyPadding()
-                .background(Color.tallyPaperTint)
-                .cornerRadius(12)
-                
-                Spacer()
             }
-            .tallyPadding()
             .navigationTitle("Dashboard Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -90,26 +105,86 @@ public struct DashboardConfigSheet: View {
         }
     }
     
-    private func binding(for keyPath: WritableKeyPath<DashboardConfig.Panels, Bool>) -> Binding<Bool> {
-        Binding(
-            get: { localConfig.panels[keyPath: keyPath] },
-            set: { newValue in
-                localConfig.panels[keyPath: keyPath] = newValue
+    private func moveToVisible(_ panel: DashboardPanel) {
+        guard let index = localConfig.hiddenPanels.firstIndex(of: panel) else { return }
+        localConfig.hiddenPanels.remove(at: index)
+        localConfig.visiblePanels.append(panel)
+    }
+    
+    private func moveToHidden(_ panel: DashboardPanel) {
+        guard let index = localConfig.visiblePanels.firstIndex(of: panel) else { return }
+        localConfig.visiblePanels.remove(at: index)
+        localConfig.hiddenPanels.append(panel)
+    }
+}
+
+// MARK: - Panel Row
+
+private struct PanelRow: View {
+    let panel: DashboardPanel
+    
+    var body: some View {
+        HStack(spacing: TallySpacing.sm) {
+            Image(systemName: "line.3.horizontal")
+                .font(.system(size: 14))
+                .foregroundColor(Color.tallyInkTertiary)
+            
+            Text(panel.title)
+                .font(.tallyLabelMedium)
+                .foregroundColor(Color.tallyInk)
+            
+            Spacer()
+        }
+        .padding(.vertical, TallySpacing.xs)
+    }
+}
+
+// MARK: - Hidden Panel Row
+
+private struct HiddenPanelRow: View {
+    let panel: DashboardPanel
+    
+    var body: some View {
+        HStack(spacing: TallySpacing.sm) {
+            Image(systemName: "line.3.horizontal")
+                .font(.system(size: 14))
+                .foregroundColor(Color.tallyInkTertiary)
+            
+            Text(panel.title)
+                .font(.tallyLabelMedium)
+                .foregroundColor(Color.tallyInkSecondary)
+            
+            Spacer()
+        }
+        .padding(.vertical, TallySpacing.xs)
+    }
+}
+
+// MARK: - Drag and Drop
+
+private struct PanelDropDelegate: DropDelegate {
+    let panel: DashboardPanel
+    @Binding var panels: [DashboardPanel]
+    @Binding var draggingPanel: DashboardPanel?
+    
+    func dropEntered(info: DropInfo) {
+        guard let draggingPanel, draggingPanel != panel else { return }
+        guard let fromIndex = panels.firstIndex(of: draggingPanel),
+              let toIndex = panels.firstIndex(of: panel) else { return }
+        if panels[toIndex] != draggingPanel {
+            withAnimation {
+                panels.move(fromOffsets: IndexSet(integer: fromIndex), toOffset: toIndex > fromIndex ? toIndex + 1 : toIndex)
             }
-        )
+        }
     }
     
-    private func canMove(panel: DashboardPanel, direction: Int) -> Bool {
-        guard let index = localConfig.order.firstIndex(of: panel) else { return false }
-        let newIndex = index + direction
-        return newIndex >= 0 && newIndex < localConfig.order.count
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
     }
     
-    private func move(panel: DashboardPanel, direction: Int) {
-        guard let index = localConfig.order.firstIndex(of: panel) else { return }
-        let newIndex = index + direction
-        guard newIndex >= 0 && newIndex < localConfig.order.count else { return }
-        localConfig.order.swapAt(index, newIndex)
+    func performDrop(info: DropInfo) -> Bool {
+        draggingPanel = nil
+        return true
     }
 }
 

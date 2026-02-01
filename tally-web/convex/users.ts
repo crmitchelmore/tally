@@ -132,8 +132,18 @@ export const updatePreferences = mutation({
       burnUpChart: v.boolean(),
       setsStats: v.boolean(),
     }),
-    order: v.optional(v.array(
+    visible: v.optional(v.array(
       v.union(
+        v.literal("activeChallenges"),
+        v.literal("highlights"),
+        v.literal("personalRecords"),
+        v.literal("progressGraph"),
+        v.literal("burnUpChart")
+      )
+    )),
+    hidden: v.optional(v.array(
+      v.union(
+        v.literal("activeChallenges"),
         v.literal("highlights"),
         v.literal("personalRecords"),
         v.literal("progressGraph"),

@@ -99,9 +99,16 @@ public struct TallyMarkView: View {
         case 100...999:
             // 100-cap and row of blocks need vertical space
             return size * 2
-        case 1000...9999:
-            // Stack of rows needs more vertical space
-            return size * 2.5
+        case 1000:
+            // Exact 1000: just the cap row
+            return size * 1.2
+        case 1001...9999:
+            // Stack of rows + remainder space below
+            let remainder = count % 1000
+            let baseHeight = size * 2.5
+            // Add extra height if there's a significant remainder
+            let extraHeight = remainder > 0 ? size * 0.8 : 0
+            return baseHeight + extraHeight
         default:
             // 10,000+: grid layout
             return size * 3
@@ -356,8 +363,10 @@ public struct TallyMarkView: View {
     }
     
     private func drawThousandCap(in context: GraphicsContext, bounds: CGRect) {
-        let blockSize = bounds.width / 11
-        let spacing = blockSize * 0.2
+        // Use larger blocks - allow 10% total spacing
+        let totalSpacing = bounds.width * 0.1
+        let blockSize = (bounds.width - totalSpacing) / 10
+        let spacing = totalSpacing / 9
         let startY = bounds.height / 2 - blockSize / 2
         
         // Draw 10 squares
@@ -378,9 +387,15 @@ public struct TallyMarkView: View {
     }
     
     private func drawThousandStack(in context: GraphicsContext, bounds: CGRect, count: Int) {
-        let rows = min(count / 1000, 10)
-        let rowHeight = bounds.height / 11
+        let thousands = count / 1000
+        let remainder = count % 1000
+        let rows = min(thousands, 10)
         
+        // Allocate space: 70% for thousand-rows, 30% for remainder (if present)
+        let stackHeight = remainder > 0 ? bounds.height * 0.7 : bounds.height
+        let rowHeight = stackHeight / CGFloat(rows)
+        
+        // Draw thousand-rows
         for i in 0..<rows {
             let y = CGFloat(i) * rowHeight
             var rowContext = context
@@ -389,6 +404,33 @@ public struct TallyMarkView: View {
                 in: rowContext,
                 bounds: CGRect(origin: .zero, size: CGSize(width: bounds.width, height: rowHeight))
             )
+        }
+        
+        // Draw remainder below the thousand-rows
+        if remainder > 0 {
+            let remainderY = stackHeight + bounds.height * 0.05 // Small gap
+            let remainderHeight = bounds.height * 0.25
+            var remainderContext = context
+            remainderContext.translateBy(x: 0, y: remainderY)
+            
+            // Route remainder to appropriate renderer
+            let remainderBounds = CGRect(origin: .zero, size: CGSize(width: bounds.width, height: remainderHeight))
+            switch remainder {
+            case 1...4:
+                drawVerticalStrokes(in: remainderContext, bounds: remainderBounds, count: remainder)
+            case 5:
+                drawFiveGate(in: remainderContext, bounds: remainderBounds)
+            case 6...24:
+                drawXLayout(in: remainderContext, bounds: remainderBounds, count: remainder)
+            case 25:
+                drawTwentyFiveCap(in: remainderContext, bounds: remainderBounds)
+            case 26...99:
+                drawGridLayout(in: remainderContext, bounds: remainderBounds, count: remainder)
+            case 100...999:
+                drawHundredBlocksRow(in: remainderContext, bounds: remainderBounds, count: remainder)
+            default:
+                break
+            }
         }
     }
     

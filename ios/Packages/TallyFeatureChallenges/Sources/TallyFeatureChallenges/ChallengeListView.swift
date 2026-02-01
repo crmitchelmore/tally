@@ -61,6 +61,7 @@ public struct ChallengeListView: View {
                         ChallengeCardView(
                             challenge: challenge,
                             stats: manager.stats(for: challenge.id),
+                            entries: manager.entries(for: challenge.id),
                             onTap: { onSelectChallenge(challenge) },
                             onQuickAdd: { onQuickAdd(challenge) }
                         )
@@ -86,6 +87,7 @@ public struct ChallengeListView: View {
                         ChallengeCardView(
                             challenge: challenge,
                             stats: manager.stats(for: challenge.id),
+                            entries: manager.entries(for: challenge.id),
                             onTap: { onSelectChallenge(challenge) },
                             onQuickAdd: { onQuickAdd(challenge) }
                         )

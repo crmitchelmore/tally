@@ -1,7 +1,6 @@
 package com.tally.app.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,13 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -47,11 +44,10 @@ import com.tally.core.auth.AuthManager
 import com.tally.core.data.ChallengesManager
 import com.tally.core.data.SyncState
 import com.tally.core.design.SyncStatusIndicator
-import com.tally.core.design.TallyMark
 import com.tally.core.design.TallySpacing
 import com.tally.core.design.TallyTheme
 import com.tally.core.network.Challenge
-import com.tally.core.network.ChallengeStats
+import com.tally.core.network.Entry
 import com.tally.core.network.TallyApiClient
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -82,6 +78,7 @@ fun HomeScreen(authManager: AuthManager? = null) {
     // Collect state
     val challenges by challengesManager.challenges.collectAsStateWithLifecycle()
     val stats by challengesManager.stats.collectAsStateWithLifecycle()
+    val entries by challengesManager.entries.collectAsStateWithLifecycle()
     val isLoading by challengesManager.isLoading.collectAsStateWithLifecycle()
     val isRefreshing by challengesManager.isRefreshing.collectAsStateWithLifecycle()
     val syncState by challengesManager.syncState.collectAsStateWithLifecycle()
@@ -182,10 +179,17 @@ fun HomeScreen(authManager: AuthManager? = null) {
                     ) {
                         items(challenges) { challenge ->
                             val challengeStats = stats[challenge.id]
+                            val challengeEntries = entries[challenge.id] ?: emptyList()
                             ChallengeCard(
-                                challenge = challenge,
-                                stats = challengeStats,
-                                onClick = { selectedChallenge = challenge }
+                                challengeWithCount = ChallengeWithCount(
+                                    challenge = challenge,
+                                    totalCount = challengeStats?.totalCount ?: 0,
+                                    stats = challengeStats
+                                ),
+                                onClick = { selectedChallenge = challenge },
+                                onAddEntry = { selectedChallenge = challenge },
+                                entries = challengeEntries,
+                                showMiniHeatmap = true
                             )
                         }
                     }
@@ -237,55 +241,6 @@ fun HomeScreen(authManager: AuthManager? = null) {
             },
             onDismiss = { selectedChallenge = null }
         )
-    }
-}
-
-@Composable
-private fun ChallengeCard(
-    challenge: Challenge,
-    stats: ChallengeStats?,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag("challenge_card_${challenge.id}")
-            .clickable(onClick = onClick)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(TallySpacing.lg),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(TallySpacing.xs)
-            ) {
-                Text(
-                    text = "${challenge.icon} ${challenge.name}",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.testTag("challenge_name_${challenge.id}")
-                )
-                
-                stats?.let {
-                    Text(
-                        text = "${it.totalCount} / ${challenge.target} ${challenge.resolvedUnitLabel}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.testTag("challenge_progress_${challenge.id}")
-                    )
-                }
-            }
-            
-            // Tally visualization of today's progress
-            TallyMark(
-                count = stats?.totalCount?.rem(100) ?: 0,
-                modifier = Modifier.size(48.dp),
-                animated = false
-            )
-        }
     }
 }
 

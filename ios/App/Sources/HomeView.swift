@@ -30,6 +30,14 @@ struct HomeView: View {
                     onWeeklySummary: {
                         showWeeklySummary = true
                     },
+                    onSelectChallenge: { challenge in
+                        selectedChallenge = challenge
+                    },
+                    onQuickAdd: { challenge in
+                        Task {
+                            await prepareAndShowAddEntry(for: challenge)
+                        }
+                    },
                     followedChallenges: followedChallenges,
                     onUnfollow: { id in
                         await handleUnfollow(id)

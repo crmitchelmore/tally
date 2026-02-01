@@ -7,6 +7,8 @@ public struct DashboardView: View {
     @Bindable var manager: ChallengesManager
     let onConfigure: () -> Void
     let onWeeklySummary: () -> Void
+    let onSelectChallenge: (Challenge) -> Void
+    let onQuickAdd: (Challenge) -> Void
     let followedChallenges: [PublicChallenge]
     let onUnfollow: (String) async -> Void
     @State private var selectedChallengeFilter: String? = nil
@@ -15,12 +17,16 @@ public struct DashboardView: View {
         manager: ChallengesManager,
         onConfigure: @escaping () -> Void,
         onWeeklySummary: @escaping () -> Void,
+        onSelectChallenge: @escaping (Challenge) -> Void,
+        onQuickAdd: @escaping (Challenge) -> Void,
         followedChallenges: [PublicChallenge],
         onUnfollow: @escaping (String) async -> Void
     ) {
         self.manager = manager
         self.onConfigure = onConfigure
         self.onWeeklySummary = onWeeklySummary
+        self.onSelectChallenge = onSelectChallenge
+        self.onQuickAdd = onQuickAdd
         self.followedChallenges = followedChallenges
         self.onUnfollow = onUnfollow
     }
@@ -110,7 +116,8 @@ public struct DashboardView: View {
                                 challenge: challenge,
                                 stats: stats,
                                 entries: manager.entries(for: challenge.id),
-                                onQuickAdd: {}
+                                onTap: { onSelectChallenge(challenge) },
+                                onQuickAdd: { onQuickAdd(challenge) }
                             )
                             .tallyPadding(.horizontal)
                         }
@@ -154,13 +161,15 @@ public struct DashboardView: View {
 
 #Preview {
     NavigationStack {
-        DashboardView(
-            manager: ChallengesManager(),
-            onConfigure: {},
-            onWeeklySummary: {},
-            followedChallenges: [],
-            onUnfollow: { _ in }
-        )
+            DashboardView(
+                manager: ChallengesManager(),
+                onConfigure: {},
+                onWeeklySummary: {},
+                onSelectChallenge: { _ in },
+                onQuickAdd: { _ in },
+                followedChallenges: [],
+                onUnfollow: { _ in }
+            )
             .navigationTitle("Dashboard")
     }
 }

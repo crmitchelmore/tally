@@ -72,7 +72,7 @@ public struct DashboardConfigSheet: View {
                 }
             }
         }
-        .onDrop(of: [UTType.text]) { _ in
+        .onDrop(of: [UTType.text], isTargeted: nil) { _ in
             guard let draggingPanel else { return false }
             moveToVisible(draggingPanel)
             self.draggingPanel = nil
@@ -113,7 +113,7 @@ public struct DashboardConfigSheet: View {
                 }
             }
         }
-        .onDrop(of: [UTType.text]) { _ in
+        .onDrop(of: [UTType.text], isTargeted: nil) { _ in
             guard let draggingPanel else { return false }
             moveToHidden(draggingPanel)
             self.draggingPanel = nil

@@ -29,40 +29,12 @@ public struct DashboardView: View {
         LazyVStack(spacing: TallySpacing.lg) {
             welcomeSection
             
-            // Dashboard highlights
-            if manager.dashboardConfig.panels.highlights, let stats = manager.dashboardStats {
-                DashboardHighlightsView(stats: stats)
-            }
-            
-            // Personal records
-            if manager.dashboardConfig.panels.personalRecords, let records = manager.personalRecords {
-                PersonalRecordsView(records: records)
-            }
-            
-            // Progress chart with challenge filter
-            if manager.dashboardConfig.panels.progressGraph {
-                ProgressChartView(
-                    entries: manager.allEntries,
-                    challenges: manager.challenges,
-                    selectedChallengeId: selectedChallengeFilter
-                )
-                .tallyPadding(.horizontal)
-            }
-            
-            if manager.dashboardConfig.panels.burnUpChart {
-                BurnUpDashboardSection(
-                    challenges: manager.challenges,
-                    stats: manager.stats,
-                    entries: manager.allEntries
-                )
-            }
+            dashboardPanels
             
             FollowedChallengesSection(
                 challenges: followedChallenges,
                 onUnfollow: onUnfollow
             )
-            
-            CommunityPreviewSection()
         }
         .tallyPadding(.vertical)
         .refreshable {
@@ -76,6 +48,42 @@ public struct DashboardView: View {
                     Image(systemName: "slider.horizontal.3")
                 }
                 .accessibilityLabel("Configure dashboard")
+            }
+        }
+    }
+
+    private var dashboardPanels: some View {
+        Group {
+            ForEach(manager.dashboardConfig.order) { panel in
+                switch panel {
+                case .highlights:
+                    if manager.dashboardConfig.panels.highlights,
+                       let stats = manager.dashboardStats {
+                        DashboardHighlightsView(stats: stats)
+                    }
+                case .personalRecords:
+                    if manager.dashboardConfig.panels.personalRecords,
+                       let records = manager.personalRecords {
+                        PersonalRecordsView(records: records)
+                    }
+                case .progressGraph:
+                    if manager.dashboardConfig.panels.progressGraph {
+                        ProgressChartView(
+                            entries: manager.allEntries,
+                            challenges: manager.challenges,
+                            selectedChallengeId: selectedChallengeFilter
+                        )
+                        .tallyPadding(.horizontal)
+                    }
+                case .burnUpChart:
+                    if manager.dashboardConfig.panels.burnUpChart {
+                        BurnUpDashboardSection(
+                            challenges: manager.challenges,
+                            stats: manager.stats,
+                            entries: manager.allEntries
+                        )
+                    }
+                }
             }
         }
     }

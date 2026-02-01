@@ -98,6 +98,11 @@ public struct AddEntrySheet: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") { onDismiss() }
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Add") { submit() }
+                        .disabled(isFutureDate || displayCount <= 0)
+                        .accessibilityIdentifier("addEntryNavButton")
+                }
             }
             .onAppear {
                 initializeDefaults()

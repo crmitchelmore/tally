@@ -64,6 +64,10 @@ public actor APIClient {
     // MARK: - Request Execution
     
     private func execute<T: Decodable>(_ request: URLRequest) async throws -> T {
+        try await execute(request, allowRefresh: true)
+    }
+    
+    private func execute<T: Decodable>(_ request: URLRequest, allowRefresh: Bool) async throws -> T {
         let data: Data
         let response: URLResponse
         
@@ -79,6 +83,11 @@ public actor APIClient {
         
         // Handle error responses
         if httpResponse.statusCode >= 400 {
+            if httpResponse.statusCode == 401, allowRefresh, let refreshedToken = await tokenRefresher?.refreshToken() {
+                var retried = request
+                retried.setValue("Bearer \(refreshedToken)", forHTTPHeaderField: "Authorization")
+                return try await execute(retried, allowRefresh: false)
+            }
             try handleErrorResponse(data: data, statusCode: httpResponse.statusCode)
         }
         

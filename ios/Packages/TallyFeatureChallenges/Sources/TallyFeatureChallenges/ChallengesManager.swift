@@ -36,107 +36,20 @@ public final class ChallengesManager {
     /// Bumps whenever entries change to refresh dependent views
     public private(set) var entriesVersion: Int = 0
     
+    /// Server-provided dashboard stats (preferred over local aggregates)
+    public private(set) var serverDashboardStats: DashboardStats?
+    
+    /// Server-provided personal records (preferred over local aggregates)
+    public private(set) var serverPersonalRecords: PersonalRecords?
+    
     /// Dashboard stats computed from all challenges
     public var dashboardStats: DashboardStats? {
-        guard !challenges.isEmpty else { return nil }
-        
-        let entries = allEntries
-        let allStats = stats.values
-        let totalMarks = entries.reduce(0) { $0 + $1.count }
-        let todayDate = Self.fullDateFormatter.string(from: Date())
-        let today = entries.filter { $0.date == todayDate }.reduce(0) { $0 + $1.count }
-        let bestStreak = allStats.map { $0.streakBest }.max() ?? 0
-        
-        let overallPaceStatus: PaceStatus = {
-            guard !allStats.isEmpty else { return .none }
-            let paceScores = allStats.map { stat -> Double in
-                switch stat.paceStatus {
-                case .ahead: return 1
-                case .behind: return -1
-                case .onPace: return 0
-                case .none: return 0
-                }
-            }
-            let avgPace = paceScores.reduce(0, +) / Double(paceScores.count)
-            if avgPace > 0.3 { return .ahead }
-            if avgPace < -0.3 { return .behind }
-            return .onPace
-        }()
-        
-        let setsStats = EntryDefaults.calculateSetsStats(entries: entries)
-        let bestSet: DashboardStats.BestSet? = {
-            guard let best = setsStats.bestSet else { return nil }
-            let entry = entries.first { $0.id == best.entryId }
-            guard let challengeId = entry?.challengeId else { return nil }
-            return DashboardStats.BestSet(value: best.value, date: best.date, challengeId: challengeId)
-        }()
-        
-        return DashboardStats(
-            totalMarks: totalMarks,
-            today: today,
-            bestStreak: bestStreak,
-            overallPaceStatus: overallPaceStatus,
-            bestSet: bestSet,
-            avgSetValue: setsStats.avgSetValue
-        )
+        serverDashboardStats
     }
     
     /// Personal records computed from all challenges
     public var personalRecords: PersonalRecords? {
-        guard !challenges.isEmpty else { return nil }
-        let entries = allEntries
-        let allStats = stats.values
-        
-        var dayTotals: [String: Int] = [:]
-        for entry in entries {
-            dayTotals[entry.date, default: 0] += entry.count
-        }
-        
-        var bestSingleDay: PersonalRecords.BestDay? = nil
-        for (date, count) in dayTotals {
-            if bestSingleDay == nil || count > (bestSingleDay?.count ?? 0) {
-                bestSingleDay = PersonalRecords.BestDay(date: date, count: count)
-            }
-        }
-        
-        let longestStreak = allStats.map { $0.streakBest }.max() ?? 0
-        let mostActiveDays = dayTotals.count
-        
-        var highestDailyAverage: PersonalRecords.HighestAverage? = nil
-        for stat in allStats {
-            if highestDailyAverage == nil || stat.dailyAverage > (highestDailyAverage?.average ?? 0) {
-                highestDailyAverage = PersonalRecords.HighestAverage(challengeId: stat.challengeId, average: stat.dailyAverage)
-            }
-        }
-        
-        var biggestSingleEntry: PersonalRecords.BiggestEntry? = nil
-        for entry in entries {
-            if biggestSingleEntry == nil || entry.count > (biggestSingleEntry?.count ?? 0) {
-                biggestSingleEntry = PersonalRecords.BiggestEntry(
-                    date: entry.date,
-                    count: entry.count,
-                    challengeId: entry.challengeId
-                )
-            }
-        }
-        
-        let setsStats = EntryDefaults.calculateSetsStats(entries: entries)
-        let bestSet: PersonalRecords.BestSet? = {
-            guard let best = setsStats.bestSet else { return nil }
-            let entry = entries.first { $0.id == best.entryId }
-            guard let challengeId = entry?.challengeId else { return nil }
-            return PersonalRecords.BestSet(value: best.value, date: best.date, challengeId: challengeId)
-        }()
-        
-        return PersonalRecords(
-            bestSingleDay: bestSingleDay,
-            longestStreak: longestStreak,
-            highestDailyAverage: highestDailyAverage,
-            mostActiveDays: mostActiveDays,
-            biggestSingleEntry: biggestSingleEntry,
-            bestSet: bestSet,
-            avgSetValue: setsStats.avgSetValue
-        )
+        serverPersonalRecords
     }
     
     /// All entries across all challenges
@@ -193,6 +106,9 @@ public final class ChallengesManager {
         Task {
             await refreshDashboardConfig()
         }
+        Task {
+            await refreshDashboardSummary()
+        }
     }
     
     // MARK: - Public API
@@ -215,10 +131,15 @@ public final class ChallengesManager {
         errorMessage = nil
         
         do {
-            let serverData = try await apiClient.listChallenges(includeArchived: true)
+            async let serverChallenges = apiClient.listChallenges(includeArchived: true)
+            async let serverSummary = apiClient.getDashboardSummary()
+            let serverData = try await serverChallenges
             localStore.mergeWithServer(serverData)
             challenges = localStore.loadChallenges()
             stats = localStore.loadStats()
+            let summary = try await serverSummary
+            serverDashboardStats = summary.dashboard
+            serverPersonalRecords = summary.records
             isOnline = true
             print("[ChallengesManager] refresh() success, challenges: \(challenges.count)")
             Task {
@@ -239,8 +160,11 @@ public final class ChallengesManager {
             // Reload from local storage on error
             challenges = localStore.loadChallenges()
             stats = localStore.loadStats()
+            serverDashboardStats = nil
+            serverPersonalRecords = nil
             print("[ChallengesManager] refresh() loaded from local: \(challenges.count) challenges")
             Task {
+                await refreshDashboardSummary()
                 await refreshDashboardConfig()
             }
         } catch {
@@ -250,8 +174,11 @@ public final class ChallengesManager {
             // Reload from local storage on error
             challenges = localStore.loadChallenges()
             stats = localStore.loadStats()
+            serverDashboardStats = nil
+            serverPersonalRecords = nil
             print("[ChallengesManager] refresh() loaded from local: \(challenges.count) challenges")
             Task {
+                await refreshDashboardSummary()
                 await refreshDashboardConfig()
             }
         }
@@ -259,6 +186,18 @@ public final class ChallengesManager {
         isLoading = false
         isRefreshing = false
         updateSyncState()
+    }
+
+    /// Refresh dashboard stats + personal records summary
+    public func refreshDashboardSummary() async {
+        do {
+            let summary = try await apiClient.getDashboardSummary()
+            serverDashboardStats = summary.dashboard
+            serverPersonalRecords = summary.records
+        } catch {
+            serverDashboardStats = nil
+            serverPersonalRecords = nil
+        }
     }
     
     /// Create a new challenge (optimistic, queues for sync)
@@ -742,7 +681,8 @@ public final class ChallengesManager {
                     progressGraph: server.dashboardConfig.panels.progressGraph,
                     burnUpChart: server.dashboardConfig.panels.burnUpChart,
                     setsStats: server.dashboardConfig.panels.setsStats
-                )
+                ),
+                order: server.dashboardConfig.order
             )
             dashboardConfig = merged
             saveDashboardConfig(merged)

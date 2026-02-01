@@ -247,7 +247,7 @@ public struct ChallengeDetailView: View {
     // MARK: - Header Section
     
     private var headerSection: some View {
-        VStack(spacing: TallySpacing.md) {
+        VStack(spacing: TallySpacing.sm) {
             // Icon and timeframe
             HStack {
                 Image(systemName: IconMapper.sfSymbol(for: challenge.icon))
@@ -282,12 +282,12 @@ public struct ChallengeDetailView: View {
     // MARK: - Progress Section
     
     private var progressSection: some View {
-        VStack(spacing: TallySpacing.lg) {
+        VStack(spacing: TallySpacing.md) {
             // Main tally visualization
             TallyMarkView(
                 count: stats?.totalCount ?? 0,
                 animated: !reduceMotion,
-                size: 120
+                size: 140
             )
             .accessibilityIdentifier("progress-ring")
             

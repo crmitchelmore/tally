@@ -127,6 +127,7 @@ export interface DashboardConfig {
     burnUpChart: boolean;
     setsStats: boolean;
   };
+  order?: ("highlights" | "personalRecords" | "progressGraph" | "burnUpChart")[];
 }
 
 // Stats types

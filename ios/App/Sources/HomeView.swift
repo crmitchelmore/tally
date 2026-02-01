@@ -179,6 +179,7 @@ struct HomeView: View {
         }
         .task {
             await loadFollowedChallenges()
+            await challengesManager.refresh()
         }
     }
     

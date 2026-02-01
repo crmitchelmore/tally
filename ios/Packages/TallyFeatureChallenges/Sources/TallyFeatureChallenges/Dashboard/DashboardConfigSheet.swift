@@ -34,6 +34,44 @@ public struct DashboardConfigSheet: View {
                 .background(Color.tallyPaperTint)
                 .cornerRadius(12)
                 
+                VStack(alignment: .leading, spacing: TallySpacing.sm) {
+                    Text("Panel order")
+                        .font(.tallyTitleSmall)
+                        .foregroundColor(Color.tallyInk)
+                    
+                    ForEach(localConfig.order) { panel in
+                        HStack {
+                            Text(panel.title)
+                                .font(.tallyLabelMedium)
+                                .foregroundColor(Color.tallyInk)
+                            Spacer()
+                            Button {
+                                move(panel: panel, direction: -1)
+                            } label: {
+                                Image(systemName: "chevron.up")
+                                    .font(.system(size: 12, weight: .semibold))
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundColor(canMove(panel: panel, direction: -1) ? Color.tallyInkSecondary : Color.tallyInkTertiary)
+                            .disabled(!canMove(panel: panel, direction: -1))
+                            
+                            Button {
+                                move(panel: panel, direction: 1)
+                            } label: {
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 12, weight: .semibold))
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundColor(canMove(panel: panel, direction: 1) ? Color.tallyInkSecondary : Color.tallyInkTertiary)
+                            .disabled(!canMove(panel: panel, direction: 1))
+                        }
+                        .padding(.vertical, TallySpacing.xs)
+                    }
+                }
+                .tallyPadding()
+                .background(Color.tallyPaperTint)
+                .cornerRadius(12)
+                
                 Spacer()
             }
             .tallyPadding()
@@ -59,6 +97,19 @@ public struct DashboardConfigSheet: View {
                 localConfig.panels[keyPath: keyPath] = newValue
             }
         )
+    }
+    
+    private func canMove(panel: DashboardPanel, direction: Int) -> Bool {
+        guard let index = localConfig.order.firstIndex(of: panel) else { return false }
+        let newIndex = index + direction
+        return newIndex >= 0 && newIndex < localConfig.order.count
+    }
+    
+    private func move(panel: DashboardPanel, direction: Int) {
+        guard let index = localConfig.order.firstIndex(of: panel) else { return }
+        let newIndex = index + direction
+        guard newIndex >= 0 && newIndex < localConfig.order.count else { return }
+        localConfig.order.swapAt(index, newIndex)
     }
 }
 

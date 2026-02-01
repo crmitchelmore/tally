@@ -94,7 +94,7 @@ public struct ChallengeCardView: View {
                 }
                 
                 // Mini tally preview
-                TallyMarkView(count: stats?.totalCount ?? 0, size: 28)
+                TallyMarkView(count: stats?.totalCount ?? 0, size: 36)
                     .opacity(0.7)
                 }
                 .tallyPadding()
@@ -121,6 +121,7 @@ public struct ChallengeCardView: View {
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint("Double tap to view details")
         .accessibilityAddTraits(.isButton)
+        .frame(maxWidth: .infinity)
     }
     
     /// Map web icon names to SF Symbols

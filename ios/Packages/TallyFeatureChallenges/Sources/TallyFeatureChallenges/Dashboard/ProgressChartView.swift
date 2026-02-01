@@ -19,6 +19,7 @@ public struct ProgressChartView: View {
         self.entries = entries
         self.challenges = challenges
         self.selectedChallengeId = selectedChallengeId
+        self._selectedChallenge = State(initialValue: selectedChallengeId)
     }
     
     private var filteredEntries: [Entry] {
@@ -99,26 +100,40 @@ public struct ProgressChartView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 200)
             } else {
-                Chart(chartData) { point in
-                    LineMark(
-                        x: .value("Date", point.date),
-                        y: .value("Count", point.value)
-                    )
-                    .foregroundStyle(Color.tallyAccent)
-                    .interpolationMethod(.catmullRom)
+                Chart {
+                    if let targetDaily = targetDailyValue {
+                        RuleMark(y: .value("Target", targetDaily))
+                            .foregroundStyle(Color.tallyInkTertiary)
+                            .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                    }
                     
-                    AreaMark(
-                        x: .value("Date", point.date),
-                        y: .value("Count", point.value)
-                    )
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color.tallyAccent.opacity(0.3), Color.tallyAccent.opacity(0.05)],
-                            startPoint: .top,
-                            endPoint: .bottom
+                    if let projectedDate = projectedFinishDate {
+                        RuleMark(x: .value("Projected", projectedDate))
+                            .foregroundStyle(Color.tallyAccent.opacity(0.4))
+                            .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                    }
+                    
+                    ForEach(chartData) { point in
+                        LineMark(
+                            x: .value("Date", point.date),
+                            y: .value("Count", point.value)
                         )
-                    )
-                    .interpolationMethod(.catmullRom)
+                        .foregroundStyle(Color.tallyAccent)
+                        .interpolationMethod(.catmullRom)
+                        
+                        AreaMark(
+                            x: .value("Date", point.date),
+                            y: .value("Count", point.value)
+                        )
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color.tallyAccent.opacity(0.3), Color.tallyAccent.opacity(0.05)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .interpolationMethod(.catmullRom)
+                    }
                 }
                 .frame(height: 200)
                 .chartXAxis {
@@ -135,6 +150,16 @@ public struct ProgressChartView: View {
                     AxisMarks(position: .leading)
                 }
             }
+            
+            if let projectedDate = projectedFinishDate {
+                HStack(spacing: TallySpacing.xs) {
+                    Image(systemName: "flag.checkered")
+                        .foregroundColor(Color.tallyInkSecondary)
+                    Text("Projected finish: \(formatDate(projectedDate))")
+                        .font(.tallyLabelSmall)
+                        .foregroundColor(Color.tallyInkSecondary)
+                }
+            }
         }
         .padding(TallySpacing.md)
         .background(Color.tallyPaperTint)
@@ -148,6 +173,56 @@ public struct ProgressChartView: View {
         }
         return "All"
     }
+    
+    private var projectedFinishDate: Date? {
+        guard let challenge = selectedChallengeModel else {
+            return nil
+        }
+        let total = totalCountForSelected ?? 0
+        if total <= 0 || total >= challenge.target { return nil }
+        guard let startDate = dateFromISO(challenge.startDate) else { return nil }
+        let today = Calendar.current.startOfDay(for: Date())
+        let daysElapsed = max(1, Calendar.current.dateComponents([.day], from: startDate, to: today).day ?? 0)
+        let pace = Double(total) / Double(daysElapsed)
+        guard pace > 0 else { return nil }
+        let remainingDays = Int(ceil(Double(challenge.target - total) / pace))
+        return Calendar.current.date(byAdding: .day, value: remainingDays, to: today)
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: date)
+    }
+    
+    private var selectedChallengeModel: Challenge? {
+        guard let id = selectedChallenge else { return nil }
+        return challenges.first(where: { $0.id == id })
+    }
+    
+    private var totalCountForSelected: Int? {
+        guard let id = selectedChallenge else { return nil }
+        return entries.filter { $0.challengeId == id }.reduce(0) { $0 + $1.count }
+    }
+    
+    private var targetDailyValue: Double? {
+        guard let challenge = selectedChallengeModel,
+              let endDate = dateFromISO(challenge.endDate) else {
+            return nil
+        }
+        let today = Calendar.current.startOfDay(for: Date())
+        let remaining = max(0, challenge.target - (totalCountForSelected ?? 0))
+        let daysRemaining = Calendar.current.dateComponents([.day], from: today, to: endDate).day ?? 0
+        guard remaining > 0, daysRemaining > 0 else { return nil }
+        return Double(remaining) / Double(daysRemaining)
+    }
+    
+    private func dateFromISO(_ value: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        return formatter.date(from: value)
+    }
+
 }
 
 // MARK: - Data Model

@@ -64,13 +64,14 @@ public struct ChallengeListView: View {
                             onTap: { onSelectChallenge(challenge) },
                             onQuickAdd: { onQuickAdd(challenge) }
                         )
+                        .frame(maxWidth: .infinity)
                         .accessibilityIdentifier("challenge-card")
                         .contextMenu {
                             Button("Delete", role: .destructive) {
                                 onDeleteChallenge(challenge)
                             }
-                        }
-                    }
+                }
+            }
                 } header: {
                     SectionHeader(title: "Active", count: manager.activeChallenges.count)
                 }
@@ -82,17 +83,18 @@ public struct ChallengeListView: View {
                 Section {
                     DisclosureGroup(isExpanded: $showArchived) {
                         ForEach(manager.archivedChallenges) { challenge in
-                            ChallengeCardView(
-                                challenge: challenge,
-                                stats: manager.stats(for: challenge.id),
-                                onTap: { onSelectChallenge(challenge) },
-                                onQuickAdd: { onQuickAdd(challenge) }
-                            )
-                            .opacity(0.7)
-                            .accessibilityIdentifier("challenge-card")
-                            .contextMenu {
-                                Button("Delete", role: .destructive) {
-                                    onDeleteChallenge(challenge)
+                        ChallengeCardView(
+                            challenge: challenge,
+                            stats: manager.stats(for: challenge.id),
+                            onTap: { onSelectChallenge(challenge) },
+                            onQuickAdd: { onQuickAdd(challenge) }
+                        )
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.7)
+                        .accessibilityIdentifier("challenge-card")
+                        .contextMenu {
+                            Button("Delete", role: .destructive) {
+                                onDeleteChallenge(challenge)
                                 }
                             }
                         }

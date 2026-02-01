@@ -45,7 +45,7 @@ public struct DashboardHighlightsView: View {
                     value: paceStatusText
                 )
             }
-            
+            .fixedSize(horizontal: false, vertical: true)
         }
         .tallyPadding(.horizontal)
     }
@@ -53,7 +53,7 @@ public struct DashboardHighlightsView: View {
     private var paceStatusText: String {
         switch stats.overallPaceStatus {
         case .ahead: return "Ahead"
-        case .onPace: return "On Pace"
+        case .onPace: return "On pace"
         case .behind: return "Behind"
         case .none: return "—"
         }
@@ -93,6 +93,7 @@ struct HighlightCard: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, minHeight: 84, alignment: .leading)
         .padding(TallySpacing.md)
         .background(Color.tallyPaperTint)
         .cornerRadius(12)

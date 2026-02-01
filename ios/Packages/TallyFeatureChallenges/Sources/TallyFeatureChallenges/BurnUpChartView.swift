@@ -22,7 +22,13 @@ public struct BurnUpChartView: View {
         
         guard let startDate = formatter.date(from: challenge.startDate),
               let endDate = formatter.date(from: challenge.endDate) else {
-            return ChartData(actual: [], target: [], projected: [])
+            return ChartData(
+                actual: [],
+                target: [],
+                projected: [],
+                targetValue: challenge.target,
+                projectedTargetDate: nil
+            )
         }
         
         let calendar = Calendar.current
@@ -74,7 +80,18 @@ public struct BurnUpChartView: View {
             ]
         }
         
-        return ChartData(actual: actualPoints, target: targetPoints, projected: projectedPoints)
+        return ChartData(
+            actual: actualPoints,
+            target: targetPoints,
+            projected: projectedPoints,
+            targetValue: challenge.target,
+            projectedTargetDate: projectedTargetDate(
+                totalCount: stats.totalCount,
+                target: challenge.target,
+                pace: stats.currentPace,
+                end: endDate
+            )
+        )
     }
     
     private var challengeColor: Color {
@@ -90,6 +107,18 @@ public struct BurnUpChartView: View {
             
             // Chart
             Chart {
+                // Target horizontal line
+                RuleMark(y: .value("Target", chartData.targetValue))
+                    .foregroundStyle(challengeColor.opacity(0.35))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                
+                // Projected completion date marker
+                if let projectedDate = chartData.projectedTargetDate {
+                    RuleMark(x: .value("Projected", projectedDate))
+                        .foregroundStyle(challengeColor.opacity(0.5))
+                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                }
+                
                 // Target line (dashed, light)
                 ForEach(chartData.target, id: \.date) { point in
                     LineMark(
@@ -181,10 +210,38 @@ public struct BurnUpChartView: View {
                 }
                 .padding(.top, TallySpacing.xs)
             }
+            
+            if let projectedDate = chartData.projectedTargetDate {
+                HStack(spacing: TallySpacing.xs) {
+                    Image(systemName: "flag.checkered")
+                        .foregroundColor(Color.tallyInkSecondary)
+                    Text("Projected finish: \(formatDate(projectedDate))")
+                        .font(.tallyLabelSmall)
+                        .foregroundColor(Color.tallyInkSecondary)
+                }
+            }
         }
         .tallyPadding()
         .background(Color.tallyPaperTint)
         .cornerRadius(12)
+    }
+    
+    private func projectedTargetDate(
+        totalCount: Int,
+        target: Int,
+        pace: Double,
+        end: Date
+    ) -> Date? {
+        guard pace > 0, totalCount < target else { return nil }
+        let today = Calendar.current.startOfDay(for: Date())
+        let remainingDays = Int(ceil(Double(target - totalCount) / pace))
+        return Calendar.current.date(byAdding: .day, value: remainingDays, to: today)
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: date)
     }
 }
 
@@ -194,6 +251,8 @@ private struct ChartData {
     let actual: [ChartPoint]
     let target: [ChartPoint]
     let projected: [ChartPoint]
+    let targetValue: Int
+    let projectedTargetDate: Date?
 }
 
 private struct ChartPoint: Identifiable {

@@ -16,7 +16,27 @@
  */
 
 // Only import in development to avoid bundling in production
-let createDebugBridge: typeof import('debug-bridge-browser').createDebugBridge;
+type CreateDebugBridge = (options: {
+  url: string;
+  sessionId: string;
+  appName: string;
+  appVersion: string;
+  enableNetwork: boolean;
+  enableNavigation: boolean;
+  enableConsole: boolean;
+  enableErrors: boolean;
+  enableDomSnapshot: boolean;
+  enableDomMutations: boolean;
+  enableUiTree: boolean;
+  networkUrlFilter: (url: string) => boolean;
+  maxNetworkBodySize: number;
+  getCustomState: () => Record<string, unknown>;
+  getStableId: (el: Element) => string | null;
+  onConnect: () => void;
+  onDisconnect: () => void;
+  onError: (err: Error) => void;
+}) => { connect: () => void };
+let createDebugBridge: CreateDebugBridge | undefined;
 
 /**
  * Initialize debug bridge if running in development with session params.
@@ -44,8 +64,11 @@ export async function initDebugBridge(): Promise<void> {
 
   try {
     // Dynamic import to avoid bundling in production
-    const mod = await import('debug-bridge-browser');
+    const mod = await eval('import("debug-bridge-browser")') as { createDebugBridge?: CreateDebugBridge };
     createDebugBridge = mod.createDebugBridge;
+    if (!createDebugBridge) {
+      return;
+    }
 
     const bridge = createDebugBridge({
       url: `ws://localhost:${port}/debug?role=app&sessionId=${session}`,

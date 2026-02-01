@@ -297,9 +297,36 @@ public struct PersonalRecords: Codable, Sendable, Equatable {
     }
 }
 
+/// Dashboard panel identifiers
+public enum DashboardPanel: String, Codable, CaseIterable, Identifiable, Sendable {
+    case highlights
+    case personalRecords
+    case progressGraph
+    case burnUpChart
+    
+    public var id: String { rawValue }
+    
+    public var title: String {
+        switch self {
+        case .highlights: return "Highlights"
+        case .personalRecords: return "Personal Records"
+        case .progressGraph: return "Progress Graph"
+        case .burnUpChart: return "Goal Progress"
+        }
+    }
+    
+    public static let defaultOrder: [DashboardPanel] = [
+        .highlights,
+        .personalRecords,
+        .progressGraph,
+        .burnUpChart
+    ]
+}
+
 /// Dashboard panel configuration
 public struct DashboardConfig: Codable, Sendable, Equatable {
     public var panels: Panels
+    public var order: [DashboardPanel]
     
     public struct Panels: Codable, Sendable, Equatable {
         public var highlights: Bool
@@ -323,11 +350,30 @@ public struct DashboardConfig: Codable, Sendable, Equatable {
         }
     }
     
-    public init(panels: Panels = Panels()) {
+    public init(panels: Panels = Panels(), order: [DashboardPanel] = DashboardPanel.defaultOrder) {
         self.panels = panels
+        self.order = DashboardConfig.normalizedOrder(order)
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let panels = try container.decodeIfPresent(Panels.self, forKey: .panels) ?? Panels()
+        let order = try container.decodeIfPresent([DashboardPanel].self, forKey: .order)
+        self.init(panels: panels, order: order ?? DashboardPanel.defaultOrder)
     }
     
     public static let `default` = DashboardConfig()
+    
+    public static func normalizedOrder(_ order: [DashboardPanel]) -> [DashboardPanel] {
+        var deduped: [DashboardPanel] = []
+        for panel in order where !deduped.contains(panel) {
+            deduped.append(panel)
+        }
+        for panel in DashboardPanel.defaultOrder where !deduped.contains(panel) {
+            deduped.append(panel)
+        }
+        return deduped
+    }
 }
 
 /// Weekly summary

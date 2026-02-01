@@ -28,6 +28,14 @@ export default defineSchema({
         burnUpChart: v.boolean(),
         setsStats: v.boolean(),
       }),
+      order: v.optional(v.array(
+        v.union(
+          v.literal("highlights"),
+          v.literal("personalRecords"),
+          v.literal("progressGraph"),
+          v.literal("burnUpChart")
+        )
+      )),
     })),
     // Soft delete fields
     deletedAt: v.optional(v.number()),

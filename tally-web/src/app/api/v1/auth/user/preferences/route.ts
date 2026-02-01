@@ -76,6 +76,7 @@ function getDefaultDashboardConfig(): DashboardConfig {
       burnUpChart: true,
       setsStats: true,
     },
+    order: ["highlights", "personalRecords", "progressGraph", "burnUpChart"],
   };
 }
 
@@ -84,11 +85,16 @@ function isValidDashboardConfig(config: unknown): config is DashboardConfig {
   const c = config as Record<string, unknown>;
   if (!c.panels || typeof c.panels !== "object") return false;
   const panels = c.panels as Record<string, unknown>;
-  return (
+  const panelsValid = (
     typeof panels.highlights === "boolean" &&
     typeof panels.personalRecords === "boolean" &&
     typeof panels.progressGraph === "boolean" &&
     typeof panels.burnUpChart === "boolean" &&
     typeof panels.setsStats === "boolean"
   );
+  if (!panelsValid) return false;
+  if (c.order === undefined) return true;
+  if (!Array.isArray(c.order)) return false;
+  const allowed = new Set(["highlights", "personalRecords", "progressGraph", "burnUpChart"]);
+  return c.order.every((item) => typeof item === "string" && allowed.has(item));
 }

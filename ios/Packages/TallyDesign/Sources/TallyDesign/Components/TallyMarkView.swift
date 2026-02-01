@@ -101,7 +101,7 @@ public struct TallyMarkView: View {
             return size * 2
         case 1000...9999:
             // Stack of rows needs more vertical space
-            return size * 3
+            return size * 2.5
         default:
             // 10,000+: grid layout
             return size * 3

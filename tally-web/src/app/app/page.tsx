@@ -36,6 +36,17 @@ export default function AppPage() {
   const [showConfigMenu, setShowConfigMenu] = useState(false);
   const configLoadedFromApi = useRef(false);
 
+  const basePanelOrder = ["highlights", "personalRecords", "progressGraph", "burnUpChart"] as const;
+  type PanelKey = typeof basePanelOrder[number];
+  const panelOrder: PanelKey[] = panelConfig.order?.length
+    ? panelConfig.order
+    : [...basePanelOrder];
+  const normalizedPanelOrder: PanelKey[] = (() => {
+    const order = panelConfig.order?.length ? panelConfig.order : basePanelOrder;
+    const seen = new Set<PanelKey>(order);
+    return [...order, ...basePanelOrder.filter((panel) => !seen.has(panel))];
+  })();
+
   // Load config from API (primary) with localStorage fallback
   useEffect(() => {
     const stored = sessionStorage.getItem("deletedChallenge");
@@ -110,6 +121,26 @@ export default function AppPage() {
       return newConfig;
     });
   }, []);
+
+  const movePanel = useCallback((panel: PanelKey, direction: -1 | 1) => {
+    setPanelConfig(prev => {
+      const order = prev.order?.length ? [...prev.order] : [...normalizedPanelOrder];
+      const index = order.indexOf(panel);
+      if (index < 0) return prev;
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= order.length) return prev;
+      order.splice(index, 1);
+      order.splice(newIndex, 0, panel);
+      const newConfig = { ...prev, order };
+      localStorage.setItem("dashboardConfig", JSON.stringify(newConfig));
+      fetch("/api/v1/auth/user/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dashboardConfig: newConfig }),
+      }).catch(() => {});
+      return newConfig;
+    });
+  }, [normalizedPanelOrder]);
 
   // Data fetching with SWR - shows cached data immediately
   const isReady = isLoaded && isSignedIn;
@@ -238,28 +269,56 @@ export default function AppPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </button>
-              {showConfigMenu && (
-                <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-xl shadow-lg z-50 p-2">
-                  <p className="px-3 py-2 text-xs font-medium text-muted uppercase">Show panels</p>
-                  {[
-                    { key: "highlights", label: "Highlights" },
-                    { key: "personalRecords", label: "Personal Records" },
-                    { key: "progressGraph", label: "Progress Graph" },
-                  ].map(({ key, label }) => (
-                    <label key={key} className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-border/50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={panelConfig.panels[key as keyof DashboardConfig["panels"]]}
-                        onChange={(e) => updatePanelConfig(key as keyof DashboardConfig["panels"], e.target.checked)}
-                        className="rounded border-border"
-                      />
-                      <span className="text-sm text-ink">{label}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
+                {showConfigMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-xl shadow-lg z-50 p-2">
+                    <p className="px-3 py-2 text-xs font-medium text-muted uppercase">Show panels</p>
+                    {[
+                      { key: "highlights", label: "Highlights" },
+                      { key: "personalRecords", label: "Personal Records" },
+                      { key: "progressGraph", label: "Progress Graph" },
+                      { key: "burnUpChart", label: "Goal Progress" },
+                    ].map(({ key, label }) => (
+                      <label key={key} className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-border/50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={panelConfig.panels[key as keyof DashboardConfig["panels"]]}
+                          onChange={(e) => updatePanelConfig(key as keyof DashboardConfig["panels"], e.target.checked)}
+                          className="rounded border-border"
+                        />
+                        <span className="text-sm text-ink">{label}</span>
+                      </label>
+                    ))}
+                    <p className="px-3 py-2 text-xs font-medium text-muted uppercase">Order</p>
+                    {normalizedPanelOrder.map((panel) => (
+                      <div key={panel} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-border/50">
+                        <span className="text-sm text-ink">
+                          {panel === "highlights" && "Highlights"}
+                          {panel === "personalRecords" && "Personal Records"}
+                          {panel === "progressGraph" && "Progress Graph"}
+                          {panel === "burnUpChart" && "Goal Progress"}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => movePanel(panel, -1)}
+                            className="text-xs text-muted hover:text-ink"
+                            aria-label="Move up"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            onClick={() => movePanel(panel, 1)}
+                            className="text-xs text-muted hover:text-ink"
+                            aria-label="Move down"
+                          >
+                            ↓
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
         </div>
       </section>
 
@@ -275,39 +334,48 @@ export default function AppPage() {
       {/* Dashboard highlights - only show when user has data and panel enabled */}
       {challenges.length > 0 && (
         <>
-          {panelConfig.panels.highlights && (
-            <DashboardHighlights stats={dashboardStats} loading={statsLoading} />
-          )}
-          {panelConfig.panels.personalRecords && (
-            <PersonalRecords 
-              records={personalRecords} 
-              loading={statsLoading} 
-              challengeNames={challengeNames}
-            />
-          )}
-          {panelConfig.panels.progressGraph && entries.length > 0 && (
-            <ProgressGraph entries={entries} challenges={challengesById} />
-          )}
-          {panelConfig.panels.burnUpChart && challenges.length > 0 && (
-            <div className="space-y-6">
-              <h2 className="text-lg font-semibold text-ink">Goal Progress</h2>
-              {challenges.slice(0, 3).map(({ challenge }) => (
-                <BurnUpChart 
-                  key={challenge.id}
-                  entries={entries.filter(e => e.challengeId === challenge.id)} 
-                  challenge={challenge}
-                />
-              ))}
-            </div>
-          )}
+          {normalizedPanelOrder.map((panel) => {
+            switch (panel) {
+              case "highlights":
+                return panelConfig.panels.highlights ? (
+                  <DashboardHighlights key={panel} stats={dashboardStats} loading={statsLoading} />
+                ) : null;
+              case "personalRecords":
+                return panelConfig.panels.personalRecords ? (
+                  <PersonalRecords 
+                    key={panel}
+                    records={personalRecords} 
+                    loading={statsLoading} 
+                    challengeNames={challengeNames}
+                  />
+                ) : null;
+              case "progressGraph":
+                return panelConfig.panels.progressGraph && entries.length > 0 ? (
+                  <ProgressGraph key={panel} entries={entries} challenges={challengesById} />
+                ) : null;
+              case "burnUpChart":
+                return panelConfig.panels.burnUpChart && challenges.length > 0 ? (
+                  <div key={panel} className="space-y-6">
+                    <h2 className="text-lg font-semibold text-ink">Goal Progress</h2>
+                    {challenges.slice(0, 3).map(({ challenge }) => (
+                      <BurnUpChart 
+                        key={challenge.id}
+                        entries={entries.filter(e => e.challengeId === challenge.id)} 
+                        challenge={challenge}
+                      />
+                    ))}
+                  </div>
+                ) : null;
+              default:
+                return null;
+            }
+          })}
         </>
       )}
 
       {/* Followed challenges */}
       <FollowedChallengesSection onRefresh={handleRefresh} />
 
-      {/* Community section */}
-      <CommunitySection onRefresh={handleRefresh} />
 
       {/* Weekly summary modal */}
       <WeeklySummary

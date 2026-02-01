@@ -124,15 +124,23 @@ export const restore = mutation({
 export const updatePreferences = mutation({
   args: {
     id: v.id("users"),
-    dashboardConfig: v.optional(v.object({
-      panels: v.object({
-        highlights: v.boolean(),
-        personalRecords: v.boolean(),
-        progressGraph: v.boolean(),
-        burnUpChart: v.boolean(),
-        setsStats: v.boolean(),
-      }),
-    })),
+  dashboardConfig: v.optional(v.object({
+    panels: v.object({
+      highlights: v.boolean(),
+      personalRecords: v.boolean(),
+      progressGraph: v.boolean(),
+      burnUpChart: v.boolean(),
+      setsStats: v.boolean(),
+    }),
+    order: v.optional(v.array(
+      v.union(
+        v.literal("highlights"),
+        v.literal("personalRecords"),
+        v.literal("progressGraph"),
+        v.literal("burnUpChart")
+      )
+    )),
+  })),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;

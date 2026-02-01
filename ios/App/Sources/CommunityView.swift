@@ -148,7 +148,7 @@ struct CommunityView: View {
         }
         return publicChallenges.filter {
             $0.name.localizedCaseInsensitiveContains(searchText) ||
-            ($0.owner.name.localizedCaseInsensitiveContains(searchText) ?? false)
+            $0.owner.name.localizedCaseInsensitiveContains(searchText)
         }
     }
     

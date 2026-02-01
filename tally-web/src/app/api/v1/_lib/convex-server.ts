@@ -34,6 +34,7 @@ export const convexUsers = {
         burnUpChart: boolean;
         setsStats: boolean;
       };
+      order?: ("highlights" | "personalRecords" | "progressGraph" | "burnUpChart")[];
     };
   }) => client.mutation(api.users.updatePreferences, args),
 };

@@ -7,7 +7,7 @@ import Clerk
 public struct UserProfileButton: View {
     @Bindable private var authManager = AuthManager.shared
     @State private var showProfile = false
-    
+
     /// Closure called when user wants to open settings from profile
     public var onOpenSettings: (() -> Void)?
     
@@ -17,7 +17,11 @@ public struct UserProfileButton: View {
     
     public var body: some View {
         Button {
-            showProfile = true
+            if let onOpenSettings {
+                onOpenSettings()
+            } else {
+                showProfile = true
+            }
         } label: {
             if let imageUrl = authManager.currentUser?.imageUrl,
                let url = URL(string: imageUrl) {

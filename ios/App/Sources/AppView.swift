@@ -46,12 +46,6 @@ struct AppView: View {
                 .tag(1)
             }
             .tint(.tallyAccent)
-            
-            // Sync status indicator at top
-            VStack {
-                SyncStatusView()
-                Spacer()
-            }
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()

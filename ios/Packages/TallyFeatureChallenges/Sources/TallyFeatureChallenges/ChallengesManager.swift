@@ -76,12 +76,14 @@ public final class ChallengesManager {
         // Compute overall pace status from individual challenge stats
         let overallPaceStatus = computeOverallPaceStatus()
         
-        // Compute best set value from entries
+        // Compute best set and average set value from entries (single pass)
         var bestSet: DashboardStats.BestSet? = nil
+        var totalSets = 0
+        var setSum = 0
         for entry in entries {
-            if let sets = entry.sets {
+            if let sets = entry.sets, !sets.isEmpty {
                 for setVal in sets {
-                    if bestSet == nil || setVal > bestSet!.value {
+                    if setVal > (bestSet?.value ?? Int.min) {
                         bestSet = DashboardStats.BestSet(
                             value: setVal,
                             date: entry.date,
@@ -89,14 +91,6 @@ public final class ChallengesManager {
                         )
                     }
                 }
-            }
-        }
-        
-        // Compute average set value
-        var totalSets = 0
-        var setSum = 0
-        for entry in entries {
-            if let sets = entry.sets {
                 totalSets += sets.count
                 setSum += sets.reduce(0, +)
             }
@@ -163,7 +157,7 @@ public final class ChallengesManager {
             }
         }
         
-        // Determine overall status based on majority
+        // Determine overall status based on majority; ties favor onPace
         if behindCount > aheadCount && behindCount > onPaceCount {
             return .behind
         } else if aheadCount > behindCount && aheadCount > onPaceCount {

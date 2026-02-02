@@ -83,7 +83,7 @@ export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartP
   if (cumulativeData.length === 0) {
     return (
       <div className={`bg-surface border border-border rounded-xl p-6 ${className}`}>
-        <h3 className="text-lg font-semibold text-ink mb-4">Burn-up to Goal</h3>
+        <h3 className="text-lg font-semibold text-ink mb-4">{challenge.name} Progress</h3>
         <p className="text-sm text-muted">Log entries to see your progress toward the goal.</p>
       </div>
     );
@@ -147,7 +147,7 @@ export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartP
   return (
     <div className={`bg-surface border border-border rounded-xl p-6 ${className}`}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-ink">Burn-up to Goal</h3>
+        <h3 className="text-lg font-semibold text-ink">{challenge.name} Progress</h3>
         {projection && (
           <span className={`text-sm font-medium ${paceStatus === "ahead" ? "text-success" : "text-warning"}`}>
             {projection.percentComplete.toFixed(0)}% complete

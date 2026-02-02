@@ -371,6 +371,11 @@ public struct DashboardConfig: Codable, Sendable, Equatable {
                 }
             }
             
+            // Ensure activeChallenges is included for old configs that didn't have it
+            if !visible.contains(.activeChallenges) && !hidden.contains(.activeChallenges) {
+                visible.insert(.activeChallenges, at: 0)
+            }
+            
             self.visiblePanels = visible
             self.hiddenPanels = hidden
             return

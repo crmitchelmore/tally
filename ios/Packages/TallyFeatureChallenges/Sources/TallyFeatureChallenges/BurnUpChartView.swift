@@ -101,7 +101,7 @@ public struct BurnUpChartView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: TallySpacing.sm) {
             // Header
-            Text("Progress")
+            Text("\(challenge.name) Progress")
                 .font(.tallyTitleSmall)
                 .foregroundColor(Color.tallyInk)
             

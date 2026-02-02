@@ -154,7 +154,8 @@ private struct PanelRow: View {
             
             Spacer()
         }
-        .padding(.vertical, TallySpacing.xs)
+        .padding(.vertical, TallySpacing.md)
+        .contentShape(Rectangle())
     }
 }
 
@@ -175,7 +176,8 @@ private struct HiddenPanelRow: View {
             
             Spacer()
         }
-        .padding(.vertical, TallySpacing.xs)
+        .padding(.vertical, TallySpacing.md)
+        .contentShape(Rectangle())
     }
 }
 

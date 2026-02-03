@@ -25,7 +25,11 @@ struct ChallengeDetailPage {
     var addEntryButton: XCUIElement {
         app.buttons["Add Entry"].firstMatch
     }
-    
+
+    var actionsMenu: XCUIElement {
+        app.buttons["challenge-actions-menu"].firstMatch
+    }
+
     var editButton: XCUIElement {
         app.buttons["Edit"].firstMatch
     }
@@ -49,6 +53,9 @@ struct ChallengeDetailPage {
     }
     
     func tapEdit() {
+        if actionsMenu.waitForExistence(timeout: 3) {
+            actionsMenu.tap()
+        }
         editButton.tap()
     }
     

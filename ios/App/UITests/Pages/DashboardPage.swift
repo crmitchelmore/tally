@@ -11,9 +11,13 @@ struct DashboardPage {
     }
     
     var createChallengeButton: XCUIElement {
-        // Try identifier first, then fall back to label
-        let byId = app.buttons["create-challenge-button"]
-        if byId.exists { return byId }
+        let byId = app.buttons.matching(identifier: "create-challenge-button")
+        if byId.count > 1 {
+            return byId.matching(NSPredicate(format: "label CONTAINS[c] %@", "Create")).firstMatch
+        }
+        if byId.firstMatch.exists { return byId.firstMatch }
+        let emptyState = app.buttons["create-challenge-empty-button"]
+        if emptyState.exists { return emptyState.firstMatch }
         return app.buttons["Create Challenge"].firstMatch
     }
     
@@ -44,10 +48,18 @@ struct DashboardPage {
     }
     
     func tapCreateChallenge() {
-        // Try identifier first, then fall back to label
-        let byId = app.buttons["create-challenge-button"]
-        if byId.waitForExistence(timeout: 3) {
-            byId.tap()
+        let byId = app.buttons.matching(identifier: "create-challenge-button")
+        if byId.count > 1 {
+            byId.matching(NSPredicate(format: "label CONTAINS[c] %@", "Create")).firstMatch.tap()
+            return
+        }
+        if byId.firstMatch.waitForExistence(timeout: 3) {
+            byId.firstMatch.tap()
+            return
+        }
+        let emptyState = app.buttons["create-challenge-empty-button"]
+        if emptyState.waitForExistence(timeout: 3) {
+            emptyState.firstMatch.tap()
         } else {
             app.buttons["Create Challenge"].firstMatch.tap()
         }

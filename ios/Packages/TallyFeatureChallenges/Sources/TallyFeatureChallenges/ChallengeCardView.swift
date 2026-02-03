@@ -122,7 +122,7 @@ public struct ChallengeCardView: View {
                 .padding(.top, 12)
                 .padding(.trailing, 12)
         }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("challenge-card-\(challenge.name)")
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint("Double tap to view details")

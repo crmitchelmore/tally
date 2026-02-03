@@ -9,7 +9,12 @@ struct EntryDialogPage {
     var dialog: XCUIElement {
         // Try identifier first, then fall back to sheet
         let byId = app.otherElements["addEntrySheet"]
-        return byId.exists ? byId : app.sheets.firstMatch
+        if byId.exists {
+            return byId
+        }
+        let sheet = app.sheets.firstMatch
+        _ = sheet.waitForExistence(timeout: 1)
+        return sheet
     }
     
     var countInput: XCUIElement {
@@ -56,10 +61,13 @@ struct EntryDialogPage {
     func enterCount(_ count: String) {
         if countInput.waitForExistence(timeout: 3) {
             countInput.tap()
-            // Clear existing text
             if let existingText = countInput.value as? String, !existingText.isEmpty {
                 let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: existingText.count)
                 countInput.typeText(deleteString)
+            }
+            if countInput.value as? String != "0" {
+                countInput.tap()
+                countInput.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6))
             }
             countInput.typeText(count)
         }

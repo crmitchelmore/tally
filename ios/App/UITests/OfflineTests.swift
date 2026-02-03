@@ -40,6 +40,7 @@ final class OfflineTests: TallyUITestCase {
         
         // Terminate and relaunch
         app.terminate()
+        app.launchArguments = ["--uitesting", "--offline-mode"]
         app.launch()
         
         // Challenge should still exist

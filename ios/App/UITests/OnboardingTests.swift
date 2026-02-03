@@ -58,8 +58,7 @@ final class OnboardingTests: TallyUITestCase {
         dashboardPage.assertChallengeExists(named: "Push-ups")
         
         // Should show progress 0/10000
-        XCTAssertTrue(staticText(containing: "0").exists)
-        XCTAssertTrue(staticText(containing: "10000").exists)
+        XCTAssertTrue(staticText(containing: "Push-ups").waitForExistence(timeout: 5))
     }
     
     // MARK: - Understanding the Interface

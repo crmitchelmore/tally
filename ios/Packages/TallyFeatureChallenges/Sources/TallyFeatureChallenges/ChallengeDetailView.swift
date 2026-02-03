@@ -4,7 +4,7 @@ import TallyFeatureAPIClient
 
 /// Detail view for a challenge showing stats, burn-up chart, and actions
 public struct ChallengeDetailView: View {
-    let challenge: Challenge
+    @State private var challenge: Challenge
     @Bindable var manager: ChallengesManager
     let onAddEntry: () -> Void
     let onEdit: () -> Void
@@ -34,7 +34,7 @@ public struct ChallengeDetailView: View {
         onDismiss: @escaping () -> Void,
         onDeleteChallenge: ((Challenge) -> Void)? = nil
     ) {
-        self.challenge = challenge
+        _challenge = State(initialValue: challenge)
         self.manager = manager
         self.onAddEntry = onAddEntry
         self.onEdit = onEdit
@@ -126,10 +126,20 @@ public struct ChallengeDetailView: View {
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
+                .accessibilityIdentifier("challenge-actions-menu")
             }
         }
         .task {
             await loadStats()
+        }
+        .onChange(of: manager.challenges) { _, _ in
+            guard let updated = manager.challenge(id: challenge.id), updated != challenge else { return }
+            challenge = updated
+        }
+        .onChange(of: manager.stats) { _, _ in
+            if let updatedStats = manager.stats(for: challenge.id), updatedStats != stats {
+                stats = updatedStats
+            }
         }
         .sheet(isPresented: $showAddEntrySheet) {
             AddEntrySheet(
@@ -138,10 +148,12 @@ public struct ChallengeDetailView: View {
                 onSubmit: { request in
                     manager.addEntry(request)
                     entries = manager.entries(for: challenge.id)
+                    stats = manager.stats(for: challenge.id)
                 },
                 onDismiss: {
                     showAddEntrySheet = false
                     entries = manager.entries(for: challenge.id)
+                    stats = manager.stats(for: challenge.id)
                 }
             )
         }
@@ -297,6 +309,8 @@ public struct ChallengeDetailView: View {
                 Text("\(stats?.totalCount ?? 0)")
                     .font(.tallyMonoDisplay)
                     .foregroundColor(Color.tallyInk)
+                    .accessibilityIdentifier("challenge-total-count")
+                    .accessibilityLabel("\(stats?.totalCount ?? 0)")
                 
                 Text("/ \(challenge.target) \(challenge.resolvedUnitLabel)")
                     .font(.tallyMonoBody)

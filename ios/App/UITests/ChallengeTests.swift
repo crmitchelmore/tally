@@ -62,7 +62,7 @@ final class ChallengeTests: TallyUITestCase {
         dashboardPage.tapChallenge(named: "Edit Test")
         
         // Edit the challenge
-        if challengeDetail.editButton.waitForExistence(timeout: 5) {
+        if challengeDetail.actionsMenu.waitForExistence(timeout: 5) {
             challengeDetail.tapEdit()
             
             // Change target
@@ -72,8 +72,13 @@ final class ChallengeTests: TallyUITestCase {
             }
         }
         
-        // Verify the update
-        XCTAssertTrue(staticText(containing: "1500").waitForExistence(timeout: 5))
+        // Verify the update on dashboard card
+        challengeDetail.tapBack()
+        let card = dashboardPage.challengeCard(named: "Edit Test")
+        XCTAssertTrue(card.waitForExistence(timeout: 10))
+        let predicate = NSPredicate(format: "label CONTAINS[c] %@", "1500")
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: card)
+        XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 10), .completed)
     }
     
     func testDeleteChallengeWithConfirmation() throws {

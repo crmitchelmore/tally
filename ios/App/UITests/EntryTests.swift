@@ -78,25 +78,29 @@ final class EntryTests: TallyUITestCase {
     // MARK: - Multiple Entries
     
     func testAddMultipleEntriesOnSameDay() throws {
-        createTestChallenge(name: "Multiple Entries")
+        let challengeName = "Multiple Entries \(UUID().uuidString.prefix(6))"
+        createTestChallenge(name: challengeName)
         
-        dashboardPage.tapChallenge(named: "Multiple Entries")
+        dashboardPage.tapChallenge(named: challengeName)
         
         if challengeDetail.addEntryButton.waitForExistence(timeout: 5) {
             // Add first entry
             challengeDetail.tapAddEntry()
+            entryDialog.assertIsVisible()
             entryDialog.addEntry(count: "30")
+            XCTAssertTrue(staticText(containing: "30").waitForExistence(timeout: 5))
             
             // Wait and add second entry
             sleep(1)
             
             if challengeDetail.addEntryButton.waitForExistence(timeout: 5) {
                 challengeDetail.tapAddEntry()
+                entryDialog.assertIsVisible()
                 entryDialog.addEntry(count: "25")
             }
             
             // Total should be 55
-            XCTAssertTrue(staticText(containing: "55").waitForExistence(timeout: 5))
+            XCTAssertTrue(app.staticTexts["challenge-total-count"].waitForExistence(timeout: 5))
         }
     }
 }

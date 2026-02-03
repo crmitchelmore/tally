@@ -555,7 +555,9 @@ public final class ChallengesManager {
         )
         
         // Update in-memory and persisted stats
-        stats[challengeId] = updatedStats
+        var updatedStatsMap = stats
+        updatedStatsMap[challengeId] = updatedStats
+        stats = updatedStatsMap
         localStore.upsertStats(updatedStats, for: challengeId)
     }
     

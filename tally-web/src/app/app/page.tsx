@@ -55,19 +55,20 @@ export default function AppPage() {
   const [panelConfig, setPanelConfig] = useState<DashboardConfig>(DEFAULT_DASHBOARD_CONFIG);
   const [showConfigMenu, setShowConfigMenu] = useState(false);
   
-  // Drag-and-drop state
+  // Drag-and-drop visual state only
   const [draggingPanel, setDraggingPanel] = useState<DashboardPanelKey | null>(null);
-  const [dropTarget, setDropTarget] = useState<{ list: "visible" | "hidden"; index: number } | null>(null);
+  const [dragOverInfo, setDragOverInfo] = useState<{ list: "visible" | "hidden"; index: number } | null>(null);
   
+  // Derive panel lists from config
   const visiblePanels = useMemo(() => {
     const raw = panelConfig.visible?.length ? panelConfig.visible : BASE_PANEL_ORDER;
     const filtered = raw.filter((panel) => BASE_PANEL_ORDER.includes(panel));
-    // Add any panels from BASE_PANEL_ORDER that aren't in visible or hidden
     const hiddenSet = new Set(panelConfig.hidden ?? []);
     const visibleSet = new Set(filtered);
     const missing = BASE_PANEL_ORDER.filter((panel) => !visibleSet.has(panel) && !hiddenSet.has(panel));
     return [...filtered, ...missing];
   }, [panelConfig.visible, panelConfig.hidden]);
+  
   const hiddenPanels = useMemo(() => {
     const raw = panelConfig.hidden ?? [];
     return raw.filter((panel) => BASE_PANEL_ORDER.includes(panel) && !visiblePanels.includes(panel));
@@ -169,31 +170,67 @@ export default function AppPage() {
     }).catch(() => {});
   }, []);
 
-  const setPanelLists = useCallback((visible: DashboardPanelKey[], hidden: DashboardPanelKey[]) => {
+  // Move a panel to a new position - this is the core reorder logic
+  const movePanel = useCallback((
+    panel: DashboardPanelKey,
+    fromList: "visible" | "hidden",
+    toList: "visible" | "hidden",
+    toIndex: number
+  ) => {
     setPanelConfig(prev => {
+      // Get current lists from prev state (not from closure)
+      const currentVisible = prev.visible?.length ? [...prev.visible] : [...BASE_PANEL_ORDER];
+      const currentHidden = prev.hidden ? [...prev.hidden] : [];
+      
+      // Remove panel from its current list
+      const visibleWithoutPanel = currentVisible.filter(p => p !== panel);
+      const hiddenWithoutPanel = currentHidden.filter(p => p !== panel);
+      
+      let newVisible: DashboardPanelKey[];
+      let newHidden: DashboardPanelKey[];
+      
+      if (toList === "visible") {
+        // Insert into visible at the specified index
+        newVisible = [...visibleWithoutPanel];
+        const insertAt = Math.min(Math.max(0, toIndex), newVisible.length);
+        newVisible.splice(insertAt, 0, panel);
+        newHidden = hiddenWithoutPanel;
+      } else {
+        // Insert into hidden at the specified index
+        newHidden = [...hiddenWithoutPanel];
+        const insertAt = Math.min(Math.max(0, toIndex), newHidden.length);
+        newHidden.splice(insertAt, 0, panel);
+        newVisible = visibleWithoutPanel;
+      }
+      
       const newConfig: DashboardConfig = {
         ...prev,
-        visible,
-        hidden,
+        visible: newVisible,
+        hidden: newHidden,
       };
+      
+      // Persist asynchronously
       persistConfig(newConfig);
+      
       return newConfig;
     });
   }, [persistConfig]);
 
+  // Drag handlers - only manage visual state
   const handleDragStart = useCallback((
     event: DragEvent<HTMLDivElement>,
     panel: DashboardPanelKey,
     from: "visible" | "hidden"
   ) => {
-    event.dataTransfer.setData("text/plain", JSON.stringify({ panel, from }));
+    event.dataTransfer.setData("application/json", JSON.stringify({ panel, from }));
     event.dataTransfer.effectAllowed = "move";
-    setDraggingPanel(panel);
+    // Small delay to allow drag image to be captured before visual change
+    requestAnimationFrame(() => setDraggingPanel(panel));
   }, []);
 
   const handleDragEnd = useCallback(() => {
     setDraggingPanel(null);
-    setDropTarget(null);
+    setDragOverInfo(null);
   }, []);
 
   const handleDragOver = useCallback((
@@ -204,68 +241,39 @@ export default function AppPage() {
     event.preventDefault();
     event.stopPropagation();
     event.dataTransfer.dropEffect = "move";
-    setDropTarget({ list, index });
+    setDragOverInfo({ list, index });
   }, []);
 
   const handleDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => {
-    // Only clear if we're leaving the container entirely
     const relatedTarget = event.relatedTarget as HTMLElement | null;
     if (!relatedTarget || !event.currentTarget.contains(relatedTarget)) {
-      setDropTarget(null);
+      setDragOverInfo(null);
     }
   }, []);
 
   const handleDrop = useCallback((
     event: DragEvent<HTMLDivElement>,
-    to: "visible" | "hidden",
-    targetIndex?: number
+    toList: "visible" | "hidden",
+    toIndex: number
   ) => {
     event.preventDefault();
-    setDraggingPanel(null);
-    setDropTarget(null);
+    event.stopPropagation();
     
-    const raw = event.dataTransfer.getData("text/plain");
+    setDraggingPanel(null);
+    setDragOverInfo(null);
+    
+    const raw = event.dataTransfer.getData("application/json");
     if (!raw) return;
-    let parsed: { panel?: DashboardPanelKey; from?: "visible" | "hidden" };
+    
     try {
-      parsed = JSON.parse(raw);
+      const { panel, from } = JSON.parse(raw) as { panel: DashboardPanelKey; from: "visible" | "hidden" };
+      if (!panel || !from) return;
+      
+      movePanel(panel, from, toList, toIndex);
     } catch {
-      return;
+      // Invalid data
     }
-    const panel = parsed.panel;
-    const from = parsed.from;
-    if (!panel || (from !== "visible" && from !== "hidden")) return;
-
-    const sourcePanels = from === "visible" ? visiblePanels : hiddenPanels;
-    const sourceIndex = sourcePanels.indexOf(panel);
-    const isSameList = from === to;
-
-    const nextVisible = visiblePanels.filter((item) => item !== panel);
-    const nextHidden = hiddenPanels.filter((item) => item !== panel);
-
-    if (to === "visible") {
-      let insertIdx = targetIndex ?? nextVisible.length;
-      if (isSameList && sourceIndex !== -1 && targetIndex !== undefined && sourceIndex < targetIndex) {
-        insertIdx -= 1;
-      }
-      if (insertIdx < 0) insertIdx = 0;
-      if (insertIdx > nextVisible.length) insertIdx = nextVisible.length;
-      const updated = [...nextVisible];
-      updated.splice(insertIdx, 0, panel);
-      setPanelLists(updated, nextHidden);
-      return;
-    }
-
-    let insertIdx = targetIndex ?? nextHidden.length;
-    if (isSameList && sourceIndex !== -1 && targetIndex !== undefined && sourceIndex < targetIndex) {
-      insertIdx -= 1;
-    }
-    if (insertIdx < 0) insertIdx = 0;
-    if (insertIdx > nextHidden.length) insertIdx = nextHidden.length;
-    const updated = [...nextHidden];
-    updated.splice(insertIdx, 0, panel);
-    setPanelLists(nextVisible, updated);
-  }, [hiddenPanels, setPanelLists, visiblePanels]);
+  }, [movePanel]);
 
   // Data fetching with SWR - shows cached data immediately
   const isReady = isLoaded && isSignedIn;
@@ -420,7 +428,7 @@ export default function AppPage() {
                       </p>
                       <div
                         className={`rounded-lg border-2 transition-colors ${
-                          draggingPanel && dropTarget?.list === "visible" && dropTarget?.index === visiblePanels.length
+                          draggingPanel && dragOverInfo?.list === "visible" && dragOverInfo?.index === visiblePanels.length
                             ? "border-accent bg-accent/5"
                             : draggingPanel
                             ? "border-dashed border-border"
@@ -434,7 +442,7 @@ export default function AppPage() {
                             {/* Drop indicator line */}
                             <div
                               className={`h-0.5 mx-2 rounded-full transition-all ${
-                                dropTarget?.list === "visible" && dropTarget?.index === index
+                                dragOverInfo?.list === "visible" && dragOverInfo?.index === index
                                   ? "bg-accent my-1"
                                   : "bg-transparent"
                               }`}
@@ -477,7 +485,7 @@ export default function AppPage() {
                       </p>
                       <div
                         className={`rounded-lg border-2 transition-colors min-h-[44px] ${
-                          draggingPanel && dropTarget?.list === "hidden" && dropTarget?.index === hiddenPanels.length
+                          draggingPanel && dragOverInfo?.list === "hidden" && dragOverInfo?.index === hiddenPanels.length
                             ? "border-accent bg-accent/5"
                             : draggingPanel
                             ? "border-dashed border-border"
@@ -496,7 +504,7 @@ export default function AppPage() {
                               {/* Drop indicator line */}
                               <div
                                 className={`h-0.5 mx-2 rounded-full transition-all ${
-                                  dropTarget?.list === "hidden" && dropTarget?.index === index
+                                  dragOverInfo?.list === "hidden" && dragOverInfo?.index === index
                                     ? "bg-accent my-1"
                                     : "bg-transparent"
                                 }`}
@@ -545,7 +553,7 @@ export default function AppPage() {
 
       {/* Dashboard highlights - only show when user has data and panel enabled */}
       {challenges.length > 0 && (
-        <div key={visiblePanels.join("-")} className="contents">
+        <>
           {visiblePanels.map((panel) => {
             switch (panel) {
               case "activeChallenges":
@@ -594,7 +602,7 @@ export default function AppPage() {
                 return null;
             }
           })}
-        </div>
+        </>
       )}
 
       {/* Followed challenges */}

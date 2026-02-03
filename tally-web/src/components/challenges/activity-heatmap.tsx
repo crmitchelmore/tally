@@ -42,22 +42,30 @@ export function ActivityHeatmap({
 
   // Generate weeks array for the date range
   const weeks = useMemo(() => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = new Date(startDate + "T00:00:00"); // Parse as local time
+    const end = new Date(endDate + "T00:00:00"); // Parse as local time
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     const result: { date: string; count: number; isToday: boolean; isFuture: boolean }[][] = [];
     let currentWeek: { date: string; count: number; isToday: boolean; isFuture: boolean }[] = [];
     
+    // Helper to format date as YYYY-MM-DD in local time
+    const formatDate = (d: Date): string => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+    
     // Start from the Sunday of the start week
     const current = new Date(start);
     current.setDate(current.getDate() - current.getDay());
     
     while (current <= end || currentWeek.length > 0) {
-      const dateStr = current.toISOString().split("T")[0];
+      const dateStr = formatDate(current);
       const isInRange = current >= start && current <= end;
-      const isToday = current.toDateString() === today.toDateString();
+      const isToday = formatDate(current) === formatDate(today);
       const isFuture = current > today;
       
       currentWeek.push({
@@ -112,10 +120,12 @@ export function ActivityHeatmap({
     weeks.forEach((week, weekIndex) => {
       const firstValidDay = week.find((d) => d.date);
       if (firstValidDay) {
-        const month = new Date(firstValidDay.date).getMonth();
+        // Parse as local time to avoid timezone issues
+        const date = new Date(firstValidDay.date + "T00:00:00");
+        const month = date.getMonth();
         if (month !== lastMonth) {
           labels.push({
-            month: new Date(firstValidDay.date).toLocaleDateString("en-US", { month: "short" }),
+            month: date.toLocaleDateString("en-US", { month: "short" }),
             weekIndex,
           });
           lastMonth = month;

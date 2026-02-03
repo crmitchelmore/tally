@@ -150,6 +150,15 @@ export const updatePreferences = mutation({
         v.literal("burnUpChart")
       )
     )),
+    order: v.optional(v.array(
+      v.union(
+        v.literal("activeChallenges"),
+        v.literal("highlights"),
+        v.literal("personalRecords"),
+        v.literal("progressGraph"),
+        v.literal("burnUpChart")
+      )
+    )),
   })),
   },
   handler: async (ctx, args) => {

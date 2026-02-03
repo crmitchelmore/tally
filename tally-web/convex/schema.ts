@@ -46,6 +46,16 @@ export default defineSchema({
           v.literal("burnUpChart")
         )
       )),
+      // Legacy field - keep for backward compatibility with existing data
+      order: v.optional(v.array(
+        v.union(
+          v.literal("activeChallenges"),
+          v.literal("highlights"),
+          v.literal("personalRecords"),
+          v.literal("progressGraph"),
+          v.literal("burnUpChart")
+        )
+      )),
     })),
     // Soft delete fields
     deletedAt: v.optional(v.number()),

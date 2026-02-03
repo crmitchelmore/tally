@@ -31,34 +31,36 @@ const DEFAULT_DASHBOARD_CONFIG: DashboardConfig = {
   hidden: [],
 };
 
+// Panel labels and order - static constants
+const PANEL_LABELS: Record<DashboardPanelKey, string> = {
+  activeChallenges: "Active Challenges",
+  highlights: "Highlights",
+  personalRecords: "Personal Records",
+  progressGraph: "Progress Graph",
+  burnUpChart: "Goal Progress",
+};
+
+const BASE_PANEL_ORDER: DashboardPanelKey[] = [
+  "activeChallenges",
+  "highlights",
+  "personalRecords",
+  "progressGraph",
+  "burnUpChart",
+];
+
 export default function AppPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const [showWeeklySummary, setShowWeeklySummary] = useState(false);
   const [deletedChallenge, setDeletedChallenge] = useState<DeletedChallenge | null>(null);
   const [panelConfig, setPanelConfig] = useState<DashboardConfig>(DEFAULT_DASHBOARD_CONFIG);
   const [showConfigMenu, setShowConfigMenu] = useState(false);
-
-  const panelLabels: Record<DashboardPanelKey, string> = {
-    activeChallenges: "Active Challenges",
-    highlights: "Highlights",
-    personalRecords: "Personal Records",
-    progressGraph: "Progress Graph",
-    burnUpChart: "Goal Progress",
-  };
-  const basePanelOrder: DashboardPanelKey[] = [
-    "activeChallenges",
-    "highlights",
-    "personalRecords",
-    "progressGraph",
-    "burnUpChart",
-  ];
   const visiblePanels = useMemo(() => {
-    const raw = panelConfig.visible?.length ? panelConfig.visible : basePanelOrder;
-    return raw.filter((panel) => basePanelOrder.includes(panel));
+    const raw = panelConfig.visible?.length ? panelConfig.visible : BASE_PANEL_ORDER;
+    return raw.filter((panel) => BASE_PANEL_ORDER.includes(panel));
   }, [panelConfig.visible]);
   const hiddenPanels = useMemo(() => {
     const raw = panelConfig.hidden ?? [];
-    return raw.filter((panel) => basePanelOrder.includes(panel) && !visiblePanels.includes(panel));
+    return raw.filter((panel) => BASE_PANEL_ORDER.includes(panel) && !visiblePanels.includes(panel));
   }, [panelConfig.hidden, visiblePanels]);
 
   const normalizeDashboardConfig = useCallback((raw: unknown): DashboardConfig => {
@@ -71,13 +73,13 @@ export default function AppPage() {
 
     const sanitizeList = (value: unknown): DashboardPanelKey[] =>
       Array.isArray(value)
-        ? value.filter((panel): panel is DashboardPanelKey => basePanelOrder.includes(panel))
+        ? value.filter((panel): panel is DashboardPanelKey => BASE_PANEL_ORDER.includes(panel))
         : [];
 
     const rawVisible = sanitizeList(record.visible);
     const rawHidden = sanitizeList(record.hidden);
     const rawOrder = sanitizeList(record.order);
-    const order = rawOrder.length ? rawOrder : basePanelOrder;
+    const order = rawOrder.length ? rawOrder : BASE_PANEL_ORDER;
 
     let visible = rawVisible;
     let hidden = rawHidden;
@@ -104,7 +106,7 @@ export default function AppPage() {
       visible: [...visibleOrdered, ...remaining],
       hidden: hiddenOrdered,
     };
-  }, [basePanelOrder]);
+  }, []);
 
   // Load config from API (primary) with localStorage fallback
   useEffect(() => {
@@ -136,7 +138,7 @@ export default function AppPage() {
       fetch("/api/v1/auth/user/preferences")
         .then(res => res.json())
         .then(data => {
-          if (data.dashboardConfig?.panels) {
+          if (data.dashboardConfig) {
             const merged = normalizeDashboardConfig(data.dashboardConfig);
             setPanelConfig(merged);
             localStorage.setItem("dashboardConfig", JSON.stringify(merged));
@@ -146,7 +148,7 @@ export default function AppPage() {
           // Use localStorage fallback
         });
     }
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, normalizeDashboardConfig]);
 
   const persistConfig = useCallback((config: DashboardConfig) => {
     localStorage.setItem("dashboardConfig", JSON.stringify(config));
@@ -389,7 +391,7 @@ export default function AppPage() {
                             onDrop={(event) => handleDrop(event, "visible", panel)}
                             className="flex items-center justify-between px-3 py-2 border-b border-border/60 last:border-b-0 hover:bg-border/50"
                           >
-                            <span className="text-sm text-ink">{panelLabels[panel]}</span>
+                            <span className="text-sm text-ink">{PANEL_LABELS[panel]}</span>
                             <span className="text-xs text-muted">Drag</span>
                           </div>
                         ))}
@@ -414,7 +416,7 @@ export default function AppPage() {
                               onDrop={(event) => handleDrop(event, "hidden", panel)}
                               className="flex items-center justify-between px-3 py-2 border-b border-border/60 last:border-b-0 hover:bg-border/50"
                             >
-                              <span className="text-sm text-ink">{panelLabels[panel]}</span>
+                              <span className="text-sm text-ink">{PANEL_LABELS[panel]}</span>
                               <span className="text-xs text-muted">Drag</span>
                             </div>
                           ))

@@ -54,6 +54,11 @@ export default function AppPage() {
   const [deletedChallenge, setDeletedChallenge] = useState<DeletedChallenge | null>(null);
   const [panelConfig, setPanelConfig] = useState<DashboardConfig>(DEFAULT_DASHBOARD_CONFIG);
   const [showConfigMenu, setShowConfigMenu] = useState(false);
+  
+  // Drag-and-drop state
+  const [draggingPanel, setDraggingPanel] = useState<DashboardPanelKey | null>(null);
+  const [dropTarget, setDropTarget] = useState<{ list: "visible" | "hidden"; index: number } | null>(null);
+  
   const visiblePanels = useMemo(() => {
     const raw = panelConfig.visible?.length ? panelConfig.visible : BASE_PANEL_ORDER;
     const filtered = raw.filter((panel) => BASE_PANEL_ORDER.includes(panel));
@@ -183,19 +188,42 @@ export default function AppPage() {
   ) => {
     event.dataTransfer.setData("text/plain", JSON.stringify({ panel, from }));
     event.dataTransfer.effectAllowed = "move";
+    setDraggingPanel(panel);
   }, []);
 
-  const handleDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
+  const handleDragEnd = useCallback(() => {
+    setDraggingPanel(null);
+    setDropTarget(null);
+  }, []);
+
+  const handleDragOver = useCallback((
+    event: DragEvent<HTMLDivElement>,
+    list: "visible" | "hidden",
+    index: number
+  ) => {
     event.preventDefault();
+    event.stopPropagation();
     event.dataTransfer.dropEffect = "move";
+    setDropTarget({ list, index });
+  }, []);
+
+  const handleDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => {
+    // Only clear if we're leaving the container entirely
+    const relatedTarget = event.relatedTarget as HTMLElement | null;
+    if (!relatedTarget || !event.currentTarget.contains(relatedTarget)) {
+      setDropTarget(null);
+    }
   }, []);
 
   const handleDrop = useCallback((
     event: DragEvent<HTMLDivElement>,
     to: "visible" | "hidden",
-    targetPanel?: DashboardPanelKey
+    targetIndex?: number
   ) => {
     event.preventDefault();
+    setDraggingPanel(null);
+    setDropTarget(null);
+    
     const raw = event.dataTransfer.getData("text/plain");
     if (!raw) return;
     let parsed: { panel?: DashboardPanelKey; from?: "visible" | "hidden" };
@@ -209,35 +237,33 @@ export default function AppPage() {
     if (!panel || (from !== "visible" && from !== "hidden")) return;
 
     const sourcePanels = from === "visible" ? visiblePanels : hiddenPanels;
-    const targetPanels = to === "visible" ? visiblePanels : hiddenPanels;
     const sourceIndex = sourcePanels.indexOf(panel);
-    const targetIndex = targetPanel ? targetPanels.indexOf(targetPanel) : -1;
     const isSameList = from === to;
 
     const nextVisible = visiblePanels.filter((item) => item !== panel);
     const nextHidden = hiddenPanels.filter((item) => item !== panel);
 
     if (to === "visible") {
-      let insertIndex = targetPanel ? targetIndex : nextVisible.length;
-      if (isSameList && sourceIndex !== -1 && targetIndex !== -1 && sourceIndex < targetIndex) {
-        insertIndex -= 1;
+      let insertIdx = targetIndex ?? nextVisible.length;
+      if (isSameList && sourceIndex !== -1 && targetIndex !== undefined && sourceIndex < targetIndex) {
+        insertIdx -= 1;
       }
-      if (insertIndex < 0) insertIndex = nextVisible.length;
-      if (insertIndex > nextVisible.length) insertIndex = nextVisible.length;
+      if (insertIdx < 0) insertIdx = 0;
+      if (insertIdx > nextVisible.length) insertIdx = nextVisible.length;
       const updated = [...nextVisible];
-      updated.splice(insertIndex, 0, panel);
+      updated.splice(insertIdx, 0, panel);
       setPanelLists(updated, nextHidden);
       return;
     }
 
-    let insertIndex = targetPanel ? targetIndex : nextHidden.length;
-    if (isSameList && sourceIndex !== -1 && targetIndex !== -1 && sourceIndex < targetIndex) {
-      insertIndex -= 1;
+    let insertIdx = targetIndex ?? nextHidden.length;
+    if (isSameList && sourceIndex !== -1 && targetIndex !== undefined && sourceIndex < targetIndex) {
+      insertIdx -= 1;
     }
-    if (insertIndex < 0) insertIndex = nextHidden.length;
-    if (insertIndex > nextHidden.length) insertIndex = nextHidden.length;
+    if (insertIdx < 0) insertIdx = 0;
+    if (insertIdx > nextHidden.length) insertIdx = nextHidden.length;
     const updated = [...nextHidden];
-    updated.splice(insertIndex, 0, panel);
+    updated.splice(insertIdx, 0, panel);
     setPanelLists(nextVisible, updated);
   }, [hiddenPanels, setPanelLists, visiblePanels]);
 
@@ -379,50 +405,121 @@ export default function AppPage() {
                 </svg>
               </button>
                 {showConfigMenu && (
-                  <div className="absolute right-0 top-full mt-2 w-64 bg-surface border border-border rounded-xl shadow-lg z-50 p-3 space-y-3">
+                  <div 
+                    className="absolute right-0 top-full mt-2 w-72 bg-surface border border-border rounded-xl shadow-lg z-50 p-4 space-y-4"
+                    onDragLeave={handleDragLeave}
+                  >
+                    {/* Visible Panels Section */}
                     <div>
-                      <p className="px-1 pb-2 text-xs font-medium text-muted uppercase">Visible</p>
+                      <p className="px-1 pb-2 text-xs font-medium text-muted uppercase tracking-wide flex items-center gap-1.5">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                        </svg>
+                        Visible
+                      </p>
                       <div
-                        className="rounded-lg border border-border/60"
-                        onDragOver={handleDragOver}
-                        onDrop={(event) => handleDrop(event, "visible")}
+                        className={`rounded-lg border-2 transition-colors ${
+                          draggingPanel && dropTarget?.list === "visible" && dropTarget?.index === visiblePanels.length
+                            ? "border-accent bg-accent/5"
+                            : draggingPanel
+                            ? "border-dashed border-border"
+                            : "border-border/60"
+                        }`}
+                        onDragOver={(e) => handleDragOver(e, "visible", visiblePanels.length)}
+                        onDrop={(e) => handleDrop(e, "visible", visiblePanels.length)}
                       >
-                        {visiblePanels.map((panel) => (
-                          <div
-                            key={panel}
-                            draggable
-                            onDragStart={(event) => handleDragStart(event, panel, "visible")}
-                            onDragOver={handleDragOver}
-                            onDrop={(event) => handleDrop(event, "visible", panel)}
-                            className="flex items-center justify-between px-3 py-2 border-b border-border/60 last:border-b-0 hover:bg-border/50"
-                          >
-                            <span className="text-sm text-ink">{PANEL_LABELS[panel]}</span>
-                            <span className="text-xs text-muted">Drag</span>
+                        {visiblePanels.map((panel, index) => (
+                          <div key={panel}>
+                            {/* Drop indicator line */}
+                            <div
+                              className={`h-0.5 mx-2 rounded-full transition-all ${
+                                dropTarget?.list === "visible" && dropTarget?.index === index
+                                  ? "bg-accent my-1"
+                                  : "bg-transparent"
+                              }`}
+                              onDragOver={(e) => handleDragOver(e, "visible", index)}
+                              onDrop={(e) => handleDrop(e, "visible", index)}
+                            />
+                            <div
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, panel, "visible")}
+                              onDragEnd={handleDragEnd}
+                              onDragOver={(e) => handleDragOver(e, "visible", index)}
+                              onDrop={(e) => handleDrop(e, "visible", index)}
+                              className={`flex items-center gap-2 px-3 py-2.5 cursor-grab active:cursor-grabbing select-none transition-all ${
+                                draggingPanel === panel
+                                  ? "opacity-50 bg-border/30"
+                                  : "hover:bg-border/50"
+                              }`}
+                            >
+                              <svg className="w-4 h-4 text-muted flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
+                              </svg>
+                              <span className="text-sm text-ink flex-1">{PANEL_LABELS[panel]}</span>
+                            </div>
                           </div>
                         ))}
+                        {visiblePanels.length === 0 && (
+                          <p className="px-3 py-3 text-xs text-muted text-center">Drop panels here</p>
+                        )}
                       </div>
                     </div>
+                    
+                    {/* Hidden Panels Section */}
                     <div>
-                      <p className="px-1 pb-2 text-xs font-medium text-muted uppercase">Hidden</p>
+                      <p className="px-1 pb-2 text-xs font-medium text-muted uppercase tracking-wide flex items-center gap-1.5">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
+                          <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                        </svg>
+                        Hidden
+                      </p>
                       <div
-                        className="rounded-lg border border-border/60"
-                        onDragOver={handleDragOver}
-                        onDrop={(event) => handleDrop(event, "hidden")}
+                        className={`rounded-lg border-2 transition-colors min-h-[44px] ${
+                          draggingPanel && dropTarget?.list === "hidden" && dropTarget?.index === hiddenPanels.length
+                            ? "border-accent bg-accent/5"
+                            : draggingPanel
+                            ? "border-dashed border-border"
+                            : "border-border/60"
+                        }`}
+                        onDragOver={(e) => handleDragOver(e, "hidden", hiddenPanels.length)}
+                        onDrop={(e) => handleDrop(e, "hidden", hiddenPanels.length)}
                       >
                         {hiddenPanels.length === 0 ? (
-                          <p className="px-3 py-2 text-xs text-muted">Everything is visible.</p>
+                          <p className="px-3 py-3 text-xs text-muted text-center">
+                            {draggingPanel ? "Drop here to hide" : "All panels visible"}
+                          </p>
                         ) : (
-                          hiddenPanels.map((panel) => (
-                            <div
-                              key={panel}
-                              draggable
-                              onDragStart={(event) => handleDragStart(event, panel, "hidden")}
-                              onDragOver={handleDragOver}
-                              onDrop={(event) => handleDrop(event, "hidden", panel)}
-                              className="flex items-center justify-between px-3 py-2 border-b border-border/60 last:border-b-0 hover:bg-border/50"
-                            >
-                              <span className="text-sm text-ink">{PANEL_LABELS[panel]}</span>
-                              <span className="text-xs text-muted">Drag</span>
+                          hiddenPanels.map((panel, index) => (
+                            <div key={panel}>
+                              {/* Drop indicator line */}
+                              <div
+                                className={`h-0.5 mx-2 rounded-full transition-all ${
+                                  dropTarget?.list === "hidden" && dropTarget?.index === index
+                                    ? "bg-accent my-1"
+                                    : "bg-transparent"
+                                }`}
+                                onDragOver={(e) => handleDragOver(e, "hidden", index)}
+                                onDrop={(e) => handleDrop(e, "hidden", index)}
+                              />
+                              <div
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, panel, "hidden")}
+                                onDragEnd={handleDragEnd}
+                                onDragOver={(e) => handleDragOver(e, "hidden", index)}
+                                onDrop={(e) => handleDrop(e, "hidden", index)}
+                                className={`flex items-center gap-2 px-3 py-2.5 cursor-grab active:cursor-grabbing select-none transition-all ${
+                                  draggingPanel === panel
+                                    ? "opacity-50 bg-border/30"
+                                    : "hover:bg-border/50"
+                                }`}
+                              >
+                                <svg className="w-4 h-4 text-muted flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
+                                </svg>
+                                <span className="text-sm text-ink/70 flex-1">{PANEL_LABELS[panel]}</span>
+                              </div>
                             </div>
                           ))
                         )}

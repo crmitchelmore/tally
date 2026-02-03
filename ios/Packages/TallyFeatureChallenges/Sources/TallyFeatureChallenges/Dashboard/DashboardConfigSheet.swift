@@ -68,7 +68,7 @@ public struct DashboardConfigSheet: View {
                         .frame(minHeight: 80)
                 } else {
                     ForEach(localConfig.visiblePanels) { panel in
-                        PanelRow(panel: panel, isBeingDragged: draggingPanel == panel)
+                        PanelRow(panel: panel, style: .visible, isBeingDragged: draggingPanel == panel)
                             .onDrag {
                                 draggingPanel = panel
                                 return NSItemProvider(object: panel.rawValue as NSString)
@@ -121,7 +121,7 @@ public struct DashboardConfigSheet: View {
                         .frame(minHeight: 80)
                 } else {
                     ForEach(localConfig.hiddenPanels) { panel in
-                        HiddenPanelRow(panel: panel, isBeingDragged: draggingPanel == panel)
+                        PanelRow(panel: panel, style: .hidden, isBeingDragged: draggingPanel == panel)
                             .onDrag {
                                 draggingPanel = panel
                                 return NSItemProvider(object: panel.rawValue as NSString)
@@ -173,20 +173,26 @@ public struct DashboardConfigSheet: View {
 
 // MARK: - Panel Row
 
+private enum PanelRowStyle {
+    case visible
+    case hidden
+}
+
 private struct PanelRow: View {
     let panel: DashboardPanel
+    let style: PanelRowStyle
     let isBeingDragged: Bool
     
     var body: some View {
         HStack(spacing: TallySpacing.md) {
             Image(systemName: "line.3.horizontal")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(Color.tallyInkSecondary)
+                .foregroundColor(foregroundColor)
                 .frame(width: 28, height: 28)
             
             Text(panel.title)
                 .font(.tallyLabelMedium)
-                .foregroundColor(Color.tallyInk)
+                .foregroundColor(titleColor)
             
             Spacer()
             
@@ -198,55 +204,53 @@ private struct PanelRow: View {
         .padding(.vertical, TallySpacing.lg)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.tallyPaper)
-                .shadow(color: Color.black.opacity(0.05), radius: 2, y: 1)
+                .fill(backgroundColor)
+                .shadow(color: shadowColor, radius: 2, y: 1)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(Color.tallyInk.opacity(0.1), lineWidth: 1)
+                .strokeBorder(borderColor, lineWidth: 1)
         )
         .opacity(isBeingDragged ? 0.5 : 1)
         .contentShape(Rectangle())
     }
-}
-
-// MARK: - Hidden Panel Row
-
-private struct HiddenPanelRow: View {
-    let panel: DashboardPanel
-    let isBeingDragged: Bool
     
-    var body: some View {
-        HStack(spacing: TallySpacing.md) {
-            Image(systemName: "line.3.horizontal")
-                .font(.system(size: 18, weight: .medium))
-                .foregroundColor(Color.tallyInkTertiary)
-                .frame(width: 28, height: 28)
-            
-            Text(panel.title)
-                .font(.tallyLabelMedium)
-                .foregroundColor(Color.tallyInkSecondary)
-            
-            Spacer()
-            
-            Image(systemName: "chevron.up.chevron.down")
-                .font(.system(size: 12))
-                .foregroundColor(Color.tallyInkTertiary)
+    private var foregroundColor: Color {
+        switch style {
+        case .visible: return Color.tallyInkSecondary
+        case .hidden: return Color.tallyInkTertiary
         }
-        .padding(.horizontal, TallySpacing.md)
-        .padding(.vertical, TallySpacing.lg)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.tallyPaper.opacity(0.6))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(Color.tallyInk.opacity(0.05), lineWidth: 1)
-        )
-        .opacity(isBeingDragged ? 0.5 : 1)
-        .contentShape(Rectangle())
+    }
+    
+    private var titleColor: Color {
+        switch style {
+        case .visible: return Color.tallyInk
+        case .hidden: return Color.tallyInkSecondary
+        }
+    }
+    
+    private var backgroundColor: Color {
+        switch style {
+        case .visible: return Color.tallyPaper
+        case .hidden: return Color.tallyPaper.opacity(0.6)
+        }
+    }
+    
+    private var shadowColor: Color {
+        switch style {
+        case .visible: return Color.black.opacity(0.05)
+        case .hidden: return Color.clear
+        }
+    }
+    
+    private var borderColor: Color {
+        switch style {
+        case .visible: return Color.tallyInk.opacity(0.1)
+        case .hidden: return Color.tallyInk.opacity(0.05)
+        }
     }
 }
+
 
 // MARK: - Drop Zone Placeholder
 

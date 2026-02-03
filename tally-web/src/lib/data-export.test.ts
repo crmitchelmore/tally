@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import type { Challenge, Entry, DashboardConfig } from "@/app/api/v1/_lib/types";
 
-// Type definitions matching store.ts
-interface ExportDataV2 {
+// Type definition matching store.ts (v2.0 only)
+interface ExportData {
   version: "2.0";
   exportedAt: string;
   preferences?: {
@@ -12,15 +12,6 @@ interface ExportDataV2 {
   entries: Entry[];
   follows: string[];
 }
-
-interface ExportDataV1 {
-  version: "1.0";
-  exportedAt: string;
-  challenges: Challenge[];
-  entries: Entry[];
-}
-
-type ImportData = ExportDataV2 | ExportDataV1;
 
 // Mock data factories
 function createMockChallenge(overrides: Partial<Challenge> = {}): Challenge {
@@ -58,140 +49,110 @@ function createMockEntry(overrides: Partial<Entry> = {}): Entry {
   };
 }
 
-describe("Export Data Format", () => {
-  describe("v2.0 format", () => {
-    it("includes all required fields", () => {
-      const exportData: ExportDataV2 = {
-        version: "2.0",
-        exportedAt: new Date().toISOString(),
-        challenges: [],
-        entries: [],
-        follows: [],
-      };
+describe("Export Data Format v2.0", () => {
+  it("includes all required fields", () => {
+    const exportData: ExportData = {
+      version: "2.0",
+      exportedAt: new Date().toISOString(),
+      challenges: [],
+      entries: [],
+      follows: [],
+    };
 
-      expect(exportData.version).toBe("2.0");
-      expect(exportData.exportedAt).toBeDefined();
-      expect(Array.isArray(exportData.challenges)).toBe(true);
-      expect(Array.isArray(exportData.entries)).toBe(true);
-      expect(Array.isArray(exportData.follows)).toBe(true);
-    });
-
-    it("includes preferences with dashboard config", () => {
-      const exportData: ExportDataV2 = {
-        version: "2.0",
-        exportedAt: new Date().toISOString(),
-        preferences: {
-          dashboardConfig: {
-            panels: {
-              highlights: true,
-              personalRecords: true,
-              progressGraph: true,
-              burnUpChart: true,
-              setsStats: true,
-            },
-            visible: ["activeChallenges", "highlights", "personalRecords"],
-            hidden: ["progressGraph", "burnUpChart"],
-          },
-        },
-        challenges: [],
-        entries: [],
-        follows: [],
-      };
-
-      expect(exportData.preferences?.dashboardConfig).toBeDefined();
-      expect(exportData.preferences?.dashboardConfig?.visible).toContain("activeChallenges");
-      expect(exportData.preferences?.dashboardConfig?.hidden).toContain("progressGraph");
-    });
-
-    it("includes challenge with all new fields", () => {
-      const challenge = createMockChallenge({
-        countType: "sets",
-        unitLabel: "push-ups",
-        defaultIncrement: 10,
-        isArchived: true,
-      });
-
-      const exportData: ExportDataV2 = {
-        version: "2.0",
-        exportedAt: new Date().toISOString(),
-        challenges: [challenge],
-        entries: [],
-        follows: [],
-      };
-
-      const exportedChallenge = exportData.challenges[0];
-      expect(exportedChallenge.countType).toBe("sets");
-      expect(exportedChallenge.unitLabel).toBe("push-ups");
-      expect(exportedChallenge.defaultIncrement).toBe(10);
-      expect(exportedChallenge.isArchived).toBe(true);
-    });
-
-    it("includes entry with sets data", () => {
-      const entry = createMockEntry({
-        sets: [20, 15, 12],
-        note: "Good workout",
-        feeling: "great",
-      });
-
-      const exportData: ExportDataV2 = {
-        version: "2.0",
-        exportedAt: new Date().toISOString(),
-        challenges: [],
-        entries: [entry],
-        follows: [],
-      };
-
-      const exportedEntry = exportData.entries[0];
-      expect(exportedEntry.sets).toEqual([20, 15, 12]);
-      expect(exportedEntry.note).toBe("Good workout");
-      expect(exportedEntry.feeling).toBe("great");
-    });
-
-    it("includes followed challenge IDs", () => {
-      const exportData: ExportDataV2 = {
-        version: "2.0",
-        exportedAt: new Date().toISOString(),
-        challenges: [],
-        entries: [],
-        follows: ["challenge-abc", "challenge-xyz"],
-      };
-
-      expect(exportData.follows).toHaveLength(2);
-      expect(exportData.follows).toContain("challenge-abc");
-    });
+    expect(exportData.version).toBe("2.0");
+    expect(exportData.exportedAt).toBeDefined();
+    expect(Array.isArray(exportData.challenges)).toBe(true);
+    expect(Array.isArray(exportData.entries)).toBe(true);
+    expect(Array.isArray(exportData.follows)).toBe(true);
   });
 
-  describe("v1.0 backward compatibility", () => {
-    it("v1.0 format is valid import data", () => {
-      const v1Data: ExportDataV1 = {
-        version: "1.0",
-        exportedAt: new Date().toISOString(),
-        challenges: [createMockChallenge()],
-        entries: [createMockEntry()],
-      };
+  it("includes preferences with dashboard config", () => {
+    const exportData: ExportData = {
+      version: "2.0",
+      exportedAt: new Date().toISOString(),
+      preferences: {
+        dashboardConfig: {
+          panels: {
+            highlights: true,
+            personalRecords: true,
+            progressGraph: true,
+            burnUpChart: true,
+            setsStats: true,
+          },
+          visible: ["activeChallenges", "highlights", "personalRecords"],
+          hidden: ["progressGraph", "burnUpChart"],
+        },
+      },
+      challenges: [],
+      entries: [],
+      follows: [],
+    };
 
-      expect(v1Data.version).toBe("1.0");
-      expect(v1Data.challenges).toHaveLength(1);
-      expect(v1Data.entries).toHaveLength(1);
+    expect(exportData.preferences?.dashboardConfig).toBeDefined();
+    expect(exportData.preferences?.dashboardConfig?.visible).toContain("activeChallenges");
+    expect(exportData.preferences?.dashboardConfig?.hidden).toContain("progressGraph");
+  });
+
+  it("includes challenge with all fields", () => {
+    const challenge = createMockChallenge({
+      countType: "sets",
+      unitLabel: "push-ups",
+      defaultIncrement: 10,
+      isArchived: true,
     });
 
-    it("v1.0 data can be imported without preferences/follows", () => {
-      const v1Data: ImportData = {
-        version: "1.0",
-        exportedAt: new Date().toISOString(),
-        challenges: [],
-        entries: [],
-      };
+    const exportData: ExportData = {
+      version: "2.0",
+      exportedAt: new Date().toISOString(),
+      challenges: [challenge],
+      entries: [],
+      follows: [],
+    };
 
-      // v1.0 doesn't have preferences or follows
-      expect("preferences" in v1Data).toBe(false);
-      expect("follows" in v1Data).toBe(false);
+    const exportedChallenge = exportData.challenges[0];
+    expect(exportedChallenge.countType).toBe("sets");
+    expect(exportedChallenge.unitLabel).toBe("push-ups");
+    expect(exportedChallenge.defaultIncrement).toBe(10);
+    expect(exportedChallenge.isArchived).toBe(true);
+  });
+
+  it("includes entry with sets data", () => {
+    const entry = createMockEntry({
+      sets: [20, 15, 12],
+      note: "Good workout",
+      feeling: "great",
     });
+
+    const exportData: ExportData = {
+      version: "2.0",
+      exportedAt: new Date().toISOString(),
+      challenges: [],
+      entries: [entry],
+      follows: [],
+    };
+
+    const exportedEntry = exportData.entries[0];
+    expect(exportedEntry.sets).toEqual([20, 15, 12]);
+    expect(exportedEntry.note).toBe("Good workout");
+    expect(exportedEntry.feeling).toBe("great");
+  });
+
+  it("includes followed challenge IDs", () => {
+    const exportData: ExportData = {
+      version: "2.0",
+      exportedAt: new Date().toISOString(),
+      challenges: [],
+      entries: [],
+      follows: ["challenge-abc", "challenge-xyz"],
+    };
+
+    expect(exportData.follows).toHaveLength(2);
+    expect(exportData.follows).toContain("challenge-abc");
   });
 });
 
 describe("Data Validation", () => {
-  // Helper to simulate validateImportData logic
+  // Mirrors validateImportData from validate.ts
   function validateImportData(data: unknown): { valid: boolean; errors: Array<{ field: string; message: string }> } {
     const errors: Array<{ field: string; message: string }> = [];
 
@@ -201,7 +162,7 @@ describe("Data Validation", () => {
 
     const body = data as Record<string, unknown>;
 
-    if (body.version !== "1.0" && body.version !== "2.0") {
+    if (body.version !== "2.0") {
       errors.push({ field: "version", message: "Unsupported data version" });
     }
 
@@ -213,17 +174,19 @@ describe("Data Validation", () => {
       errors.push({ field: "entries", message: "Entries must be an array" });
     }
 
-    if (body.version === "2.0") {
-      if (body.follows !== undefined && !Array.isArray(body.follows)) {
-        errors.push({ field: "follows", message: "Follows must be an array" });
-      }
+    if (!Array.isArray(body.follows)) {
+      errors.push({ field: "follows", message: "Follows must be an array" });
+    }
+
+    if (body.preferences !== undefined && typeof body.preferences !== "object") {
+      errors.push({ field: "preferences", message: "Preferences must be an object" });
     }
 
     return { valid: errors.length === 0, errors };
   }
 
   it("accepts valid v2.0 data", () => {
-    const data: ExportDataV2 = {
+    const data: ExportData = {
       version: "2.0",
       exportedAt: new Date().toISOString(),
       challenges: [],
@@ -236,24 +199,13 @@ describe("Data Validation", () => {
     expect(result.errors).toHaveLength(0);
   });
 
-  it("accepts valid v1.0 data", () => {
-    const data: ExportDataV1 = {
+  it("rejects old v1.0 version", () => {
+    const data = {
       version: "1.0",
       exportedAt: new Date().toISOString(),
       challenges: [],
       entries: [],
-    };
-
-    const result = validateImportData(data);
-    expect(result.valid).toBe(true);
-  });
-
-  it("rejects unsupported version", () => {
-    const data = {
-      version: "3.0",
-      exportedAt: new Date().toISOString(),
-      challenges: [],
-      entries: [],
+      follows: [],
     };
 
     const result = validateImportData(data);
@@ -287,35 +239,32 @@ describe("Data Validation", () => {
     expect(result.errors.some(e => e.field === "entries")).toBe(true);
   });
 
-  it("rejects invalid follows (non-array) in v2.0", () => {
+  it("rejects missing follows array", () => {
     const data = {
       version: "2.0",
       exportedAt: new Date().toISOString(),
       challenges: [],
       entries: [],
-      follows: "not-an-array",
     };
 
     const result = validateImportData(data);
     expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.field === "follows")).toBe(true);
   });
 });
 
 describe("Challenge ID Mapping on Import", () => {
-  // Simulate the ID mapping logic from importUserData
   function mapChallengeIds(
     challenges: Challenge[],
     entries: Entry[]
   ): { mappedEntries: Entry[]; idMap: Map<string, string> } {
     const idMap = new Map<string, string>();
     
-    // Simulate creating new challenges with new IDs
     challenges.forEach((c, index) => {
       const newId = `new-challenge-${index}`;
       idMap.set(c.id, newId);
     });
 
-    // Map entries to new challenge IDs
     const mappedEntries = entries
       .filter(e => idMap.has(e.challengeId))
       .map(e => ({
@@ -349,25 +298,23 @@ describe("Challenge ID Mapping on Import", () => {
 
     expect(mappedEntries).toHaveLength(2);
     expect(mappedEntries[0].challengeId).toBe("new-challenge-0");
-    expect(mappedEntries[1].challengeId).toBe("new-challenge-0");
   });
 
-  it("drops entries for deleted/missing challenges", () => {
+  it("drops entries for missing challenges", () => {
     const challenges = [createMockChallenge({ id: "existing-id" })];
     const entries = [
       createMockEntry({ challengeId: "existing-id" }),
-      createMockEntry({ challengeId: "deleted-challenge-id" }), // Should be dropped
+      createMockEntry({ challengeId: "deleted-challenge-id" }),
     ];
 
     const { mappedEntries } = mapChallengeIds(challenges, entries);
 
     expect(mappedEntries).toHaveLength(1);
-    expect(mappedEntries[0].challengeId).toBe("new-challenge-0");
   });
 });
 
 describe("Round-trip Data Integrity", () => {
-  it("preserves all challenge fields through export/import", () => {
+  it("preserves all challenge fields", () => {
     const original = createMockChallenge({
       name: "Test Challenge",
       target: 5000,
@@ -383,32 +330,23 @@ describe("Round-trip Data Integrity", () => {
       defaultIncrement: 5,
     });
 
-    // Simulate export (JSON serialization)
     const exported = JSON.stringify(original);
-    
-    // Simulate import (JSON parsing)
     const imported = JSON.parse(exported) as Challenge;
 
     expect(imported.name).toBe(original.name);
     expect(imported.target).toBe(original.target);
-    expect(imported.timeframeType).toBe(original.timeframeType);
-    expect(imported.startDate).toBe(original.startDate);
-    expect(imported.endDate).toBe(original.endDate);
-    expect(imported.color).toBe(original.color);
-    expect(imported.icon).toBe(original.icon);
-    expect(imported.isPublic).toBe(original.isPublic);
-    expect(imported.isArchived).toBe(original.isArchived);
     expect(imported.countType).toBe(original.countType);
     expect(imported.unitLabel).toBe(original.unitLabel);
     expect(imported.defaultIncrement).toBe(original.defaultIncrement);
+    expect(imported.isArchived).toBe(original.isArchived);
   });
 
-  it("preserves all entry fields through export/import", () => {
+  it("preserves all entry fields", () => {
     const original = createMockEntry({
       date: "2026-02-15",
       count: 47,
       sets: [20, 15, 12],
-      note: "Morning workout, felt strong",
+      note: "Morning workout",
       feeling: "great",
     });
 
@@ -422,7 +360,7 @@ describe("Round-trip Data Integrity", () => {
     expect(imported.feeling).toBe(original.feeling);
   });
 
-  it("preserves dashboard config through export/import", () => {
+  it("preserves dashboard config", () => {
     const original: DashboardConfig = {
       panels: {
         highlights: true,

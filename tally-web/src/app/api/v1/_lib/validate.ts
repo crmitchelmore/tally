@@ -266,7 +266,7 @@ export function validateUpdateEntry(data: unknown): ValidationResult {
 }
 
 /**
- * Validate import data (supports v1.0 and v2.0 formats)
+ * Validate import data (v2.0 format only)
  */
 export function validateImportData(data: unknown): ValidationResult {
   const errors: ValidationError[] = [];
@@ -277,9 +277,8 @@ export function validateImportData(data: unknown): ValidationResult {
 
   const body = data as Record<string, unknown>;
 
-  // Accept both v1.0 and v2.0
-  if (body.version !== "1.0" && body.version !== "2.0") {
-    errors.push({ field: "version", message: "Unsupported data version (expected 1.0 or 2.0)" });
+  if (body.version !== "2.0") {
+    errors.push({ field: "version", message: "Unsupported data version (expected 2.0)" });
   }
 
   if (!Array.isArray(body.challenges)) {
@@ -290,14 +289,12 @@ export function validateImportData(data: unknown): ValidationResult {
     errors.push({ field: "entries", message: "Entries must be an array" });
   }
 
-  // v2.0 optional fields
-  if (body.version === "2.0") {
-    if (body.follows !== undefined && !Array.isArray(body.follows)) {
-      errors.push({ field: "follows", message: "Follows must be an array of challenge IDs" });
-    }
-    if (body.preferences !== undefined && typeof body.preferences !== "object") {
-      errors.push({ field: "preferences", message: "Preferences must be an object" });
-    }
+  if (!Array.isArray(body.follows)) {
+    errors.push({ field: "follows", message: "Follows must be an array" });
+  }
+
+  if (body.preferences !== undefined && typeof body.preferences !== "object") {
+    errors.push({ field: "preferences", message: "Preferences must be an object" });
   }
 
   return { valid: errors.length === 0, errors };

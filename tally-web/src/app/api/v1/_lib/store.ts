@@ -389,7 +389,7 @@ export async function calculatePersonalRecords(userId: string): Promise<Personal
   };
 }
 
-// Data export/import
+// Data export/import (v2.0 format only)
 export interface ExportData {
   version: "2.0";
   exportedAt: string;
@@ -400,14 +400,6 @@ export interface ExportData {
   entries: Entry[];
   follows: string[]; // Challenge IDs that the user follows
 }
-
-// Type for import (accepts both v1 and v2 formats)
-export type ImportData = ExportData | {
-  version: "1.0";
-  exportedAt: string;
-  challenges: Challenge[];
-  entries: Entry[];
-};
 
 export async function exportUserData(userId: string): Promise<ExportData> {
   const user = await getUserByClerkId(userId);
@@ -429,7 +421,7 @@ export async function exportUserData(userId: string): Promise<ExportData> {
 
 export async function importUserData(
   userId: string,
-  data: ImportData
+  data: ExportData
 ): Promise<{ challenges: number; entries: number; follows: number; preferences: boolean }> {
   // Clear existing data
   await clearUserData(userId);
@@ -449,7 +441,6 @@ export async function importUserData(
       color: c.color,
       icon: c.icon,
       isPublic: c.isPublic,
-      // Include new fields
       countType: c.countType,
       unitLabel: c.unitLabel,
       defaultIncrement: c.defaultIncrement,
@@ -481,26 +472,24 @@ export async function importUserData(
     }
   }
 
-  // Import follows (v2 only) - note: these are external challenge IDs, not mapped
+  // Import follows - note: these are external challenge IDs, not mapped
   let followCount = 0;
-  if ("follows" in data && data.follows) {
-    for (const challengeId of data.follows) {
-      try {
-        // Only create follow if the challenge exists (it's a public challenge we don't own)
-        const challenge = await getChallengeById(challengeId);
-        if (challenge && challenge.userId !== userId && challenge.isPublic) {
-          await createFollow(userId, challengeId);
-          followCount++;
-        }
-      } catch {
-        // Challenge may no longer exist, skip
+  for (const challengeId of data.follows) {
+    try {
+      // Only create follow if the challenge exists (it's a public challenge we don't own)
+      const challenge = await getChallengeById(challengeId);
+      if (challenge && challenge.userId !== userId && challenge.isPublic) {
+        await createFollow(userId, challengeId);
+        followCount++;
       }
+    } catch {
+      // Challenge may no longer exist, skip
     }
   }
 
-  // Import preferences (v2 only)
+  // Import preferences
   let preferencesImported = false;
-  if ("preferences" in data && data.preferences?.dashboardConfig) {
+  if (data.preferences?.dashboardConfig) {
     await updateUserPreferences(userId, {
       dashboardConfig: data.preferences.dashboardConfig,
     });

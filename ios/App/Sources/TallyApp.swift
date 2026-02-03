@@ -12,13 +12,7 @@ enum AppearanceMode: String, CaseIterable, Identifiable {
     
     var id: String { rawValue }
     
-    var label: String {
-        switch self {
-        case .system: return "System"
-        case .light: return "Light"
-        case .dark: return "Dark"
-        }
-    }
+    var label: String { rawValue.capitalized }
     
     var colorScheme: ColorScheme? {
         switch self {
@@ -29,10 +23,16 @@ enum AppearanceMode: String, CaseIterable, Identifiable {
     }
 }
 
+/// Centralized app settings for shared state
+@MainActor
+class AppSettings: ObservableObject {
+    @AppStorage("appearanceMode") var appearanceMode: AppearanceMode = .system
+}
+
 @main
 struct TallyApp: App {
     @Environment(\.scenePhase) private var scenePhase
-    @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .system
+    @StateObject private var appSettings = AppSettings()
     
     init() {
         // Register background refresh tasks on app launch
@@ -49,7 +49,8 @@ struct TallyApp: App {
                 SignInView()
             }
             .environment(\.clerk, Clerk.shared)
-            .preferredColorScheme(appearanceMode.colorScheme)
+            .environmentObject(appSettings)
+            .preferredColorScheme(appSettings.appearanceMode.colorScheme)
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {

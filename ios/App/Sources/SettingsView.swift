@@ -10,7 +10,7 @@ import Clerk
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable private var authManager = AuthManager.shared
-    @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .system
+    @EnvironmentObject private var appSettings: AppSettings
     @State private var showTipJar = false
     @State private var showExportSheet = false
     @State private var showImportPicker = false
@@ -214,7 +214,7 @@ struct SettingsView: View {
                 // App info
                 Section {
                     // Appearance setting
-                    Picker(selection: $appearanceMode) {
+                    Picker(selection: $appSettings.appearanceMode) {
                         ForEach(AppearanceMode.allCases) { mode in
                             Text(mode.label).tag(mode)
                         }

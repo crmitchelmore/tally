@@ -457,24 +457,24 @@ export default function AppPage() {
                   />
                 );
               case "highlights":
-                return panelConfig.panels.highlights ? (
+                return (
                   <DashboardHighlights key={panel} stats={dashboardStats} loading={statsLoading} />
-                ) : null;
+                );
               case "personalRecords":
-                return panelConfig.panels.personalRecords ? (
+                return (
                   <PersonalRecords 
                     key={panel}
                     records={personalRecords} 
                     loading={statsLoading} 
                     challengeNames={challengeNames}
                   />
-                ) : null;
+                );
               case "progressGraph":
-                return panelConfig.panels.progressGraph && entries.length > 0 ? (
+                return entries.length > 0 ? (
                   <ProgressGraph key={panel} entries={entries} challenges={challengesById} />
                 ) : null;
               case "burnUpChart":
-                return panelConfig.panels.burnUpChart && challenges.length > 0 ? (
+                return challenges.length > 0 ? (
                   <div key={panel} className="space-y-6">
                     <h2 className="text-lg font-semibold text-ink">Goal Progress</h2>
                     {challenges.slice(0, 3).map(({ challenge }) => (

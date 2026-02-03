@@ -48,6 +48,7 @@ import com.tally.core.design.TallySpacing
 import com.tally.core.design.TallyTheme
 import com.tally.core.network.Challenge
 import com.tally.core.network.Entry
+import com.tally.app.data.ChallengeWithCount
 import com.tally.core.network.TallyApiClient
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -78,7 +79,6 @@ fun HomeScreen(authManager: AuthManager? = null) {
     // Collect state
     val challenges by challengesManager.challenges.collectAsStateWithLifecycle()
     val stats by challengesManager.stats.collectAsStateWithLifecycle()
-    val entries by challengesManager.entries.collectAsStateWithLifecycle()
     val isLoading by challengesManager.isLoading.collectAsStateWithLifecycle()
     val isRefreshing by challengesManager.isRefreshing.collectAsStateWithLifecycle()
     val syncState by challengesManager.syncState.collectAsStateWithLifecycle()
@@ -179,7 +179,6 @@ fun HomeScreen(authManager: AuthManager? = null) {
                     ) {
                         items(challenges) { challenge ->
                             val challengeStats = stats[challenge.id]
-                            val challengeEntries = entries[challenge.id] ?: emptyList()
                             ChallengeCard(
                                 challengeWithCount = ChallengeWithCount(
                                     challenge = challenge,
@@ -188,7 +187,6 @@ fun HomeScreen(authManager: AuthManager? = null) {
                                 ),
                                 onClick = { selectedChallenge = challenge },
                                 onAddEntry = { selectedChallenge = challenge },
-                                entries = challengeEntries,
                                 showMiniHeatmap = true
                             )
                         }

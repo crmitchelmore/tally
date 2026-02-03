@@ -43,8 +43,129 @@ public final class ChallengesManager {
     public private(set) var serverPersonalRecords: PersonalRecords?
     
     /// Dashboard stats computed from all challenges
+    /// Falls back to computing from local entries when server stats unavailable
     public var dashboardStats: DashboardStats? {
-        serverDashboardStats
+        if let serverStats = serverDashboardStats {
+            return serverStats
+        }
+        
+        // Compute local fallback from entries
+        return computeLocalDashboardStats()
+    }
+    
+    /// Compute dashboard stats from local entries when offline
+    private func computeLocalDashboardStats() -> DashboardStats? {
+        let entries = allEntries
+        guard !entries.isEmpty else { return nil }
+        
+        // Compute total marks
+        let totalMarks = entries.reduce(0) { $0 + $1.count }
+        
+        // Compute today's count
+        let todayString = Self.fullDateFormatter.string(from: Date())
+        let todayCount = entries
+            .filter { $0.date == todayString }
+            .reduce(0) { $0 + $1.count }
+        
+        // Compute best streak from local data
+        // Group entries by date and check for consecutive days
+        let entriesByDate = Dictionary(grouping: entries) { $0.date }
+        let activeDates = Set(entriesByDate.keys)
+        let bestStreak = computeBestStreak(from: activeDates)
+        
+        // Compute overall pace status from individual challenge stats
+        let overallPaceStatus = computeOverallPaceStatus()
+        
+        // Compute best set and average set value from entries (single pass)
+        var bestSet: DashboardStats.BestSet? = nil
+        var totalSets = 0
+        var setSum = 0
+        for entry in entries {
+            if let sets = entry.sets, !sets.isEmpty {
+                for setVal in sets {
+                    if setVal > (bestSet?.value ?? Int.min) {
+                        bestSet = DashboardStats.BestSet(
+                            value: setVal,
+                            date: entry.date,
+                            challengeId: entry.challengeId
+                        )
+                    }
+                }
+                totalSets += sets.count
+                setSum += sets.reduce(0, +)
+            }
+        }
+        let avgSetValue: Double? = totalSets > 0 ? Double(setSum) / Double(totalSets) : nil
+        
+        return DashboardStats(
+            totalMarks: totalMarks,
+            today: todayCount,
+            bestStreak: bestStreak,
+            overallPaceStatus: overallPaceStatus,
+            bestSet: bestSet,
+            avgSetValue: avgSetValue
+        )
+    }
+    
+    /// Compute best streak from a set of date strings (ISO format)
+    private func computeBestStreak(from dateStrings: Set<String>) -> Int {
+        guard !dateStrings.isEmpty else { return 0 }
+        
+        let calendar = Calendar.current
+        let dates = dateStrings
+            .compactMap { Self.fullDateFormatter.date(from: $0) }
+            .sorted()
+        
+        guard !dates.isEmpty else { return 0 }
+        
+        var bestStreak = 1
+        var currentStreak = 1
+        
+        for i in 1..<dates.count {
+            let previousDate = dates[i - 1]
+            let currentDate = dates[i]
+            
+            if let daysDiff = calendar.dateComponents([.day], from: previousDate, to: currentDate).day,
+               daysDiff == 1 {
+                currentStreak += 1
+                bestStreak = max(bestStreak, currentStreak)
+            } else if calendar.isDate(previousDate, inSameDayAs: currentDate) {
+                // Same day, continue streak
+            } else {
+                currentStreak = 1
+            }
+        }
+        
+        return bestStreak
+    }
+    
+    /// Compute overall pace status from individual challenge stats
+    private func computeOverallPaceStatus() -> PaceStatus {
+        let activeStats = activeChallenges.compactMap { stats[$0.id] }
+        guard !activeStats.isEmpty else { return .none }
+        
+        var aheadCount = 0
+        var onPaceCount = 0
+        var behindCount = 0
+        
+        for stat in activeStats {
+            switch stat.paceStatus {
+            case .ahead: aheadCount += 1
+            case .onPace: onPaceCount += 1
+            case .behind: behindCount += 1
+            case .none: break
+            }
+        }
+        
+        // Determine overall status based on majority; ties favor onPace
+        if behindCount > aheadCount && behindCount > onPaceCount {
+            return .behind
+        } else if aheadCount > behindCount && aheadCount > onPaceCount {
+            return .ahead
+        } else if onPaceCount > 0 || aheadCount > 0 {
+            return .onPace
+        }
+        return .none
     }
     
     /// Personal records computed from all challenges

@@ -283,12 +283,13 @@ public struct ChallengeDetailView: View {
     
     private var progressSection: some View {
         VStack(spacing: TallySpacing.md) {
-            // Main tally visualization
+            // Main tally visualization - let it size naturally based on count
             TallyMarkView(
                 count: stats?.totalCount ?? 0,
                 animated: !reduceMotion,
                 size: 140
             )
+            .fixedSize()
             .accessibilityIdentifier("progress-ring")
             
             // Total / Target

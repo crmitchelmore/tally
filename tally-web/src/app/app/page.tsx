@@ -136,7 +136,7 @@ export default function AppPage() {
       fetch("/api/v1/auth/user/preferences")
         .then(res => res.json())
         .then(data => {
-          if (data.dashboardConfig?.panels) {
+          if (data.dashboardConfig) {
             const merged = normalizeDashboardConfig(data.dashboardConfig);
             setPanelConfig(merged);
             localStorage.setItem("dashboardConfig", JSON.stringify(merged));
@@ -146,7 +146,7 @@ export default function AppPage() {
           // Use localStorage fallback
         });
     }
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, normalizeDashboardConfig]);
 
   const persistConfig = useCallback((config: DashboardConfig) => {
     localStorage.setItem("dashboardConfig", JSON.stringify(config));

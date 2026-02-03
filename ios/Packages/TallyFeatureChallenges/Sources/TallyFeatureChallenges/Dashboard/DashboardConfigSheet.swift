@@ -11,6 +11,8 @@ public struct DashboardConfigSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var localConfig: DashboardConfig
     @State private var draggingPanel: DashboardPanel?
+    @State private var isDraggingOverVisible = false
+    @State private var isDraggingOverHidden = false
     
     public init(config: DashboardConfig, onChange: @escaping (DashboardConfig) -> Void) {
         self.config = config
@@ -21,7 +23,8 @@ public struct DashboardConfigSheet: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: TallySpacing.lg) {
+                VStack(spacing: TallySpacing.xl) {
+                    instructionText
                     visiblePanelSection
                     hiddenPanelSection
                 }
@@ -41,87 +44,118 @@ public struct DashboardConfigSheet: View {
             }
         }
     }
+    
+    private var instructionText: some View {
+        Text("Drag panels to reorder or move between sections")
+            .font(.tallyBodySmall)
+            .foregroundColor(Color.tallyInkSecondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
 
     private var visiblePanelSection: some View {
-        VStack(alignment: .leading, spacing: TallySpacing.sm) {
-            Text("Visible Panels")
-                .font(.tallyTitleSmall)
-                .foregroundColor(Color.tallyInk)
+        VStack(alignment: .leading, spacing: TallySpacing.md) {
+            HStack {
+                Image(systemName: "eye.fill")
+                    .foregroundColor(Color.tallyAccent)
+                Text("Visible Panels")
+                    .font(.tallyTitleSmall)
+                    .foregroundColor(Color.tallyInk)
+            }
             
-            if localConfig.visiblePanels.isEmpty {
-                Text("No visible panels yet")
-                    .font(.tallyBodySmall)
-                    .foregroundColor(Color.tallyInkTertiary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, TallySpacing.md)
-            } else {
-                ForEach(localConfig.visiblePanels) { panel in
-                    PanelRow(panel: panel)
-                        .onDrag {
-                            draggingPanel = panel
-                            return NSItemProvider(object: panel.rawValue as NSString)
-                        }
-                        .onDrop(
-                            of: [UTType.text],
-                            delegate: PanelDropDelegate(
-                                panel: panel,
-                                panels: $localConfig.visiblePanels,
-                                draggingPanel: $draggingPanel
+            VStack(spacing: TallySpacing.sm) {
+                if localConfig.visiblePanels.isEmpty {
+                    DropZonePlaceholder(text: "Drop panels here to show them")
+                        .frame(minHeight: 80)
+                } else {
+                    ForEach(localConfig.visiblePanels) { panel in
+                        PanelRow(panel: panel, isBeingDragged: draggingPanel == panel)
+                            .onDrag {
+                                draggingPanel = panel
+                                return NSItemProvider(object: panel.rawValue as NSString)
+                            }
+                            .onDrop(
+                                of: [UTType.text],
+                                delegate: PanelDropDelegate(
+                                    panel: panel,
+                                    panels: $localConfig.visiblePanels,
+                                    draggingPanel: $draggingPanel
+                                )
                             )
-                        )
+                    }
                 }
             }
         }
-        .onDrop(of: [UTType.text], isTargeted: nil) { _ in
+        .padding(TallySpacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.tallyPaperTint)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(
+                            isDraggingOverVisible ? Color.tallyAccent : Color.clear,
+                            style: StrokeStyle(lineWidth: 2, dash: [8, 4])
+                        )
+                )
+        )
+        .onDrop(of: [UTType.text], isTargeted: $isDraggingOverVisible) { _ in
             guard let draggingPanel else { return false }
             moveToVisible(draggingPanel)
             self.draggingPanel = nil
             return true
         }
-        .tallyPadding()
-        .background(Color.tallyPaperTint)
-        .cornerRadius(12)
     }
 
     private var hiddenPanelSection: some View {
-        VStack(alignment: .leading, spacing: TallySpacing.sm) {
-            Text("Hidden Panels")
-                .font(.tallyTitleSmall)
-                .foregroundColor(Color.tallyInk)
-            
-            if localConfig.hiddenPanels.isEmpty {
-                Text("All panels are visible")
-                    .font(.tallyBodySmall)
+        VStack(alignment: .leading, spacing: TallySpacing.md) {
+            HStack {
+                Image(systemName: "eye.slash.fill")
                     .foregroundColor(Color.tallyInkTertiary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, TallySpacing.md)
-            } else {
-                ForEach(localConfig.hiddenPanels) { panel in
-                    HiddenPanelRow(panel: panel)
-                        .onDrag {
-                            draggingPanel = panel
-                            return NSItemProvider(object: panel.rawValue as NSString)
-                        }
-                        .onDrop(
-                            of: [UTType.text],
-                            delegate: PanelDropDelegate(
-                                panel: panel,
-                                panels: $localConfig.hiddenPanels,
-                                draggingPanel: $draggingPanel
+                Text("Hidden Panels")
+                    .font(.tallyTitleSmall)
+                    .foregroundColor(Color.tallyInk)
+            }
+            
+            VStack(spacing: TallySpacing.sm) {
+                if localConfig.hiddenPanels.isEmpty {
+                    DropZonePlaceholder(text: "Drop panels here to hide them")
+                        .frame(minHeight: 80)
+                } else {
+                    ForEach(localConfig.hiddenPanels) { panel in
+                        HiddenPanelRow(panel: panel, isBeingDragged: draggingPanel == panel)
+                            .onDrag {
+                                draggingPanel = panel
+                                return NSItemProvider(object: panel.rawValue as NSString)
+                            }
+                            .onDrop(
+                                of: [UTType.text],
+                                delegate: PanelDropDelegate(
+                                    panel: panel,
+                                    panels: $localConfig.hiddenPanels,
+                                    draggingPanel: $draggingPanel
+                                )
                             )
-                        )
+                    }
                 }
             }
         }
-        .onDrop(of: [UTType.text], isTargeted: nil) { _ in
+        .padding(TallySpacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.tallyPaperTint.opacity(0.5))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(
+                            isDraggingOverHidden ? Color.tallyInkTertiary : Color.clear,
+                            style: StrokeStyle(lineWidth: 2, dash: [8, 4])
+                        )
+                )
+        )
+        .onDrop(of: [UTType.text], isTargeted: $isDraggingOverHidden) { _ in
             guard let draggingPanel else { return false }
             moveToHidden(draggingPanel)
             self.draggingPanel = nil
             return true
         }
-        .tallyPadding()
-        .background(Color.tallyPaperTint)
-        .cornerRadius(12)
     }
     
     private func moveToVisible(_ panel: DashboardPanel) {
@@ -141,20 +175,37 @@ public struct DashboardConfigSheet: View {
 
 private struct PanelRow: View {
     let panel: DashboardPanel
+    let isBeingDragged: Bool
     
     var body: some View {
-        HStack(spacing: TallySpacing.sm) {
+        HStack(spacing: TallySpacing.md) {
             Image(systemName: "line.3.horizontal")
-                .font(.system(size: 14))
-                .foregroundColor(Color.tallyInkTertiary)
+                .font(.system(size: 18, weight: .medium))
+                .foregroundColor(Color.tallyInkSecondary)
+                .frame(width: 28, height: 28)
             
             Text(panel.title)
                 .font(.tallyLabelMedium)
                 .foregroundColor(Color.tallyInk)
             
             Spacer()
+            
+            Image(systemName: "chevron.up.chevron.down")
+                .font(.system(size: 12))
+                .foregroundColor(Color.tallyInkTertiary)
         }
-        .padding(.vertical, TallySpacing.md)
+        .padding(.horizontal, TallySpacing.md)
+        .padding(.vertical, TallySpacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.tallyPaper)
+                .shadow(color: Color.black.opacity(0.05), radius: 2, y: 1)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(Color.tallyInk.opacity(0.1), lineWidth: 1)
+        )
+        .opacity(isBeingDragged ? 0.5 : 1)
         .contentShape(Rectangle())
     }
 }
@@ -163,21 +214,64 @@ private struct PanelRow: View {
 
 private struct HiddenPanelRow: View {
     let panel: DashboardPanel
+    let isBeingDragged: Bool
     
     var body: some View {
-        HStack(spacing: TallySpacing.sm) {
+        HStack(spacing: TallySpacing.md) {
             Image(systemName: "line.3.horizontal")
-                .font(.system(size: 14))
+                .font(.system(size: 18, weight: .medium))
                 .foregroundColor(Color.tallyInkTertiary)
+                .frame(width: 28, height: 28)
             
             Text(panel.title)
                 .font(.tallyLabelMedium)
                 .foregroundColor(Color.tallyInkSecondary)
             
             Spacer()
+            
+            Image(systemName: "chevron.up.chevron.down")
+                .font(.system(size: 12))
+                .foregroundColor(Color.tallyInkTertiary)
         }
-        .padding(.vertical, TallySpacing.md)
+        .padding(.horizontal, TallySpacing.md)
+        .padding(.vertical, TallySpacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.tallyPaper.opacity(0.6))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(Color.tallyInk.opacity(0.05), lineWidth: 1)
+        )
+        .opacity(isBeingDragged ? 0.5 : 1)
         .contentShape(Rectangle())
+    }
+}
+
+// MARK: - Drop Zone Placeholder
+
+private struct DropZonePlaceholder: View {
+    let text: String
+    
+    var body: some View {
+        VStack(spacing: TallySpacing.sm) {
+            Image(systemName: "arrow.down.to.line.compact")
+                .font(.system(size: 24))
+                .foregroundColor(Color.tallyInkTertiary)
+            
+            Text(text)
+                .font(.tallyBodySmall)
+                .foregroundColor(Color.tallyInkTertiary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, TallySpacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(
+                    Color.tallyInkTertiary.opacity(0.3),
+                    style: StrokeStyle(lineWidth: 2, dash: [8, 4])
+                )
+        )
     }
 }
 

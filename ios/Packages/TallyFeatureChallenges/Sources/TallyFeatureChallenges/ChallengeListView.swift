@@ -54,30 +54,8 @@ public struct ChallengeListView: View {
                     .tallyPadding(.horizontal)
             }
             
-            // Active challenges
-            if !manager.activeChallenges.isEmpty {
-                Section {
-                    ForEach(manager.activeChallenges) { challenge in
-                        ChallengeCardView(
-                            challenge: challenge,
-                            stats: manager.stats(for: challenge.id),
-                            entries: manager.entries(for: challenge.id),
-                            onTap: { onSelectChallenge(challenge) },
-                            onQuickAdd: { onQuickAdd(challenge) }
-                        )
-                        .frame(maxWidth: .infinity)
-                        .accessibilityIdentifier("challenge-card")
-                        .contextMenu {
-                            Button("Delete", role: .destructive) {
-                                onDeleteChallenge(challenge)
-                            }
-                }
-            }
-                } header: {
-                    SectionHeader(title: "Active", count: manager.activeChallenges.count)
-                }
-                .tallyPadding(.horizontal)
-            }
+            // Active challenges are now shown via DashboardView's configurable panels
+            // This list only shows archived challenges
             
             // Archived challenges (collapsible)
             if !manager.archivedChallenges.isEmpty {

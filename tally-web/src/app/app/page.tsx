@@ -545,7 +545,7 @@ export default function AppPage() {
 
       {/* Dashboard highlights - only show when user has data and panel enabled */}
       {challenges.length > 0 && (
-        <>
+        <div key={visiblePanels.join("-")} className="contents">
           {visiblePanels.map((panel) => {
             switch (panel) {
               case "activeChallenges":
@@ -594,7 +594,7 @@ export default function AppPage() {
                 return null;
             }
           })}
-        </>
+        </div>
       )}
 
       {/* Followed challenges */}

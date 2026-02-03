@@ -339,16 +339,25 @@ public struct DashboardConfig: Codable, Sendable, Equatable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        // Try new format first
-        let visible = try? container.decodeIfPresent([DashboardPanel].self, forKey: .visiblePanels)
-        let hidden = try? container.decodeIfPresent([DashboardPanel].self, forKey: .hiddenPanels)
-        if visible != nil || hidden != nil {
-            self.visiblePanels = visible ?? DashboardPanel.defaultOrder
-            self.hiddenPanels = hidden ?? []
+        // Try internal format first (visiblePanels/hiddenPanels - used in local storage)
+        let visiblePanelsValue = try? container.decodeIfPresent([DashboardPanel].self, forKey: .visiblePanels)
+        let hiddenPanelsValue = try? container.decodeIfPresent([DashboardPanel].self, forKey: .hiddenPanels)
+        if visiblePanelsValue != nil || hiddenPanelsValue != nil {
+            self.visiblePanels = visiblePanelsValue ?? DashboardPanel.defaultOrder
+            self.hiddenPanels = hiddenPanelsValue ?? []
             return
         }
         
-        // Fall back to old format
+        // Try API format (visible/hidden - returned from server)
+        let visibleValue = try? container.decodeIfPresent([DashboardPanel].self, forKey: .visible)
+        let hiddenValue = try? container.decodeIfPresent([DashboardPanel].self, forKey: .hidden)
+        if visibleValue != nil || hiddenValue != nil {
+            self.visiblePanels = visibleValue ?? DashboardPanel.defaultOrder
+            self.hiddenPanels = hiddenValue ?? []
+            return
+        }
+        
+        // Fall back to legacy format (panels boolean object with optional order)
         if let oldPanels = try? container.decodeIfPresent(OldPanels.self, forKey: .panels) {
             let order = (try? container.decodeIfPresent([DashboardPanel].self, forKey: .order)) ?? DashboardPanel.defaultOrder
             var visible: [DashboardPanel] = []
@@ -393,10 +402,12 @@ public struct DashboardConfig: Codable, Sendable, Equatable {
     }
     
     private enum CodingKeys: String, CodingKey {
-        case visiblePanels
-        case hiddenPanels
-        case panels  // Old format
-        case order   // Old format
+        case visiblePanels  // Internal/local storage format
+        case hiddenPanels   // Internal/local storage format
+        case visible        // API response format
+        case hidden         // API response format
+        case panels         // Legacy format
+        case order          // Legacy format
     }
     
     private struct OldPanels: Codable {

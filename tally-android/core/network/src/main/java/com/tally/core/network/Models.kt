@@ -2,6 +2,7 @@ package com.tally.core.network
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 /**
  * API v1 models – matching web API types.
@@ -206,12 +207,12 @@ enum class DashboardPanel {
 
 /**
  * Dashboard panel configuration
- * Supports both new format (visiblePanels/hiddenPanels) and old format (panels/order) for backward compatibility
+ * Supports both API format (visible/hidden) and internal format (visiblePanels/hiddenPanels)
  */
 @Serializable
 data class DashboardConfig(
-    @SerialName("visiblePanels") val visiblePanels: List<DashboardPanel> = DashboardPanel.DEFAULT_ORDER,
-    @SerialName("hiddenPanels") val hiddenPanels: List<DashboardPanel> = emptyList()
+    @JsonNames("visible") val visiblePanels: List<DashboardPanel> = DashboardPanel.DEFAULT_ORDER,
+    @JsonNames("hidden") val hiddenPanels: List<DashboardPanel> = emptyList()
 ) {
     companion object {
         val DEFAULT = DashboardConfig()

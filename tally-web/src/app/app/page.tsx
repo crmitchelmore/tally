@@ -56,8 +56,13 @@ export default function AppPage() {
   const [showConfigMenu, setShowConfigMenu] = useState(false);
   const visiblePanels = useMemo(() => {
     const raw = panelConfig.visible?.length ? panelConfig.visible : BASE_PANEL_ORDER;
-    return raw.filter((panel) => BASE_PANEL_ORDER.includes(panel));
-  }, [panelConfig.visible]);
+    const filtered = raw.filter((panel) => BASE_PANEL_ORDER.includes(panel));
+    // Add any panels from BASE_PANEL_ORDER that aren't in visible or hidden
+    const hiddenSet = new Set(panelConfig.hidden ?? []);
+    const visibleSet = new Set(filtered);
+    const missing = BASE_PANEL_ORDER.filter((panel) => !visibleSet.has(panel) && !hiddenSet.has(panel));
+    return [...filtered, ...missing];
+  }, [panelConfig.visible, panelConfig.hidden]);
   const hiddenPanels = useMemo(() => {
     const raw = panelConfig.hidden ?? [];
     return raw.filter((panel) => BASE_PANEL_ORDER.includes(panel) && !visiblePanels.includes(panel));

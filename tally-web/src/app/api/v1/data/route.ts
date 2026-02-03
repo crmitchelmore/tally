@@ -86,6 +86,8 @@ export async function POST(request: NextRequest) {
 
       span.setAttribute("import.challenges_count", result.challenges);
       span.setAttribute("import.entries_count", result.entries);
+      span.setAttribute("import.follows_count", result.follows);
+      span.setAttribute("import.preferences", result.preferences);
 
       // Capture import completed
       await captureEvent("data_import_completed", { userId, requestId });

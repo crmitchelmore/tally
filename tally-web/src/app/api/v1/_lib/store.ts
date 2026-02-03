@@ -11,6 +11,7 @@ import type {
   ChallengeStats,
   DashboardStats,
   PersonalRecords,
+  DashboardConfig,
 } from "./types";
 import {
   convexUsers,
@@ -390,35 +391,53 @@ export async function calculatePersonalRecords(userId: string): Promise<Personal
 
 // Data export/import
 export interface ExportData {
+  version: "2.0";
+  exportedAt: string;
+  preferences?: {
+    dashboardConfig?: DashboardConfig;
+  };
+  challenges: Challenge[];
+  entries: Entry[];
+  follows: string[]; // Challenge IDs that the user follows
+}
+
+// Type for import (accepts both v1 and v2 formats)
+export type ImportData = ExportData | {
   version: "1.0";
   exportedAt: string;
   challenges: Challenge[];
   entries: Entry[];
-}
+};
 
 export async function exportUserData(userId: string): Promise<ExportData> {
+  const user = await getUserByClerkId(userId);
   const userChallenges = await getChallengesByUserId(userId);
   const userEntries = await getEntriesByUser(userId);
+  const userFollows = await getFollowsByUser(userId);
 
   return {
-    version: "1.0",
+    version: "2.0",
     exportedAt: new Date().toISOString(),
+    preferences: user?.dashboardConfig ? {
+      dashboardConfig: user.dashboardConfig,
+    } : undefined,
     challenges: userChallenges,
     entries: userEntries,
+    follows: userFollows.map(f => f.challengeId),
   };
 }
 
 export async function importUserData(
   userId: string,
-  data: ExportData
-): Promise<{ challenges: number; entries: number }> {
+  data: ImportData
+): Promise<{ challenges: number; entries: number; follows: number; preferences: boolean }> {
   // Clear existing data
   await clearUserData(userId);
 
   // Create ID mapping for challenges
   const challengeIdMap = new Map<string, string>();
 
-  // Import challenges
+  // Import challenges with all fields
   let challengeCount = 0;
   for (const c of data.challenges) {
     const newChallenge = await createChallenge(userId, {
@@ -430,7 +449,17 @@ export async function importUserData(
       color: c.color,
       icon: c.icon,
       isPublic: c.isPublic,
+      // Include new fields
+      countType: c.countType,
+      unitLabel: c.unitLabel,
+      defaultIncrement: c.defaultIncrement,
     });
+    
+    // If challenge was archived, update it
+    if (c.isArchived) {
+      await updateChallenge({ ...newChallenge, isArchived: true });
+    }
+    
     challengeIdMap.set(c.id, newChallenge.id);
     challengeCount++;
   }
@@ -452,7 +481,38 @@ export async function importUserData(
     }
   }
 
-  return { challenges: challengeCount, entries: entryCount };
+  // Import follows (v2 only) - note: these are external challenge IDs, not mapped
+  let followCount = 0;
+  if ("follows" in data && data.follows) {
+    for (const challengeId of data.follows) {
+      try {
+        // Only create follow if the challenge exists (it's a public challenge we don't own)
+        const challenge = await getChallengeById(challengeId);
+        if (challenge && challenge.userId !== userId && challenge.isPublic) {
+          await createFollow(userId, challengeId);
+          followCount++;
+        }
+      } catch {
+        // Challenge may no longer exist, skip
+      }
+    }
+  }
+
+  // Import preferences (v2 only)
+  let preferencesImported = false;
+  if ("preferences" in data && data.preferences?.dashboardConfig) {
+    await updateUserPreferences(userId, {
+      dashboardConfig: data.preferences.dashboardConfig,
+    });
+    preferencesImported = true;
+  }
+
+  return { 
+    challenges: challengeCount, 
+    entries: entryCount,
+    follows: followCount,
+    preferences: preferencesImported,
+  };
 }
 
 export async function clearUserData(userId: string): Promise<{

@@ -50,91 +50,139 @@ public struct TallyMarkView: View {
     }
     
     /// Compute appropriate height based on count
-    /// - 1-99: Square (1:1)
+    /// - 1-999: Single remainder row sized to content
     /// - 1000+: Stack of 1000-rows + optional remainder row
     private var heightForCount: CGFloat {
-        switch count {
-        case 0...999:
-            return size
-        default:
-            if count >= 10000 {
-                return thousandRowHeight * 10
-            }
-            let rows = min(count / 1000, 10)
-            let remainder = count % 1000
-            let remainderHeight = remainder > 0 ? remainderRowHeight : 0
-            return thousandRowHeight * CGFloat(rows) + remainderHeight
+        guard count > 0 else { return size }
+        if count < 1000 {
+            return rowMetrics(for: count).rowHeight
         }
-    }
-    
-    private var remainderRowHeight: CGFloat {
-        count >= 1000 ? size * 0.7 : size
-    }
-    
-    private var thousandRowHeight: CGFloat {
-        let totalSpacing = widthForCount * 0.06
-        let blockSize = (widthForCount - totalSpacing) / 10
-        return blockSize * 1.3
+        let rows = min(count / 1000, 10)
+        let remainder = count % 1000
+        let remainderHeight = remainder > 0 ? rowMetrics(for: remainder).rowHeight : 0
+        return thousandMetrics.rowHeight * CGFloat(rows) + remainderHeight
     }
     
     private var widthForCount: CGFloat {
-        count >= 1000 ? size * 1.8 : size
+        guard count > 0 else { return size }
+        if count < 1000 {
+            return rowMetrics(for: count).totalWidth
+        }
+        let remainder = count % 1000
+        let remainderWidth = remainder > 0 ? rowMetrics(for: remainder).totalWidth : 0
+        return max(thousandMetrics.rowWidth, remainderWidth)
     }
     
-    private struct RemainderMetrics {
-        let height: CGFloat
-        let hundredSize: CGFloat
-        let xSize: CGFloat
+    private struct RowMetrics {
+        let baseHeight: CGFloat
+        let rowHeight: CGFloat
         let strokeWidth: CGFloat
         let strokeSpacing: CGFloat
+        let itemGap: CGFloat
         let gateWidth: CGFloat
         let gateSpacing: CGFloat
-        let itemGap: CGFloat
-        let fivesWidth: CGFloat
-        let onesWidth: CGFloat
+        let hundredSize: CGFloat
+        let gridSize: CGFloat
+        let gridXSize: CGFloat
+        let xStrokeWidth: CGFloat
         let totalWidth: CGFloat
     }
     
-    private func remainderMetrics(height: CGFloat, hundreds: Int, twentyFives: Int, fives: Int, ones: Int) -> RemainderMetrics {
-        let strokeWidth = max(1.8, height * 0.07)
-        let strokeSpacing = strokeWidth * 1.6
-        let gateWidth = strokeWidth * 4 + strokeWidth * 3
-        let gateSpacing = strokeWidth * 2
-        let itemGap = height * 0.15
-        let hundredSize = height
-        let xSize = height * 0.7
-        let fivesWidth = fives > 0 ? (gateWidth * CGFloat(fives) + gateSpacing * CGFloat(max(0, fives - 1))) : 0
-        let onesWidth = ones > 0 ? (strokeWidth * CGFloat(ones) + strokeSpacing * CGFloat(max(0, ones - 1))) : 0
-        let itemCount = hundreds + twentyFives + (fives > 0 ? 1 : 0) + (ones > 0 ? 1 : 0)
-        let totalWidth = hundredSize * CGFloat(hundreds)
-            + xSize * CGFloat(twentyFives)
-            + fivesWidth
-            + onesWidth
-            + CGFloat(max(0, itemCount - 1)) * itemGap
-        return RemainderMetrics(
-            height: height,
-            hundredSize: hundredSize,
-            xSize: xSize,
+    private struct ThousandMetrics {
+        let boxSize: CGFloat
+        let boxSpacing: CGFloat
+        let rowWidth: CGFloat
+        let rowHeight: CGFloat
+        let boxStrokeWidth: CGFloat
+        let lineWidth: CGFloat
+    }
+    
+    private var thousandMetrics: ThousandMetrics {
+        let boxSize = max(6, size * 0.34)
+        let boxSpacing = max(2, boxSize * 0.2)
+        let rowWidth = boxSize * 10 + boxSpacing * 9
+        let rowHeight = boxSize
+        return ThousandMetrics(
+            boxSize: boxSize,
+            boxSpacing: boxSpacing,
+            rowWidth: rowWidth,
+            rowHeight: rowHeight,
+            boxStrokeWidth: max(1.0, boxSize * 0.2),
+            lineWidth: max(2.0, boxSize * 0.3)
+        )
+    }
+    
+    private func rowMetrics(for count: Int) -> RowMetrics {
+        let remainder = count % 1000
+        let hundreds = remainder / 100
+        let twentyFives = (remainder % 100) / 25
+        let fives = (remainder % 25) / 5
+        let ones = remainder % 5
+        return rowMetrics(hundreds: hundreds, twentyFives: twentyFives, fives: fives, ones: ones)
+    }
+    
+    private func rowMetrics(hundreds: Int, twentyFives: Int, fives: Int, ones: Int) -> RowMetrics {
+        let baseHeight = size
+        let strokeWidth = max(1.6, baseHeight * 0.08)
+        let strokeSpacing = max(strokeWidth * 1.2, baseHeight * 0.14)
+        let itemGap = baseHeight * 0.28
+        let boxSize = baseHeight * 0.57
+        let hundredSize = boxSize * 2.4
+        let gridSize = hundredSize
+        let gridXSize = boxSize * 0.9
+        let xStrokeWidth = max(1.2, strokeWidth * 0.8)
+        let gateWidth = strokeWidth * 4 + strokeSpacing * 3
+        let gateSpacing = strokeSpacing * 1.4
+        
+        let hundredsWidth = hundreds > 0
+            ? hundredSize * CGFloat(hundreds) + itemGap * CGFloat(max(0, hundreds - 1))
+            : 0
+        let gridWidth = twentyFives > 0 ? gridSize : 0
+        let fivesWidth = fives > 0
+            ? gateWidth * CGFloat(fives) + gateSpacing * CGFloat(max(0, fives - 1))
+            : 0
+        let onesWidth = ones > 0
+            ? strokeWidth * CGFloat(ones) + strokeSpacing * CGFloat(max(0, ones - 1))
+            : 0
+        let groupCount = (hundreds > 0 ? 1 : 0)
+            + (twentyFives > 0 ? 1 : 0)
+            + (fives > 0 ? 1 : 0)
+            + (ones > 0 ? 1 : 0)
+        let totalWidth = max(
+            0,
+            hundredsWidth
+                + gridWidth
+                + fivesWidth
+                + onesWidth
+                + itemGap * CGFloat(max(0, groupCount - 1))
+        )
+        let rowHeight = (hundreds > 0 || twentyFives > 0) ? max(baseHeight, hundredSize) : baseHeight
+        
+        return RowMetrics(
+            baseHeight: baseHeight,
+            rowHeight: rowHeight,
             strokeWidth: strokeWidth,
             strokeSpacing: strokeSpacing,
+            itemGap: itemGap,
             gateWidth: gateWidth,
             gateSpacing: gateSpacing,
-            itemGap: itemGap,
-            fivesWidth: fivesWidth,
-            onesWidth: onesWidth,
+            hundredSize: hundredSize,
+            gridSize: gridSize,
+            gridXSize: gridXSize,
+            xStrokeWidth: xStrokeWidth,
             totalWidth: totalWidth
         )
     }
     
     // MARK: - Drawing Functions
     
-    private func drawVerticalStrokes(in context: GraphicsContext, bounds: CGRect, count: Int) {
-        let strokeWidth = bounds.width / 8
-        let strokeHeight = bounds.height * 0.8
-        let spacing = strokeWidth * 1.5
+    private func drawVerticalStrokes(in context: GraphicsContext, bounds: CGRect, count: Int, metrics: RowMetrics? = nil) {
+        let strokeWidth = metrics?.strokeWidth ?? max(1.6, bounds.width / 10)
+        let strokeHeight = bounds.height * 0.88
+        let spacing = metrics?.strokeSpacing ?? (strokeWidth * 1.4)
         let totalWidth = CGFloat(count - 1) * spacing
         let startX = (bounds.width - totalWidth) / 2
-        let startY = (bounds.height - strokeHeight) / 2
+        let startY = bounds.maxY - strokeHeight
         
         for i in 0..<count {
             let x = startX + CGFloat(i) * spacing
@@ -142,21 +190,22 @@ public struct TallyMarkView: View {
                 p.move(to: CGPoint(x: x, y: startY))
                 p.addLine(to: CGPoint(x: x, y: startY + strokeHeight))
             }
-            context.stroke(path, with: .color(.tallyInk), lineWidth: 2.5)
+            let style = StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
+            context.stroke(path, with: .color(.tallyInk), style: style)
         }
     }
     
-    private func drawFiveGate(in context: GraphicsContext, bounds: CGRect) {
-        // Draw 4 vertical strokes
-        drawVerticalStrokes(in: context, bounds: bounds, count: 4)
+    private func drawFiveGate(in context: GraphicsContext, bounds: CGRect, metrics: RowMetrics? = nil) {
+        drawVerticalStrokes(in: context, bounds: bounds, count: 4, metrics: metrics)
         
-        // Draw diagonal slash (accent color)
-        let inset = bounds.width * 0.15
+        let inset = bounds.width * 0.08
         let slashPath = Path { p in
-            p.move(to: CGPoint(x: inset, y: bounds.height * 0.8))
-            p.addLine(to: CGPoint(x: bounds.width - inset, y: bounds.height * 0.2))
+            p.move(to: CGPoint(x: inset, y: bounds.height))
+            p.addLine(to: CGPoint(x: bounds.width - inset, y: bounds.height * 0.1))
         }
-        context.stroke(slashPath, with: .color(.tallyAccent), lineWidth: 3.0)
+        let strokeWidth = metrics?.strokeWidth ?? max(2.0, bounds.width * 0.1)
+        let style = StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
+        context.stroke(slashPath, with: .color(.tallyAccent), style: style)
     }
     
     private func drawXLayout(in context: GraphicsContext, bounds: CGRect, count: Int) {
@@ -266,7 +315,31 @@ public struct TallyMarkView: View {
             p.move(to: CGPoint(x: bounds.width - inset, y: inset))
             p.addLine(to: CGPoint(x: inset, y: bounds.height - inset))
         }
-        context.stroke(xPath, with: .color(.tallyAccent), lineWidth: 4.0)
+        let style = StrokeStyle(lineWidth: max(2.0, bounds.width * 0.08), lineCap: .round)
+        context.stroke(xPath, with: .color(.tallyAccent), style: style)
+    }
+
+    private func drawTwentyFiveGrid(in context: GraphicsContext, bounds: CGRect, count: Int, metrics: RowMetrics) {
+        let positions: [CGPoint] = [
+            CGPoint(x: bounds.minX + bounds.width * 0.25, y: bounds.minY + bounds.height * 0.75),
+            CGPoint(x: bounds.minX + bounds.width * 0.25, y: bounds.minY + bounds.height * 0.25),
+            CGPoint(x: bounds.minX + bounds.width * 0.75, y: bounds.minY + bounds.height * 0.75),
+            CGPoint(x: bounds.minX + bounds.width * 0.75, y: bounds.minY + bounds.height * 0.25)
+        ]
+        let xSize = metrics.gridXSize
+        let half = xSize / 2
+        let strokeWidth = metrics.xStrokeWidth
+        
+        for pos in positions.prefix(count) {
+            let xPath = Path { p in
+                p.move(to: CGPoint(x: pos.x - half, y: pos.y - half))
+                p.addLine(to: CGPoint(x: pos.x + half, y: pos.y + half))
+                p.move(to: CGPoint(x: pos.x + half, y: pos.y - half))
+                p.addLine(to: CGPoint(x: pos.x - half, y: pos.y + half))
+            }
+            let style = StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
+            context.stroke(xPath, with: .color(.tallyAccent), style: style)
+        }
     }
     
     private func drawGridLayout(in context: GraphicsContext, bounds: CGRect, count: Int) {
@@ -315,86 +388,76 @@ public struct TallyMarkView: View {
         let hasRemainder = hundreds > 0 || twentyFives > 0 || fives > 0 || ones > 0
         guard hasRemainder else { return }
         
-        let targetHeight = bounds.height
-        var metrics = remainderMetrics(height: targetHeight, hundreds: hundreds, twentyFives: twentyFives, fives: fives, ones: ones)
-        if metrics.totalWidth > bounds.width {
-            let scale = bounds.width / metrics.totalWidth
-            metrics = remainderMetrics(height: targetHeight * scale, hundreds: hundreds, twentyFives: twentyFives, fives: fives, ones: ones)
-        }
-        
-        let yOffset: CGFloat = alignToTop ? 0 : (bounds.height - metrics.height) / 2
+        let metrics = rowMetrics(hundreds: hundreds, twentyFives: twentyFives, fives: fives, ones: ones)
+        let yOffset: CGFloat = alignToTop ? 0 : max((bounds.height - metrics.rowHeight) / 2, 0)
         var currentX = max((bounds.width - metrics.totalWidth) / 2, 0)
+        let rowBottom = yOffset + metrics.rowHeight
         
         if hundreds > 0 {
             for _ in 0..<hundreds {
-                let blockY = yOffset + (metrics.height - metrics.hundredSize)
+                let blockY = rowBottom - metrics.hundredSize
                 let blockBounds = CGRect(x: currentX, y: blockY, width: metrics.hundredSize, height: metrics.hundredSize)
                 var blockContext = context
                 blockContext.translateBy(x: blockBounds.origin.x, y: blockBounds.origin.y)
-                drawHundredCap(in: blockContext, bounds: CGRect(origin: .zero, size: blockBounds.size))
+                drawHundredCap(in: blockContext, bounds: CGRect(origin: .zero, size: blockBounds.size), metrics: metrics)
                 currentX += metrics.hundredSize + metrics.itemGap
             }
         }
         
         if twentyFives > 0 {
-            for _ in 0..<twentyFives {
-                let xY = yOffset + (metrics.height - metrics.xSize)
-                let xBounds = CGRect(x: currentX, y: xY, width: metrics.xSize, height: metrics.xSize)
-                let xPath = Path { p in
-                    p.move(to: CGPoint(x: xBounds.minX, y: xBounds.minY))
-                    p.addLine(to: CGPoint(x: xBounds.maxX, y: xBounds.maxY))
-                    p.move(to: CGPoint(x: xBounds.maxX, y: xBounds.minY))
-                    p.addLine(to: CGPoint(x: xBounds.minX, y: xBounds.maxY))
-                }
-                context.stroke(xPath, with: .color(.tallyAccent), lineWidth: max(2.0, metrics.strokeWidth))
-                currentX += metrics.xSize + metrics.itemGap
-            }
+            let gridY = rowBottom - metrics.gridSize
+            let gridBounds = CGRect(x: currentX, y: gridY, width: metrics.gridSize, height: metrics.gridSize)
+            var gridContext = context
+            gridContext.translateBy(x: gridBounds.origin.x, y: gridBounds.origin.y)
+            drawTwentyFiveGrid(in: gridContext, bounds: CGRect(origin: .zero, size: gridBounds.size), count: twentyFives, metrics: metrics)
+            currentX += metrics.gridSize + metrics.itemGap
         }
         
         if fives > 0 {
-            let gateHeight = metrics.height
-            let totalGateWidth = metrics.fivesWidth
-            let gateBounds = CGRect(x: currentX, y: yOffset, width: totalGateWidth, height: gateHeight)
-            for i in 0..<fives {
-                let gateX = gateBounds.minX + CGFloat(i) * (metrics.gateWidth + metrics.gateSpacing)
+            let gateHeight = metrics.baseHeight
+            let gateY = rowBottom - gateHeight
+            for _ in 0..<fives {
+                let gateBounds = CGRect(x: currentX, y: gateY, width: metrics.gateWidth, height: gateHeight)
                 var gateContext = context
-                gateContext.translateBy(x: gateX, y: gateBounds.minY)
+                gateContext.translateBy(x: gateBounds.origin.x, y: gateBounds.origin.y)
                 drawFiveGate(
                     in: gateContext,
-                    bounds: CGRect(origin: .zero, size: CGSize(width: metrics.gateWidth, height: gateHeight))
+                    bounds: CGRect(origin: .zero, size: gateBounds.size),
+                    metrics: metrics
                 )
+                currentX += metrics.gateWidth + metrics.gateSpacing
             }
-            currentX += totalGateWidth + metrics.itemGap
+            currentX += metrics.itemGap - metrics.gateSpacing
         }
         
         if ones > 0 {
-            let strokeHeight = metrics.height * 0.85
-            let totalWidth = CGFloat(ones - 1) * metrics.strokeSpacing
-            let startX = currentX
-            let startY = yOffset + metrics.height - strokeHeight
+            let strokeHeight = metrics.baseHeight * 0.88
+            let startY = rowBottom - strokeHeight
             for i in 0..<ones {
-                let x = startX + CGFloat(i) * metrics.strokeSpacing
+                let x = currentX + CGFloat(i) * metrics.strokeSpacing
                 let path = Path { p in
                     p.move(to: CGPoint(x: x, y: startY))
                     p.addLine(to: CGPoint(x: x, y: startY + strokeHeight))
                 }
-                context.stroke(path, with: .color(.tallyInk), lineWidth: metrics.strokeWidth)
+                let style = StrokeStyle(lineWidth: metrics.strokeWidth, lineCap: .round)
+                context.stroke(path, with: .color(.tallyInk), style: style)
             }
         }
     }
     
-    private func drawHundredCap(in context: GraphicsContext, bounds: CGRect) {
+    private func drawHundredCap(in context: GraphicsContext, bounds: CGRect, metrics: RowMetrics? = nil) {
         // Use a square size based on width, centred vertically
-        let boxSize = min(bounds.width, bounds.height) * 0.95
+        let boxSize = min(bounds.width, bounds.height)
         let inset = (bounds.width - boxSize) / 2
         let yInset = (bounds.height - boxSize) / 2
-        let xSize = boxSize * 0.35  // Size of each X
+        let xSize = boxSize * 0.38
+        let xStroke = metrics?.xStrokeWidth ?? max(1.2, boxSize * 0.08)
         
         // Draw square outline (C3)
         let squarePath = Path { p in
             p.addRect(CGRect(x: inset, y: yInset, width: boxSize, height: boxSize))
         }
-        context.stroke(squarePath, with: .color(.tallyInkTertiary), lineWidth: 2.5)
+        context.stroke(squarePath, with: .color(.tallyInkTertiary), lineWidth: max(1.2, xStroke))
         
         // Draw 4 Xs in 2x2 grid inside the box (accent color)
         let positions: [(x: CGFloat, y: CGFloat)] = [
@@ -417,7 +480,8 @@ public struct TallyMarkView: View {
                 p.move(to: CGPoint(x: centerX + halfX, y: centerY - halfX))
                 p.addLine(to: CGPoint(x: centerX - halfX, y: centerY + halfX))
             }
-            context.stroke(xPath, with: .color(.tallyAccent), lineWidth: 2.0)
+            let style = StrokeStyle(lineWidth: xStroke, lineCap: .round)
+            context.stroke(xPath, with: .color(.tallyAccent), style: style)
         }
     }
     
@@ -432,7 +496,7 @@ public struct TallyMarkView: View {
             let blockBounds = CGRect(x: x, y: 0, width: blockSize, height: blockSize)
             var blockContext = context
             blockContext.translateBy(x: blockBounds.origin.x, y: blockBounds.origin.y)
-            drawHundredCap(in: blockContext, bounds: CGRect(origin: .zero, size: blockBounds.size))
+            drawHundredCap(in: blockContext, bounds: CGRect(origin: .zero, size: blockBounds.size), metrics: nil)
         }
         
         // Show partial block indicator if needed
@@ -447,36 +511,30 @@ public struct TallyMarkView: View {
     }
     
     private func drawThousandCap(in context: GraphicsContext, bounds: CGRect) {
-        // Use larger blocks - allow 10% total spacing
-        let totalSpacing = bounds.width * 0.06
-        let blockSize = (bounds.width - totalSpacing) / 10
-        let spacing = totalSpacing / 9
-        let rowHeight = blockSize * 1.3
-        let startY = (bounds.height - rowHeight) / 2
+        let metrics = thousandMetrics
+        let startY = (bounds.height - metrics.rowHeight) / 2
         
-        // Draw 10 squares
         for i in 0..<10 {
-            let x = CGFloat(i) * (blockSize + spacing)
+            let x = CGFloat(i) * (metrics.boxSize + metrics.boxSpacing)
             let squarePath = Path { p in
-                p.addRect(CGRect(x: x, y: startY, width: blockSize, height: blockSize))
+                p.addRect(CGRect(x: x, y: startY, width: metrics.boxSize, height: metrics.boxSize))
             }
-            context.stroke(squarePath, with: .color(.tallyInkTertiary), lineWidth: 2.0)
+            context.stroke(squarePath, with: .color(.tallyInkTertiary), lineWidth: metrics.boxStrokeWidth)
         }
         
-        // Draw horizontal line through all (accent color)
         let linePath = Path { p in
             p.move(to: CGPoint(x: 0, y: bounds.height / 2))
-            p.addLine(to: CGPoint(x: bounds.width, y: bounds.height / 2))
+            p.addLine(to: CGPoint(x: metrics.rowWidth, y: bounds.height / 2))
         }
-        context.stroke(linePath, with: .color(.tallyAccent), lineWidth: max(3.0, blockSize * 0.3))
+        let style = StrokeStyle(lineWidth: metrics.lineWidth, lineCap: .round)
+        context.stroke(linePath, with: .color(.tallyAccent), style: style)
     }
     
     private func drawThousandStack(in context: GraphicsContext, bounds: CGRect, count: Int) {
         let thousands = count / 1000
         let remainder = count % 1000
         let rows = min(thousands, 10)
-        
-        let rowHeight = thousandRowHeight
+        let rowHeight = thousandMetrics.rowHeight
         let stackHeight = rowHeight * CGFloat(rows)
         
         // Draw thousand-rows
@@ -486,19 +544,20 @@ public struct TallyMarkView: View {
             rowContext.translateBy(x: 0, y: y)
             drawThousandCap(
                 in: rowContext,
-                bounds: CGRect(origin: .zero, size: CGSize(width: bounds.width, height: rowHeight))
+                bounds: CGRect(origin: .zero, size: CGSize(width: thousandMetrics.rowWidth, height: rowHeight))
             )
         }
         
         // Draw remainder below the thousand-rows
         if remainder > 0 {
             let remainderY = stackHeight
-            let remainderHeight = remainderRowHeight
+            let remainderHeight = rowMetrics(for: remainder).rowHeight
             var remainderContext = context
             remainderContext.translateBy(x: 0, y: remainderY)
             
             // Route remainder to appropriate renderer
-            let remainderBounds = CGRect(origin: .zero, size: CGSize(width: bounds.width, height: remainderHeight))
+            let remainderWidth = rowMetrics(for: remainder).totalWidth
+            let remainderBounds = CGRect(origin: .zero, size: CGSize(width: remainderWidth, height: remainderHeight))
             drawRemainderRow(in: remainderContext, bounds: remainderBounds, count: remainder, alignToTop: true)
         }
     }
@@ -547,7 +606,7 @@ public struct TallyMarkView: View {
 #Preview("Range") {
     ScrollView {
         VStack(spacing: 16) {
-            ForEach([1, 3, 5, 10, 25, 50, 100, 500, 1000, 5000, 10000], id: \.self) { count in
+            ForEach([1, 3, 5, 10, 19, 22, 40, 81, 100, 140, 283, 2834, 5000, 10000], id: \.self) { count in
                 VStack {
                     Text("\(count)")
                         .font(.tallyLabelSmall)

@@ -98,14 +98,14 @@ TallyMarkView(count: 25, animated: true, size: 120)
 **Rendering Logic:**
 - **1-4:** Vertical strokes
 - **5:** 5-gate (4 strokes + diagonal slash)
-- **6-24:** X layout (5 positions)
-- **25:** ✨ 25-cap with X overlay (C2)
-- **26-99:** 2x2 grid of 25-units
-- **100:** ✨ Collapsed to X + square (C2 + C3)
-- **101-999:** Row of 100-blocks
-- **1000:** ✨ 10 squares + horizontal line
+- **6-24:** 5-gates + remaining strokes (traditional tally row)
+- **25:** Single X mark (C2)
+- **26-99:** Xs placed in 2x2 grid positions (fill order: bottom-left, top-left, bottom-right, top-right)
+- **100:** Box outline (C3) with 4 Xs (C2)
+- **101-999:** Row of 100-blocks + remainder row
+- **1000:** 10 squares + horizontal line (accent)
 - **1001-9999:** Stack of rows
-- **10,000:** ✨ Diagonal closure stroke
+- **10,000:** Diagonal closure stroke
 
 **Accessibility:**
 - VoiceOver labels

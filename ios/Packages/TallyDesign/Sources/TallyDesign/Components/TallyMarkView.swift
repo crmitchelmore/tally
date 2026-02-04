@@ -132,7 +132,7 @@ public struct TallyMarkView: View {
         let gridXSize = boxSize * 0.9
         let xStrokeWidth = max(1.2, strokeWidth * 0.8)
         let gateWidth = strokeWidth * 4 + strokeSpacing * 3
-        let gateSpacing = itemGap
+        let gateSpacing = strokeSpacing * 1.4
         
         let hundredsWidth = hundreds > 0
             ? hundredSize * CGFloat(hundreds) + itemGap * CGFloat(max(0, hundreds - 1))
@@ -603,17 +603,17 @@ public struct TallyMarkView: View {
         .padding()
 }
 
-    #Preview("Range") {
-        ScrollView {
-            VStack(spacing: 16) {
-                ForEach([1, 3, 5, 10, 19, 22, 40, 81, 100, 140, 283, 2834, 5000, 10000], id: \.self) { count in
-                    VStack {
-                        Text("\(count)")
-                            .font(.tallyLabelSmall)
-                        TallyMarkView(count: count, size: 80)
-                    }
+#Preview("Range") {
+    ScrollView {
+        VStack(spacing: 16) {
+            ForEach([1, 3, 5, 10, 19, 22, 40, 81, 100, 140, 283, 2834, 5000, 10000], id: \.self) { count in
+                VStack {
+                    Text("\(count)")
+                        .font(.tallyLabelSmall)
+                    TallyMarkView(count: count, size: 80)
                 }
             }
-            .padding()
         }
+        .padding()
     }
+}

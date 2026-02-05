@@ -121,6 +121,7 @@ jobs:
         env:
           TUIST_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           TUIST_API_BASE_URL: "https://tally-tracker.app"
+          TUIST_GIT_COMMIT_SHA: ${{ github.sha }}
           # Pass signing settings so Tuist generates the project with correct signing for Release
           TUIST_DEVELOPMENT_TEAM: ${{ secrets.IOS_TEAM_ID }}
           TUIST_PROVISIONING_PROFILE_SPECIFIER: ${{ env.PROVISIONING_PROFILE_NAME }}
@@ -142,11 +143,17 @@ jobs:
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.build_number.outputs.BUILD_NUMBER }}" "$INFO_PLIST" 2>/dev/null || \
           /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${{ steps.build_number.outputs.BUILD_NUMBER }}" "$INFO_PLIST"
           
+          # Add Git commit SHA (short version for display)
+          GIT_COMMIT_SHORT=$(echo "${{ github.sha }}" | cut -c1-7)
+          /usr/libexec/PlistBuddy -c "Set :GIT_COMMIT_SHA $GIT_COMMIT_SHORT" "$INFO_PLIST" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Add :GIT_COMMIT_SHA string $GIT_COMMIT_SHORT" "$INFO_PLIST"
+          
           # Verify the changes
-          echo "📦 Building version ${{ inputs.version }} (${{ steps.build_number.outputs.BUILD_NUMBER }})"
+          echo "📦 Building version ${{ inputs.version }} (${{ steps.build_number.outputs.BUILD_NUMBER }}) - commit $GIT_COMMIT_SHORT"
           echo "Info.plist contents:"
           /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST"
           /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST"
+          /usr/libexec/PlistBuddy -c "Print :GIT_COMMIT_SHA" "$INFO_PLIST"
 
       - name: Build archive
         working-directory: ios

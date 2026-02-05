@@ -230,8 +230,25 @@ struct SettingsView: View {
                     HStack {
                         Text("Version")
                         Spacer()
-                        Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
+                        Text(appVersion)
                             .foregroundStyle(.secondary)
+                    }
+                    
+                    HStack {
+                        Text("Build")
+                        Spacer()
+                        Text(buildNumber)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    if let commit = gitCommit {
+                        HStack {
+                            Text("Commit")
+                            Spacer()
+                            Text(commit)
+                                .foregroundStyle(.secondary)
+                                .font(.system(.body, design: .monospaced))
+                        }
                     }
                 } header: {
                     Text("About")
@@ -319,6 +336,24 @@ struct SettingsView: View {
                 Text("This will clear all local data from this device. Your data is safely stored in the cloud.")
             }
         }
+    }
+    
+    // MARK: - Version Info
+    
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+    }
+    
+    private var buildNumber: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    }
+    
+    private var gitCommit: String? {
+        guard let commit = Bundle.main.infoDictionary?["GIT_COMMIT_SHA"] as? String else {
+            return nil
+        }
+        let trimmed = commit.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
     
     // MARK: - Sign Out

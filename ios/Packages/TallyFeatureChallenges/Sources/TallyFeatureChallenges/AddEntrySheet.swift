@@ -162,16 +162,25 @@ public struct AddEntrySheet: View {
                     Text("\(setsTotal)")
                         .font(.tallyMonoDisplay)
                         .foregroundColor(Color.tallyInk)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                     Text(unitLabel)
                         .font(.tallyLabelSmall)
                         .foregroundColor(Color.tallyInkSecondary)
                 }
+                .fixedSize(horizontal: true, vertical: false)
+                .layoutPriority(1)
                 
-                TallyMarkView(
-                    count: setsTotal,
-                    animated: !reduceMotion,
-                    size: 60
-                )
+                ScrollView(.horizontal, showsIndicators: false) {
+                    TallyMarkView(
+                        count: setsTotal,
+                        animated: !reduceMotion,
+                        size: 60
+                    )
+                    .fixedSize()
+                    .frame(maxWidth: .infinity)
+                }
+                .scrollBounceBehavior(.basedOnSize)
             }
             .tallyPadding(.top, TallySpacing.sm)
         }
@@ -286,7 +295,11 @@ public struct AddEntrySheet: View {
                 .keyboardType(.numberPad)
                 .font(.system(size: 48, weight: .semibold, design: .monospaced))
                 .multilineTextAlignment(.center)
-                .frame(width: 140, height: 60)
+                .frame(minWidth: 100, maxWidth: 260)
+                .frame(height: 60)
+                .fixedSize(horizontal: true, vertical: false)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
                 .accessibilityIdentifier("countInput")
             
             // Increment buttons row
@@ -312,11 +325,16 @@ public struct AddEntrySheet: View {
             }
             
             // Tally preview
-            TallyMarkView(
-                count: Int(simpleCount) ?? 0,
-                animated: !reduceMotion,
-                size: 60
-            )
+            ScrollView(.horizontal, showsIndicators: false) {
+                TallyMarkView(
+                    count: Int(simpleCount) ?? 0,
+                    animated: !reduceMotion,
+                    size: 60
+                )
+                .fixedSize()
+                .frame(maxWidth: .infinity)
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
     

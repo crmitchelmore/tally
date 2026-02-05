@@ -8,6 +8,7 @@ let defaultApiUrl = "https://tally-tracker.app"
 // Environment variables can override defaults via Tuist's Environment type
 let clerkKey = Environment.clerkPublishableKey.getString(default: defaultClerkKey)
 let apiUrl = Environment.apiBaseURL.getString(default: defaultApiUrl)
+let gitCommit = Environment.gitCommitSha.getString(default: "")
 
 // CI signing settings (passed via environment, e.g., from GitHub Actions)
 let teamId = Environment.developmentTeam.getString(default: "")
@@ -47,6 +48,7 @@ let project = Project(
                     "BGTaskSchedulerPermittedIdentifiers": ["com.tally.app.refresh"],
                     "CLERK_PUBLISHABLE_KEY": "$(CLERK_PUBLISHABLE_KEY)",
                     "API_BASE_URL": "$(API_BASE_URL)",
+                    "GIT_COMMIT_SHA": "$(GIT_COMMIT_SHA)",
                     "ITSAppUsesNonExemptEncryption": false
                 ]
             ),
@@ -65,7 +67,8 @@ let project = Project(
                 base: [
                     "ENABLE_PREVIEWS": "YES",
                     "CLERK_PUBLISHABLE_KEY": .init(stringLiteral: clerkKey),
-                    "API_BASE_URL": .init(stringLiteral: apiUrl)
+                    "API_BASE_URL": .init(stringLiteral: apiUrl),
+                    "GIT_COMMIT_SHA": .init(stringLiteral: gitCommit)
                 ],
                 configurations: [
                     .debug(name: "Debug", settings: [

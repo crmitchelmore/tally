@@ -111,16 +111,15 @@ public struct DashboardView: View {
             } else {
                 LazyVStack(spacing: TallySpacing.sm) {
                     ForEach(manager.activeChallenges) { challenge in
-                        if let stats = manager.stats[challenge.id] {
-                            ChallengeCardView(
-                                challenge: challenge,
-                                stats: stats,
-                                entries: manager.entries(for: challenge.id),
-                                onTap: { onSelectChallenge(challenge) },
-                                onQuickAdd: { onQuickAdd(challenge) }
-                            )
-                            .tallyPadding(.horizontal)
-                        }
+                        // Show card even for newly-created challenges that may not have stats yet
+                        ChallengeCardView(
+                            challenge: challenge,
+                            stats: manager.stats[challenge.id],
+                            entries: manager.entries(for: challenge.id),
+                            onTap: { onSelectChallenge(challenge) },
+                            onQuickAdd: { onQuickAdd(challenge) }
+                        )
+                        .tallyPadding(.horizontal)
                     }
                 }
             }

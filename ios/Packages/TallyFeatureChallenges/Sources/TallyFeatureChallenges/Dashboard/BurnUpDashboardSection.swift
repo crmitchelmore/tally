@@ -23,6 +23,7 @@ public struct BurnUpDashboardSection: View {
                     .tallyPadding(.horizontal)
                 
                 ForEach(topChallenges) { challenge in
+                    // Show chart if stats exist; newly-created challenges may not have stats yet
                     if let stat = stats[challenge.id] {
                         BurnUpChartView(
                             challenge: challenge,

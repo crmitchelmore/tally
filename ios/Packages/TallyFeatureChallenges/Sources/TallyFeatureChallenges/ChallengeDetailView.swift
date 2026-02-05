@@ -296,13 +296,17 @@ public struct ChallengeDetailView: View {
     private var progressSection: some View {
         VStack(spacing: TallySpacing.md) {
             // Main tally visualization - let it size naturally based on count
-            TallyMarkView(
-                count: stats?.totalCount ?? 0,
-                animated: !reduceMotion,
-                size: 140
-            )
-            .fixedSize()
+            ScrollView(.horizontal, showsIndicators: false) {
+                TallyMarkView(
+                    count: stats?.totalCount ?? 0,
+                    animated: !reduceMotion,
+                    size: 140
+                )
+                .fixedSize()
+                .frame(maxWidth: .infinity)
+            }
             .accessibilityIdentifier("progress-ring")
+            .scrollBounceBehavior(.basedOnSize)
             
             // Total / Target
             HStack(alignment: .firstTextBaseline, spacing: TallySpacing.xs) {
@@ -315,6 +319,8 @@ public struct ChallengeDetailView: View {
                 Text("/ \(challenge.target) \(challenge.resolvedUnitLabel)")
                     .font(.tallyMonoBody)
                     .foregroundColor(Color.tallyInkSecondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
             }
             
             // Pace status
@@ -729,6 +735,7 @@ private struct DayEntryRow: View {
     var body: some View {
         HStack(spacing: TallySpacing.md) {
             TallyMarkView(count: entry.count, size: 32)
+                .fixedSize()
             
             VStack(alignment: .leading, spacing: TallySpacing.xs) {
                 Text("\(entry.count) \(unitLabel)")
@@ -832,6 +839,7 @@ private struct RecentEntryRow: View {
     var body: some View {
         HStack(spacing: TallySpacing.md) {
             TallyMarkView(count: entry.count, size: 36)
+                .fixedSize()
             
             VStack(alignment: .leading, spacing: TallySpacing.xs) {
                 HStack(spacing: TallySpacing.xs) {

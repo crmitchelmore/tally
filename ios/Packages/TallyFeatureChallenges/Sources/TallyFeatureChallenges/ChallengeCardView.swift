@@ -77,7 +77,10 @@ public struct ChallengeCardView: View {
                                 .foregroundColor(Color.tallyInkSecondary)
                         }
                         
-                        if let stats = stats {
+                        // Status badge: future challenges show "Starts in X days", active challenges show pace
+                        if challenge.isFuture, let startsText = challenge.startsInText {
+                            FutureChallengeBadge(text: startsText)
+                        } else if let stats = stats {
                             HStack(spacing: TallySpacing.xs) {
                                 PaceIndicator(status: stats.paceStatus)
                                 
@@ -121,6 +124,8 @@ public struct ChallengeCardView: View {
             quickAddButton
                 .padding(.top, 12)
                 .padding(.trailing, 12)
+                .opacity(challenge.isFuture ? 0 : 1) // Hide quick-add for future challenges
+                .allowsHitTesting(!challenge.isFuture)
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("challenge-card-\(challenge.name)")
@@ -162,7 +167,12 @@ public struct ChallengeCardView: View {
     
     private var accessibilityLabel: String {
         var label = challenge.name
-        if let stats = stats {
+        
+        // Handle future challenges
+        if challenge.isFuture, let startsText = challenge.startsInText {
+            label += ", \(startsText)"
+            label += ", target \(challenge.target) \(challenge.resolvedUnitLabel)"
+        } else if let stats = stats {
             label += ", \(stats.totalCount) of \(challenge.target)"
             label += ", \(stats.daysRemaining) days remaining"
             switch stats.paceStatus {
@@ -252,6 +262,25 @@ public enum IconMapper {
         // Then check our mapping
         let lowercased = icon.lowercased()
         return mapping[lowercased] ?? mapping[icon] ?? "checkmark"
+    }
+}
+
+/// Badge for future challenges that haven't started yet
+struct FutureChallengeBadge: View {
+    let text: String
+    
+    var body: some View {
+        HStack(spacing: 2) {
+            Image(systemName: "calendar.badge.clock")
+                .font(.system(size: 10, weight: .semibold))
+            Text(text)
+                .font(.tallyLabelSmall)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Color.tallyInkSecondary.opacity(0.15))
+        .foregroundColor(Color.tallyInkSecondary)
+        .cornerRadius(6)
     }
 }
 

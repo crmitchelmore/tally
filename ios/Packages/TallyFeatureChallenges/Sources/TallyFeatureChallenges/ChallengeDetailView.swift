@@ -51,13 +51,18 @@ public struct ChallengeDetailView: View {
                 // Progress section with tally marks
                 progressSection
                 
-                if let stats = stats {
+                // Future challenge banner (shows "Starts in X days")
+                if challenge.isFuture, let startsText = challenge.startsInText {
+                    futureChallengeCallout(startsText: startsText)
+                }
+                
+                if let stats = stats, challenge.hasStarted {
                     paceCallout(stats)
                     streaksAndRecordsSection(stats)
                 }
                 
                 // Stats grid
-                if let stats = stats {
+                if let stats = stats, challenge.hasStarted {
                     statsGrid(stats)
                     
                     // Burn-up chart showing full duration with projection
@@ -68,7 +73,7 @@ public struct ChallengeDetailView: View {
                     )
                 }
                 
-                if let stats = stats {
+                if let stats = stats, challenge.hasStarted {
                     ActivityHeatmapView(
                         entries: entries,
                         startDate: challenge.startDate,
@@ -323,13 +328,16 @@ public struct ChallengeDetailView: View {
                     .minimumScaleFactor(0.85)
             }
             
-            // Pace status
-            if let stats = stats {
+            // Pace status or future badge
+            if challenge.isFuture, let startsText = challenge.startsInText {
+                FutureChallengeBadge(text: startsText)
+                    .accessibilityIdentifier("future-badge")
+            } else if let stats = stats {
                 PaceIndicator(status: stats.paceStatus)
                     .accessibilityIdentifier("pace-status")
             }
             
-                // Add entry button
+                // Add entry button (disabled for future challenges)
                 Button {
                     showAddEntrySheet = true
                 } label: {
@@ -340,10 +348,31 @@ public struct ChallengeDetailView: View {
                 .buttonStyle(.borderedProminent)
                 .tint(Color.tallyAccent)
                 .controlSize(.large)
+                .disabled(challenge.isFuture)
         }
         .tallyPadding()
         .background(Color.tallyPaperTint)
         .cornerRadius(16)
+    }
+    
+    /// Callout for future challenges that haven't started yet
+    private func futureChallengeCallout(startsText: String) -> some View {
+        VStack(alignment: .leading, spacing: TallySpacing.xs) {
+            HStack(spacing: TallySpacing.xs) {
+                Image(systemName: "calendar.badge.clock")
+                    .foregroundColor(Color.tallyInkSecondary)
+                Text(startsText.capitalized)
+                    .font(.tallyLabelMedium)
+                    .foregroundColor(Color.tallyInk)
+            }
+            Text("This challenge will begin on \(formatDate(challenge.startDate)). You can add entries once it starts.")
+                .font(.tallyLabelSmall)
+                .foregroundColor(Color.tallyInkSecondary)
+        }
+        .tallyPadding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.tallyPaperTint)
+        .cornerRadius(12)
     }
 
     private func paceCallout(_ stats: ChallengeStats) -> some View {

@@ -70,6 +70,149 @@ final class ModelsTests: XCTestCase {
         XCTAssertTrue(jsonString.contains("\"is_public\":false"))
     }
     
+    // MARK: - Challenge Future/Started State Tests
+    
+    func testChallengeHasStarted_PastStartDate() {
+        // Challenge that started in the past
+        let pastDate = Calendar.current.date(byAdding: .day, value: -10, to: Date())!
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        let startDateString = formatter.string(from: pastDate)
+        
+        let challenge = Challenge(
+            id: "ch_1",
+            userId: "user_1",
+            name: "Past Challenge",
+            target: 100,
+            timeframeType: .month,
+            startDate: startDateString,
+            endDate: "2026-12-31",
+            color: "#FF0000",
+            icon: "star",
+            isPublic: false,
+            isArchived: false,
+            createdAt: "2026-01-01T00:00:00Z",
+            updatedAt: "2026-01-01T00:00:00Z"
+        )
+        
+        XCTAssertTrue(challenge.hasStarted)
+        XCTAssertFalse(challenge.isFuture)
+        XCTAssertNil(challenge.daysUntilStart)
+        XCTAssertNil(challenge.startsInText)
+    }
+    
+    func testChallengeHasStarted_TodayStartDate() {
+        // Challenge that starts today
+        let today = Date()
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        let startDateString = formatter.string(from: today)
+        
+        let challenge = Challenge(
+            id: "ch_2",
+            userId: "user_1",
+            name: "Today Challenge",
+            target: 100,
+            timeframeType: .month,
+            startDate: startDateString,
+            endDate: "2026-12-31",
+            color: "#00FF00",
+            icon: "checkmark",
+            isPublic: false,
+            isArchived: false,
+            createdAt: "2026-01-01T00:00:00Z",
+            updatedAt: "2026-01-01T00:00:00Z"
+        )
+        
+        XCTAssertTrue(challenge.hasStarted)
+        XCTAssertFalse(challenge.isFuture)
+        XCTAssertNil(challenge.daysUntilStart)
+        XCTAssertNil(challenge.startsInText)
+    }
+    
+    func testChallengeIsFuture_FutureStartDate() {
+        // Challenge that starts in the future
+        let futureDate = Calendar.current.date(byAdding: .day, value: 10, to: Date())!
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        let startDateString = formatter.string(from: futureDate)
+        
+        let challenge = Challenge(
+            id: "ch_3",
+            userId: "user_1",
+            name: "Future Challenge",
+            target: 100,
+            timeframeType: .month,
+            startDate: startDateString,
+            endDate: "2026-12-31",
+            color: "#0000FF",
+            icon: "calendar",
+            isPublic: false,
+            isArchived: false,
+            createdAt: "2026-01-01T00:00:00Z",
+            updatedAt: "2026-01-01T00:00:00Z"
+        )
+        
+        XCTAssertFalse(challenge.hasStarted)
+        XCTAssertTrue(challenge.isFuture)
+        XCTAssertEqual(challenge.daysUntilStart, 10)
+        XCTAssertEqual(challenge.startsInText, "Starts in 10 days")
+    }
+    
+    func testChallengeStartsInText_Tomorrow() {
+        // Challenge that starts tomorrow
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        let startDateString = formatter.string(from: tomorrow)
+        
+        let challenge = Challenge(
+            id: "ch_4",
+            userId: "user_1",
+            name: "Tomorrow Challenge",
+            target: 100,
+            timeframeType: .month,
+            startDate: startDateString,
+            endDate: "2026-12-31",
+            color: "#FFFF00",
+            icon: "sunrise",
+            isPublic: false,
+            isArchived: false,
+            createdAt: "2026-01-01T00:00:00Z",
+            updatedAt: "2026-01-01T00:00:00Z"
+        )
+        
+        XCTAssertFalse(challenge.hasStarted)
+        XCTAssertTrue(challenge.isFuture)
+        XCTAssertEqual(challenge.daysUntilStart, 1)
+        XCTAssertEqual(challenge.startsInText, "Starts tomorrow")
+    }
+    
+    func testChallengeWithInvalidStartDate() {
+        // Challenge with an invalid/unparseable start date should default to "started"
+        let challenge = Challenge(
+            id: "ch_5",
+            userId: "user_1",
+            name: "Invalid Date Challenge",
+            target: 100,
+            timeframeType: .month,
+            startDate: "not-a-valid-date",
+            endDate: "2026-12-31",
+            color: "#FF00FF",
+            icon: "exclamationmark",
+            isPublic: false,
+            isArchived: false,
+            createdAt: "2026-01-01T00:00:00Z",
+            updatedAt: "2026-01-01T00:00:00Z"
+        )
+        
+        // Should default to hasStarted = true when date can't be parsed
+        XCTAssertTrue(challenge.hasStarted)
+        XCTAssertFalse(challenge.isFuture)
+        XCTAssertNil(challenge.daysUntilStart)
+        XCTAssertNil(challenge.startsInText)
+    }
+    
     // MARK: - Entry Tests
     
     func testEntryDecoding() throws {

@@ -52,8 +52,8 @@ public struct ChallengeDetailView: View {
                 progressSection
                 
                 // Future challenge banner (shows "Starts in X days")
-                if challenge.isFuture, let daysUntil = challenge.daysUntilStart {
-                    futureChallengeCallout(daysUntilStart: daysUntil)
+                if challenge.isFuture, let startsText = challenge.startsInText {
+                    futureChallengeCallout(startsText: startsText)
                 }
                 
                 if let stats = stats, challenge.hasStarted {
@@ -329,8 +329,8 @@ public struct ChallengeDetailView: View {
             }
             
             // Pace status or future badge
-            if challenge.isFuture, let daysUntil = challenge.daysUntilStart {
-                FutureChallengeBadge(daysUntilStart: daysUntil)
+            if challenge.isFuture, let startsText = challenge.startsInText {
+                FutureChallengeBadge(text: startsText)
                     .accessibilityIdentifier("future-badge")
             } else if let stats = stats {
                 PaceIndicator(status: stats.paceStatus)
@@ -356,12 +356,12 @@ public struct ChallengeDetailView: View {
     }
     
     /// Callout for future challenges that haven't started yet
-    private func futureChallengeCallout(daysUntilStart: Int) -> some View {
+    private func futureChallengeCallout(startsText: String) -> some View {
         VStack(alignment: .leading, spacing: TallySpacing.xs) {
             HStack(spacing: TallySpacing.xs) {
                 Image(systemName: "calendar.badge.clock")
                     .foregroundColor(Color.tallyInkSecondary)
-                Text(daysUntilStart == 1 ? "Starts Tomorrow" : "Starts in \(daysUntilStart) Days")
+                Text(startsText.capitalized)
                     .font(.tallyLabelMedium)
                     .foregroundColor(Color.tallyInk)
             }

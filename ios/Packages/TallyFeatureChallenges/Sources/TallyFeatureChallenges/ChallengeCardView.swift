@@ -77,24 +77,19 @@ public struct ChallengeCardView: View {
                                 .foregroundColor(Color.tallyInkSecondary)
                         }
                         
-                        if let stats = stats {
+                        // Status badge: future challenges show "Starts in X days", active challenges show pace
+                        if challenge.isFuture, let startsText = challenge.startsInText {
+                            FutureChallengeBadge(text: startsText)
+                        } else if let stats = stats {
                             HStack(spacing: TallySpacing.xs) {
-                                // Show "Starts in X days" for future challenges instead of pace
-                                if challenge.isFuture, let daysUntil = challenge.daysUntilStart {
-                                    FutureChallengeBadge(daysUntilStart: daysUntil)
-                                } else {
-                                    PaceIndicator(status: stats.paceStatus)
-                                    
-                                    if stats.daysRemaining > 0 {
-                                        Text("· \(stats.daysRemaining) days left")
-                                            .font(.tallyLabelSmall)
-                                            .foregroundColor(Color.tallyInkSecondary)
-                                    }
+                                PaceIndicator(status: stats.paceStatus)
+                                
+                                if stats.daysRemaining > 0 {
+                                    Text("· \(stats.daysRemaining) days left")
+                                        .font(.tallyLabelSmall)
+                                        .foregroundColor(Color.tallyInkSecondary)
                                 }
                             }
-                        } else if challenge.isFuture, let daysUntil = challenge.daysUntilStart {
-                            // Show future badge even if stats aren't loaded yet
-                            FutureChallengeBadge(daysUntilStart: daysUntil)
                         }
                     }
                     
@@ -174,8 +169,8 @@ public struct ChallengeCardView: View {
         var label = challenge.name
         
         // Handle future challenges
-        if challenge.isFuture, let daysUntil = challenge.daysUntilStart {
-            label += ", starts in \(daysUntil) days"
+        if challenge.isFuture, let startsText = challenge.startsInText {
+            label += ", \(startsText)"
             label += ", target \(challenge.target) \(challenge.resolvedUnitLabel)"
         } else if let stats = stats {
             label += ", \(stats.totalCount) of \(challenge.target)"
@@ -272,7 +267,7 @@ public enum IconMapper {
 
 /// Badge for future challenges that haven't started yet
 struct FutureChallengeBadge: View {
-    let daysUntilStart: Int
+    let text: String
     
     var body: some View {
         HStack(spacing: 2) {
@@ -286,14 +281,6 @@ struct FutureChallengeBadge: View {
         .background(Color.tallyInkSecondary.opacity(0.15))
         .foregroundColor(Color.tallyInkSecondary)
         .cornerRadius(6)
-    }
-    
-    private var text: String {
-        if daysUntilStart == 1 {
-            return "Starts tomorrow"
-        } else {
-            return "Starts in \(daysUntilStart) days"
-        }
     }
 }
 

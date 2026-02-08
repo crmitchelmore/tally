@@ -47,6 +47,31 @@ public struct Challenge: Codable, Identifiable, Sendable, Equatable {
     public var resolvedUnitLabel: String { unitLabel ?? "reps" }
     public var resolvedDefaultIncrement: Int { defaultIncrement ?? 1 }
     
+    /// Whether the challenge has started (start date is today or in the past)
+    public var hasStarted: Bool {
+        guard let start = parsedStartDate else { return true }
+        return start <= Date()
+    }
+    
+    /// Whether the challenge is in the future (hasn't started yet)
+    public var isFuture: Bool { !hasStarted }
+    
+    /// Number of days until the challenge starts (nil if already started)
+    public var daysUntilStart: Int? {
+        guard let start = parsedStartDate else { return nil }
+        let today = Calendar.current.startOfDay(for: Date())
+        let startDay = Calendar.current.startOfDay(for: start)
+        guard startDay > today else { return nil }
+        return Calendar.current.dateComponents([.day], from: today, to: startDay).day
+    }
+    
+    /// Parsed start date
+    private var parsedStartDate: Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        return formatter.date(from: startDate)
+    }
+    
     public init(
         id: String,
         userId: String,

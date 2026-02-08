@@ -79,14 +79,22 @@ public struct ChallengeCardView: View {
                         
                         if let stats = stats {
                             HStack(spacing: TallySpacing.xs) {
-                                PaceIndicator(status: stats.paceStatus)
-                                
-                                if stats.daysRemaining > 0 {
-                                    Text("· \(stats.daysRemaining) days left")
-                                        .font(.tallyLabelSmall)
-                                        .foregroundColor(Color.tallyInkSecondary)
+                                // Show "Starts in X days" for future challenges instead of pace
+                                if challenge.isFuture, let daysUntil = challenge.daysUntilStart {
+                                    FutureChallengeBadge(daysUntilStart: daysUntil)
+                                } else {
+                                    PaceIndicator(status: stats.paceStatus)
+                                    
+                                    if stats.daysRemaining > 0 {
+                                        Text("· \(stats.daysRemaining) days left")
+                                            .font(.tallyLabelSmall)
+                                            .foregroundColor(Color.tallyInkSecondary)
+                                    }
                                 }
                             }
+                        } else if challenge.isFuture, let daysUntil = challenge.daysUntilStart {
+                            // Show future badge even if stats aren't loaded yet
+                            FutureChallengeBadge(daysUntilStart: daysUntil)
                         }
                     }
                     
@@ -121,6 +129,8 @@ public struct ChallengeCardView: View {
             quickAddButton
                 .padding(.top, 12)
                 .padding(.trailing, 12)
+                .opacity(challenge.isFuture ? 0 : 1) // Hide quick-add for future challenges
+                .allowsHitTesting(!challenge.isFuture)
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("challenge-card-\(challenge.name)")
@@ -162,7 +172,12 @@ public struct ChallengeCardView: View {
     
     private var accessibilityLabel: String {
         var label = challenge.name
-        if let stats = stats {
+        
+        // Handle future challenges
+        if challenge.isFuture, let daysUntil = challenge.daysUntilStart {
+            label += ", starts in \(daysUntil) days"
+            label += ", target \(challenge.target) \(challenge.resolvedUnitLabel)"
+        } else if let stats = stats {
             label += ", \(stats.totalCount) of \(challenge.target)"
             label += ", \(stats.daysRemaining) days remaining"
             switch stats.paceStatus {
@@ -252,6 +267,33 @@ public enum IconMapper {
         // Then check our mapping
         let lowercased = icon.lowercased()
         return mapping[lowercased] ?? mapping[icon] ?? "checkmark"
+    }
+}
+
+/// Badge for future challenges that haven't started yet
+struct FutureChallengeBadge: View {
+    let daysUntilStart: Int
+    
+    var body: some View {
+        HStack(spacing: 2) {
+            Image(systemName: "calendar.badge.clock")
+                .font(.system(size: 10, weight: .semibold))
+            Text(text)
+                .font(.tallyLabelSmall)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Color.tallyInkSecondary.opacity(0.15))
+        .foregroundColor(Color.tallyInkSecondary)
+        .cornerRadius(6)
+    }
+    
+    private var text: String {
+        if daysUntilStart == 1 {
+            return "Starts tomorrow"
+        } else {
+            return "Starts in \(daysUntilStart) days"
+        }
     }
 }
 

@@ -140,8 +140,10 @@ public final class ChallengesManager {
     }
     
     /// Compute overall pace status from individual challenge stats
+    /// Only considers challenges that have started (not future challenges)
     private func computeOverallPaceStatus() -> PaceStatus {
-        let activeStats = activeChallenges.compactMap { stats[$0.id] }
+        let startedChallenges = activeChallenges.filter { $0.hasStarted }
+        let activeStats = startedChallenges.compactMap { stats[$0.id] }
         guard !activeStats.isEmpty else { return .none }
         
         var aheadCount = 0

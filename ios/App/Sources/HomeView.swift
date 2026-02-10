@@ -18,6 +18,7 @@ struct HomeView: View {
     @State private var deletedChallenge: Challenge?
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some View {
         ScrollView {
@@ -188,6 +189,13 @@ struct HomeView: View {
         .task {
             await loadFollowedChallenges()
             await challengesManager.refresh()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                Task {
+                    await challengesManager.refresh()
+                }
+            }
         }
     }
     

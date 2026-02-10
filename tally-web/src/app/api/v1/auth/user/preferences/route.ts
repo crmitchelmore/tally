@@ -84,16 +84,7 @@ function getDefaultDashboardConfig(): DashboardConfig {
 function isValidDashboardConfig(config: unknown): config is DashboardConfig {
   if (!config || typeof config !== "object") return false;
   const c = config as Record<string, unknown>;
-  if (!c.panels || typeof c.panels !== "object") return false;
-  const panels = c.panels as Record<string, unknown>;
-  const panelsValid = (
-    typeof panels.highlights === "boolean" &&
-    typeof panels.personalRecords === "boolean" &&
-    typeof panels.progressGraph === "boolean" &&
-    typeof panels.burnUpChart === "boolean" &&
-    typeof panels.setsStats === "boolean"
-  );
-  if (!panelsValid) return false;
+
   const allowed = new Set([
     "activeChallenges",
     "highlights",
@@ -106,8 +97,22 @@ function isValidDashboardConfig(config: unknown): config is DashboardConfig {
     Array.isArray(list) &&
     list.every((item) => typeof item === "string" && allowed.has(item));
 
-  if (c.visible === undefined && c.hidden === undefined) return true;
-  if (c.visible !== undefined && !isPanelList(c.visible)) return false;
-  if (c.hidden !== undefined && !isPanelList(c.hidden)) return false;
-  return true;
+  // Accept new format: visible/hidden arrays (no panels object required)
+  if (c.visible !== undefined || c.hidden !== undefined) {
+    if (c.visible !== undefined && !isPanelList(c.visible)) return false;
+    if (c.hidden !== undefined && !isPanelList(c.hidden)) return false;
+    return true;
+  }
+
+  // Legacy format: panels boolean object with optional order
+  if (!c.panels || typeof c.panels !== "object") return false;
+  const panels = c.panels as Record<string, unknown>;
+  const panelsValid = (
+    typeof panels.highlights === "boolean" &&
+    typeof panels.personalRecords === "boolean" &&
+    typeof panels.progressGraph === "boolean" &&
+    typeof panels.burnUpChart === "boolean" &&
+    typeof panels.setsStats === "boolean"
+  );
+  return panelsValid;
 }

@@ -18,6 +18,42 @@ Reference ./design-philosophy.md whenever building anything new to remember the 
 
 Reference ./tech-stack-requirements.md to pick the right tools and technologies.
 
+## Commit Conventions
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) for all commit messages. These drive automated version bumps and iOS TestFlight releases.
+
+### Commit types and version impact
+| Prefix | Version bump | Example |
+|--------|-------------|---------|
+| `feat:` | Minor (0.x.0) | `feat(ios): add streak animation` |
+| `fix:` | Patch (0.0.x) | `fix: prevent crash on empty challenge` |
+| `perf:` | Patch (0.0.x) | `perf(api): reduce response time` |
+| `docs:` | No release | `docs: update README` |
+| `chore:` | No release | `chore: update dependencies` |
+| `ci:` | No release | `ci: add smoke test step` |
+| `test:` | No release | `test: add entry edge cases` |
+| `refactor:` | No release | `refactor: extract challenge service` |
+| `style:` | No release | `style: fix indentation` |
+| `build:` | No release | `build: update Tuist config` |
+| `!` after type | **Major** (x.0.0) | `feat!: redesign challenge API` |
+| `BREAKING CHANGE:` in body | **Major** (x.0.0) | (any type with breaking body) |
+
+### Scopes
+Use optional scopes for clarity: `feat(ios):`, `fix(web):`, `fix(android):`, `perf(api):`.
+
+## Release Process
+
+iOS releases are automated via conventional commits:
+
+1. Push to `main` → CI runs (web, iOS, Android build + test)
+2. CI passes → auto-release job parses commits since last `ios-v*` tag
+3. If releasable commits exist (`feat:`, `fix:`, `perf:`, or breaking) → bumps `ios/VERSION`, creates `ios-v*` tag
+4. Tag push → TestFlight workflow builds, signs, and uploads to App Store Connect
+
+**No manual tagging is needed.** Just use the correct conventional commit prefix and push to main.
+
+To force a release for non-standard commit types, use `fix:` or `feat:` prefix as appropriate.
+
 ## Cross-Platform API Contracts
 
 When modifying API endpoints:

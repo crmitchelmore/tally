@@ -1,6 +1,8 @@
 name: iOS TestFlight Release
 
 on:
+  push:
+    tags: ['ios-v*']
   workflow_dispatch:
     inputs:
       version:
@@ -44,6 +46,19 @@ jobs:
         with:
           install_args: tuist@4.32.0
 
+      - name: Resolve release parameters
+        id: params
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "RELEASE_NOTES=${{ inputs.release_notes }}" >> $GITHUB_OUTPUT
+          else
+            # Extract version from tag: ios-v1.2.3 → 1.2.3
+            TAG="${{ github.ref_name }}"
+            echo "VERSION=${TAG#ios-v}" >> $GITHUB_OUTPUT
+            echo "RELEASE_NOTES=Bug fixes and improvements" >> $GITHUB_OUTPUT
+          fi
+
       - name: Read tracked version
         id: tracked_version
         run: |
@@ -60,6 +75,7 @@ jobs:
           echo "TRACKED_VERSION=$TRACKED_VERSION" >> $GITHUB_OUTPUT
 
       - name: Validate version input
+        if: github.event_name == 'workflow_dispatch'
         run: |
           if [ "${{ inputs.version }}" != "${{ steps.tracked_version.outputs.TRACKED_VERSION }}" ]; then
             echo "Input version '${{ inputs.version }}' does not match tracked ios/VERSION '${{ steps.tracked_version.outputs.TRACKED_VERSION }}'." >&2
@@ -137,8 +153,8 @@ jobs:
           # Update version in generated Info.plist (Tuist puts it in Derived/InfoPlists/)
           INFO_PLIST="Derived/InfoPlists/App-Info.plist"
           
-          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ inputs.version }}" "$INFO_PLIST" 2>/dev/null || \
-          /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string ${{ inputs.version }}" "$INFO_PLIST"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.params.outputs.VERSION }}" "$INFO_PLIST" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string ${{ steps.params.outputs.VERSION }}" "$INFO_PLIST"
           
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.build_number.outputs.BUILD_NUMBER }}" "$INFO_PLIST" 2>/dev/null || \
           /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${{ steps.build_number.outputs.BUILD_NUMBER }}" "$INFO_PLIST"
@@ -149,7 +165,7 @@ jobs:
           /usr/libexec/PlistBuddy -c "Add :GIT_COMMIT_SHA string $GIT_COMMIT_SHORT" "$INFO_PLIST"
           
           # Verify the changes
-          echo "📦 Building version ${{ inputs.version }} (${{ steps.build_number.outputs.BUILD_NUMBER }}) - commit $GIT_COMMIT_SHORT"
+          echo "📦 Building version ${{ steps.params.outputs.VERSION }} (${{ steps.build_number.outputs.BUILD_NUMBER }}) - commit $GIT_COMMIT_SHORT"
           echo "Info.plist contents:"
           /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST"
           /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST"
@@ -248,7 +264,8 @@ jobs:
 
     outputs:
       build_number: ${{ steps.build_number.outputs.BUILD_NUMBER }}
-      version: ${{ inputs.version }}
+      version: ${{ steps.params.outputs.VERSION }}
+      release_notes: ${{ steps.params.outputs.RELEASE_NOTES }}
 
   poll-and-distribute:
     name: Poll & Distribute to TestFlight
@@ -373,7 +390,7 @@ jobs:
           ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
           BUILD_ID: ${{ steps.poll.outputs.build_id }}
           BETA_GROUP_IDS: ${{ secrets.IOS_TESTFLIGHT_BETA_GROUP_IDS }}
-          RELEASE_NOTES: ${{ inputs.release_notes }}
+          RELEASE_NOTES: ${{ needs.build-and-upload.outputs.release_notes }}
         with:
           script: |
             const crypto = require('crypto');
@@ -476,7 +493,7 @@ jobs:
           script: |
             const version = '${{ needs.build-and-upload.outputs.version }}';
             const buildNumber = '${{ needs.build-and-upload.outputs.build_number }}';
-            const releaseNotes = `${{ inputs.release_notes }}`;
+            const releaseNotes = `${{ needs.build-and-upload.outputs.release_notes }}`;
             
             await github.rest.repos.createRelease({
               owner: context.repo.owner,

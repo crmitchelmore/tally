@@ -140,3 +140,118 @@ jobs:
             });
             core.info(`Set build status on ${sha}: ${ok ? 'success' : 'failure'}`);
 
+  # ─────────────────────────────────────────────────────────────
+  # Auto Version & Release (iOS)
+  # ─────────────────────────────────────────────────────────────
+  auto-release:
+    name: Auto Version & Release
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.AUTO_RELEASE_TOKEN }}
+          persist-credentials: true
+
+      - name: Determine version bump from conventional commits
+        id: bump
+        run: |
+          set -e
+
+          # Get latest ios-v* tag
+          LATEST_TAG=$(git tag -l 'ios-v*' --sort=-v:refname | head -1)
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG="ios-v0.0.0"
+          fi
+          echo "Latest tag: $LATEST_TAG"
+
+          # Get commit messages since last tag (subject lines only)
+          COMMITS=$(git log "${LATEST_TAG}..HEAD" --pretty=format:"%s" --no-merges)
+
+          if [ -z "$COMMITS" ]; then
+            echo "No new commits since $LATEST_TAG"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Commits since $LATEST_TAG:"
+          echo "$COMMITS"
+          echo "---"
+
+          # Also check commit bodies for BREAKING CHANGE
+          BODIES=$(git log "${LATEST_TAG}..HEAD" --pretty=format:"%b" --no-merges)
+
+          # Determine bump type from conventional commits
+          BUMP="none"
+
+          # Check for breaking changes: "type!:" prefix or "BREAKING CHANGE:" in body
+          if echo "$COMMITS" | grep -qE "^[a-z]+(\(.+\))?!:"; then
+            BUMP="major"
+          elif echo "$BODIES" | grep -qE "^BREAKING CHANGE:"; then
+            BUMP="major"
+          # Check for features
+          elif echo "$COMMITS" | grep -qE "^feat(\(.+\))?:"; then
+            BUMP="minor"
+          # Check for fixes and performance improvements
+          elif echo "$COMMITS" | grep -qE "^(fix|perf)(\(.+\))?:"; then
+            BUMP="patch"
+          fi
+
+          if [ "$BUMP" = "none" ]; then
+            echo "No releasable conventional commits (feat/fix/perf/breaking) found"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Parse current version and apply bump
+          VERSION="${LATEST_TAG#ios-v}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          PATCH=$(echo "$VERSION" | cut -d. -f3)
+
+          case $BUMP in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "Version bump: $BUMP ($LATEST_TAG → ios-v$NEW_VERSION)"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Bump VERSION and create tag
+        if: steps.bump.outputs.skip != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.AUTO_RELEASE_TOKEN }}
+        run: |
+          NEW_VERSION="${{ steps.bump.outputs.new_version }}"
+          TAG="ios-v${NEW_VERSION}"
+
+          # Check if tag already exists
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, skipping"
+            exit 0
+          fi
+
+          RELEASE_SHA=$(git rev-parse HEAD)
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Tag the current commit (triggers ios-testflight.yml)
+          git tag -a "$TAG" "$RELEASE_SHA" -m "Release $TAG"
+          git push origin "$TAG"
+          echo "🚀 Created tag $TAG on ${RELEASE_SHA:0:7}"
+
+          # Best-effort VERSION file update
+          echo "$NEW_VERSION" > ios/VERSION
+          git add ios/VERSION
+          git commit -m "chore: bump iOS version to $NEW_VERSION"
+          git push origin main || echo "⚠️ Could not push VERSION bump (branch protection)"

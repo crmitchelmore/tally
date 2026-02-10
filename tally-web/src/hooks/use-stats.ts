@@ -91,7 +91,8 @@ export function useStats(enabled = true) {
     fetchStats,
     {
       fallbackData: getCachedStats(),
-      revalidateOnFocus: false,
+      revalidateOnFocus: true,
+      refreshInterval: 30_000,
       dedupingInterval: 2000,
       keepPreviousData: true,
     }
@@ -111,7 +112,8 @@ export function useEntries(enabled = true) {
     fetchEntries,
     {
       fallbackData: getCachedEntries(),
-      revalidateOnFocus: false,
+      revalidateOnFocus: true,
+      refreshInterval: 30_000,
       dedupingInterval: 2000,
       keepPreviousData: true,
     }

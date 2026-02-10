@@ -60,8 +60,9 @@ export function useChallenges(enabled = true) {
     fetchChallengesWithStats,
     {
       fallbackData: getCachedData(),
-      revalidateOnFocus: false,
+      revalidateOnFocus: true,
       revalidateOnReconnect: true,
+      refreshInterval: 30_000,
       dedupingInterval: 2000,
       keepPreviousData: true,
     }

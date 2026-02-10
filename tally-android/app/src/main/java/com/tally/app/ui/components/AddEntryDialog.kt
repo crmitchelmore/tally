@@ -43,6 +43,7 @@ import com.tally.core.design.TallyTheme
 import com.tally.core.network.Challenge
 import com.tally.core.network.CountType
 import com.tally.core.network.Entry
+import com.tally.core.network.EntryDefaults
 import com.tally.core.network.Feeling
 
 /**
@@ -69,6 +70,7 @@ fun AddEntryDialog(
     } else {
         SimpleAddEntryDialog(
             challenge = challenge,
+            recentEntries = recentEntries,
             onSubmit = onSubmit,
             onDismiss = onDismiss
         )
@@ -81,10 +83,14 @@ fun AddEntryDialog(
 @Composable
 private fun SimpleAddEntryDialog(
     challenge: Challenge,
+    recentEntries: List<Entry>,
     onSubmit: (count: Int, sets: List<Int>?, feeling: Feeling?) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var countStr by remember { mutableStateOf("1") }
+    val initialValue = remember(recentEntries) {
+        EntryDefaults.calculateInitialValue(recentEntries, CountType.SIMPLE)
+    }
+    var countStr by remember { mutableStateOf(initialValue.toString()) }
     val count = countStr.toIntOrNull() ?: 0
     
     AlertDialog(
@@ -208,18 +214,9 @@ private fun SetsBasedAddEntryDialog(
     onSubmit: (count: Int, sets: List<Int>?, feeling: Feeling?) -> Unit,
     onDismiss: () -> Unit
 ) {
-    // Calculate average of first set from last 10 days
+    // Use EntryDefaults for consistent initial value across platforms
     val averageFirstSet = remember(recentEntries) {
-        val firstSets = recentEntries
-            .filter { it.sets?.isNotEmpty() == true }
-            .take(10)
-            .mapNotNull { it.sets?.firstOrNull() }
-        
-        if (firstSets.isNotEmpty()) {
-            firstSets.average().toInt().coerceAtLeast(1)
-        } else {
-            10 // Default if no history
-        }
+        EntryDefaults.calculateInitialValue(recentEntries, CountType.SETS)
     }
     
     val sets = remember { mutableStateListOf(averageFirstSet) }
@@ -385,6 +382,7 @@ private fun SimpleAddEntryDialogPreview() {
     TallyTheme {
         SimpleAddEntryDialog(
             challenge = previewChallenge,
+            recentEntries = emptyList(),
             onSubmit = { _, _, _ -> },
             onDismiss = {}
         )

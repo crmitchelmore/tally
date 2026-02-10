@@ -101,6 +101,10 @@ function isValidDashboardConfig(config: unknown): config is DashboardConfig {
   if (c.visible !== undefined || c.hidden !== undefined) {
     if (c.visible !== undefined && !isPanelList(c.visible)) return false;
     if (c.hidden !== undefined && !isPanelList(c.hidden)) return false;
+    if (Array.isArray(c.visible) && Array.isArray(c.hidden)) {
+      const visibleSet = new Set(c.visible as string[]);
+      if ((c.hidden as string[]).some((p) => visibleSet.has(p))) return false;
+    }
     return true;
   }
 

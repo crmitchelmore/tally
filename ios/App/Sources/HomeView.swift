@@ -186,13 +186,10 @@ struct HomeView: View {
                 .tallyPadding(.bottom, TallySpacing.lg)
             }
         }
-        .task {
-            await loadFollowedChallenges()
-            await challengesManager.refresh()
-        }
-        .onChange(of: scenePhase) { _, newPhase in
+        .onChange(of: scenePhase, initial: true) { _, newPhase in
             if newPhase == .active {
                 Task {
+                    await loadFollowedChallenges()
                     await challengesManager.refresh()
                 }
             }

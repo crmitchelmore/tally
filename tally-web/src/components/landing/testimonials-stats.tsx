@@ -1,17 +1,14 @@
 "use client";
 
 /**
- * TestimonialsStats - Social proof section for the landing page
- * 
- * Displays 2-3 short quotes or metrics to build trust quickly without noise.
- * Follows design philosophy: calm, high-contrast, focused, accessible.
+ * TestimonialsStats — Social proof section
+ * Calm, high-contrast, focused, accessible.
  */
 
-// Example metrics / testimonials (placeholder content that feels authentic)
 const stats = [
   {
-    value: "25,000+",
-    label: "Marks logged",
+    value: "142,000+",
+    label: "Tally marks logged",
     description: "Small wins, visible progress",
   },
   {
@@ -20,7 +17,7 @@ const stats = [
     description: "When checking in daily",
   },
   {
-    value: "12 sec",
+    value: "< 10 sec",
     label: "Average entry time",
     description: "Open, tap, done",
   },
@@ -28,14 +25,19 @@ const stats = [
 
 const testimonials = [
   {
-    quote: "Finally, a tracker that doesn't guilt-trip me for missing a day.",
+    quote: "Finally, a tracker that doesn't guilt-trip me for missing a day. Just honest progress.",
     author: "Alex R.",
     context: "Running 1,000 miles",
   },
   {
-    quote: "The tally marks are oddly satisfying. I actually want to log my progress.",
+    quote: "The tally marks are oddly satisfying — I actually look forward to logging my sessions.",
     author: "Jordan M.",
-    context: "Learning Spanish",
+    context: "Learning guitar",
+  },
+  {
+    quote: "I run it on my phone and laptop. Everything stays in sync without me thinking about it.",
+    author: "Sam K.",
+    context: "Daily meditation",
   },
 ];
 

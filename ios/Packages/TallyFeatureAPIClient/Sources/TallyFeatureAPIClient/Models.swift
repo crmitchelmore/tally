@@ -440,8 +440,18 @@ public struct DashboardConfig: Codable, Sendable, Equatable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(visiblePanels, forKey: .visiblePanels)
-        try container.encode(hiddenPanels, forKey: .hiddenPanels)
+        // Encode in API format (visible/hidden) for server compatibility
+        try container.encode(visiblePanels, forKey: .visible)
+        try container.encode(hiddenPanels, forKey: .hidden)
+        // Include legacy panels object for backward compat with server validation
+        let panels = OldPanels(
+            highlights: visiblePanels.contains(.highlights),
+            personalRecords: visiblePanels.contains(.personalRecords),
+            progressGraph: visiblePanels.contains(.progressGraph),
+            burnUpChart: visiblePanels.contains(.burnUpChart),
+            setsStats: false
+        )
+        try container.encode(panels, forKey: .panels)
     }
     
     private enum CodingKeys: String, CodingKey {

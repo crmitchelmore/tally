@@ -309,4 +309,10 @@ public actor APIClient {
         let response: EntryResponse = try await execute(request)
         return response.entry
     }
+
+    /// Delete all user data (challenges, entries, and preferences)
+    public func deleteAllData() async throws {
+        let request = try buildRequest(path: "/api/v1/data", method: "DELETE")
+        let _: DeleteResponse = try await execute(request)
+    }
 }

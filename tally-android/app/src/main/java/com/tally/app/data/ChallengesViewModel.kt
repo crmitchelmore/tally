@@ -9,6 +9,7 @@ import com.tally.core.network.ChallengeWithStatsWrapper
 import com.tally.core.network.CountType
 import com.tally.core.network.DashboardConfig
 import com.tally.core.network.DashboardStats
+import com.tally.core.network.Entry
 import com.tally.core.network.ExportData
 import com.tally.core.network.Feeling
 import com.tally.core.network.PersonalRecords
@@ -178,6 +179,72 @@ class ChallengesViewModel(
             repository.deleteChallenge(challenge.id)
             _selectedChallenge.value = null
         }
+    }
+
+    fun updateChallenge(
+        challengeId: String,
+        name: String? = null,
+        target: Int? = null,
+        isArchived: Boolean? = null,
+        isPublic: Boolean? = null,
+        color: String? = null,
+        icon: String? = null
+    ) {
+        viewModelScope.launch {
+            repository.updateChallenge(
+                challengeId = challengeId,
+                name = name,
+                target = target,
+                isArchived = isArchived,
+                isPublic = isPublic,
+                color = color,
+                icon = icon
+            )
+        }
+    }
+
+    fun updateEntry(
+        entryId: String,
+        challengeId: String,
+        count: Int? = null,
+        date: String? = null,
+        sets: List<Int>? = null,
+        note: String? = null,
+        feeling: Feeling? = null
+    ) {
+        viewModelScope.launch {
+            repository.updateEntry(
+                entryId = entryId,
+                challengeId = challengeId,
+                count = count,
+                date = date,
+                sets = sets,
+                note = note,
+                feeling = feeling
+            )
+        }
+    }
+
+    fun deleteEntry(entryId: String, challengeId: String) {
+        viewModelScope.launch {
+            repository.deleteEntry(entryId, challengeId)
+        }
+    }
+
+    fun restoreChallenge(challengeId: String) {
+        viewModelScope.launch {
+            repository.restoreChallenge(challengeId)
+        }
+    }
+
+    fun restoreEntry(entryId: String) {
+        viewModelScope.launch {
+            repository.restoreEntry(entryId)
+        }
+    }
+
+    fun entriesForChallenge(challengeId: String): List<Entry> {
+        return repository.entriesForChallenge(challengeId)
     }
 
     fun followChallenge(challengeId: String) {

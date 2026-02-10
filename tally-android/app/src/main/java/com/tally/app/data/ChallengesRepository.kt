@@ -325,6 +325,177 @@ class ChallengesRepository(
     }
 
     /**
+     * Update an existing entry.
+     */
+    suspend fun updateEntry(
+        entryId: String,
+        challengeId: String,
+        count: Int? = null,
+        date: String? = null,
+        sets: List<Int>? = null,
+        note: String? = null,
+        feeling: Feeling? = null
+    ): Entry? {
+        if (isOfflineMode || apiClient == null) {
+            // Update locally
+            val currentEntries = _entries.value.toMutableMap()
+            val challengeEntries = currentEntries[challengeId]?.toMutableList() ?: return null
+            val idx = challengeEntries.indexOfFirst { it.id == entryId }
+            if (idx < 0) return null
+            val old = challengeEntries[idx]
+            val updated = old.copy(
+                count = count ?: old.count,
+                date = date ?: old.date,
+                sets = sets ?: old.sets,
+                note = note ?: old.note,
+                feeling = feeling ?: old.feeling
+            )
+            challengeEntries[idx] = updated
+            currentEntries[challengeId] = challengeEntries
+            _entries.value = currentEntries
+            saveEntriesLocally(currentEntries)
+            return updated
+        }
+
+        val request = com.tally.core.network.UpdateEntryRequest(
+            count = count, date = date, sets = sets, note = note, feeling = feeling
+        )
+        return when (val result = apiClient.updateEntry(entryId, request)) {
+            is ApiResult.Success -> {
+                val entry = result.data
+                val currentEntries = _entries.value.toMutableMap()
+                val challengeEntries = currentEntries[challengeId]?.toMutableList() ?: mutableListOf()
+                val idx = challengeEntries.indexOfFirst { it.id == entryId }
+                if (idx >= 0) challengeEntries[idx] = entry else challengeEntries.add(entry)
+                currentEntries[challengeId] = challengeEntries
+                _entries.value = currentEntries
+                saveEntriesLocally(currentEntries)
+                refresh()
+                entry
+            }
+            is ApiResult.Failure -> {
+                _error.value = result.error.message
+                null
+            }
+        }
+    }
+
+    /**
+     * Delete an entry.
+     */
+    suspend fun deleteEntry(entryId: String, challengeId: String): Boolean {
+        val success = if (isOfflineMode || apiClient == null) {
+            true
+        } else {
+            when (val result = apiClient.deleteEntry(entryId)) {
+                is ApiResult.Success -> true
+                is ApiResult.Failure -> {
+                    _error.value = result.error.message
+                    false
+                }
+            }
+        }
+
+        if (success) {
+            val currentEntries = _entries.value.toMutableMap()
+            val challengeEntries = currentEntries[challengeId]?.filter { it.id != entryId } ?: emptyList()
+            currentEntries[challengeId] = challengeEntries
+            _entries.value = currentEntries
+            saveEntriesLocally(currentEntries)
+            refresh()
+        }
+        return success
+    }
+
+    /**
+     * Update a challenge (e.g. archive/unarchive, edit name/target).
+     */
+    suspend fun updateChallenge(
+        challengeId: String,
+        name: String? = null,
+        target: Int? = null,
+        isArchived: Boolean? = null,
+        isPublic: Boolean? = null,
+        color: String? = null,
+        icon: String? = null
+    ): Challenge? {
+        if (isOfflineMode || apiClient == null) {
+            val idx = _challenges.value.indexOfFirst { it.id == challengeId }
+            if (idx < 0) return null
+            val old = _challenges.value[idx]
+            val updated = old.copy(
+                name = name ?: old.name,
+                target = target ?: old.target,
+                isArchived = isArchived ?: old.isArchived,
+                isPublic = isPublic ?: old.isPublic,
+                color = color ?: old.color,
+                icon = icon ?: old.icon
+            )
+            val list = _challenges.value.toMutableList()
+            list[idx] = updated
+            _challenges.value = list
+            saveChallengesLocally(list)
+            return updated
+        }
+
+        val request = com.tally.core.network.UpdateChallengeRequest(
+            name = name, target = target, isArchived = isArchived,
+            isPublic = isPublic, color = color, icon = icon
+        )
+        return when (val result = apiClient.updateChallenge(challengeId, request)) {
+            is ApiResult.Success -> {
+                refresh()
+                result.data
+            }
+            is ApiResult.Failure -> {
+                _error.value = result.error.message
+                null
+            }
+        }
+    }
+
+    /**
+     * Restore a deleted challenge.
+     */
+    suspend fun restoreChallenge(challengeId: String): Boolean {
+        if (isOfflineMode || apiClient == null) return false
+        return when (val result = apiClient.restoreChallenge(challengeId)) {
+            is ApiResult.Success -> {
+                refresh()
+                true
+            }
+            is ApiResult.Failure -> {
+                _error.value = result.error.message
+                false
+            }
+        }
+    }
+
+    /**
+     * Restore a deleted entry.
+     */
+    suspend fun restoreEntry(entryId: String): Boolean {
+        if (isOfflineMode || apiClient == null) return false
+        return when (val result = apiClient.restoreEntry(entryId)) {
+            is ApiResult.Success -> {
+                refresh()
+                true
+            }
+            is ApiResult.Failure -> {
+                _error.value = result.error.message
+                false
+            }
+        }
+    }
+
+    /**
+     * Get entries for a specific challenge.
+     */
+    fun entriesForChallenge(challengeId: String): List<Entry> {
+        return _entries.value[challengeId] ?: emptyList()
+    }
+
+    /**
      * Get total count for a challenge from entries.
      */
     fun getTotalCount(challengeId: String): Int {

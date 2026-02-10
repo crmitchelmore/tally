@@ -40,6 +40,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tally.app.BuildConfig
 import com.tally.app.R
 import com.tally.app.ui.components.AddEntryDialog
+import com.tally.app.ui.dashboard.CommunityPreviewSection
+import com.tally.app.ui.dashboard.FollowedChallengesSection
+import com.tally.app.ui.dashboard.WeeklySummaryDialog
 import com.tally.core.auth.AuthManager
 import com.tally.core.data.ChallengesManager
 import com.tally.core.data.SyncState
@@ -48,6 +51,7 @@ import com.tally.core.design.TallySpacing
 import com.tally.core.design.TallyTheme
 import com.tally.core.network.Challenge
 import com.tally.core.network.Entry
+import com.tally.core.network.PublicChallenge
 import com.tally.app.data.ChallengeWithCount
 import com.tally.core.network.TallyApiClient
 import kotlinx.coroutines.launch
@@ -58,7 +62,7 @@ import java.time.LocalDate
  * Loads from cache instantly, refreshes in background.
  */
 @Composable
-fun HomeScreen(authManager: AuthManager? = null) {
+fun HomeScreen(authManager: AuthManager? = null, onNavigateToDetail: (String) -> Unit = {}) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     
@@ -82,6 +86,8 @@ fun HomeScreen(authManager: AuthManager? = null) {
     val isLoading by challengesManager.isLoading.collectAsStateWithLifecycle()
     val isRefreshing by challengesManager.isRefreshing.collectAsStateWithLifecycle()
     val syncState by challengesManager.syncState.collectAsStateWithLifecycle()
+    val followedChallenges by challengesManager.followedChallenges.collectAsStateWithLifecycle()
+    val publicChallenges by challengesManager.publicChallenges.collectAsStateWithLifecycle()
     
     // Compute display sync state (local-only mode overrides)
     val displaySyncState = if (isLocalOnlyMode) {
@@ -103,6 +109,7 @@ fun HomeScreen(authManager: AuthManager? = null) {
     // Refresh on mount
     LaunchedEffect(Unit) {
         challengesManager.refreshChallenges()
+        challengesManager.refreshCommunity()
     }
     
     Scaffold(
@@ -173,7 +180,7 @@ fun HomeScreen(authManager: AuthManager? = null) {
                     EmptyState(onCreateClick = { showCreateDialog = true })
                 }
                 else -> {
-                    // Challenge list
+                    // Challenge list + dashboard sections
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(TallySpacing.md)
                     ) {
@@ -185,10 +192,35 @@ fun HomeScreen(authManager: AuthManager? = null) {
                                     totalCount = challengeStats?.totalCount ?: 0,
                                     stats = challengeStats
                                 ),
-                                onClick = { selectedChallenge = challenge },
+                                onClick = { onNavigateToDetail(challenge.id) },
                                 onAddEntry = { selectedChallenge = challenge },
                                 showMiniHeatmap = true
                             )
+                        }
+
+                        // Followed challenges section
+                        if (followedChallenges.isNotEmpty()) {
+                            item {
+                                FollowedChallengesSection(
+                                    followedChallenges = followedChallenges,
+                                    onViewAll = { /* navigate to community tab */ }
+                                )
+                            }
+                        }
+
+                        // Community preview section
+                        if (publicChallenges.isNotEmpty()) {
+                            item {
+                                CommunityPreviewSection(
+                                    challenges = publicChallenges,
+                                    onViewAll = { /* navigate to community tab */ },
+                                    onFollow = { challengeId ->
+                                        scope.launch {
+                                            challengesManager.followChallenge(challengeId)
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
                 }

@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.appcompat.app.AppCompatDelegate
 import com.tally.app.BuildConfig
 import com.tally.app.data.ChallengesViewModel
 import com.tally.core.billing.TipJarScreen
@@ -68,6 +69,12 @@ fun SettingsScreen(
     
     val context = LocalContext.current
     val tipManager = remember { context.findActivity()?.let { TipManager(it) } }
+    
+    // Appearance mode state
+    val prefs = remember { context.getSharedPreferences("tally_settings", Context.MODE_PRIVATE) }
+    var appearanceMode by remember { 
+        mutableIntStateOf(prefs.getInt("appearance_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM))
+    }
     
     // File picker for import
     val importLauncher = rememberLauncherForActivityResult(
@@ -203,6 +210,153 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // Appearance section
+        Text(
+            text = "APPEARANCE",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Theme",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // System option
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            appearanceMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                            prefs
+                                .edit()
+                                .putInt("appearance_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                                .apply()
+                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                        }
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = appearanceMode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM,
+                        onClick = {
+                            appearanceMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                            prefs
+                                .edit()
+                                .putInt("appearance_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                                .apply()
+                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "System",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = "Follow device theme",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                
+                // Light option
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            appearanceMode = AppCompatDelegate.MODE_NIGHT_NO
+                            prefs
+                                .edit()
+                                .putInt("appearance_mode", AppCompatDelegate.MODE_NIGHT_NO)
+                                .apply()
+                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                        }
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = appearanceMode == AppCompatDelegate.MODE_NIGHT_NO,
+                        onClick = {
+                            appearanceMode = AppCompatDelegate.MODE_NIGHT_NO
+                            prefs
+                                .edit()
+                                .putInt("appearance_mode", AppCompatDelegate.MODE_NIGHT_NO)
+                                .apply()
+                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Light",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = "Always use light theme",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                
+                // Dark option
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            appearanceMode = AppCompatDelegate.MODE_NIGHT_YES
+                            prefs
+                                .edit()
+                                .putInt("appearance_mode", AppCompatDelegate.MODE_NIGHT_YES)
+                                .apply()
+                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                        }
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = appearanceMode == AppCompatDelegate.MODE_NIGHT_YES,
+                        onClick = {
+                            appearanceMode = AppCompatDelegate.MODE_NIGHT_YES
+                            prefs
+                                .edit()
+                                .putInt("appearance_mode", AppCompatDelegate.MODE_NIGHT_YES)
+                                .apply()
+                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Dark",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = "Always use dark theme",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }

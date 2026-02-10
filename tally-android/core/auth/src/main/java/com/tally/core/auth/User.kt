@@ -9,9 +9,9 @@ import kotlinx.serialization.Serializable
 data class TallyUser(
     val id: String,
     val clerkId: String,
-    val email: String?,
-    val displayName: String?,
-    val avatarUrl: String?,
+    val email: String? = null,
+    val name: String? = null,
+    val avatarUrl: String? = null,
     val createdAt: String,
     val updatedAt: String
 )

@@ -50,11 +50,20 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.kotlinx.serialization.json)
 
     // EncryptedSharedPreferences for secure token storage
     implementation(libs.androidx.security.crypto)
 
-    // CustomTabs for web-based OAuth flow
-    implementation(libs.androidx.browser)
+    // Native Clerk SDK for authentication
+    implementation(libs.clerk.android.api) {
+        exclude(group = "androidx.browser", module = "browser")
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("androidx.browser:browser:1.8.0")
+    }
 }

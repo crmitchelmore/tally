@@ -68,6 +68,12 @@ class TallyApiClient(
         return delete("/api/v1/challenges/$id")
     }
 
+    /** Restore a deleted challenge */
+    suspend fun restoreChallenge(id: String): ApiResult<Challenge> {
+        return post<ChallengeResponse>("/api/v1/challenges/$id/restore", null)
+            .map { it.challenge }
+    }
+
     // ===== Entries API =====
 
     /** List entries, optionally filtered by challenge or date */
@@ -107,6 +113,12 @@ class TallyApiClient(
     /** Delete an entry */
     suspend fun deleteEntry(id: String): ApiResult<Unit> {
         return delete("/api/v1/entries/$id")
+    }
+
+    /** Restore a deleted entry */
+    suspend fun restoreEntry(id: String): ApiResult<Entry> {
+        return post<EntryResponse>("/api/v1/entries/$id/restore", null)
+            .map { it.entry }
     }
 
     // ===== Stats API =====

@@ -1,13 +1,12 @@
 package com.tally.app
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tally.core.auth.AuthManager
@@ -25,14 +24,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // Restore saved appearance mode
+        val prefs = getSharedPreferences("tally_settings", MODE_PRIVATE)
+        val savedMode = prefs.getInt("appearance_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        AppCompatDelegate.setDefaultNightMode(savedMode)
+
         authManager = AuthManager(
             context = applicationContext,
             publishableKey = BuildConfig.CLERK_PUBLISHABLE_KEY,
             apiBaseUrl = BuildConfig.API_BASE_URL
         )
-
-        // Handle auth callback from deep link
-        handleIntent(intent)
 
         setContent {
             TallyTheme {
@@ -47,8 +48,8 @@ class MainActivity : ComponentActivity() {
                 when (val state = authState) {
                     is AuthState.Loading -> LoadingScreen()
                     is AuthState.SignedOut -> SignInScreen(
-                        onSignInClick = { context ->
-                            authManager.launchSignIn(context)
+                        onSignIn = { email, password ->
+                            authManager.signInWithPassword(email, password)
                         },
                         onContinueWithoutAccount = {
                             authManager.enableLocalOnlyMode()
@@ -80,24 +81,6 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     )
-                }
-            }
-        }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        handleIntent(intent)
-    }
-
-    private fun handleIntent(intent: Intent?) {
-        // Handle deep link: tally://auth/callback?token=xxx
-        val uri = intent?.data ?: return
-        if (uri.scheme == "tally" && uri.host == "auth" && uri.path == "/callback") {
-            val token = uri.getQueryParameter("token")
-            if (token != null) {
-                kotlinx.coroutines.MainScope().launch {
-                    authManager.handleAuthCallback(token)
                 }
             }
         }

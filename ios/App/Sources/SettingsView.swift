@@ -24,6 +24,8 @@ struct SettingsView: View {
     @State private var showAlert = false
     @State private var showLoginFlow = false
     @State private var showSignOutConfirm = false
+    @State private var showDeleteAllConfirm = false
+    @State private var isDeletingAll = false
     
     var body: some View {
         NavigationStack {
@@ -95,6 +97,32 @@ struct SettingsView: View {
                                     .foregroundStyle(Color.tallyError)
                             }
                         }
+                    }
+
+                    // Delete all cloud data (only when authenticated)
+                    if !authManager.isLocalOnlyMode {
+                        Button(role: .destructive) {
+                            showDeleteAllConfirm = true
+                        } label: {
+                            Label {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Delete All Data")
+                                        Text("Permanently remove all challenges and entries")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                    if isDeletingAll {
+                                        ProgressView()
+                                    }
+                                }
+                            } icon: {
+                                Image(systemName: "trash")
+                                    .foregroundStyle(Color.tallyError)
+                            }
+                        }
+                        .disabled(isDeletingAll)
                     }
                 } header: {
                     Text("Data")
@@ -335,6 +363,14 @@ struct SettingsView: View {
             } message: {
                 Text("This will clear all local data from this device. Your data is safely stored in the cloud.")
             }
+            .alert("Delete All Data?", isPresented: $showDeleteAllConfirm) {
+                Button("Cancel", role: .cancel) {}
+                Button("Delete Everything", role: .destructive) {
+                    Task { await deleteAllData() }
+                }
+            } message: {
+                Text("This will permanently delete all your challenges, entries, and preferences. This cannot be undone.")
+            }
         }
     }
     
@@ -466,6 +502,20 @@ struct SettingsView: View {
         await exportData()
         // Then delete
         await deleteLocalData()
+    }
+
+    private func deleteAllData() async {
+        isDeletingAll = true
+        defer { isDeletingAll = false }
+
+        do {
+            try await APIClient.shared.deleteAllData()
+            alertMessage = "All data has been permanently deleted"
+            showAlert = true
+        } catch {
+            alertMessage = "Failed to delete data: \(error.localizedDescription)"
+            showAlert = true
+        }
     }
     
     private func handleLoginSignup() async {

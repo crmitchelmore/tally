@@ -1,6 +1,5 @@
 package com.tally.core.auth.ui
 
-import android.content.Context
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,37 +12,73 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tally.core.design.TallyColors
 import com.tally.core.design.TallySpacing
+import kotlinx.coroutines.launch
 
 /**
- * Sign-in screen with tally mark logo and CTA.
+ * Native sign-in screen with email/password fields.
  * Follows design philosophy: tactile, focused, honest.
  */
 @Composable
 fun SignInScreen(
-    onSignInClick: (Context) -> Unit,
+    onSignIn: suspend (email: String, password: String) -> Result<Unit>,
     onContinueWithoutAccount: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
+
+    fun submit() {
+        if (email.isBlank() || password.isBlank()) {
+            errorMessage = "Please enter your email and password"
+            return
+        }
+        isLoading = true
+        errorMessage = null
+        scope.launch {
+            val result = onSignIn(email.trim(), password)
+            isLoading = false
+            result.onFailure { e ->
+                errorMessage = e.message ?: "Sign-in failed"
+            }
+        }
+    }
 
     Column(
         modifier = modifier
@@ -83,24 +118,98 @@ fun SignInScreen(
             modifier = Modifier.testTag("app_tagline")
         )
 
-        Spacer(modifier = Modifier.height(TallySpacing.xxxl))
+        Spacer(modifier = Modifier.height(TallySpacing.xxl))
 
-        // Sign in button (primary CTA)
+        // Email field
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it; errorMessage = null },
+            label = { Text("Email") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("email_field"),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = TallyColors.accent(),
+                cursorColor = TallyColors.inkC1(),
+                focusedLabelColor = TallyColors.accent()
+            ),
+            enabled = !isLoading
+        )
+
+        Spacer(modifier = Modifier.height(TallySpacing.sm))
+
+        // Password field
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it; errorMessage = null },
+            label = { Text("Password") },
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { focusManager.clearFocus(); submit() }
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("password_field"),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = TallyColors.accent(),
+                cursorColor = TallyColors.inkC1(),
+                focusedLabelColor = TallyColors.accent()
+            ),
+            enabled = !isLoading
+        )
+
+        // Error message
+        if (errorMessage != null) {
+            Spacer(modifier = Modifier.height(TallySpacing.sm))
+            Text(
+                text = errorMessage!!,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(TallySpacing.xl))
+
+        // Sign in button
         Button(
-            onClick = { onSignInClick(context) },
+            onClick = { submit() },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
                 .testTag("sign_in_button"),
             colors = ButtonDefaults.buttonColors(
                 containerColor = TallyColors.inkC1()
-            )
+            ),
+            enabled = !isLoading
         ) {
-            Text(
-                text = "Sign in",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = TallyColors.paper(),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    text = "Sign in",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(TallySpacing.md))
@@ -115,7 +224,8 @@ fun SignInScreen(
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = TallyColors.inkC2()
-            )
+            ),
+            enabled = !isLoading
         ) {
             Text(
                 text = "Continue without account",
@@ -166,7 +276,7 @@ private fun TallyLogo(
                 )
             }
 
-            // Draw diagonal slash (5th mark) in accent color
+            // Draw diagonal slash (5th mark) in accent colour
             val slashStartX = startX - gap * 0.3f
             val slashEndX = startX + gap * 3.3f
             drawLine(

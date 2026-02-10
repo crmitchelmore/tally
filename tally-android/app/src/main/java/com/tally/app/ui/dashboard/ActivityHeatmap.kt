@@ -1,6 +1,7 @@
 package com.tally.app.ui.dashboard
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tally.core.design.TallySpacing
@@ -36,7 +38,8 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun ActivityHeatmap(
     entries: List<Entry>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDayClick: ((LocalDate) -> Unit)? = null
 ) {
     val today = LocalDate.now()
     val startDate = today.minusMonths(6)
@@ -82,6 +85,28 @@ fun ActivityHeatmap(
                     modifier = Modifier
                         .width((cellSize + cellGap) * weeksCount)
                         .height((cellSize + cellGap) * 7)
+                        .pointerInput(Unit) {
+                            detectTapGestures { offset ->
+                                val cellWithGap = (cellSize + cellGap).toPx()
+                                val week = (offset.x / cellWithGap).toInt()
+                                val day = (offset.y / cellWithGap).toInt()
+                                
+                                // Calculate the date from week/day offset from startDate
+                                if (week >= 0 && week < weeksCount && day >= 0 && day < 7) {
+                                    var calculatedDate = startDate
+                                    // Adjust to start on Sunday
+                                    while (calculatedDate.dayOfWeek != DayOfWeek.SUNDAY) {
+                                        calculatedDate = calculatedDate.minusDays(1)
+                                    }
+                                    // Add the offset
+                                    calculatedDate = calculatedDate.plusWeeks(week.toLong()).plusDays(day.toLong())
+                                    
+                                    if (!calculatedDate.isAfter(today)) {
+                                        onDayClick?.invoke(calculatedDate)
+                                    }
+                                }
+                            }
+                        }
                 ) {
                     var currentDate = startDate
                     

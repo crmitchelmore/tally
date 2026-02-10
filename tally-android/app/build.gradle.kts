@@ -61,7 +61,12 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:billing"))
     
+    implementation(libs.clerk.android.api) {
+        exclude(group = "androidx.browser", module = "browser")
+    }
+    
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

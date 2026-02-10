@@ -10,6 +10,7 @@ import com.tally.core.network.CreateEntryRequest
 import com.tally.core.network.Entry
 import com.tally.core.network.Feeling
 import com.tally.core.network.PaceStatus
+import com.tally.core.network.PublicChallenge
 import com.tally.core.network.TallyApiClient
 import com.tally.core.network.TimeframeType
 import kotlinx.coroutines.CoroutineScope
@@ -53,6 +54,13 @@ class ChallengesManager(
     // Sync state
     private val _syncState = MutableStateFlow(SyncState.SYNCED)
     val syncState: StateFlow<SyncState> = _syncState.asStateFlow()
+
+    // Community state
+    private val _followedChallenges = MutableStateFlow<List<PublicChallenge>>(emptyList())
+    val followedChallenges: StateFlow<List<PublicChallenge>> = _followedChallenges.asStateFlow()
+
+    private val _publicChallenges = MutableStateFlow<List<PublicChallenge>>(emptyList())
+    val publicChallenges: StateFlow<List<PublicChallenge>> = _publicChallenges.asStateFlow()
     
     init {
         // Load from cache immediately
@@ -389,7 +397,39 @@ class ChallengesManager(
         entryStore.clearAll()
         _challenges.value = emptyList()
         _stats.value = emptyMap()
+        _followedChallenges.value = emptyList()
+        _publicChallenges.value = emptyList()
         updateSyncState()
+    }
+
+    /** Refresh community data (followed + public challenges) */
+    suspend fun refreshCommunity(search: String? = null) {
+        try {
+            when (val result = apiClient.listPublicChallenges(following = true)) {
+                is ApiResult.Success -> _followedChallenges.value = result.data
+                is ApiResult.Failure -> { /* keep cached */ }
+            }
+            when (val result = apiClient.listPublicChallenges(search = search)) {
+                is ApiResult.Success -> _publicChallenges.value = result.data
+                is ApiResult.Failure -> { /* keep cached */ }
+            }
+        } catch (_: Exception) { /* offline */ }
+    }
+
+    /** Follow a public challenge */
+    suspend fun followChallenge(challengeId: String): Boolean {
+        return when (apiClient.followChallenge(challengeId)) {
+            is ApiResult.Success -> { refreshCommunity(); true }
+            is ApiResult.Failure -> false
+        }
+    }
+
+    /** Unfollow a public challenge */
+    suspend fun unfollowChallenge(challengeId: String): Boolean {
+        return when (apiClient.unfollowChallenge(challengeId)) {
+            is ApiResult.Success -> { refreshCommunity(); true }
+            is ApiResult.Failure -> false
+        }
     }
     
     private fun updateSyncState() {

@@ -166,13 +166,17 @@ jobs:
 
           # Get latest ios-v* tag
           LATEST_TAG=$(git tag -l 'ios-v*' --sort=-v:refname | head -1)
-          if [ -z "$LATEST_TAG" ]; then
+
+          if [ -n "$LATEST_TAG" ]; then
+            echo "Latest tag: $LATEST_TAG"
+            COMMITS=$(git log "${LATEST_TAG}..HEAD" --pretty=format:"%s" --no-merges)
+            BODIES=$(git log "${LATEST_TAG}..HEAD" --pretty=format:"%b" --no-merges)
+          else
+            echo "No previous ios-v* tag found — scanning all commits"
+            COMMITS=$(git log HEAD --pretty=format:"%s" --no-merges)
+            BODIES=$(git log HEAD --pretty=format:"%b" --no-merges)
             LATEST_TAG="ios-v0.0.0"
           fi
-          echo "Latest tag: $LATEST_TAG"
-
-          # Get commit messages since last tag (subject lines only)
-          COMMITS=$(git log "${LATEST_TAG}..HEAD" --pretty=format:"%s" --no-merges)
 
           if [ -z "$COMMITS" ]; then
             echo "No new commits since $LATEST_TAG"
@@ -183,9 +187,6 @@ jobs:
           echo "Commits since $LATEST_TAG:"
           echo "$COMMITS"
           echo "---"
-
-          # Also check commit bodies for BREAKING CHANGE
-          BODIES=$(git log "${LATEST_TAG}..HEAD" --pretty=format:"%b" --no-merges)
 
           # Determine bump type from conventional commits
           BUMP="none"

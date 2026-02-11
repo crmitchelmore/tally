@@ -7,6 +7,7 @@ import com.tally.core.network.ChallengeStats
 import com.tally.core.network.CountType
 import com.tally.core.network.CreateChallengeRequest
 import com.tally.core.network.CreateEntryRequest
+import com.tally.core.network.DashboardStats
 import com.tally.core.network.Entry
 import com.tally.core.network.Feeling
 import com.tally.core.network.PaceStatus
@@ -43,6 +44,10 @@ class ChallengesManager(
     // Stats state (indexed by challenge ID)
     private val _stats = MutableStateFlow<Map<String, ChallengeStats>>(emptyMap())
     val stats: StateFlow<Map<String, ChallengeStats>> = _stats.asStateFlow()
+    
+    // Dashboard stats (aggregate across all challenges)
+    private val _dashboardStats = MutableStateFlow<DashboardStats?>(null)
+    val dashboardStats: StateFlow<DashboardStats?> = _dashboardStats.asStateFlow()
     
     // Loading states
     private val _isLoading = MutableStateFlow(true)
@@ -104,6 +109,9 @@ class ChallengesManager(
                 // Update state
                 _challenges.value = challenges
                 _stats.value = statsMap
+                
+                // Compute dashboard stats
+                computeDashboardStats()
             }
             is ApiResult.Failure -> {
                 // Keep using cached data
@@ -438,6 +446,47 @@ class ChallengesManager(
             pendingCount > 0 -> SyncState.PENDING
             else -> SyncState.SYNCED
         }
+    }
+    
+    /**
+     * Compute aggregate dashboard stats from individual challenge stats.
+     */
+    private fun computeDashboardStats() {
+        val allStats = _stats.value.values
+        if (allStats.isEmpty()) {
+            _dashboardStats.value = null
+            return
+        }
+        
+        // Aggregate totals
+        val totalMarks = allStats.sumOf { it.totalCount }
+        val bestStreak = allStats.maxOfOrNull { it.streakBest } ?: 0
+        
+        // Count today's entries across all challenges
+        val today = LocalDate.now().toString()
+        val todayCount = _challenges.value.sumOf { challenge ->
+            entryStore.loadEntries(challenge.id)
+                .filter { it.date == today }
+                .sumOf { it.count }
+        }
+        
+        // Determine overall pace status (majority vote)
+        val paceStatusCounts = allStats.groupingBy { it.paceStatus }.eachCount()
+        val overallPaceStatus = when {
+            paceStatusCounts.getOrDefault(PaceStatus.AHEAD, 0) > paceStatusCounts.getOrDefault(PaceStatus.BEHIND, 0) -> PaceStatus.AHEAD
+            paceStatusCounts.getOrDefault(PaceStatus.BEHIND, 0) > paceStatusCounts.getOrDefault(PaceStatus.AHEAD, 0) -> PaceStatus.BEHIND
+            paceStatusCounts.getOrDefault(PaceStatus.ON_PACE, 0) > 0 -> PaceStatus.ON_PACE
+            else -> PaceStatus.NONE
+        }
+        
+        _dashboardStats.value = DashboardStats(
+            totalMarks = totalMarks,
+            today = todayCount,
+            bestStreak = bestStreak,
+            overallPaceStatus = overallPaceStatus,
+            bestSet = null,  // Sets-specific stats not computed for dashboard
+            avgSetValue = null
+        )
     }
     
     companion object {

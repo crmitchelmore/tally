@@ -1,5 +1,6 @@
 package com.tally.core.network
 
+import android.util.Log
 import com.tally.core.auth.AuthManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -244,6 +245,7 @@ class TallyApiClient(
                         val result = json.decodeFromString<T>(responseBody)
                         ApiResult.Success(result)
                     } catch (e: Exception) {
+                        Log.e("TallyAPI", "Parse error on $method $path: ${e.message}")
                         ApiResult.Failure(ApiError.ParseError(cause = e))
                     }
                 }

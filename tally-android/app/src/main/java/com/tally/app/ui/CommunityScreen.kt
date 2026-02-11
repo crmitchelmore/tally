@@ -15,15 +15,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.tally.app.data.ChallengesViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tally.app.BuildConfig
+import com.tally.core.auth.AuthManager
+import com.tally.core.data.ChallengesManager
 import com.tally.core.design.TallyMark
 import com.tally.core.design.TallySpacing
 import com.tally.core.design.TallyTheme
 import com.tally.core.network.PublicChallenge
+import com.tally.core.network.TallyApiClient
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 
 /**
@@ -31,17 +37,30 @@ import java.text.NumberFormat
  */
 @Composable
 fun CommunityScreen(
-    viewModel: ChallengesViewModel? = null
+    authManager: AuthManager? = null
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val apiClient = remember(authManager) {
+        TallyApiClient(
+            baseUrl = BuildConfig.API_BASE_URL,
+            getAuthToken = { authManager?.getToken() }
+        )
+    }
+    val challengesManager = remember(apiClient) {
+        ChallengesManager.getInstance(context, apiClient)
+    }
+
     var selectedTab by remember { mutableIntStateOf(0) }
     var searchQuery by remember { mutableStateOf("") }
     
-    val publicChallenges by viewModel?.publicChallenges?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
-    val followingChallenges by viewModel?.followingChallenges?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
+    val publicChallenges by challengesManager.publicChallenges.collectAsStateWithLifecycle()
+    val followedChallenges by challengesManager.followedChallenges.collectAsStateWithLifecycle()
     
     // Refresh community on mount
     LaunchedEffect(Unit) {
-        viewModel?.refreshCommunity()
+        challengesManager.refreshCommunity()
     }
 
     Column(
@@ -54,7 +73,7 @@ fun CommunityScreen(
             value = searchQuery,
             onValueChange = { 
                 searchQuery = it
-                viewModel?.refreshCommunity(search = it.takeIf { q -> q.isNotBlank() })
+                scope.launch { challengesManager.refreshCommunity(search = it.takeIf { q -> q.isNotBlank() }) }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -81,8 +100,8 @@ fun CommunityScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("Following")
-                        if (followingChallenges.isNotEmpty()) {
-                            Badge { Text("${followingChallenges.size}") }
+                        if (followedChallenges.isNotEmpty()) {
+                            Badge { Text("${followedChallenges.size}") }
                         }
                     }
                 }
@@ -94,14 +113,14 @@ fun CommunityScreen(
             0 -> ChallengesList(
                 challenges = publicChallenges,
                 emptyMessage = "No public challenges found",
-                onFollow = { viewModel?.followChallenge(it) },
-                onUnfollow = { viewModel?.unfollowChallenge(it) }
+                onFollow = { id -> scope.launch { challengesManager.followChallenge(id) } },
+                onUnfollow = { id -> scope.launch { challengesManager.unfollowChallenge(id) } }
             )
             1 -> ChallengesList(
-                challenges = followingChallenges,
+                challenges = followedChallenges,
                 emptyMessage = "You're not following any challenges yet",
-                onFollow = { viewModel?.followChallenge(it) },
-                onUnfollow = { viewModel?.unfollowChallenge(it) }
+                onFollow = { id -> scope.launch { challengesManager.followChallenge(id) } },
+                onUnfollow = { id -> scope.launch { challengesManager.unfollowChallenge(id) } }
             )
         }
     }
@@ -184,12 +203,20 @@ private fun PublicChallengeCard(
                             .background(tintColor.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = IconMapper.getIcon(challenge.icon),
-                            contentDescription = null,
-                            tint = tintColor,
-                            modifier = Modifier.size(24.dp)
-                        )
+                        val mappedIcon = IconMapper.getIconOrNull(challenge.icon)
+                        if (mappedIcon != null) {
+                            Icon(
+                                imageVector = mappedIcon,
+                                contentDescription = null,
+                                tint = tintColor,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        } else {
+                            Text(
+                                text = challenge.icon,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
                     }
                     
                     Spacer(modifier = Modifier.width(TallySpacing.sm))
@@ -261,7 +288,7 @@ private fun PublicChallengeCard(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "${(challenge.progress * 100).toInt()}% complete",
+                        text = "${challenge.progress.toInt()}% complete",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -286,7 +313,7 @@ private fun PublicChallengeCard(
 
             // Progress bar
             LinearProgressIndicator(
-                progress = { challenge.progress.toFloat().coerceIn(0f, 1f) },
+                progress = { (challenge.progress / 100.0).toFloat().coerceIn(0f, 1f) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp)

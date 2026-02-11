@@ -144,7 +144,7 @@ fun TallyApp(
                 )
             }
             composable<CommunityRoute> {
-                CommunityScreen()
+                CommunityScreen(authManager = authManager)
             }
             composable<ChallengeDetailRoute> { backStackEntry ->
                 val route = backStackEntry.toRoute<ChallengeDetailRoute>()

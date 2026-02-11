@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
@@ -21,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,6 +43,7 @@ import com.tally.app.BuildConfig
 import com.tally.app.R
 import com.tally.app.ui.components.AddEntryDialog
 import com.tally.app.ui.dashboard.CommunityPreviewSection
+import com.tally.app.ui.dashboard.DashboardHighlights
 import com.tally.app.ui.dashboard.FollowedChallengesSection
 import com.tally.app.ui.dashboard.WeeklySummaryDialog
 import com.tally.core.auth.AuthManager
@@ -83,6 +86,7 @@ fun HomeScreen(authManager: AuthManager? = null, onNavigateToDetail: (String) ->
     // Collect state
     val challenges by challengesManager.challenges.collectAsStateWithLifecycle()
     val stats by challengesManager.stats.collectAsStateWithLifecycle()
+    val dashboardStats by challengesManager.dashboardStats.collectAsStateWithLifecycle()
     val isLoading by challengesManager.isLoading.collectAsStateWithLifecycle()
     val isRefreshing by challengesManager.isRefreshing.collectAsStateWithLifecycle()
     val syncState by challengesManager.syncState.collectAsStateWithLifecycle()
@@ -105,6 +109,7 @@ fun HomeScreen(authManager: AuthManager? = null, onNavigateToDetail: (String) ->
     // Dialog state
     var selectedChallenge by remember { mutableStateOf<Challenge?>(null) }
     var showCreateDialog by remember { mutableStateOf(false) }
+    var showWeeklySummary by remember { mutableStateOf(false) }
     
     // Refresh on mount
     LaunchedEffect(Unit) {
@@ -134,36 +139,66 @@ fun HomeScreen(authManager: AuthManager? = null, onNavigateToDetail: (String) ->
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
-                .padding(TallySpacing.md)
                 .testTag("dashboard"),
             verticalArrangement = Arrangement.spacedBy(TallySpacing.md)
         ) {
-            // Header with sync status
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "Tally",
-                        style = MaterialTheme.typography.headlineMedium
-                    )
-                    if (isRefreshing) {
+            // Welcome section (only when there are challenges)
+            if (challenges.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = TallySpacing.md)
+                        .padding(top = TallySpacing.sm),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
                         Text(
-                            text = "Updating...",
+                            text = "Welcome back",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Text(
+                            text = "Your tallies are ready. Log progress below.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(TallySpacing.sm)
+                    ) {
+                        TextButton(
+                            onClick = { showWeeklySummary = true },
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = "Weekly Summary",
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                        SyncStatusIndicator(
+                            state = displaySyncState,
+                            modifier = Modifier.testTag("sync_status")
+                        )
+                    }
                 }
-                SyncStatusIndicator(
-                    state = displaySyncState,
-                    modifier = Modifier.testTag("sync_status")
-                )
+            } else {
+                // Show sync status even when no challenges
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = TallySpacing.md)
+                        .padding(top = TallySpacing.sm),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    SyncStatusIndicator(
+                        state = displaySyncState,
+                        modifier = Modifier.testTag("sync_status")
+                    )
+                }
             }
-
-            Spacer(modifier = Modifier.height(TallySpacing.lg))
 
             when {
                 isLoading && challenges.isEmpty() -> {
@@ -182,8 +217,27 @@ fun HomeScreen(authManager: AuthManager? = null, onNavigateToDetail: (String) ->
                 else -> {
                     // Challenge list + dashboard sections
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(TallySpacing.md)
+                        modifier = Modifier.padding(horizontal = TallySpacing.md),
+                        verticalArrangement = Arrangement.spacedBy(TallySpacing.lg)
                     ) {
+                        // Dashboard Highlights
+                        if (dashboardStats != null) {
+                            item {
+                                DashboardHighlights(stats = dashboardStats)
+                            }
+                        }
+                        
+                        // Active Challenges section header
+                        item {
+                            Text(
+                                text = "Active Challenges",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                        
+                        // Challenge cards
                         items(challenges) { challenge ->
                             val challengeStats = stats[challenge.id]
                             ChallengeCard(
@@ -272,8 +326,27 @@ fun HomeScreen(authManager: AuthManager? = null, onNavigateToDetail: (String) ->
             onDismiss = { selectedChallenge = null }
         )
     }
+    
+    // Weekly summary dialog
+    if (showWeeklySummary) {
+        // Collect all entries for the summary
+        val allEntries = remember(challenges) {
+            challenges.flatMap { challenge ->
+                challengesManager.recentEntries(challenge.id, limit = 100)
+            }
+        }
+        
+        WeeklySummaryDialog(
+            entries = allEntries,
+            challenges = challenges,
+            onDismiss = { showWeeklySummary = false }
+        )
+    }
 }
 
+/**
+ * Welcome section with greeting and weekly summary button.
+ */
 @Composable
 private fun EmptyState(onCreateClick: () -> Unit) {
     Box(

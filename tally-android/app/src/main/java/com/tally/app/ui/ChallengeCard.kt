@@ -5,8 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -43,8 +45,10 @@ import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -94,13 +98,27 @@ fun ChallengeCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(12.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(TallySpacing.md)
+                .height(IntrinsicSize.Min)
         ) {
+            // Left accent border (4dp colored strip)
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .fillMaxHeight()
+                    .background(tintColor)
+            )
+            
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+            ) {
             // Header row: Icon + Name + Badges + Add button
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -111,7 +129,8 @@ fun ChallengeCard(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    // Challenge icon with tint
+                    // Challenge icon — emoji or Material icon
+                    val knownIcon = IconMapper.getIconOrNull(challenge.icon)
                     Box(
                         modifier = Modifier
                             .size(36.dp)
@@ -119,12 +138,19 @@ fun ChallengeCard(
                             .background(tintColor.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = IconMapper.getIcon(challenge.icon),
-                            contentDescription = null,
-                            tint = tintColor,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        if (knownIcon != null) {
+                            Icon(
+                                imageVector = knownIcon,
+                                contentDescription = null,
+                                tint = tintColor,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        } else {
+                            Text(
+                                text = challenge.icon,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
                     }
                     
                     Spacer(modifier = Modifier.width(TallySpacing.sm))
@@ -136,7 +162,7 @@ fun ChallengeCard(
                         ) {
                             Text(
                                 text = challenge.name,
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.SemiBold,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -161,19 +187,22 @@ fun ChallengeCard(
                     }
                 }
 
-                IconButton(
+                FilledTonalIconButton(
                     onClick = onAddEntry,
-                    modifier = Modifier.testTag("add_entry_${challenge.name}")
+                    modifier = Modifier.testTag("add_entry_${challenge.name}"),
+                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = tintColor.copy(alpha = 0.2f),
+                        contentColor = tintColor
+                    )
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Add entry",
-                        tint = tintColor
+                        contentDescription = "Add entry"
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(TallySpacing.md))
+            Spacer(modifier = Modifier.height(TallySpacing.lg))
 
             // Tally visualization + counts + pace
             Row(
@@ -214,15 +243,15 @@ fun ChallengeCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(TallySpacing.sm))
+            Spacer(modifier = Modifier.height(TallySpacing.md))
 
             // Progress bar with tint color
             LinearProgressIndicator(
                 progress = { challengeWithCount.progress },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp)),
+                    .height(10.dp)
+                    .clip(RoundedCornerShape(5.dp)),
                 color = tintColor,
                 trackColor = tintColor.copy(alpha = 0.2f),
             )
@@ -258,6 +287,7 @@ fun ChallengeCard(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+        }
         }
     }
 }
@@ -317,30 +347,55 @@ private fun PaceIndicator(
 object IconMapper {
     private val iconMap: Map<String, ImageVector> = mapOf(
         "star" to Icons.Default.Star,
+        "star.fill" to Icons.Default.Star,
         "heart" to Icons.Default.Favorite,
+        "heart.fill" to Icons.Default.Favorite,
         "fire" to Icons.Default.LocalFireDepartment,
+        "flame" to Icons.Default.LocalFireDepartment,
+        "flame.fill" to Icons.Default.LocalFireDepartment,
         "trophy" to Icons.Default.EmojiEvents,
+        "trophy.fill" to Icons.Default.EmojiEvents,
         "target" to Icons.Default.GpsFixed,
         "book" to Icons.Default.MenuBook,
+        "book.fill" to Icons.Default.MenuBook,
         "dumbbell" to Icons.Default.FitnessCenter,
+        "dumbbell.fill" to Icons.Default.FitnessCenter,
+        "strength" to Icons.Default.FitnessCenter,
         "running" to Icons.Default.DirectionsRun,
+        "figure.run" to Icons.Default.DirectionsRun,
         "bike" to Icons.Default.DirectionsBike,
+        "bicycle" to Icons.Default.DirectionsBike,
         "swim" to Icons.Default.Pool,
+        "figure.pool.swim" to Icons.Default.Pool,
         "music" to Icons.Default.MusicNote,
+        "music.note" to Icons.Default.MusicNote,
         "code" to Icons.Default.Code,
         "paint" to Icons.Default.Palette,
+        "paintbrush" to Icons.Default.Palette,
+        "paintbrush.fill" to Icons.Default.Palette,
         "camera" to Icons.Default.PhotoCamera,
+        "camera.fill" to Icons.Default.PhotoCamera,
         "pen" to Icons.Default.Edit,
+        "pencil" to Icons.Default.Edit,
         "coffee" to Icons.Default.Coffee,
+        "cup.and.saucer" to Icons.Default.Coffee,
+        "cup.and.saucer.fill" to Icons.Default.Coffee,
         "water" to Icons.Default.WaterDrop,
+        "drop.fill" to Icons.Default.WaterDrop,
         "meditation" to Icons.Default.SelfImprovement,
         "sleep" to Icons.Default.Bedtime,
+        "moon.fill" to Icons.Default.Bedtime,
         "walk" to Icons.Default.DirectionsWalk,
+        "figure.walk" to Icons.Default.DirectionsWalk,
         "checkmark" to Icons.Default.Check
     )
     
     fun getIcon(name: String): ImageVector {
         return iconMap[name.lowercase()] ?: Icons.Default.Check
+    }
+    
+    fun getIconOrNull(name: String): ImageVector? {
+        return iconMap[name.lowercase()]
     }
 }
 

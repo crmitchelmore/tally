@@ -48,24 +48,22 @@ enum class PaceStatus {
 @Serializable
 data class Challenge(
     val id: String,
-    @SerialName("user_id") val userId: String,
+    val userId: String,
     val name: String,
     val target: Int,
-    @SerialName("timeframe_type") val timeframeType: TimeframeType,
-    @SerialName("start_date") val startDate: String,
-    @SerialName("end_date") val endDate: String,
+    val timeframeType: TimeframeType,
+    val startDate: String,
+    val endDate: String,
     val color: String,
     val icon: String,
-    @SerialName("is_public") val isPublic: Boolean,
-    @SerialName("is_archived") val isArchived: Boolean,
-    // Count configuration (optional for backward compatibility)
-    @SerialName("count_type") val countType: CountType? = null,
-    @SerialName("unit_label") val unitLabel: String? = null,
-    @SerialName("default_increment") val defaultIncrement: Int? = null,
-    @SerialName("created_at") val createdAt: String,
-    @SerialName("updated_at") val updatedAt: String
+    val isPublic: Boolean,
+    val isArchived: Boolean,
+    val countType: CountType? = null,
+    val unitLabel: String? = null,
+    val defaultIncrement: Int? = null,
+    val createdAt: String,
+    val updatedAt: String
 ) {
-    // Convenience properties with defaults
     val resolvedCountType: CountType get() = countType ?: CountType.SIMPLE
     val resolvedUnitLabel: String get() = unitLabel ?: "reps"
     val resolvedDefaultIncrement: Int get() = defaultIncrement ?: 1
@@ -77,15 +75,15 @@ data class Challenge(
 @Serializable
 data class Entry(
     val id: String,
-    @SerialName("user_id") val userId: String,
-    @SerialName("challenge_id") val challengeId: String,
+    val userId: String,
+    val challengeId: String,
     val date: String,
     val count: Int,
     val sets: List<Int>? = null,
     val note: String? = null,
     val feeling: Feeling? = null,
-    @SerialName("created_at") val createdAt: String,
-    @SerialName("updated_at") val updatedAt: String
+    val createdAt: String,
+    val updatedAt: String
 )
 
 /**
@@ -102,18 +100,18 @@ data class BestDay(
  */
 @Serializable
 data class ChallengeStats(
-    @SerialName("challenge_id") val challengeId: String,
-    @SerialName("total_count") val totalCount: Int,
+    val challengeId: String,
+    val totalCount: Int,
     val remaining: Int,
-    @SerialName("days_elapsed") val daysElapsed: Int,
-    @SerialName("days_remaining") val daysRemaining: Int,
-    @SerialName("per_day_required") val perDayRequired: Double,
-    @SerialName("current_pace") val currentPace: Double,
-    @SerialName("pace_status") val paceStatus: PaceStatus,
-    @SerialName("streak_current") val streakCurrent: Int,
-    @SerialName("streak_best") val streakBest: Int,
-    @SerialName("best_day") val bestDay: BestDay? = null,
-    @SerialName("daily_average") val dailyAverage: Double
+    val daysElapsed: Int,
+    val daysRemaining: Int,
+    val perDayRequired: Double,
+    val currentPace: Double,
+    val paceStatus: PaceStatus,
+    val streakCurrent: Int,
+    val streakBest: Int,
+    val bestDay: BestDay? = null,
+    val dailyAverage: Double
 )
 
 /**
@@ -123,7 +121,7 @@ data class ChallengeStats(
 data class BestSet(
     val value: Int,
     val date: String,
-    @SerialName("challenge_id") val challengeId: String
+    val challengeId: String
 )
 
 /**
@@ -131,13 +129,12 @@ data class BestSet(
  */
 @Serializable
 data class DashboardStats(
-    @SerialName("total_marks") val totalMarks: Int,
+    val totalMarks: Int,
     val today: Int,
-    @SerialName("best_streak") val bestStreak: Int,
-    @SerialName("overall_pace_status") val overallPaceStatus: PaceStatus,
-    // Sets-specific stats
-    @SerialName("best_set") val bestSet: BestSet? = null,
-    @SerialName("avg_set_value") val avgSetValue: Double? = null
+    val bestStreak: Int,
+    val overallPaceStatus: PaceStatus,
+    val bestSet: BestSet? = null,
+    val avgSetValue: Double? = null
 )
 
 /**
@@ -145,7 +142,7 @@ data class DashboardStats(
  */
 @Serializable
 data class HighestDailyAverage(
-    @SerialName("challenge_id") val challengeId: String,
+    val challengeId: String,
     val average: Double
 )
 
@@ -156,7 +153,7 @@ data class HighestDailyAverage(
 data class BiggestSingleEntry(
     val date: String,
     val count: Int,
-    @SerialName("challenge_id") val challengeId: String
+    val challengeId: String
 )
 
 /**
@@ -164,14 +161,13 @@ data class BiggestSingleEntry(
  */
 @Serializable
 data class PersonalRecords(
-    @SerialName("best_single_day") val bestSingleDay: BestDay? = null,
-    @SerialName("longest_streak") val longestStreak: Int,
-    @SerialName("highest_daily_average") val highestDailyAverage: HighestDailyAverage? = null,
-    @SerialName("most_active_days") val mostActiveDays: Int,
-    @SerialName("biggest_single_entry") val biggestSingleEntry: BiggestSingleEntry? = null,
-    // Sets-specific records
-    @SerialName("best_set") val bestSet: BestSet? = null,
-    @SerialName("avg_set_value") val avgSetValue: Double? = null
+    val bestSingleDay: BestDay? = null,
+    val longestStreak: Int,
+    val highestDailyAverage: HighestDailyAverage? = null,
+    val mostActiveDays: Int,
+    val biggestSingleEntry: BiggestSingleEntry? = null,
+    val bestSet: BestSet? = null,
+    val avgSetValue: Double? = null
 )
 
 /**
@@ -225,9 +221,9 @@ data class DashboardConfig(
 @Serializable
 data class PaginationInfo(
     val page: Int,
-    @SerialName("page_size") val pageSize: Int,
+    val pageSize: Int,
     val total: Int,
-    @SerialName("total_pages") val totalPages: Int
+    val totalPages: Int
 )
 
 /**

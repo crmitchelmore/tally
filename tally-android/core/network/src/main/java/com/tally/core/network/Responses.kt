@@ -1,6 +1,5 @@
 package com.tally.core.network
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -87,16 +86,16 @@ data class PublicChallenge(
     val id: String,
     val name: String,
     val target: Int,
-    @SerialName("timeframe_type") val timeframeType: TimeframeType,
-    @SerialName("start_date") val startDate: String,
-    @SerialName("end_date") val endDate: String,
+    val timeframeType: TimeframeType,
+    val startDate: String,
+    val endDate: String,
     val color: String,
     val icon: String,
-    @SerialName("total_reps") val totalReps: Int,
+    val totalReps: Int,
     val progress: Double,
-    @SerialName("follower_count") val followerCount: Int,
+    val followerCount: Int,
     val owner: PublicChallengeOwner,
-    @SerialName("is_following") val isFollowing: Boolean? = null
+    val isFollowing: Boolean? = null
 )
 
 @Serializable
@@ -116,22 +115,22 @@ data class ExportChallengeData(
     val id: String,
     val name: String,
     val target: Int,
-    @SerialName("timeframe_type") val timeframeType: TimeframeType,
-    @SerialName("start_date") val startDate: String,
-    @SerialName("end_date") val endDate: String,
+    val timeframeType: TimeframeType,
+    val startDate: String,
+    val endDate: String,
     val color: String,
     val icon: String,
-    @SerialName("is_public") val isPublic: Boolean,
-    @SerialName("is_archived") val isArchived: Boolean,
-    @SerialName("count_type") val countType: CountType? = null,
-    @SerialName("unit_label") val unitLabel: String? = null,
-    @SerialName("default_increment") val defaultIncrement: Int? = null
+    val isPublic: Boolean,
+    val isArchived: Boolean,
+    val countType: CountType? = null,
+    val unitLabel: String? = null,
+    val defaultIncrement: Int? = null
 )
 
 @Serializable
 data class ExportEntryData(
     val id: String,
-    @SerialName("challenge_id") val challengeId: String,
+    val challengeId: String,
     val date: String,
     val count: Int,
     val sets: List<Int>? = null,
@@ -142,10 +141,10 @@ data class ExportEntryData(
 @Serializable
 data class ExportData(
     val version: Int = 1,
-    @SerialName("exported_at") val exportedAt: String,
+    val exportedAt: String,
     val challenges: List<ExportChallengeData>,
     val entries: List<ExportEntryData>,
-    @SerialName("dashboard_config") val dashboardConfig: DashboardConfig? = null
+    val dashboardConfig: DashboardConfig? = null
 )
 
 @Serializable

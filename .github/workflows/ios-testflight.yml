@@ -334,9 +334,9 @@ jobs:
             for (let attempt = 1; attempt <= maxAttempts; attempt++) {
               core.info(`⏳ Polling attempt ${attempt}/${maxAttempts} for version ${version} build ${buildNumber}...`);
               
-              // filter[version] is CFBundleShortVersionString (e.g., 1.0.0)
-              // We fetch multiple and match on buildNumber to avoid selecting older builds
-              const url = `https://api.appstoreconnect.apple.com/v1/builds?filter[app]=${appId}&filter[version]=${version}&filter[processingState]=VALID&sort=-uploadedDate&limit=10`;
+              // filter[preReleaseVersion.version] filters by CFBundleShortVersionString (marketing version)
+              // filter[version] filters by CFBundleVersion (build number) — do NOT use for marketing version
+              const url = `https://api.appstoreconnect.apple.com/v1/builds?filter[app]=${appId}&filter[preReleaseVersion.version]=${version}&filter[processingState]=VALID&sort=-uploadedDate&limit=10`;
               
               const response = await fetch(url, {
                 headers: {
@@ -353,13 +353,19 @@ jobs:
                 
                 if (data.data && data.data.length > 0) {
                   // Find the build matching our exact build number
-                  const build = data.data.find(b => b.attributes?.buildNumber === buildNumber);
+                  // ASC API returns build number as either 'version' or 'buildNumber' attribute
+                  const build = data.data.find(b => {
+                    const bn = b.attributes?.version || b.attributes?.buildNumber;
+                    return bn === buildNumber;
+                  });
                   if (build) {
-                    core.info(`✅ Build processed! ID: ${build.id}, buildNumber: ${build.attributes.buildNumber}`);
+                    const bn = build.attributes?.version || build.attributes?.buildNumber;
+                    core.info(`✅ Build processed! ID: ${build.id}, buildNumber: ${bn}`);
                     core.setOutput('build_id', build.id);
                     return;
                   } else {
-                    core.info(`Found ${data.data.length} builds but none match buildNumber ${buildNumber}`);
+                    const found = data.data.map(b => b.attributes?.version || b.attributes?.buildNumber).join(', ');
+                    core.info(`Found ${data.data.length} builds [${found}] but none match buildNumber ${buildNumber}`);
                   }
                 }
               }

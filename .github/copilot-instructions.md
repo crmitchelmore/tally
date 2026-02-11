@@ -54,6 +54,14 @@ iOS releases are automated via conventional commits:
 
 To force a release for non-standard commit types, use `fix:` or `feat:` prefix as appropriate.
 
+## App Store Connect API
+
+When working with the ASC API (`/v1/builds`):
+- `filter[version]` filters by **CFBundleVersion** (build number like `26021158`), NOT marketing version
+- `filter[preReleaseVersion.version]` filters by **CFBundleShortVersionString** (marketing version like `1.2.0`)
+- Build number in API responses may appear as `attributes.version` or `attributes.buildNumber` — check both
+- ASC JWT signing requires ES256 with `dsaEncoding: 'ieee-p1363'`
+
 ## Cross-Platform API Contracts
 
 When modifying API endpoints:

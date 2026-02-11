@@ -28,9 +28,9 @@ class RequestsTest {
 
         assertTrue(jsonString.contains("\"name\":\"Daily Pushups\""))
         assertTrue(jsonString.contains("\"target\":1000"))
-        assertTrue(jsonString.contains("\"timeframe_type\":\"month\""))
-        assertTrue(jsonString.contains("\"start_date\":\"2025-01-01\""))
-        assertTrue(jsonString.contains("\"is_public\":true"))
+        assertTrue(jsonString.contains("\"timeframeType\":\"month\""))
+        assertTrue(jsonString.contains("\"startDate\":\"2025-01-01\""))
+        assertTrue(jsonString.contains("\"isPublic\":true"))
     }
 
     @Test
@@ -45,7 +45,7 @@ class RequestsTest {
 
         assertTrue(jsonString.contains("\"name\":\"Test\""))
         assertTrue(jsonString.contains("\"target\":100"))
-        assertTrue(jsonString.contains("\"timeframe_type\":\"year\""))
+        assertTrue(jsonString.contains("\"timeframeType\":\"year\""))
     }
 
     @Test
@@ -58,7 +58,7 @@ class RequestsTest {
         val jsonString = json.encodeToString(UpdateChallengeRequest.serializer(), request)
 
         assertTrue(jsonString.contains("\"name\":\"Updated Name\""))
-        assertTrue(jsonString.contains("\"is_archived\":true"))
+        assertTrue(jsonString.contains("\"isArchived\":true"))
     }
 
     @Test
@@ -73,7 +73,7 @@ class RequestsTest {
 
         val jsonString = json.encodeToString(CreateEntryRequest.serializer(), request)
 
-        assertTrue(jsonString.contains("\"challenge_id\":\"ch_123\""))
+        assertTrue(jsonString.contains("\"challengeId\":\"ch_123\""))
         assertTrue(jsonString.contains("\"date\":\"2025-01-15\""))
         assertTrue(jsonString.contains("\"count\":50"))
         assertTrue(jsonString.contains("\"note\":\"Morning workout\""))

@@ -16,18 +16,18 @@ class ModelsTest {
         val challengeJson = """
             {
                 "id": "ch_123",
-                "user_id": "user_456",
+                "userId": "user_456",
                 "name": "Daily Pushups",
                 "target": 1000,
-                "timeframe_type": "month",
-                "start_date": "2025-01-01",
-                "end_date": "2025-01-31",
+                "timeframeType": "month",
+                "startDate": "2025-01-01",
+                "endDate": "2025-01-31",
                 "color": "#FF5733",
                 "icon": "fitness",
-                "is_public": true,
-                "is_archived": false,
-                "created_at": "2025-01-01T00:00:00Z",
-                "updated_at": "2025-01-01T00:00:00Z"
+                "isPublic": true,
+                "isArchived": false,
+                "createdAt": "2025-01-01T00:00:00Z",
+                "updatedAt": "2025-01-01T00:00:00Z"
             }
         """.trimIndent()
 
@@ -49,14 +49,14 @@ class ModelsTest {
         val entryJson = """
             {
                 "id": "en_123",
-                "user_id": "user_456",
-                "challenge_id": "ch_123",
+                "userId": "user_456",
+                "challengeId": "ch_123",
                 "date": "2025-01-15",
                 "count": 50,
                 "note": "Morning workout",
                 "feeling": "great",
-                "created_at": "2025-01-15T08:00:00Z",
-                "updated_at": "2025-01-15T08:00:00Z"
+                "createdAt": "2025-01-15T08:00:00Z",
+                "updatedAt": "2025-01-15T08:00:00Z"
             }
         """.trimIndent()
 
@@ -75,12 +75,12 @@ class ModelsTest {
         val entryJson = """
             {
                 "id": "en_123",
-                "user_id": "user_456",
-                "challenge_id": "ch_123",
+                "userId": "user_456",
+                "challengeId": "ch_123",
                 "date": "2025-01-15",
                 "count": 50,
-                "created_at": "2025-01-15T08:00:00Z",
-                "updated_at": "2025-01-15T08:00:00Z"
+                "createdAt": "2025-01-15T08:00:00Z",
+                "updatedAt": "2025-01-15T08:00:00Z"
             }
         """.trimIndent()
 
@@ -96,18 +96,18 @@ class ModelsTest {
     fun `ChallengeStats deserializes correctly`() {
         val statsJson = """
             {
-                "challenge_id": "ch_123",
-                "total_count": 500,
+                "challengeId": "ch_123",
+                "totalCount": 500,
                 "remaining": 500,
-                "days_elapsed": 15,
-                "days_remaining": 16,
-                "per_day_required": 31.25,
-                "current_pace": 33.33,
-                "pace_status": "ahead",
-                "streak_current": 5,
-                "streak_best": 10,
-                "best_day": {"date": "2025-01-10", "count": 100},
-                "daily_average": 33.33
+                "daysElapsed": 15,
+                "daysRemaining": 16,
+                "perDayRequired": 31.25,
+                "currentPace": 33.33,
+                "paceStatus": "ahead",
+                "streakCurrent": 5,
+                "streakBest": 10,
+                "bestDay": {"date": "2025-01-10", "count": 100},
+                "dailyAverage": 33.33
             }
         """.trimIndent()
 
@@ -126,10 +126,10 @@ class ModelsTest {
     fun `DashboardStats deserializes correctly`() {
         val statsJson = """
             {
-                "total_marks": 1500,
+                "totalMarks": 1500,
                 "today": 75,
-                "best_streak": 14,
-                "overall_pace_status": "on-pace"
+                "bestStreak": 14,
+                "overallPaceStatus": "on-pace"
             }
         """.trimIndent()
 

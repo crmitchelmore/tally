@@ -13,7 +13,13 @@ let project = Project(
             sources: ["Sources/**"],
             dependencies: [
                 .project(target: "TallyFeatureAPIClient", path: "../TallyFeatureAPIClient")
-            ]
+            ],
+            settings: .settings(
+                base: [
+                    "GENERATE_INFOPLIST_FILE": "YES",
+                    "SKIP_INSTALL": "YES"
+                ]
+            )
         ),
         .target(
             name: "TallyShortcutsTests",

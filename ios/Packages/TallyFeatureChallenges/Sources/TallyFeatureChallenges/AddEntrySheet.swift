@@ -496,6 +496,9 @@ public struct AddEntrySheet: View {
             feeling: feeling
         )
         
+        // Provide haptic feedback based on the count
+        TallyHaptics.shared.hapticForCount(displayCount)
+        
         // Optimistic save - call synchronously and dismiss after a brief confirmation
         onSubmit(request)
         showSuccess = true

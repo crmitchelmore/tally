@@ -49,6 +49,7 @@ let project = Project(
                     ],
                     "UIBackgroundModes": ["fetch"],
                     "BGTaskSchedulerPermittedIdentifiers": ["com.tally.app.refresh"],
+                    "NSSupportsLiveActivities": true,
                     "CLERK_PUBLISHABLE_KEY": "$(CLERK_PUBLISHABLE_KEY)",
                     "API_BASE_URL": "$(API_BASE_URL)",
                     "GIT_COMMIT_SHA": "$(GIT_COMMIT_SHA)",
@@ -69,6 +70,7 @@ let project = Project(
                 .project(target: "TallyFeatureAPIClient", path: "../Packages/TallyFeatureAPIClient"),
                 .project(target: "TallyFeatureChallenges", path: "../Packages/TallyFeatureChallenges"),
                 .project(target: "TallyFeatureTipJar", path: "../Packages/TallyFeatureTipJar"),
+                .project(target: "TallyLiveActivity", path: "../Packages/TallyLiveActivity"),
                 .project(target: "TallyWidgetShared", path: "../Packages/TallyWidgetShared"),
                 .external(name: "Clerk")
             ],

@@ -66,7 +66,7 @@ struct LockScreenLiveActivityView: View {
                 HStack(alignment: .lastTextBaseline, spacing: 2) {
                     Text("+\(context.state.sessionCount)")
                         .font(.tallyDisplaySmall)
-                        .foregroundStyle(.tallyAccent)
+                        .foregroundStyle(Color.tallyAccent)
                 }
                 
                 // Total progress
@@ -76,7 +76,7 @@ struct LockScreenLiveActivityView: View {
                 
                 // Progress bar
                 ProgressView(value: context.state.progress)
-                    .tint(.tallyAccent)
+                    .tint(Color.tallyAccent)
                     .frame(width: 80)
             }
         }
@@ -103,7 +103,7 @@ struct CompactTrailingView: View {
     var body: some View {
         Text("+\(context.state.sessionCount)")
             .font(.system(.caption, design: .rounded, weight: .semibold))
-            .foregroundStyle(.tallyAccent)
+            .foregroundStyle(Color.tallyAccent)
     }
 }
 
@@ -130,7 +130,7 @@ struct ExpandedLeadingView: View {
             
             Text("+\(context.state.sessionCount)")
                 .font(.title2.weight(.bold))
-                .foregroundStyle(.tallyAccent)
+                .foregroundStyle(Color.tallyAccent)
         }
     }
 }
@@ -177,7 +177,7 @@ struct ExpandedBottomView: View {
                     .font(.caption)
                 
                 ProgressView(value: context.state.progress)
-                    .tint(.tallyAccent)
+                    .tint(Color.tallyAccent)
                 
                 Text("\(context.state.target)")
                     .font(.caption)

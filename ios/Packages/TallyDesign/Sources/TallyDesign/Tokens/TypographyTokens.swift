@@ -47,6 +47,14 @@ public extension Font {
     /// Small label (captions, metadata)
     static let tallyLabelSmall = Font.system(size: 11, weight: .medium)
     
+    // MARK: - Caption
+    
+    /// Medium caption
+    static let tallyCaptionMedium = Font.system(size: 12, weight: .regular)
+    
+    /// Small caption
+    static let tallyCaptionSmall = Font.system(size: 10, weight: .regular)
+    
     // MARK: - Monospaced (for counts/numbers)
     
     /// Monospaced display numbers

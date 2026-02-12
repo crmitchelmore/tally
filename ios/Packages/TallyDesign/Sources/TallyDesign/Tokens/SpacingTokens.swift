@@ -2,6 +2,9 @@ import SwiftUI
 
 /// Consistent spacing scale for layouts
 public enum TallySpacing {
+    /// 2pt - Extra extra small spacing
+    public static let xxs: CGFloat = 2
+    
     /// 4pt - Minimum touch spacing
     public static let xs: CGFloat = 4
     

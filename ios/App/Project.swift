@@ -5,6 +5,9 @@ import ProjectDescription
 let defaultClerkKey = "pk_live_Y2xlcmsudGFsbHktdHJhY2tlci5hcHAk"
 let defaultApiUrl = "https://tally-tracker.app"
 
+// App Group for widget data sharing
+let appGroupIdentifier = "group.app.tally.shared"
+
 // Environment variables can override defaults via Tuist's Environment type
 let clerkKey = Environment.clerkPublishableKey.getString(default: defaultClerkKey)
 let apiUrl = Environment.apiBaseURL.getString(default: defaultApiUrl)
@@ -55,6 +58,11 @@ let project = Project(
             ),
             sources: ["Sources/**"],
             resources: ["Resources/**"],
+            entitlements: .dictionary([
+                "com.apple.security.application-groups": .array([
+                    .string(appGroupIdentifier)
+                ])
+            ]),
             dependencies: [
                 .project(target: "TallyDesign", path: "../Packages/TallyDesign"),
                 .project(target: "TallyCore", path: "../Packages/TallyCore"),
@@ -63,6 +71,7 @@ let project = Project(
                 .project(target: "TallyFeatureChallenges", path: "../Packages/TallyFeatureChallenges"),
                 .project(target: "TallyFeatureTipJar", path: "../Packages/TallyFeatureTipJar"),
                 .project(target: "TallyLiveActivity", path: "../Packages/TallyLiveActivity"),
+                .project(target: "TallyWidgetShared", path: "../Packages/TallyWidgetShared"),
                 .external(name: "Clerk")
             ],
             settings: .settings(

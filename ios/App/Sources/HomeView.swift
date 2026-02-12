@@ -3,6 +3,7 @@ import TallyDesign
 import TallyFeatureAuth
 import TallyFeatureChallenges
 import TallyFeatureAPIClient
+import TallyWidgetShared
 
 /// Home view - challenges dashboard with offline-first support
 struct HomeView: View {
@@ -191,6 +192,14 @@ struct HomeView: View {
                 Task {
                     await loadFollowedChallenges()
                     await challengesManager.refresh()
+                }
+            }
+        }
+        .onAppear {
+            // Set up widget data sync callback
+            challengesManager.widgetDataUpdateCallback = { challenges, stats in
+                Task { @MainActor in
+                    WidgetDataSyncService.shared.syncWidgetData(challenges: challenges, stats: stats)
                 }
             }
         }

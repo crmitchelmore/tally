@@ -852,7 +852,13 @@ public final class ChallengesManager {
         } else {
             syncState = .synced
         }
+        
+        // Notify widget data update callback if set
+        widgetDataUpdateCallback?(challenges, stats)
     }
+    
+    /// Callback for widget data updates - set by main app to sync data to widgets
+    public var widgetDataUpdateCallback: (([Challenge], [String: ChallengeStats]) -> Void)?
     
     /// Clear all local data (for logout)
     public func clearLocalData() {

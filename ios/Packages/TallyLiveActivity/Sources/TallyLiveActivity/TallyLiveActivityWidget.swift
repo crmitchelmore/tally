@@ -71,7 +71,7 @@ struct LockScreenLiveActivityView: View {
                 
                 // Total progress
                 Text("\(context.state.totalCount) / \(context.state.target)")
-                    .font(.tallyCaptionMedium)
+                    .font(.tallyLabelSmall)
                     .foregroundStyle(.secondary)
                 
                 // Progress bar
@@ -114,7 +114,7 @@ struct MinimalView: View {
     var body: some View {
         Text("\(context.state.sessionCount)")
             .font(.system(.caption, design: .rounded, weight: .bold))
-            .foregroundStyle(.tallyAccent)
+            .foregroundStyle(Color.tallyAccent)
     }
 }
 

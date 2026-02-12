@@ -6,7 +6,7 @@ let defaultClerkKey = "pk_live_Y2xlcmsudGFsbHktdHJhY2tlci5hcHAk"
 let defaultApiUrl = "https://tally-tracker.app"
 
 // App Group for widget data sharing
-let appGroupIdentifier = "group.app.tally.shared"
+let appGroupIdentifier = "group.app.tally-tracker.shared"
 
 // Environment variables can override defaults via Tuist's Environment type
 let clerkKey = Environment.clerkPublishableKey.getString(default: defaultClerkKey)

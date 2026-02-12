@@ -1,0 +1,429 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1807D018693749970189B42D /* ChallengeEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F28E70B5718BACE6B65429CC /* ChallengeEntry.swift */; };
+		6B0FB38783BA4D1000348D5B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 434EBEDBFE9A9546CC1854DF /* Assets.xcassets */; };
+		8517FFEE8D334F51B9FFF51E /* ChallengeWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF412D9B9EF8D8166D8871C2 /* ChallengeWidgetViews.swift */; };
+		8C50D4B70AF72DA58B8955E2 /* WidgetPreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6562DE8288A32B8AAC9DEA69 /* WidgetPreviews.swift */; };
+		8E75478BC833711E770CCAC4 /* LockScreenWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A16EFEAD9EE0DC3C226C5A6D /* LockScreenWidgetViews.swift */; };
+		986412BC1FFBA7305CF33874 /* TallyDesign.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 569B0F9BEB86146B462B31E3 /* TallyDesign.framework */; };
+		A35E20F119FD1F69EAD067E7 /* ChallengeTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE9E93C2F209A04E23F6E94 /* ChallengeTimelineProvider.swift */; };
+		AB193FBD00ED927AF6EB3720 /* TallyWidgetShared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C85D39B1C6307965F4651F96 /* TallyWidgetShared.framework */; };
+		B3613844CD3C062E5449AADA /* TuistBundle+TallyWidgetExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C0F4FE16FD0E6595C8CD6D1 /* TuistBundle+TallyWidgetExtension.swift */; };
+		E4B8C1E7C30727B76EDEC2D2 /* TuistAssets+TallyWidgetExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB15AE7851918E803278A821 /* TuistAssets+TallyWidgetExtension.swift */; };
+		F3E099391E37661C63064C52 /* TallyWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7DC649C15703A530C9E6C6 /* TallyWidget.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F45BE1A6513E142F9584D078 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		16C5DB4AC30A428DEA9FF507 /* TallyWidgetExtension-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyWidgetExtension-Info.plist"; sourceTree = "<group>"; };
+		3A7DC649C15703A530C9E6C6 /* TallyWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallyWidget.swift; sourceTree = "<group>"; };
+		3EE9E93C2F209A04E23F6E94 /* ChallengeTimelineProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeTimelineProvider.swift; sourceTree = "<group>"; };
+		434EBEDBFE9A9546CC1854DF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		4C0F4FE16FD0E6595C8CD6D1 /* TuistBundle+TallyWidgetExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TuistBundle+TallyWidgetExtension.swift"; sourceTree = "<group>"; };
+		569B0F9BEB86146B462B31E3 /* TallyDesign.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyDesign.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6562DE8288A32B8AAC9DEA69 /* WidgetPreviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetPreviews.swift; sourceTree = "<group>"; };
+		86CAF53DEA83B750AEB06B6C /* TallyWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TallyWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A16EFEAD9EE0DC3C226C5A6D /* LockScreenWidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenWidgetViews.swift; sourceTree = "<group>"; };
+		BB15AE7851918E803278A821 /* TuistAssets+TallyWidgetExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TuistAssets+TallyWidgetExtension.swift"; sourceTree = "<group>"; };
+		C85D39B1C6307965F4651F96 /* TallyWidgetShared.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyWidgetShared.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CF412D9B9EF8D8166D8871C2 /* ChallengeWidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeWidgetViews.swift; sourceTree = "<group>"; };
+		EA3B51AA32A76388FED5407C /* TallyWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TallyWidgetExtension.entitlements; sourceTree = "<group>"; };
+		F28E70B5718BACE6B65429CC /* ChallengeEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeEntry.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		EC780DF7B6213A3CE2A6CC61 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				986412BC1FFBA7305CF33874 /* TallyDesign.framework in Frameworks */,
+				AB193FBD00ED927AF6EB3720 /* TallyWidgetShared.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0B7EAC276AB0A916C6F0EDDB = {
+			isa = PBXGroup;
+			children = (
+				3C1ED9181A44C8A53987DCCD /* Project */,
+				E8BC60E624EE9BB754A00C82 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0F2997DB2E27491596C2642D /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				D524E93DBAF970FC2BE96863 /* TallyWidgetExtension */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		24834F8521EC59DBB0208596 /* InfoPlists */ = {
+			isa = PBXGroup;
+			children = (
+				16C5DB4AC30A428DEA9FF507 /* TallyWidgetExtension-Info.plist */,
+			);
+			path = InfoPlists;
+			sourceTree = "<group>";
+		};
+		3C1ED9181A44C8A53987DCCD /* Project */ = {
+			isa = PBXGroup;
+			children = (
+				5AD3BFFD600ADB25B134C15A /* Derived */,
+				DDB3E2D557AE1F371DD82E81 /* Resources */,
+				0F2997DB2E27491596C2642D /* Sources */,
+			);
+			name = Project;
+			sourceTree = "<group>";
+		};
+		5AD3BFFD600ADB25B134C15A /* Derived */ = {
+			isa = PBXGroup;
+			children = (
+				8E9788CEF892569117ECA163 /* Entitlements */,
+				24834F8521EC59DBB0208596 /* InfoPlists */,
+				C28FBBF2091D0F1B5D7AB7D1 /* Sources */,
+			);
+			path = Derived;
+			sourceTree = "<group>";
+		};
+		8E9788CEF892569117ECA163 /* Entitlements */ = {
+			isa = PBXGroup;
+			children = (
+				EA3B51AA32A76388FED5407C /* TallyWidgetExtension.entitlements */,
+			);
+			path = Entitlements;
+			sourceTree = "<group>";
+		};
+		C28FBBF2091D0F1B5D7AB7D1 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				BB15AE7851918E803278A821 /* TuistAssets+TallyWidgetExtension.swift */,
+				4C0F4FE16FD0E6595C8CD6D1 /* TuistBundle+TallyWidgetExtension.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		D524E93DBAF970FC2BE96863 /* TallyWidgetExtension */ = {
+			isa = PBXGroup;
+			children = (
+				F28E70B5718BACE6B65429CC /* ChallengeEntry.swift */,
+				3EE9E93C2F209A04E23F6E94 /* ChallengeTimelineProvider.swift */,
+				CF412D9B9EF8D8166D8871C2 /* ChallengeWidgetViews.swift */,
+				A16EFEAD9EE0DC3C226C5A6D /* LockScreenWidgetViews.swift */,
+				3A7DC649C15703A530C9E6C6 /* TallyWidget.swift */,
+				6562DE8288A32B8AAC9DEA69 /* WidgetPreviews.swift */,
+			);
+			path = TallyWidgetExtension;
+			sourceTree = "<group>";
+		};
+		DDB3E2D557AE1F371DD82E81 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				434EBEDBFE9A9546CC1854DF /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		E8BC60E624EE9BB754A00C82 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				569B0F9BEB86146B462B31E3 /* TallyDesign.framework */,
+				86CAF53DEA83B750AEB06B6C /* TallyWidgetExtension.appex */,
+				C85D39B1C6307965F4651F96 /* TallyWidgetShared.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		04B907230447C5FEEE7283ED /* TallyWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 45D4283473F3450FD38127FD /* Build configuration list for PBXNativeTarget "TallyWidgetExtension" */;
+			buildPhases = (
+				8456D2845A5923CFA5EDCB15 /* Sources */,
+				94EF31B719B9F5953F52F764 /* Resources */,
+				F45BE1A6513E142F9584D078 /* Embed Frameworks */,
+				EC780DF7B6213A3CE2A6CC61 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TallyWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = TallyWidgetExtension;
+			productReference = 86CAF53DEA83B750AEB06B6C /* TallyWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		11B37C76BF680F0BB08EBF26 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 3BB4C3870B4D66A0CC59331B /* Build configuration list for PBXProject "TallyWidgetExtension" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 0B7EAC276AB0A916C6F0EDDB;
+			productRefGroup = E8BC60E624EE9BB754A00C82 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				04B907230447C5FEEE7283ED /* TallyWidgetExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		94EF31B719B9F5953F52F764 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6B0FB38783BA4D1000348D5B /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8456D2845A5923CFA5EDCB15 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E4B8C1E7C30727B76EDEC2D2 /* TuistAssets+TallyWidgetExtension.swift in Sources */,
+				B3613844CD3C062E5449AADA /* TuistBundle+TallyWidgetExtension.swift in Sources */,
+				1807D018693749970189B42D /* ChallengeEntry.swift in Sources */,
+				A35E20F119FD1F69EAD067E7 /* ChallengeTimelineProvider.swift in Sources */,
+				8517FFEE8D334F51B9FFF51E /* ChallengeWidgetViews.swift in Sources */,
+				8E75478BC833711E770CCAC4 /* LockScreenWidgetViews.swift in Sources */,
+				F3E099391E37661C63064C52 /* TallyWidget.swift in Sources */,
+				8C50D4B70AF72DA58B8955E2 /* WidgetPreviews.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		172ED7549D3050741E328F28 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Derived/Entitlements/TallyWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Derived/InfoPlists/TallyWidgetExtension-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.tally.ios.widget;
+				PRODUCT_NAME = TallyWidgetExtension;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		2838D0D9554D94E2BB4AE231 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		D53F1667E928DCEA9C446D67 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Derived/Entitlements/TallyWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Derived/InfoPlists/TallyWidgetExtension-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.tally.ios.widget;
+				PRODUCT_NAME = TallyWidgetExtension;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = (
+					"$(inherited)",
+					DEBUG,
+				);
+				SWIFT_COMPILATION_MODE = singlefile;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DFA464FA8964298E12468B48 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3BB4C3870B4D66A0CC59331B /* Build configuration list for PBXProject "TallyWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DFA464FA8964298E12468B48 /* Debug */,
+				2838D0D9554D94E2BB4AE231 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		45D4283473F3450FD38127FD /* Build configuration list for PBXNativeTarget "TallyWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D53F1667E928DCEA9C446D67 /* Debug */,
+				172ED7549D3050741E328F28 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 11B37C76BF680F0BB08EBF26 /* Project object */;
+}

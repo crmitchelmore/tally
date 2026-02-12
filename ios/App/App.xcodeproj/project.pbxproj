@@ -13,29 +13,38 @@
 		1E54BBB9B4C5BAC7E3D34A50 /* OfflineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08F19A63DA8D9F3330470832 /* OfflineTests.swift */; };
 		2E743A6F76CCB6064D781210 /* TuistAssets+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D529DAAF6A9D59C44D9D68 /* TuistAssets+App.swift */; };
 		36A25B908DD0111127B364DE /* TallyDesign.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A995F149EF7FFEBC7F2EFDBB /* TallyDesign.framework */; };
+		44F97F52E4F815AFA88F7281 /* PhoneNumberKit_PhoneNumberKit.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 8B2034B2980679F26EBEBD8A /* PhoneNumberKit_PhoneNumberKit.bundle */; };
 		48469C5111BF762561C9B9B6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8F7F83A194E1D17030DCA033 /* Assets.xcassets */; };
+		4A69BA435096594C56B1D64B /* Factory_FactoryKit.bundle in Dependencies */ = {isa = PBXBuildFile; fileRef = CDB0D6E883617B243C0140DD /* Factory_FactoryKit.bundle */; };
 		54F1EBB77D3F424ED2EC58FE /* TallyFeatureChallenges.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C8EC6562F91FECF24EA9DF1A /* TallyFeatureChallenges.framework */; };
 		58417CF4849C60023AF62789 /* EntryDialogPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5092A9693A1EA9027AE23807 /* EntryDialogPage.swift */; };
 		5C0C205BB298CAE3CB969FEC /* TallyFeatureTipJar.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FD57017095728C4F90315C7 /* TallyFeatureTipJar.framework */; };
-		604450B77C88874D48D26C8D /* PhoneNumberKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 17F65D9AD9EDDA8EB25E4A0A /* PhoneNumberKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5F2EA6487DEE84055FBDAC41 /* TallyLiveActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AD5C13174FD5729B63D5221E /* TallyLiveActivity.framework */; };
 		64A1D96432215DAA99C651E1 /* TallyDesign.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A995F149EF7FFEBC7F2EFDBB /* TallyDesign.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		69B40BAF2815D2969E4A0FB1 /* Kingfisher.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 77D69EAF942AA87F8A9468BF /* Kingfisher.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6C2C56D877A633E011CBDF2E /* TallyUITestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7A27C38078F64CDD1EC442 /* TallyUITestCase.swift */; };
 		74CF307C13D42E39BAE7F815 /* TallyFeatureAuth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4B5B66D5303483821DD1CE0 /* TallyFeatureAuth.framework */; };
 		75BAA665D2FC41B8CC375C75 /* TallyFeatureTipJar.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7FD57017095728C4F90315C7 /* TallyFeatureTipJar.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		764D77813D6FBFB299008C57 /* TallyFeatureAPIClient.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1C37768CF8BDE3C3C533AC06 /* TallyFeatureAPIClient.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		78F159A7EDD472CF426C10C3 /* SyncStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFB51575A475ABC13347374E /* SyncStatusView.swift */; };
 		7B3B60DAA52F5FBB665686CC /* Clerk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6418FF9FEE329D1A96DB3F49 /* Clerk.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7CAEEA4C2459ADF0C8AF8B9B /* PhoneNumberKit_PhoneNumberKit.bundle in Dependencies */ = {isa = PBXBuildFile; fileRef = 8B2034B2980679F26EBEBD8A /* PhoneNumberKit_PhoneNumberKit.bundle */; };
 		7D0448C557AAC8614CCF4858 /* TallyFeatureAuth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B4B5B66D5303483821DD1CE0 /* TallyFeatureAuth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		81397244B99F1BE4588A8107 /* OnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A48178911F257A13AA664AB6 /* OnboardingTests.swift */; };
+		81EB0128D84DCC5895B5438C /* Kingfisher_Kingfisher.bundle in Resources */ = {isa = PBXBuildFile; fileRef = BEA84935B5BCB66E6882A426 /* Kingfisher_Kingfisher.bundle */; };
+		9193FCFA7AA640F6FFC1AEAB /* TallyWidgetShared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B9048086D90782D597BB6862 /* TallyWidgetShared.framework */; };
 		97891A5F2171937139F3C728 /* TallyCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6BADD4378FD7BA41B6122F3 /* TallyCore.framework */; };
 		9C3D03C4730356363FA7C58D /* TallyCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F6BADD4378FD7BA41B6122F3 /* TallyCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A150D4E4BC765D5DC63529D4 /* ChallengeDetailPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10375E988EAFB3574D1C92BD /* ChallengeDetailPage.swift */; };
 		A283D6B6B7AF6EFE72F8D220 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D159BCAB94FE2D241967AF6 /* SettingsView.swift */; };
+		A68FC0D436756E42BCC6620D /* WidgetDataSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F95B82F02BD7FEA2F6FF320 /* WidgetDataSyncService.swift */; };
+		AB48329F66DA4F15D05A0396 /* Factory_FactoryKit.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CDB0D6E883617B243C0140DD /* Factory_FactoryKit.bundle */; };
+		B21FAD4A839255E57094E5A7 /* TallyLiveActivity.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AD5C13174FD5729B63D5221E /* TallyLiveActivity.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		B39DC0455A67A28ED33ECA8D /* TallyWidgetShared.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B9048086D90782D597BB6862 /* TallyWidgetShared.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B54EC7FC1A1472DADA201360 /* TallyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A87B2E789E3FCB795DB8449 /* TallyApp.swift */; };
 		BCAA623B8B3DC5F728A52234 /* AuthPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7594EAA9D5E631B92ADA4C59 /* AuthPage.swift */; };
 		BD5931CEC9A7D63728EB2BCE /* AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89688C338AD182298E5871B5 /* AppTests.swift */; };
 		BD70BA0F49FB2796CEE04222 /* CommunityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A24F21BB46A01D26C10D7A1 /* CommunityView.swift */; };
+		C096EDCC85582A3605D51A6D /* Kingfisher_Kingfisher.bundle in Dependencies */ = {isa = PBXBuildFile; fileRef = BEA84935B5BCB66E6882A426 /* Kingfisher_Kingfisher.bundle */; };
 		C7FD2ACA9A08E0DEA95BD0F5 /* DashboardPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8584F946B6DF00D152E3D0 /* DashboardPage.swift */; };
 		DBE7F137FA9A27BFB3915B6F /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513115D93DAEA724AA14D1CE /* AppView.swift */; };
 		DE6C35D1E77C20E1AE3342EC /* TallyFeatureAPIClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C37768CF8BDE3C3C533AC06 /* TallyFeatureAPIClient.framework */; };
@@ -44,7 +53,6 @@
 		E3B6E30CC6BA80CA98D7C7B9 /* ScreenshotFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDFF814C84D490FF369122DD /* ScreenshotFlowTests.swift */; };
 		E6777DDA65665B0B2AF20164 /* ChallengeDialogPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFF01A1C3CB0DA38D6414E62 /* ChallengeDialogPage.swift */; };
 		EDBD7E2A869F3E7CEA274D0B /* ChallengeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEDED3981F54ACD2343FBC9 /* ChallengeTests.swift */; };
-		F3AAD2DEEF2549D6AB7B0BE6 /* FactoryKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7EB5417526AA6171D15EB07D /* FactoryKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4B3030B52E118A3B81CE6D9 /* Clerk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6418FF9FEE329D1A96DB3F49 /* Clerk.framework */; };
 		FE078F42728C23B77EE02A1B /* TuistBundle+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083CD4D343ECF7F321C1905D /* TuistBundle+App.swift */; };
 /* End PBXBuildFile section */
@@ -94,18 +102,29 @@
 			dstSubfolderSpec = 10;
 			files = (
 				7B3B60DAA52F5FBB665686CC /* Clerk.framework in Embed Frameworks */,
-				F3AAD2DEEF2549D6AB7B0BE6 /* FactoryKit.framework in Embed Frameworks */,
-				69B40BAF2815D2969E4A0FB1 /* Kingfisher.framework in Embed Frameworks */,
-				604450B77C88874D48D26C8D /* PhoneNumberKit.framework in Embed Frameworks */,
 				9C3D03C4730356363FA7C58D /* TallyCore.framework in Embed Frameworks */,
 				64A1D96432215DAA99C651E1 /* TallyDesign.framework in Embed Frameworks */,
 				764D77813D6FBFB299008C57 /* TallyFeatureAPIClient.framework in Embed Frameworks */,
 				7D0448C557AAC8614CCF4858 /* TallyFeatureAuth.framework in Embed Frameworks */,
 				0283E423EB3C277E2A12E108 /* TallyFeatureChallenges.framework in Embed Frameworks */,
 				75BAA665D2FC41B8CC375C75 /* TallyFeatureTipJar.framework in Embed Frameworks */,
+				B21FAD4A839255E57094E5A7 /* TallyLiveActivity.framework in Embed Frameworks */,
+				B39DC0455A67A28ED33ECA8D /* TallyWidgetShared.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FBDA11870C9384049F1DFEDD /* Dependencies */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 8;
+			dstSubfolderSpec = 16;
+			files = (
+				4A69BA435096594C56B1D64B /* Factory_FactoryKit.bundle in Dependencies */,
+				C096EDCC85582A3605D51A6D /* Kingfisher_Kingfisher.bundle in Dependencies */,
+				7CAEEA4C2459ADF0C8AF8B9B /* PhoneNumberKit_PhoneNumberKit.bundle in Dependencies */,
+			);
+			name = Dependencies;
+			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -115,7 +134,6 @@
 		083CD4D343ECF7F321C1905D /* TuistBundle+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TuistBundle+App.swift"; sourceTree = "<group>"; };
 		08F19A63DA8D9F3330470832 /* OfflineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineTests.swift; sourceTree = "<group>"; };
 		10375E988EAFB3574D1C92BD /* ChallengeDetailPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeDetailPage.swift; sourceTree = "<group>"; };
-		17F65D9AD9EDDA8EB25E4A0A /* PhoneNumberKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PhoneNumberKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C37768CF8BDE3C3C533AC06 /* TallyFeatureAPIClient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureAPIClient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D2037B9D69271F2F7119D91 /* AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C3BEBA9CA79A628FBEB17E0 /* AppUITests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AppUITests-Info.plist"; sourceTree = "<group>"; };
@@ -127,27 +145,32 @@
 		5445B743B2848E62908B578D /* EntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryTests.swift; sourceTree = "<group>"; };
 		571E08A9083FD4334E4B7D06 /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5AEDED3981F54ACD2343FBC9 /* ChallengeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeTests.swift; sourceTree = "<group>"; };
+		5F95B82F02BD7FEA2F6FF320 /* WidgetDataSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataSyncService.swift; sourceTree = "<group>"; };
 		6418FF9FEE329D1A96DB3F49 /* Clerk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Clerk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7594EAA9D5E631B92ADA4C59 /* AuthPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthPage.swift; sourceTree = "<group>"; };
-		77D69EAF942AA87F8A9468BF /* Kingfisher.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Kingfisher.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		7EB5417526AA6171D15EB07D /* FactoryKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FactoryKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FD57017095728C4F90315C7 /* TallyFeatureTipJar.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureTipJar.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		89688C338AD182298E5871B5 /* AppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTests.swift; sourceTree = "<group>"; };
+		8B2034B2980679F26EBEBD8A /* PhoneNumberKit_PhoneNumberKit.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PhoneNumberKit_PhoneNumberKit.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D159BCAB94FE2D241967AF6 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		8D7A27C38078F64CDD1EC442 /* TallyUITestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallyUITestCase.swift; sourceTree = "<group>"; };
 		8F7F83A194E1D17030DCA033 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		95D529DAAF6A9D59C44D9D68 /* TuistAssets+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TuistAssets+App.swift"; sourceTree = "<group>"; };
 		A48178911F257A13AA664AB6 /* OnboardingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTests.swift; sourceTree = "<group>"; };
 		A995F149EF7FFEBC7F2EFDBB /* TallyDesign.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyDesign.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AD5C13174FD5729B63D5221E /* TallyLiveActivity.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyLiveActivity.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4B5B66D5303483821DD1CE0 /* TallyFeatureAuth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureAuth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B9048086D90782D597BB6862 /* TallyWidgetShared.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyWidgetShared.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAFF060C3D8E68253DF6AABA /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC8584F946B6DF00D152E3D0 /* DashboardPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardPage.swift; sourceTree = "<group>"; };
 		BDFF814C84D490FF369122DD /* ScreenshotFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotFlowTests.swift; sourceTree = "<group>"; };
+		BEA84935B5BCB66E6882A426 /* Kingfisher_Kingfisher.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Kingfisher_Kingfisher.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8EC6562F91FECF24EA9DF1A /* TallyFeatureChallenges.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyFeatureChallenges.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CDB0D6E883617B243C0140DD /* Factory_FactoryKit.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Factory_FactoryKit.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		CFF01A1C3CB0DA38D6414E62 /* ChallengeDialogPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeDialogPage.swift; sourceTree = "<group>"; };
 		DE72813B11206E3D723C13DD /* BackgroundRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefreshManager.swift; sourceTree = "<group>"; };
 		DFB51575A475ABC13347374E /* SyncStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatusView.swift; sourceTree = "<group>"; };
 		E74CEC688AF06E6C2810EF30 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		EE59810DC77F476401518EA0 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		F6BADD4378FD7BA41B6122F3 /* TallyCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TallyCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -177,6 +200,8 @@
 				74CF307C13D42E39BAE7F815 /* TallyFeatureAuth.framework in Frameworks */,
 				54F1EBB77D3F424ED2EC58FE /* TallyFeatureChallenges.framework in Frameworks */,
 				5C0C205BB298CAE3CB969FEC /* TallyFeatureTipJar.framework in Frameworks */,
+				5F2EA6487DEE84055FBDAC41 /* TallyLiveActivity.framework in Frameworks */,
+				9193FCFA7AA640F6FFC1AEAB /* TallyWidgetShared.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -186,8 +211,8 @@
 		4102E3E068508DD683953C7D = {
 			isa = PBXGroup;
 			children = (
-				E9C3DB3EC6D7655028A9C0D3 /* Products */,
 				52611B11A5E6A7198C4E57A3 /* Project */,
+				E9C3DB3EC6D7655028A9C0D3 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -259,6 +284,7 @@
 				8D159BCAB94FE2D241967AF6 /* SettingsView.swift */,
 				DFB51575A475ABC13347374E /* SyncStatusView.swift */,
 				4A87B2E789E3FCB795DB8449 /* TallyApp.swift */,
+				5F95B82F02BD7FEA2F6FF320 /* WidgetDataSyncService.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -275,10 +301,19 @@
 		B3BCDE38B26B330C9A04FADE /* Derived */ = {
 			isa = PBXGroup;
 			children = (
+				B4A8B21D3869E957C12A7861 /* Entitlements */,
 				66EB57D721CBB7D427955C21 /* InfoPlists */,
 				8919B428B639C6AF4BBFE002 /* Sources */,
 			);
 			path = Derived;
+			sourceTree = "<group>";
+		};
+		B4A8B21D3869E957C12A7861 /* Entitlements */ = {
+			isa = PBXGroup;
+			children = (
+				EE59810DC77F476401518EA0 /* App.entitlements */,
+			);
+			path = Entitlements;
 			sourceTree = "<group>";
 		};
 		C60A59898610325A472B6D63 /* UITests */ = {
@@ -303,15 +338,17 @@
 				BAFF060C3D8E68253DF6AABA /* AppTests.xctest */,
 				1D2037B9D69271F2F7119D91 /* AppUITests.xctest */,
 				6418FF9FEE329D1A96DB3F49 /* Clerk.framework */,
-				7EB5417526AA6171D15EB07D /* FactoryKit.framework */,
-				77D69EAF942AA87F8A9468BF /* Kingfisher.framework */,
-				17F65D9AD9EDDA8EB25E4A0A /* PhoneNumberKit.framework */,
+				CDB0D6E883617B243C0140DD /* Factory_FactoryKit.bundle */,
+				BEA84935B5BCB66E6882A426 /* Kingfisher_Kingfisher.bundle */,
+				8B2034B2980679F26EBEBD8A /* PhoneNumberKit_PhoneNumberKit.bundle */,
 				F6BADD4378FD7BA41B6122F3 /* TallyCore.framework */,
 				A995F149EF7FFEBC7F2EFDBB /* TallyDesign.framework */,
 				1C37768CF8BDE3C3C533AC06 /* TallyFeatureAPIClient.framework */,
 				B4B5B66D5303483821DD1CE0 /* TallyFeatureAuth.framework */,
 				C8EC6562F91FECF24EA9DF1A /* TallyFeatureChallenges.framework */,
 				7FD57017095728C4F90315C7 /* TallyFeatureTipJar.framework */,
+				AD5C13174FD5729B63D5221E /* TallyLiveActivity.framework */,
+				B9048086D90782D597BB6862 /* TallyWidgetShared.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -325,8 +362,9 @@
 			buildPhases = (
 				B77F0AF073564580D75A2CF1 /* Sources */,
 				37BFF6A8CB5CC7FA21AD3FA3 /* Resources */,
-				BC0DC3536DED64E0E8C9923E /* Frameworks */,
 				8EFDE6013C818852098745E7 /* Embed Frameworks */,
+				BC0DC3536DED64E0E8C9923E /* Frameworks */,
+				FBDA11870C9384049F1DFEDD /* Dependencies */,
 			);
 			buildRules = (
 			);
@@ -345,8 +383,8 @@
 			buildPhases = (
 				F2209317AB8C886394D02ACA /* Sources */,
 				16B5BCA1617F96ED51DB718E /* Resources */,
-				8CB8AEE85FC31EE4A826C233 /* Frameworks */,
 				32C1016586DA85539DC02287 /* Embed Frameworks */,
+				8CB8AEE85FC31EE4A826C233 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -366,8 +404,8 @@
 			buildPhases = (
 				049B66CF9C6C34AA66A24E6E /* Sources */,
 				D8FE510FA532526BE36B26E4 /* Resources */,
-				0BCD01CC00377BA7F509636B /* Frameworks */,
 				5956B579410E42BAEF72B6B1 /* Embed Frameworks */,
+				0BCD01CC00377BA7F509636B /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -430,6 +468,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				48469C5111BF762561C9B9B6 /* Assets.xcassets in Resources */,
+				AB48329F66DA4F15D05A0396 /* Factory_FactoryKit.bundle in Resources */,
+				81EB0128D84DCC5895B5438C /* Kingfisher_Kingfisher.bundle in Resources */,
+				44F97F52E4F815AFA88F7281 /* PhoneNumberKit_PhoneNumberKit.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -475,6 +516,7 @@
 				A283D6B6B7AF6EFE72F8D220 /* SettingsView.swift in Sources */,
 				78F159A7EDD472CF426C10C3 /* SyncStatusView.swift in Sources */,
 				B54EC7FC1A1472DADA201360 /* TallyApp.swift in Sources */,
+				A68FC0D436756E42BCC6620D /* WidgetDataSyncService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -552,7 +594,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
@@ -565,12 +607,13 @@
 			buildSettings = {
 				API_BASE_URL = "https://tally-tracker.app";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLERK_PUBLISHABLE_KEY = pk_live_Y2xlcmsudGFsbHktdHJhY2tlci5hcHAk;
+				CODE_SIGN_ENTITLEMENTS = Derived/Entitlements/App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
+				GIT_COMMIT_SHA = "";
 				INFOPLIST_FILE = "Derived/InfoPlists/App-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -665,7 +708,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = App;
@@ -708,12 +751,13 @@
 			buildSettings = {
 				API_BASE_URL = "https://tally-tracker.app";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLERK_PUBLISHABLE_KEY = pk_live_Y2xlcmsudGFsbHktdHJhY2tlci5hcHAk;
+				CODE_SIGN_ENTITLEMENTS = Derived/Entitlements/App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
+				GIT_COMMIT_SHA = "";
 				INFOPLIST_FILE = "Derived/InfoPlists/App-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -727,7 +771,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

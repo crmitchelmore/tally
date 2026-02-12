@@ -84,6 +84,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "A3583BC5FB6CB31ECD82C7E5"
+               BuildableName = "Factory_FactoryKit.bundle"
+               BlueprintName = "Factory_FactoryKit"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/Factory/Factory.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "DB213071CE8918540366976D"
                BuildableName = "Get.framework"
                BlueprintName = "Get"
@@ -112,9 +126,37 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F6E2F8C3B7D9EB13105F5694"
+               BuildableName = "Kingfisher_Kingfisher.bundle"
+               BlueprintName = "Kingfisher_Kingfisher"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/Kingfisher/Kingfisher.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "1741F01BD3237B2ED5E79CAA"
                BuildableName = "PhoneNumberKit.framework"
                BlueprintName = "PhoneNumberKit"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/PhoneNumberKit/PhoneNumberKit.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "83598B6BD92316243CB15C1F"
+               BuildableName = "PhoneNumberKit_PhoneNumberKit.bundle"
+               BlueprintName = "PhoneNumberKit_PhoneNumberKit"
                ReferencedContainer = "container:Tuist/.build/tuist-derived/PhoneNumberKit/PhoneNumberKit.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -300,6 +342,76 @@
                ReferencedContainer = "container:Packages/TallyFeatureTipJar/TallyFeatureTipJar.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D64C10BB864C7201947DAB66"
+               BuildableName = "TallyLiveActivity.framework"
+               BlueprintName = "TallyLiveActivity"
+               ReferencedContainer = "container:Packages/TallyLiveActivity/TallyLiveActivity.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "291D18DA3248DB07695F1E75"
+               BuildableName = "TallyLiveActivityTests.xctest"
+               BlueprintName = "TallyLiveActivityTests"
+               ReferencedContainer = "container:Packages/TallyLiveActivity/TallyLiveActivity.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "04B907230447C5FEEE7283ED"
+               BuildableName = "TallyWidgetExtension.appex"
+               BlueprintName = "TallyWidgetExtension"
+               ReferencedContainer = "container:Packages/TallyWidgetExtension/TallyWidgetExtension.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "6B590840096851952552257B"
+               BuildableName = "TallyWidgetShared.framework"
+               BlueprintName = "TallyWidgetShared"
+               ReferencedContainer = "container:Packages/TallyWidgetShared/TallyWidgetShared.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "33683D12AC9AB9051900D277"
+               BuildableName = "TallyWidgetSharedTests.xctest"
+               BlueprintName = "TallyWidgetSharedTests"
+               ReferencedContainer = "container:Packages/TallyWidgetShared/TallyWidgetShared.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -309,8 +421,7 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
          <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "99DCC7BD0ABB09C467644299"
@@ -320,8 +431,7 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C460F2384F904D87838B32F7"
@@ -331,8 +441,7 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "3554CE05CCFDD59F5B343BB7"
@@ -342,8 +451,7 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "9A984C46948A6D66009C7846"
@@ -353,8 +461,7 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "825B30B16D7534E1567B5670"
@@ -364,8 +471,7 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "3B54212E08B34469ABA73B45"
@@ -375,8 +481,7 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "0915CD2CF23D9932C8C4199A"
@@ -386,14 +491,33 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "34CAB0909B6185EDB12BD2E3"
                BuildableName = "TallyFeatureTipJarTests.xctest"
                BlueprintName = "TallyFeatureTipJarTests"
                ReferencedContainer = "container:Packages/TallyFeatureTipJar/TallyFeatureTipJar.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "291D18DA3248DB07695F1E75"
+               BuildableName = "TallyLiveActivityTests.xctest"
+               BlueprintName = "TallyLiveActivityTests"
+               ReferencedContainer = "container:Packages/TallyLiveActivity/TallyLiveActivity.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "33683D12AC9AB9051900D277"
+               BuildableName = "TallyWidgetSharedTests.xctest"
+               BlueprintName = "TallyWidgetSharedTests"
+               ReferencedContainer = "container:Packages/TallyWidgetShared/TallyWidgetShared.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>

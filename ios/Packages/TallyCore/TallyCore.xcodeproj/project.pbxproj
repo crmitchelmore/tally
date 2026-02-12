@@ -93,8 +93,8 @@
 		445BF9418AB546A20B4E33A0 = {
 			isa = PBXGroup;
 			children = (
-				C8D24E03F4CEA6646682A3B9 /* Products */,
 				D4470501DFE81E8E6517B1B1 /* Project */,
+				C8D24E03F4CEA6646682A3B9 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -162,8 +162,8 @@
 			buildPhases = (
 				70FE03796D267743EDF03E7C /* Sources */,
 				B430E989223C0E7ECF8BD6F8 /* Resources */,
-				DADED4866C5ABDB9FC9AB80A /* Frameworks */,
 				A039BD669A812945FE1EC94B /* Embed Frameworks */,
+				DADED4866C5ABDB9FC9AB80A /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -183,8 +183,8 @@
 			buildPhases = (
 				EA0A2FC7148991167A5428D6 /* Sources */,
 				4F82A4FDC20367C789C4C37F /* Resources */,
-				CC9E17A57E4D6086FADDF40E /* Frameworks */,
 				89FBF51F8B111A9900B73AFC /* Embed Frameworks */,
+				CC9E17A57E4D6086FADDF40E /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -294,7 +294,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -362,7 +362,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";

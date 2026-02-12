@@ -5,7 +5,7 @@ import Foundation
 public final class WidgetDataStore: @unchecked Sendable {
     
     /// App Group identifier - must match entitlements
-    public static let appGroupIdentifier = "group.app.tally.shared"
+    public static let appGroupIdentifier = "group.app.tally-tracker.shared"
     
     /// Key for storing widget challenges
     private static let challengesKey = "widget.challenges"

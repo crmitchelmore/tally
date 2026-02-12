@@ -25,6 +25,15 @@
       <FileRef
          location = "group:TallyFeatureTipJar/TallyFeatureTipJar.xcodeproj">
       </FileRef>
+      <FileRef
+         location = "group:TallyLiveActivity/TallyLiveActivity.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:TallyWidgetExtension/TallyWidgetExtension.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:TallyWidgetShared/TallyWidgetShared.xcodeproj">
+      </FileRef>
    </Group>
    <Group
       location = "container:"

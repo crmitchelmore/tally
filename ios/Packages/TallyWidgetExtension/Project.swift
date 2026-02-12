@@ -19,7 +19,7 @@ let project = Project(
             resources: ["Resources/**"],
             entitlements: .dictionary([
                 "com.apple.security.application-groups": .array([
-                    .string("group.app.tally.shared")
+                    .string("group.app.tally-tracker.shared")
                 ])
             ]),
             dependencies: [

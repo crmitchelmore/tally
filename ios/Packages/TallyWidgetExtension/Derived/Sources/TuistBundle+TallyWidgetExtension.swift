@@ -5,12 +5,12 @@ import Foundation
 // MARK: - Swift Bundle Accessor for Frameworks
 private class BundleFinder {}
 extension Foundation.Bundle {
-/// Since App is a application, the bundle for classes within this module can be used directly.
+/// Since TallyWidgetExtension is a app extension, the bundle for classes within this module can be used directly.
 static let module = Bundle(for: BundleFinder.self)
 }
 // MARK: - Objective-C Bundle Accessor
 @objc
-public class AppResources: NSObject {
+public class TallyWidgetExtensionResources: NSObject {
 @objc public class var bundle: Bundle {
     return .module
 }

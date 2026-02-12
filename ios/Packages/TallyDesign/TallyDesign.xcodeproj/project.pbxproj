@@ -12,6 +12,7 @@
 		33D3DD11521C893C8876E707 /* TallyDesignTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 628FBC4F30598BC1819D2613 /* TallyDesignTests.swift */; };
 		B231731608AB57A566504EFE /* SpacingTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D79EFD4379DEDF158A54FE8 /* SpacingTokens.swift */; };
 		CA2FABEFA44C235C694B9E57 /* TypographyTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F711C393BA52168848E86D /* TypographyTokens.swift */; };
+		F5CF25C687B5E458790DC33D /* TallyHaptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BDEC7C334890EDD88940592 /* TallyHaptics.swift */; };
 		F751CFECF058A578C6ED7ECA /* UndoToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42EF21272F618FC61BB66B11 /* UndoToastView.swift */; };
 		F8816E3217EBDAE3BAACA8A4 /* TallyDesign.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E94D5C288AF8899C5A6E3B12 /* TallyDesign.framework */; };
 		FF9883BE82BB9AC2F14ABF1A /* TallyMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78BFBDC5EFF396315C94A308 /* TallyMarkView.swift */; };
@@ -56,6 +57,7 @@
 		58D6FAAE6DA9A4B50F6D3FAF /* TallyDesign-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyDesign-Info.plist"; sourceTree = "<group>"; };
 		5D79EFD4379DEDF158A54FE8 /* SpacingTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacingTokens.swift; sourceTree = "<group>"; };
 		628FBC4F30598BC1819D2613 /* TallyDesignTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallyDesignTests.swift; sourceTree = "<group>"; };
+		6BDEC7C334890EDD88940592 /* TallyHaptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallyHaptics.swift; sourceTree = "<group>"; };
 		70E6735EB53920CA6F854B77 /* ColorTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTokens.swift; sourceTree = "<group>"; };
 		78BFBDC5EFF396315C94A308 /* TallyMarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallyMarkView.swift; sourceTree = "<group>"; };
 		8175401F127E6E13D4F2509C /* TallyDesignTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TallyDesignTests-Info.plist"; sourceTree = "<group>"; };
@@ -113,8 +115,8 @@
 		84472A8CEF23DD8F643BFB33 = {
 			isa = PBXGroup;
 			children = (
-				CD0BA55A9E8BD0B83F829703 /* Products */,
 				22033393AB27C47FF7998722 /* Project */,
+				CD0BA55A9E8BD0B83F829703 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -148,6 +150,7 @@
 			children = (
 				020069CF5F319365490D3FE7 /* Components */,
 				E58E6A600D48F0D48D1F4D38 /* Tokens */,
+				6BDEC7C334890EDD88940592 /* TallyHaptics.swift */,
 			);
 			path = TallyDesign;
 			sourceTree = "<group>";
@@ -181,8 +184,8 @@
 			buildPhases = (
 				C9F5214B75023D9D06F90E30 /* Sources */,
 				2E03873491E6ED13C5DCBEF7 /* Resources */,
-				0CD45161D18BD4448FFD4B78 /* Frameworks */,
 				A7C00899DB2A3939F01F420B /* Embed Frameworks */,
+				0CD45161D18BD4448FFD4B78 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -201,8 +204,8 @@
 			buildPhases = (
 				8BD41B6243042A380113B821 /* Sources */,
 				F97F49FEA6A4490B3E94C69E /* Resources */,
-				B13AA73E78CBDF03F0E5ED55 /* Frameworks */,
 				A723DE8A9F6FBA925BBB28E4 /* Embed Frameworks */,
+				B13AA73E78CBDF03F0E5ED55 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -277,6 +280,7 @@
 			files = (
 				FF9883BE82BB9AC2F14ABF1A /* TallyMarkView.swift in Sources */,
 				F751CFECF058A578C6ED7ECA /* UndoToastView.swift in Sources */,
+				F5CF25C687B5E458790DC33D /* TallyHaptics.swift in Sources */,
 				3183439DF63CCB80ACEC591B /* ColorTokens.swift in Sources */,
 				2026D7EEB4CEA3225EA0D218 /* MotionTokens.swift in Sources */,
 				B231731608AB57A566504EFE /* SpacingTokens.swift in Sources */,
@@ -349,7 +353,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -375,7 +379,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

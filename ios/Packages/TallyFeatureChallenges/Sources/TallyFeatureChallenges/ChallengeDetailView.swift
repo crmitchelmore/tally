@@ -299,19 +299,23 @@ public struct ChallengeDetailView: View {
     // MARK: - Progress Section
     
     private var progressSection: some View {
-        VStack(spacing: TallySpacing.md) {
-            // Main tally visualization - let it size naturally based on count
-            ScrollView(.horizontal, showsIndicators: false) {
-                TallyMarkView(
-                    count: stats?.totalCount ?? 0,
-                    animated: !reduceMotion,
-                    size: 140
-                )
-                .fixedSize()
-                .frame(maxWidth: .infinity)
+        let totalCount = stats?.totalCount ?? 0
+        return VStack(spacing: TallySpacing.md) {
+            // Main tally visualization - adaptively fit width without horizontal scrolling
+            ViewThatFits(in: .horizontal) {
+                TallyMarkView(count: totalCount, animated: !reduceMotion, size: 140)
+                TallyMarkView(count: totalCount, animated: !reduceMotion, size: 124)
+                TallyMarkView(count: totalCount, animated: !reduceMotion, size: 110)
+                TallyMarkView(count: totalCount, animated: !reduceMotion, size: 96)
+                TallyMarkView(count: totalCount, animated: !reduceMotion, size: 84)
+                TallyMarkView(count: totalCount, animated: !reduceMotion, size: 72)
+                TallyMarkView(count: totalCount, animated: !reduceMotion, size: 60)
+                TallyMarkView(count: totalCount, animated: !reduceMotion, size: 48)
+                TallyMarkView(count: totalCount, animated: !reduceMotion, size: 36)
+                TallyMarkView(count: totalCount, animated: !reduceMotion, size: 20)
             }
+            .frame(maxWidth: .infinity, alignment: .center)
             .accessibilityIdentifier("progress-ring")
-            .scrollBounceBehavior(.basedOnSize)
             
             // Total / Target
             HStack(alignment: .firstTextBaseline, spacing: TallySpacing.xs) {

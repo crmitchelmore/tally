@@ -132,10 +132,16 @@ export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartP
   // End date X position
   const endX = dateToX(challenge.endDate);
 
-  // Projection line (from current to target)
-  const projectionPath = projection && projection.currentTotal < target
-    ? `M ${dateToX(cumulativeData[cumulativeData.length - 1].date)} ${valueToY(projection.currentTotal)} L ${dateToX(projection.projectedEndDate.toISOString().split('T')[0])} ${targetY}`
+  const projectedDateIso = projection && projection.currentTotal < target
+    ? toISODate(projection.projectedEndDate)
     : null;
+
+  // Projection line (from current to target)
+  const projectionPath = projectedDateIso && projection
+    ? `M ${dateToX(cumulativeData[cumulativeData.length - 1].date)} ${valueToY(projection.currentTotal)} L ${dateToX(projectedDateIso)} ${targetY}`
+    : null;
+  const projectedX = projectedDateIso ? dateToX(projectedDateIso) : null;
+  const projectedLabelY = projectedX !== null && Math.abs(projectedX - endX) < 16 ? height - 30 : height - 17;
 
   // Y-axis labels
   const yLabels = [0, Math.round(yMax / 2), yMax];
@@ -223,6 +229,27 @@ export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartP
             />
           )}
 
+          {/* Projected completion marker */}
+          {projectedX !== null && (
+            <>
+              <line
+                x1={projectedX}
+                y1={padding.top}
+                x2={projectedX}
+                y2={padding.top + chartHeight}
+                stroke="var(--color-warning)"
+                strokeWidth={1}
+                strokeDasharray="4,4"
+              />
+              <circle
+                cx={projectedX}
+                cy={targetY}
+                r={4}
+                fill="var(--color-warning)"
+              />
+            </>
+          )}
+
           {/* Progress line */}
           <path
             d={progressPath}
@@ -259,6 +286,16 @@ export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartP
           >
             {formatDateShort(challenge.endDate)}
           </text>
+          {projectedDateIso && (
+            <text
+              x={dateToX(projectedDateIso)}
+              y={projectedLabelY}
+              textAnchor="middle"
+              className="fill-warning text-[10px] font-medium"
+            >
+              Projected: {formatDateShort(projectedDateIso)}
+            </text>
+          )}
         </svg>
       </div>
 
@@ -277,6 +314,12 @@ export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartP
             <span className="text-muted">Remaining:</span>{" "}
             <span className="font-medium text-ink">{Math.max(0, target - projection.currentTotal).toLocaleString()}</span>
           </div>
+          {projection.currentTotal < target && (
+            <div>
+              <span className="text-muted">Projected finish:</span>{" "}
+              <span className="font-medium text-ink">{formatDateLong(projection.projectedEndDate)}</span>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -286,6 +329,17 @@ export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartP
 function formatDateShort(dateStr: string): string {
   const date = new Date(dateStr + "T00:00:00");
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function formatDateLong(date: Date): string {
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function toISODate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 export default BurnUpChart;

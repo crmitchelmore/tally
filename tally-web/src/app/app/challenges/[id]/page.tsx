@@ -7,6 +7,7 @@ import { TallyMark } from "@/components/ui/tally-mark";
 import { UndoToast } from "@/components/ui/undo-toast";
 import { ActivityHeatmap } from "@/components/challenges/activity-heatmap";
 import { AddEntryDialog, EntryList, DayDrilldown, EditEntryDialog } from "@/components/entries";
+import { BurnUpChart } from "@/components/stats";
 import { refreshEntries, refreshChallenges } from "@/hooks/use-data-refresh";
 import type { Challenge, ChallengeStats, Entry, CreateEntryRequest, UpdateEntryRequest } from "@/app/api/v1/_lib/types";
 import { getIconEmoji } from "@/lib/challenge-icons";
@@ -437,6 +438,8 @@ export default function ChallengeDetailPage() {
           <TallyMark count={stats.totalCount} size="lg" />
         </div>
       </div>
+
+      <BurnUpChart entries={entries} challenge={challenge} />
 
       {/* Activity heatmap */}
       <div className="bg-surface border border-border rounded-2xl p-6">

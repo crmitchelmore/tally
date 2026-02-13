@@ -242,11 +242,12 @@ jobs:
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
         run: |
-          # Write API key to file
-          mkdir -p ~/.appstoreconnect/private_keys
-          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_KEY_ID.p8
+          if [ ! -f "$ASC_KEY_PATH" ]; then
+            echo "Error: Missing App Store Connect key at $ASC_KEY_PATH"
+            exit 1
+          fi
+          chmod 600 "$ASC_KEY_PATH"
 
           # Find the actual IPA file (name may vary based on scheme/target)
           IPA_FILE=$(find $RUNNER_TEMP/export -name "*.ipa" | head -n 1)

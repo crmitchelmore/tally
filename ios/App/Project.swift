@@ -18,8 +18,8 @@ let teamId = Environment.developmentTeam.getString(default: "")
 let provisioningProfile = Environment.provisioningProfileSpecifier.getString(default: "")
 let codeSignIdentity = Environment.codeSignIdentity.getString(default: "")
 
-// Determine signing style based on whether provisioning profile is provided
-let isManualSigning = !provisioningProfile.isEmpty
+// Determine signing style based on whether a release identity is provided
+let isManualSigning = !codeSignIdentity.isEmpty
 
 let project = Project(
     name: "App",

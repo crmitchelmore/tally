@@ -93,21 +93,18 @@ jobs:
             echo "BUILD_NUMBER=$BUILD" >> $GITHUB_OUTPUT
           fi
 
-      - name: Install Apple certificate and provisioning profile
+      - name: Install Apple certificate
         env:
           P12_BASE64: ${{ secrets.IOS_SIGNING_CERT_P12_BASE64 }}
           P12_PASSWORD: ${{ secrets.IOS_SIGNING_CERT_PASSWORD }}
-          PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
         run: |
           # Create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/certificate.p12
-          PROFILE_PATH=$RUNNER_TEMP/profile.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
           # Decode from base64 (use BSD-compatible -D flag for macOS)
           echo -n "$P12_BASE64" | base64 -D -o "$CERTIFICATE_PATH"
-          echo -n "$PROVISIONING_PROFILE_BASE64" | base64 -D -o "$PROFILE_PATH"
 
           # Create temporary keychain
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
@@ -119,27 +116,15 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
 
-          # Apply provisioning profile - must be named by UUID for xcodebuild to find it
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          
-          # Extract profile UUID first
-          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< $(/usr/bin/security cms -D -i $PROFILE_PATH))
-          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print Name" /dev/stdin <<< $(/usr/bin/security cms -D -i $PROFILE_PATH))
-          
-          # Copy with UUID as filename (required for xcodebuild to find it)
-          cp $PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision
-          
-          echo "PROVISIONING_PROFILE_UUID=$PROFILE_UUID" >> $GITHUB_ENV
-          echo "PROVISIONING_PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
-
       - name: Generate Xcode project with Tuist
         working-directory: ios
         env:
           TUIST_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           TUIST_API_BASE_URL: "https://tally-tracker.app"
           TUIST_GIT_COMMIT_SHA: ${{ github.sha }}
-          # Pass team for automatic signing in release builds
+          # Pass team + distribution identity for manual release signing
           TUIST_DEVELOPMENT_TEAM: ${{ secrets.IOS_TEAM_ID }}
+          TUIST_CODE_SIGN_IDENTITY: "Apple Distribution"
         run: |
           mise use -g tuist@4.32.0
           tuist install

@@ -93,7 +93,7 @@ let project = Project(
                         "CODE_SIGN_IDENTITY": .init(stringLiteral: codeSignIdentity)
                     ] : [
                         "CODE_SIGN_STYLE": "Automatic",
-                        "DEVELOPMENT_TEAM": ""
+                        "DEVELOPMENT_TEAM": .init(stringLiteral: teamId)
                     ])
                 ]
             )

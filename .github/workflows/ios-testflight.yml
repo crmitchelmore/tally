@@ -138,14 +138,23 @@ jobs:
           TUIST_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           TUIST_API_BASE_URL: "https://tally-tracker.app"
           TUIST_GIT_COMMIT_SHA: ${{ github.sha }}
-          # Pass signing settings so Tuist generates the project with correct signing for Release
+          # Pass team for automatic signing in release builds
           TUIST_DEVELOPMENT_TEAM: ${{ secrets.IOS_TEAM_ID }}
-          TUIST_PROVISIONING_PROFILE_SPECIFIER: ${{ env.PROVISIONING_PROFILE_NAME }}
-          TUIST_CODE_SIGN_IDENTITY: "Apple Distribution"
         run: |
           mise use -g tuist@4.32.0
           tuist install
           tuist generate --no-open
+
+      - name: Configure App Store Connect API key for signing
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          ASC_KEY_PATH=~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_KEY_ID.p8
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > "$ASC_KEY_PATH"
+          chmod 600 "$ASC_KEY_PATH"
+          echo "ASC_KEY_PATH=$ASC_KEY_PATH" >> $GITHUB_ENV
 
       - name: Update version and build number
         working-directory: ios/App
@@ -173,14 +182,21 @@ jobs:
 
       - name: Build archive
         working-directory: ios
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         run: |
-          # Build archive - signing is configured via Tuist during project generation
+          # Build archive with automatic signing and App Store Connect authentication
           xcodebuild archive \
             -workspace Tally.xcworkspace \
             -scheme App \
             -configuration Release \
             -archivePath $RUNNER_TEMP/App.xcarchive \
-            -destination "generic/platform=iOS"
+            -destination "generic/platform=iOS" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
 
       - name: Create ExportOptions.plist
         run: |
@@ -200,14 +216,7 @@ jobs:
               <key>destination</key>
               <string>export</string>
               <key>signingStyle</key>
-              <string>manual</string>
-              <key>signingCertificate</key>
-              <string>Apple Distribution</string>
-              <key>provisioningProfiles</key>
-              <dict>
-                  <key>${{ env.IOS_BUNDLE_ID }}</key>
-                  <string>${{ env.PROVISIONING_PROFILE_NAME }}</string>
-              </dict>
+              <string>automatic</string>
           </dict>
           </plist>
           EOF

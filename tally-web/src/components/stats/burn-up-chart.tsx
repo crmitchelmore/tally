@@ -141,6 +141,7 @@ export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartP
     ? `M ${dateToX(cumulativeData[cumulativeData.length - 1].date)} ${valueToY(projection.currentTotal)} L ${dateToX(projectedDateIso)} ${targetY}`
     : null;
   const projectedX = projectedDateIso ? dateToX(projectedDateIso) : null;
+  const projectedLabelY = projectedX !== null && Math.abs(projectedX - endX) < 16 ? height - 30 : height - 17;
 
   // Y-axis labels
   const yLabels = [0, Math.round(yMax / 2), yMax];
@@ -288,7 +289,7 @@ export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartP
           {projectedDateIso && (
             <text
               x={dateToX(projectedDateIso)}
-              y={height - 17}
+              y={projectedLabelY}
               textAnchor="middle"
               className="fill-warning text-[10px] font-medium"
             >
@@ -313,10 +314,12 @@ export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartP
             <span className="text-muted">Remaining:</span>{" "}
             <span className="font-medium text-ink">{Math.max(0, target - projection.currentTotal).toLocaleString()}</span>
           </div>
-          <div>
-            <span className="text-muted">Projected finish:</span>{" "}
-            <span className="font-medium text-ink">{formatDateLong(projection.projectedEndDate)}</span>
-          </div>
+          {projection.currentTotal < target && (
+            <div>
+              <span className="text-muted">Projected finish:</span>{" "}
+              <span className="font-medium text-ink">{formatDateLong(projection.projectedEndDate)}</span>
+            </div>
+          )}
         </div>
       )}
     </div>

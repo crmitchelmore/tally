@@ -151,3 +151,46 @@ VERCEL_ORG_ID
 VERCEL_PROD_URL
 HONEYCOMB_API_KEY
 
+## Platform Layout and Tooling
+
+- Web app lives in `tally-web/`, iOS in `ios/` and `tally-ios/`, Android in `tally-android/`, and infrastructure in `infra/`.
+- **Web app package manager:** use `bun` (not npm/yarn).
+- **Infrastructure package manager:** use `npm` (Pulumi compatibility).
+- Keep commits scoped by platform unless a change is intentionally cross-platform.
+
+## Infrastructure Guardrails
+
+- **Never** make infrastructure-only changes manually in dashboards; use Pulumi in `infra/`.
+- Always run `pulumi preview` before `pulumi up`.
+- If a Pulumi resource cannot be deleted due broken delete script/runtime errors, use `pulumi state delete <urn> --yes`, then run `pulumi preview` to confirm expected state.
+
+## Clerk and Environment Rules
+
+- Clerk uses separate dev/prod environments; map dev keys to preview/development and prod keys to production.
+- Next.js inlines `NEXT_PUBLIC_*` variables at build time. In CI/build environments, set base keys (for example `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`) and do not rely only on suffixed variants like `_DEV`/`_PROD`.
+- Use `clerkMiddleware()` in `proxy.ts` with App Router patterns (not `authMiddleware`).
+
+## Next.js/Vercel Pitfalls
+
+- On Next.js 16, force webpack builds to avoid Turbopack `middleware.js.nft.json` ENOENT failures:
+  - `next build --webpack` in scripts, and
+  - explicit Vercel `buildCommand` using webpack.
+- Middleware matcher exclusions can still behave differently in production routing; if `_next/static/*` gets auth-applied (for example `x-clerk-auth-reason`), include `_next/static(.*)` and `_next/image(.*)` as public route fallbacks.
+
+## Migration and Verification Rules
+
+- For `docs/migration/README.md` feature parity:
+  - **Yes** = wired in primary UI and verified
+  - **Partial** = code exists but not wired and/or not verified
+  - **No** = missing
+- If Android SDK / `ANDROID_HOME` is unavailable, keep Android changes minimal and explicitly note not locally verified.
+- After changes:
+  1. Web: `cd tally-web && bun run build`
+  2. Infra: `cd infra && pulumi preview` (and `pulumi up` when applying)
+  3. Verify behaviour in the running app/surface
+
+## CI and E2E Guardrails
+
+- E2E workflows marked optional should use `continue-on-error: true`.
+- Playwright config uses `E2E_BASE_URL` (not `BASE_URL`) to decide whether tests run against local or deployed targets.
+- Clerk UI changes frequently; use resilient selectors (for example exact-name Continue button and `input[name="password"]`), and scope locators to regions when duplicate “Sign in” elements exist.

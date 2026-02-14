@@ -18,17 +18,25 @@ public struct TallyMarkView: View {
     }
     
     public var body: some View {
-        Canvas { context, canvasSize in
-            let bounds = CGRect(origin: .zero, size: canvasSize)
+        let naturalBounds = CGRect(
+            origin: .zero,
+            size: CGSize(width: naturalWidthForCount, height: naturalHeightForCount)
+        )
+        Canvas { context, _ in
             guard count > 0 else { return }
             
+            let scale = contentScale
+            if scale < 1 {
+                context.scaleBy(x: scale, y: scale)
+            }
+            
             if count >= 1000 {
-                drawThousandStack(in: context, bounds: bounds, count: count)
+                drawThousandStack(in: context, bounds: naturalBounds, count: count)
             } else {
-                drawRemainderRow(in: context, bounds: bounds, count: count)
+                drawRemainderRow(in: context, bounds: naturalBounds, count: count)
             }
         }
-        .frame(width: widthForCount, height: heightForCount)
+        .frame(width: scaledWidthForCount, height: scaledHeightForCount, alignment: .leading)
         .accessibilityLabel(accessibilityLabel)
         .onAppear {
             if animated && !reduceMotion {
@@ -49,10 +57,31 @@ public struct TallyMarkView: View {
         }
     }
     
-    /// Compute appropriate height based on count
+    private var contentScale: CGFloat {
+        guard count > 0 else { return 1 }
+        let naturalWidth = naturalWidthForCount
+        guard naturalWidth > 0 else { return 1 }
+        let compactMaxWidth: CGFloat
+        if size >= 100 {
+            compactMaxWidth = min(size * 3.0, 320)
+        } else {
+            compactMaxWidth = min(size * 3.2, 220)
+        }
+        return min(1, compactMaxWidth / naturalWidth)
+    }
+    
+    private var scaledHeightForCount: CGFloat {
+        naturalHeightForCount * contentScale
+    }
+    
+    private var scaledWidthForCount: CGFloat {
+        naturalWidthForCount * contentScale
+    }
+    
+    /// Compute natural (unscaled) height based on count
     /// - 1-999: Single remainder row sized to content
     /// - 1000+: Stack of 1000-rows + optional remainder row
-    private var heightForCount: CGFloat {
+    private var naturalHeightForCount: CGFloat {
         guard count > 0 else { return size }
         if count < 1000 {
             return rowMetrics(for: count).rowHeight
@@ -63,7 +92,7 @@ public struct TallyMarkView: View {
         return thousandMetrics.rowHeight * CGFloat(rows) + remainderHeight
     }
     
-    private var widthForCount: CGFloat {
+    private var naturalWidthForCount: CGFloat {
         guard count > 0 else { return size }
         if count < 1000 {
             return rowMetrics(for: count).totalWidth
@@ -124,15 +153,15 @@ public struct TallyMarkView: View {
     private func rowMetrics(hundreds: Int, twentyFives: Int, fives: Int, ones: Int) -> RowMetrics {
         let baseHeight = size
         let strokeWidth = max(1.6, baseHeight * 0.08)
-        let strokeSpacing = max(strokeWidth * 1.2, baseHeight * 0.14)
-        let itemGap = baseHeight * 0.28
-        let boxSize = baseHeight * 0.57
-        let hundredSize = boxSize * 2.4
+        let strokeSpacing = max(strokeWidth * 1.15, baseHeight * 0.12)
+        let itemGap = baseHeight * 0.2
+        let boxSize = baseHeight * 0.52
+        let hundredSize = boxSize * 2.15
         let gridSize = hundredSize
         let gridXSize = boxSize * 0.9
         let xStrokeWidth = max(1.2, strokeWidth * 0.8)
         let gateWidth = strokeWidth * 4 + strokeSpacing * 3
-        let gateSpacing = strokeSpacing * 1.4
+        let gateSpacing = strokeSpacing * 1.1
         
         let hundredsWidth = hundreds > 0
             ? hundredSize * CGFloat(hundreds) + itemGap * CGFloat(max(0, hundreds - 1))
@@ -174,6 +203,44 @@ public struct TallyMarkView: View {
         )
     }
     
+    private func signedNoise(seed: Int) -> CGFloat {
+        let raw = sin(Double(seed) * 12.9898 + 78.233) * 43758.5453
+        let fraction = raw - floor(raw)
+        return CGFloat(fraction * 2 - 1)
+    }
+    
+    private func drawInkStroke(
+        in context: GraphicsContext,
+        from start: CGPoint,
+        to end: CGPoint,
+        baseWidth: CGFloat,
+        color: Color,
+        seed: Int,
+        curveBiasX: CGFloat = 0,
+        curveBiasY: CGFloat = 0
+    ) {
+        let topShift = signedNoise(seed: seed + 1) * baseWidth * 0.28
+        let bottomShift = signedNoise(seed: seed + 2) * baseWidth * 0.28
+        let controlX = (start.x + end.x) * 0.5
+            + signedNoise(seed: seed + 3) * max(baseWidth, abs(end.y - start.y) * 0.06)
+            + curveBiasX
+        let controlY = (start.y + end.y) * 0.5
+            + signedNoise(seed: seed + 4) * max(1, abs(end.y - start.y) * 0.03)
+            + curveBiasY
+        let width = max(1, baseWidth * (1 + signedNoise(seed: seed + 5) * 0.12))
+        
+        let path = Path { p in
+            p.move(to: CGPoint(x: start.x + topShift, y: start.y))
+            p.addQuadCurve(
+                to: CGPoint(x: end.x + bottomShift, y: end.y),
+                control: CGPoint(x: controlX, y: controlY)
+            )
+        }
+        
+        let style = StrokeStyle(lineWidth: width, lineCap: .round, lineJoin: .round)
+        context.stroke(path, with: .color(color), style: style)
+    }
+    
     // MARK: - Drawing Functions
     
     private func drawVerticalStrokes(in context: GraphicsContext, bounds: CGRect, count: Int, metrics: RowMetrics? = nil) {
@@ -182,30 +249,41 @@ public struct TallyMarkView: View {
         let spacing = metrics?.strokeSpacing ?? (strokeWidth * 1.4)
         let totalWidth = CGFloat(count - 1) * spacing
         let startX = (bounds.width - totalWidth) / 2
-        let startY = bounds.maxY - strokeHeight
+        let topY = bounds.maxY - strokeHeight + strokeWidth * 0.2
+        let bottomY = bounds.maxY - strokeWidth * 0.2
         
         for i in 0..<count {
             let x = startX + CGFloat(i) * spacing
-            let path = Path { p in
-                p.move(to: CGPoint(x: x, y: startY))
-                p.addLine(to: CGPoint(x: x, y: startY + strokeHeight))
-            }
-            let style = StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
-            context.stroke(path, with: .color(.tallyInk), style: style)
+            drawInkStroke(
+                in: context,
+                from: CGPoint(x: x, y: topY),
+                to: CGPoint(x: x, y: bottomY),
+                baseWidth: strokeWidth,
+                color: .tallyInk,
+                seed: i + count * 13
+            )
         }
     }
     
     private func drawFiveGate(in context: GraphicsContext, bounds: CGRect, metrics: RowMetrics? = nil) {
         drawVerticalStrokes(in: context, bounds: bounds, count: 4, metrics: metrics)
         
-        let inset = bounds.width * 0.08
-        let slashPath = Path { p in
-            p.move(to: CGPoint(x: inset, y: bounds.height))
-            p.addLine(to: CGPoint(x: bounds.width - inset, y: bounds.height * 0.1))
-        }
         let strokeWidth = metrics?.strokeWidth ?? max(2.0, bounds.width * 0.1)
-        let style = StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
-        context.stroke(slashPath, with: .color(.tallyAccent), style: style)
+        let slashAngle = CGFloat(25 * Double.pi / 180)
+        let slashLength = bounds.width * 1.15
+        let center = CGPoint(x: bounds.midX, y: bounds.midY)
+        let deltaX = cos(slashAngle) * slashLength * 0.5
+        let deltaY = sin(slashAngle) * slashLength * 0.5
+        drawInkStroke(
+            in: context,
+            from: CGPoint(x: center.x - deltaX, y: center.y + deltaY),
+            to: CGPoint(x: center.x + deltaX, y: center.y - deltaY),
+            baseWidth: strokeWidth,
+            color: .tallyAccent,
+            seed: Int(bounds.width * 100) + 500,
+            curveBiasX: bounds.width * 0.03,
+            curveBiasY: -bounds.height * 0.02
+        )
     }
     
     private func drawXLayout(in context: GraphicsContext, bounds: CGRect, count: Int) {
@@ -432,15 +510,18 @@ public struct TallyMarkView: View {
         
         if ones > 0 {
             let strokeHeight = metrics.baseHeight * 0.88
-            let startY = rowBottom - strokeHeight
+            let startY = rowBottom - strokeHeight + metrics.strokeWidth * 0.2
+            let endY = rowBottom - metrics.strokeWidth * 0.2
             for i in 0..<ones {
                 let x = currentX + CGFloat(i) * metrics.strokeSpacing
-                let path = Path { p in
-                    p.move(to: CGPoint(x: x, y: startY))
-                    p.addLine(to: CGPoint(x: x, y: startY + strokeHeight))
-                }
-                let style = StrokeStyle(lineWidth: metrics.strokeWidth, lineCap: .round)
-                context.stroke(path, with: .color(.tallyInk), style: style)
+                drawInkStroke(
+                    in: context,
+                    from: CGPoint(x: x, y: startY),
+                    to: CGPoint(x: x, y: endY),
+                    baseWidth: metrics.strokeWidth,
+                    color: .tallyInk,
+                    seed: i + count * 17 + 900
+                )
             }
         }
     }

@@ -166,8 +166,8 @@ jobs:
         run: |
           set -e
 
-          # Get latest ios-v* tag
-          LATEST_TAG=$(git tag -l 'ios-v*' --sort=-v:refname | head -1)
+          # Get latest base ios-vX.Y.Z tag (ignore build tags like ios-v1.2.3-26021467)
+          LATEST_TAG=$(git tag -l 'ios-v*' --sort=-v:refname | grep -E '^ios-v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
 
           if [ -n "$LATEST_TAG" ]; then
             echo "Latest tag: $LATEST_TAG"
@@ -214,6 +214,10 @@ jobs:
 
           # Parse current version and apply bump
           VERSION="${LATEST_TAG#ios-v}"
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Invalid release tag format: $LATEST_TAG" >&2
+            exit 1
+          fi
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           MINOR=$(echo "$VERSION" | cut -d. -f2)
           PATCH=$(echo "$VERSION" | cut -d. -f3)

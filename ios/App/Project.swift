@@ -72,6 +72,7 @@ let project = Project(
                 .project(target: "TallyFeatureTipJar", path: "../Packages/TallyFeatureTipJar"),
                 .project(target: "TallyLiveActivity", path: "../Packages/TallyLiveActivity"),
                 .project(target: "TallyWidgetShared", path: "../Packages/TallyWidgetShared"),
+                .project(target: "TallyWidgetExtension", path: "../Packages/TallyWidgetExtension"),
                 .external(name: "Clerk")
             ],
             settings: .settings(

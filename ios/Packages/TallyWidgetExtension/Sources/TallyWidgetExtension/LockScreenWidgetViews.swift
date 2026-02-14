@@ -129,25 +129,19 @@ struct InlineLockScreenView: View {
 // MARK: - Previews
 
 #Preview("Circular", as: .accessoryCircular) {
-    if #available(iOS 17.0, *) {
-        TallyLockScreenWidget()
-    }
+    TallyLockScreenWidget()
 } timeline: {
     ChallengeEntry.placeholder
 }
 
 #Preview("Rectangular", as: .accessoryRectangular) {
-    if #available(iOS 17.0, *) {
-        TallyLockScreenWidget()
-    }
+    TallyLockScreenWidget()
 } timeline: {
     ChallengeEntry.placeholder
 }
 
 #Preview("Inline", as: .accessoryInline) {
-    if #available(iOS 17.0, *) {
-        TallyLockScreenWidget()
-    }
+    TallyLockScreenWidget()
 } timeline: {
     ChallengeEntry.placeholder
 }

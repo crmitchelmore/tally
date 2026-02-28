@@ -24,6 +24,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Error in GET /api/v1/stats:", error);
-    return jsonInternalError();
+    return jsonInternalError("Internal server error", error);
   }
 }

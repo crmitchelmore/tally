@@ -59,6 +59,6 @@ export async function GET() {
     return jsonOk({ challenges: followedChallenges });
   } catch (error) {
     console.error("Error in GET /api/v1/followed:", error);
-    return jsonInternalError();
+    return jsonInternalError("Internal server error", error);
   }
 }

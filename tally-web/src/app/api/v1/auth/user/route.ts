@@ -100,7 +100,7 @@ export async function POST() {
       return jsonCreated({ user: newUser });
     } catch (error) {
       console.error("Error in /api/v1/auth/user:", error);
-      return jsonInternalError();
+      return jsonInternalError("Internal server error", error);
     }
   });
 }
@@ -121,6 +121,6 @@ export async function GET() {
     return jsonOk({ user });
   } catch (error) {
     console.error("Error in /api/v1/auth/user:", error);
-    return jsonInternalError();
+    return jsonInternalError("Internal server error", error);
   }
 }

@@ -8,7 +8,15 @@
  */
 
 export async function register() {
-  // Only run on server
+  // Sentry server-side init
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    await import("../sentry.server.config");
+  }
+  if (process.env.NEXT_RUNTIME === "edge") {
+    await import("../sentry.edge.config");
+  }
+
+  // Only run OTel on server
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { NodeSDK } = await import("@opentelemetry/sdk-node");
     const { OTLPTraceExporter } = await import(

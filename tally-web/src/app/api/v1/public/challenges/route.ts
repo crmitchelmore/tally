@@ -69,6 +69,6 @@ export async function GET(request: NextRequest) {
     return jsonOk({ challenges: challengesWithMeta });
   } catch (error) {
     console.error("Error in GET /api/v1/public/challenges:", error);
-    return jsonInternalError();
+    return jsonInternalError("Internal server error", error);
   }
 }

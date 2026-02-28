@@ -37,6 +37,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return jsonOk({ stats });
   } catch (error) {
     console.error("Error in GET /api/v1/challenges/[id]/stats:", error);
-    return jsonInternalError();
+    return jsonInternalError("Internal server error", error);
   }
 }

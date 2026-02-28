@@ -24,6 +24,7 @@ import {
   withSpan,
   generateRequestId,
 } from "@/lib/telemetry";
+import * as Sentry from "@sentry/nextjs";
 
 export async function GET(request: NextRequest) {
   const requestId = generateRequestId();
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
       return jsonOk({ challenges: challengesWithStats });
     } catch (error) {
       console.error("Error in GET /api/v1/challenges:", error);
-      return jsonInternalError();
+      return jsonInternalError("Internal server error", error);
     }
   });
 }
@@ -125,6 +126,7 @@ export async function POST(request: NextRequest) {
       return jsonCreated({ challenge });
     } catch (error) {
       console.error("Error in POST /api/v1/challenges:", error);
+      Sentry.captureException(error);
       // Return error details in non-production for debugging
       const errorMessage = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : undefined;

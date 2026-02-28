@@ -43,7 +43,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return jsonOk({ challenge });
   } catch (error) {
     console.error("Error in GET /api/v1/challenges/[id]:", error);
-    return jsonInternalError();
+    return jsonInternalError("Internal server error", error);
   }
 }
 
@@ -89,7 +89,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return jsonOk({ challenge: updated });
   } catch (error) {
     console.error("Error in PATCH /api/v1/challenges/[id]:", error);
-    return jsonInternalError();
+    return jsonInternalError("Internal server error", error);
   }
 }
 
@@ -118,6 +118,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return jsonOk({ success: true, id, deletedAt: result.deletedAt });
   } catch (error) {
     console.error("Error in DELETE /api/v1/challenges/[id]:", error);
-    return jsonInternalError();
+    return jsonInternalError("Internal server error", error);
   }
 }

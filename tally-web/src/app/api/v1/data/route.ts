@@ -52,7 +52,7 @@ export async function GET() {
       return jsonOk(data);
     } catch (error) {
       console.error("Error in GET /api/v1/data:", error);
-      return jsonInternalError();
+      return jsonInternalError("Internal server error", error);
     }
   });
 }
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       });
     } catch (error) {
       console.error("Error in POST /api/v1/data:", error);
-      return jsonInternalError();
+      return jsonInternalError("Internal server error", error);
     }
   });
 }
@@ -130,7 +130,7 @@ export async function DELETE() {
       });
     } catch (error) {
       console.error("Error in DELETE /api/v1/data:", error);
-      return jsonInternalError();
+      return jsonInternalError("Internal server error", error);
     }
   });
 }

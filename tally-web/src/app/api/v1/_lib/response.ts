@@ -2,6 +2,7 @@
  * Response helpers for consistent API responses
  */
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import type { ApiError, PaginatedResponse, ValidationError } from "./types";
 
 /**
@@ -82,8 +83,12 @@ export function jsonNotFound(message = "Not found"): NextResponse {
 
 /**
  * Error: Internal server error (500)
+ * Automatically reports to Sentry when an error object is provided.
  */
-export function jsonInternalError(message = "Internal server error"): NextResponse {
-  const error: ApiError = { error: message, code: "INTERNAL_ERROR" };
-  return NextResponse.json(error, { status: 500 });
+export function jsonInternalError(message = "Internal server error", error?: unknown): NextResponse {
+  if (error) {
+    Sentry.captureException(error);
+  }
+  const body: ApiError = { error: message, code: "INTERNAL_ERROR" };
+  return NextResponse.json(body, { status: 500 });
 }

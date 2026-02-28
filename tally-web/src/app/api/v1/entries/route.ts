@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
       return jsonOk({ entries });
     } catch (error) {
       console.error("Error in GET /api/v1/entries:", error);
-      return jsonInternalError();
+      return jsonInternalError("Internal server error", error);
     }
   });
 }
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
       return jsonCreated({ entry });
     } catch (error) {
       console.error("Error in POST /api/v1/entries:", error);
-      return jsonInternalError();
+      return jsonInternalError("Internal server error", error);
     }
   });
 }

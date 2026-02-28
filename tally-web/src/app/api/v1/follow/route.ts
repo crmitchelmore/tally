@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     return jsonCreated({ success: true });
   } catch (error) {
     console.error("Error in POST /api/v1/follow:", error);
-    return jsonInternalError();
+    return jsonInternalError("Internal server error", error);
   }
 }
 
@@ -78,6 +78,6 @@ export async function DELETE(request: NextRequest) {
     return jsonOk({ success: true, removed: deleted });
   } catch (error) {
     console.error("Error in DELETE /api/v1/follow:", error);
-    return jsonInternalError();
+    return jsonInternalError("Internal server error", error);
   }
 }

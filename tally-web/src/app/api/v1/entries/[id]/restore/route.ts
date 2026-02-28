@@ -39,6 +39,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
   } catch (error) {
     console.error("Error in POST /api/v1/entries/[id]/restore:", error);
-    return jsonInternalError();
+    return jsonInternalError("Internal server error", error);
   }
 }

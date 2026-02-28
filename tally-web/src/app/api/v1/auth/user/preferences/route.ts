@@ -29,7 +29,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Error in GET /api/v1/auth/user/preferences:", error);
-    return jsonInternalError();
+    return jsonInternalError("Internal server error", error);
   }
 }
 
@@ -63,7 +63,7 @@ export async function PATCH(request: Request) {
     });
   } catch (error) {
     console.error("Error in PATCH /api/v1/auth/user/preferences:", error);
-    return jsonInternalError();
+    return jsonInternalError("Internal server error", error);
   }
 }
 

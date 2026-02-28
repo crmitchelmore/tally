@@ -28,7 +28,6 @@ jobs:
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          CLERK_PROXY_URL: ""
           NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
           HONEYCOMB_API_KEY: ${{ secrets.HONEYCOMB_API_KEY }}
           NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
@@ -42,7 +41,6 @@ jobs:
           npx vercel deploy --prod --yes --token=$VERCEL_TOKEN \
             --env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
             --env CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" \
-            --env CLERK_PROXY_URL="" \
             --env NEXT_PUBLIC_CONVEX_URL="${{ secrets.NEXT_PUBLIC_CONVEX_URL }}" \
             --env HONEYCOMB_API_KEY="${{ secrets.HONEYCOMB_API_KEY }}" \
             --env NEXT_PUBLIC_POSTHOG_KEY="${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}" \
@@ -50,7 +48,6 @@ jobs:
             --env NEXT_PUBLIC_SENTRY_DSN="${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}" \
             --build-env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
             --build-env CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" \
-            --build-env CLERK_PROXY_URL="" \
             --build-env NEXT_PUBLIC_CONVEX_URL="${{ secrets.NEXT_PUBLIC_CONVEX_URL }}" \
             --build-env HONEYCOMB_API_KEY="${{ secrets.HONEYCOMB_API_KEY }}" \
             --build-env NEXT_PUBLIC_POSTHOG_KEY="${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}" \

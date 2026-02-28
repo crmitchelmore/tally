@@ -1,11 +1,1 @@
-{
-  "rewrites": [
-    {
-      "source": "/:path*",
-      "has": [
-        { "type": "host", "value": "clerk.tally-tracker.app" }
-      ],
-      "destination": "https://frontend-api.clerk.services/:path*"
-    }
-  ]
-}
+{}

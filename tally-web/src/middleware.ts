@@ -30,12 +30,6 @@ const hasClerkKeys =
 export default async function middleware(req: NextRequest) {
   ensureNavigator(req);
 
-  // Let vercel.json handle clerk.tally-tracker.app proxy
-  const host = req.headers.get("host") ?? "";
-  if (host.startsWith("clerk.")) {
-    return NextResponse.next();
-  }
-
   if (!hasClerkKeys) {
     // Skip auth checks during builds or when keys are missing
     return NextResponse.next();

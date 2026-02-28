@@ -152,7 +152,7 @@ public struct AddEntrySheet: View {
                 .foregroundColor(Color.tallyInkSecondary)
             }
             .frame(maxWidth: .infinity)
-            .tallyPadding(.vertical, TallySpacing.sm)
+            .frame(minHeight: 44)
             .background(Color.tallyPaperTint)
             .cornerRadius(8)
             
@@ -252,7 +252,7 @@ public struct AddEntrySheet: View {
         } label: {
             Text(title)
                 .font(.tallyLabelSmall)
-                .frame(width: 44, height: 32)
+                .frame(width: 44, height: 44)
                 .background(enabled ? Color.tallyPaperTint : Color.tallyPaperTint.opacity(0.4))
                 .foregroundColor(enabled ? Color.tallyInk : Color.tallyInkTertiary)
                 .cornerRadius(8)
@@ -387,6 +387,7 @@ public struct AddEntrySheet: View {
                     .foregroundColor(Color.tallyInkSecondary)
                     .rotationEffect(.degrees(showOptions ? 180 : 0))
             }
+            .frame(minHeight: 44)
         }
     }
     
@@ -523,7 +524,7 @@ private struct IncrementButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .foregroundColor(configuration.isPressed ? Color.tallyInk : Color.tallyInkSecondary)
-            .frame(width: 52, height: 36)
+            .frame(width: 52, height: 44)
             .background(Color.tallyPaperTint)
             .cornerRadius(8)
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)

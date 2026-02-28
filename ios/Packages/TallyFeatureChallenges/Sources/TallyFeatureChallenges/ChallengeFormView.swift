@@ -256,6 +256,8 @@ public struct ChallengeFormView: View {
                     }
                 }
         }
+        .frame(minWidth: 44, minHeight: 44)
+        .contentShape(Rectangle())
         .buttonStyle(.plain)
         .accessibilityLabel("Color \(color)")
     }

@@ -9,8 +9,9 @@ const platforms = [
     label: "iOS",
     features: [
       "Native SwiftUI interface",
+      "Lock Screen & Home Screen widgets",
+      "Haptic milestone celebrations",
       "Offline-first with sync queue",
-      "Secure Keychain token storage",
       "Tip jar with StoreKit",
     ],
   },
@@ -19,9 +20,10 @@ const platforms = [
     label: "Android",
     features: [
       "Material You + Jetpack Compose",
-      "Background sync & notifications",
+      "Dashboard with customisable panels",
+      "Offline-first with sync queue",
       "Data export & import",
-      "Encrypted credential storage",
+      "Tip jar with Google Play Billing",
     ],
   },
 ] as const;
@@ -475,9 +477,9 @@ export function AppShowcase() {
       </div>
 
       <div className="app-showcase-stores">
-        <span className="app-showcase-stores-label">Coming soon:</span>
-        <a href="/ios" className="store-link"><span className="store-icon">🍎</span> App Store</a>
-        <a href="/android" className="store-link"><span className="store-icon">▶️</span> Google Play</a>
+        <a href="/ios" className="store-link store-link-live"><span className="store-icon">🍎</span> App Store</a>
+        <span className="store-divider">·</span>
+        <a href="/android" className="store-link"><span className="store-icon">▶️</span> Google Play <span className="store-soon">(coming soon)</span></a>
       </div>
     </section>
   );

@@ -27,6 +27,16 @@ export default function Home() {
           </Link>
         </div>
 
+        <div className="hero-platforms mt-4">
+          <a href="/ios" className="hero-platform-badge">
+            <span aria-hidden="true">🍎</span> Available on iOS
+          </a>
+          <span className="hero-platform-sep">·</span>
+          <a href="/android" className="hero-platform-badge hero-platform-soon">
+            Android coming soon
+          </a>
+        </div>
+
         {/* Static tally mark for decoration (hidden when demo is active) */}
         <div className="tally decorative-tally" aria-hidden="true">
           <span className="stroke" />

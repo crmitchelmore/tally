@@ -14,7 +14,13 @@ const features = [
     id: "progress",
     title: "See real progress",
     description:
-      "Activity heatmaps, streaks, and burn-up charts. Know instantly if you're ahead, on pace, or behind — without judgement.",
+      "Activity heatmaps, streaks, personal records, and burn-up charts. Know instantly if you're ahead, on pace, or behind — without judgement.",
+  },
+  {
+    id: "widgets",
+    title: "Glanceable widgets",
+    description:
+      "Lock Screen and Home Screen widgets on iOS keep your challenges visible without opening the app. See your progress at a glance, all day.",
   },
   {
     id: "sync",
@@ -102,6 +108,38 @@ function FeatureVisual({ featureId }: { featureId: FeatureId }) {
           {[60,85,40,95,70,100,50].map((h, i) => (
             <div key={i} className={`fv-mini-bar${i === 6 ? " active" : ""}`} style={{ height: `${h}%` }} />
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (featureId === "widgets") {
+    return (
+      <div className="fv-widgets" aria-hidden="true">
+        <div className="fv-widget fv-widget-lock">
+          <div className="fv-widget-header">
+            <span className="fv-widget-type">Lock Screen</span>
+          </div>
+          <div className="fv-widget-body">
+            <span className="fv-widget-count">156</span>
+            <span className="fv-widget-label">/ 200 km</span>
+          </div>
+          <div className="fv-widget-progress"><div className="fv-widget-fill" style={{ width: "78%" }} /></div>
+        </div>
+        <div className="fv-widget fv-widget-home">
+          <div className="fv-widget-header">
+            <span className="fv-widget-type">Home Screen</span>
+          </div>
+          <div className="fv-widget-body">
+            <div className="fv-widget-challenge">
+              <span className="fv-widget-name">Morning Run</span>
+              <span className="fv-widget-stats">78% · 3d ahead</span>
+            </div>
+            <div className="fv-widget-challenge">
+              <span className="fv-widget-name">Read 30 Pages</span>
+              <span className="fv-widget-stats">79% · on pace</span>
+            </div>
+          </div>
         </div>
       </div>
     );

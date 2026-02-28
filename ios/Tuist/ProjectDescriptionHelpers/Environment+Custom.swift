@@ -31,4 +31,9 @@ public extension Environment {
     static var gitCommitSha: Environment.Value? {
         Environment.GIT_COMMIT_SHA
     }
+    
+    /// Sentry DSN for crash reporting (SENTRY_DSN).
+    static var sentryDsn: Environment.Value? {
+        Environment.SENTRY_DSN
+    }
 }

@@ -42,4 +42,13 @@ public enum Configuration {
     public static var isConfigured: Bool {
         !clerkPublishableKey.isEmpty
     }
+    
+    /// Sentry DSN for crash reporting
+    public static var sentryDsn: String? {
+        if let dsn = Bundle.main.object(forInfoDictionaryKey: "SENTRY_DSN") as? String,
+           !dsn.isEmpty, !dsn.hasPrefix("$(") {
+            return dsn
+        }
+        return ProcessInfo.processInfo.environment["SENTRY_DSN"]
+    }
 }

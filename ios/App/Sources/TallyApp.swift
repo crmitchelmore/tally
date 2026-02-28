@@ -2,7 +2,9 @@ import SwiftUI
 import TallyDesign
 import TallyFeatureAuth
 import TallyFeatureChallenges
+import TallyCore
 import Clerk
+import Sentry
 
 /// Appearance mode preference
 enum AppearanceMode: String, CaseIterable, Identifiable {
@@ -35,6 +37,22 @@ struct TallyApp: App {
     @StateObject private var appSettings = AppSettings()
     
     init() {
+        // Configure Sentry crash reporting
+        if let dsn = Configuration.sentryDsn {
+            SentrySDK.start { options in
+                options.dsn = dsn
+                options.tracesSampleRate = 0.2
+                options.enableAppHangTracking = true
+                options.enableCaptureFailedRequests = true
+                options.attachScreenshot = true
+                #if DEBUG
+                options.environment = "development"
+                #else
+                options.environment = "production"
+                #endif
+            }
+        }
+        
         // Register background refresh tasks on app launch
         BackgroundRefreshManager.shared.registerBackgroundTasks()
     }

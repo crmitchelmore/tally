@@ -4,6 +4,7 @@ import ProjectDescription
 // This is the prod Clerk instance (clerk.tally-tracker.app)
 let defaultClerkKey = "pk_live_Y2xlcmsudGFsbHktdHJhY2tlci5hcHAk"
 let defaultApiUrl = "https://tally-tracker.app"
+let defaultSentryDsn = "https://74de5bd0151ef653cad5cae3070d4af0@o4510682832240640.ingest.de.sentry.io/4510687285805136"
 
 // App Group for widget data sharing
 let appGroupIdentifier = "group.app.tally-tracker.shared"
@@ -11,6 +12,7 @@ let appGroupIdentifier = "group.app.tally-tracker.shared"
 // Environment variables can override defaults via Tuist's Environment type
 let clerkKey = Environment.clerkPublishableKey.getString(default: defaultClerkKey)
 let apiUrl = Environment.apiBaseURL.getString(default: defaultApiUrl)
+let sentryDsn = Environment.sentryDsn.getString(default: defaultSentryDsn)
 let gitCommit = Environment.gitCommitSha.getString(default: "")
 
 // CI signing settings (passed via environment, e.g., from GitHub Actions)
@@ -53,7 +55,8 @@ let project = Project(
                     "CLERK_PUBLISHABLE_KEY": "$(CLERK_PUBLISHABLE_KEY)",
                     "API_BASE_URL": "$(API_BASE_URL)",
                     "GIT_COMMIT_SHA": "$(GIT_COMMIT_SHA)",
-                    "ITSAppUsesNonExemptEncryption": false
+                    "ITSAppUsesNonExemptEncryption": false,
+                    "SENTRY_DSN": "$(SENTRY_DSN)"
                 ]
             ),
             sources: ["Sources/**"],
@@ -73,13 +76,15 @@ let project = Project(
                 .project(target: "TallyLiveActivity", path: "../Packages/TallyLiveActivity"),
                 .project(target: "TallyWidgetShared", path: "../Packages/TallyWidgetShared"),
                 .project(target: "TallyWidgetExtension", path: "../Packages/TallyWidgetExtension"),
-                .external(name: "Clerk")
+                .external(name: "Clerk"),
+                .external(name: "Sentry")
             ],
             settings: .settings(
                 base: [
                     "ENABLE_PREVIEWS": "YES",
                     "CLERK_PUBLISHABLE_KEY": .init(stringLiteral: clerkKey),
                     "API_BASE_URL": .init(stringLiteral: apiUrl),
+                    "SENTRY_DSN": .init(stringLiteral: sentryDsn),
                     "GIT_COMMIT_SHA": .init(stringLiteral: gitCommit)
                 ],
                 configurations: [

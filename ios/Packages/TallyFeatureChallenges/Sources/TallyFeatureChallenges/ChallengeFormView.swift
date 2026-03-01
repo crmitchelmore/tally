@@ -172,7 +172,7 @@ public struct ChallengeFormView: View {
                             .font(.tallyLabelMedium)
                             .foregroundColor(Color.tallyInkSecondary)
                         
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 8), spacing: TallySpacing.sm) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: TallyMetrics.minTouchTarget, maximum: 60), spacing: TallySpacing.sm)], spacing: TallySpacing.sm) {
                             ForEach(colors, id: \.self) { color in
                                 colorButton(color)
                             }
@@ -256,7 +256,7 @@ public struct ChallengeFormView: View {
                     }
                 }
         }
-        .frame(minWidth: 44, minHeight: 44)
+        .frame(minWidth: TallyMetrics.minTouchTarget, minHeight: TallyMetrics.minTouchTarget)
         .contentShape(Rectangle())
         .buttonStyle(.plain)
         .accessibilityLabel("Color \(color)")
@@ -270,7 +270,7 @@ public struct ChallengeFormView: View {
         } label: {
             Image(systemName: icon)
                 .font(.title3)
-                .frame(width: 44, height: 44)
+                .frame(width: TallyMetrics.minTouchTarget, height: TallyMetrics.minTouchTarget)
                 .foregroundColor(selectedIcon == icon ? Color.tallyAccent : Color.tallyInkSecondary)
                 .background(
                     RoundedRectangle(cornerRadius: 8)

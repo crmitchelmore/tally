@@ -159,7 +159,7 @@ public struct ChallengeCardView: View {
                 .clipShape(Circle())
                 .shadow(color: Color.tallyInk.opacity(0.12), radius: 2, x: 0, y: 1)
         }
-        .frame(minWidth: 44, minHeight: 44)
+        .frame(minWidth: TallyMetrics.minTouchTarget, minHeight: TallyMetrics.minTouchTarget)
         .contentShape(Rectangle())
         .buttonStyle(.plain)
         .accessibilityLabel("Add one to \(challenge.name)")

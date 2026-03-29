@@ -352,6 +352,7 @@ public struct ChallengeDetailView: View {
                 .buttonStyle(.borderedProminent)
                 .tint(Color.tallyAccent)
                 .controlSize(.large)
+                .frame(maxWidth: .infinity)
                 .disabled(challenge.isFuture)
         }
         .tallyPadding()

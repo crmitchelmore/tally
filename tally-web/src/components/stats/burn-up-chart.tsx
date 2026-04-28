@@ -18,7 +18,7 @@ export interface BurnUpChartProps {
  */
 export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartProps) {
   const target = challenge.target;
-  
+
   // Memoize date values to avoid dependency changes on every render
   const startDate = useMemo(() => new Date(challenge.startDate), [challenge.startDate]);
   const endDate = useMemo(() => new Date(challenge.endDate), [challenge.endDate]);
@@ -132,9 +132,17 @@ export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartP
   // End date X position
   const endX = dateToX(challenge.endDate);
 
+  const projectedDateIso = projection && projection.currentTotal < target
+    ? projection.projectedEndDate.toISOString().split("T")[0]
+    : null;
+  const projectionX = projectedDateIso ? dateToX(projectedDateIso) : null;
+  const projectionLabelY = projectionX !== null && Math.abs(projectionX - endX) <= 16
+    ? height - 21
+    : height - 5;
+
   // Projection line (from current to target)
-  const projectionPath = projection && projection.currentTotal < target
-    ? `M ${dateToX(cumulativeData[cumulativeData.length - 1].date)} ${valueToY(projection.currentTotal)} L ${dateToX(projection.projectedEndDate.toISOString().split('T')[0])} ${targetY}`
+  const projectionPath = projection && projection.currentTotal < target && projectionX !== null
+    ? `M ${dateToX(cumulativeData[cumulativeData.length - 1].date)} ${valueToY(projection.currentTotal)} L ${projectionX} ${targetY}`
     : null;
 
   // Y-axis labels
@@ -213,14 +221,33 @@ export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartP
           />
 
           {/* Projection line (dashed) */}
-          {projectionPath && (
-            <path
-              d={projectionPath}
-              fill="none"
-              stroke="var(--color-muted)"
-              strokeWidth={1.5}
-              strokeDasharray="4,4"
-            />
+          {projectionPath && projectionX !== null && (
+            <>
+              <path
+                d={projectionPath}
+                fill="none"
+                stroke="var(--color-muted)"
+                strokeWidth={1.5}
+                strokeDasharray="4,4"
+              />
+              <line
+                x1={projectionX}
+                y1={padding.top}
+                x2={projectionX}
+                y2={padding.top + chartHeight}
+                stroke="var(--color-muted)"
+                strokeWidth={1}
+                strokeDasharray="4,4"
+              />
+              <circle
+                cx={projectionX}
+                cy={targetY}
+                r={3.5}
+                fill="var(--color-surface)"
+                stroke="var(--color-muted)"
+                strokeWidth={1.5}
+              />
+            </>
           )}
 
           {/* Progress line */}
@@ -259,6 +286,16 @@ export function BurnUpChart({ entries, challenge, className = "" }: BurnUpChartP
           >
             {formatDateShort(challenge.endDate)}
           </text>
+          {projectedDateIso && projectionX !== null && (
+            <text
+              x={projectionX}
+              y={projectionLabelY}
+              textAnchor="middle"
+              className="fill-muted text-[10px]"
+            >
+              {formatDateShort(projectedDateIso)}
+            </text>
+          )}
         </svg>
       </div>
 

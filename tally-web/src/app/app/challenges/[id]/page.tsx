@@ -6,6 +6,7 @@ import Link from "next/link";
 import { TallyMark } from "@/components/ui/tally-mark";
 import { UndoToast } from "@/components/ui/undo-toast";
 import { ActivityHeatmap } from "@/components/challenges/activity-heatmap";
+import { BurnUpChart } from "@/components/stats";
 import { AddEntryDialog, EntryList, DayDrilldown, EditEntryDialog } from "@/components/entries";
 import { refreshEntries, refreshChallenges } from "@/hooks/use-data-refresh";
 import type { Challenge, ChallengeStats, Entry, CreateEntryRequest, UpdateEntryRequest } from "@/app/api/v1/_lib/types";
@@ -448,6 +449,14 @@ export default function ChallengeDetailPage() {
           color={challenge.color}
           onDayClick={handleDayClick}
           unitLabel={unitLabel}
+        />
+      </div>
+
+      <div className="bg-surface border border-border rounded-2xl p-6">
+        <BurnUpChart
+          entries={entries}
+          challenge={challenge}
+          className="bg-transparent border-0 rounded-none p-0"
         />
       </div>
 

@@ -200,7 +200,9 @@ jobs:
                   throw new Error(`Bundle ID not found: ${identifier}`);
                 }
 
-                const profileName = `Tally ${identifier} App Store CI ${Date.now()}`;
+                // Apple limits provisioning profile names to 50 characters.
+                const profileLabel = identifier === process.env.IOS_BUNDLE_ID ? "App" : "Widget";
+                const profileName = `Tally ${profileLabel} App Store CI ${Date.now()}`;
                 const created = await apiPost('/v1/profiles', jwt, {
                   data: {
                     type: 'profiles',

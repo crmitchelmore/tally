@@ -1,10 +1,17 @@
 name: Store Screenshots
 on:
   workflow_dispatch:
+    inputs:
+      platform:
+        description: Platforms to capture
+        type: choice
+        default: all
+        options: [all, ios, android]
 permissions:
   contents: read
 jobs:
   android:
+    if: inputs.platform != 'ios'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -48,6 +55,7 @@ jobs:
             tally-android/store-test-result.txt
           retention-days: 30
   ios:
+    if: inputs.platform != 'android'
     runs-on: macos-26
     timeout-minutes: 40
     steps:

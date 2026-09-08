@@ -41,6 +41,9 @@ class StoreScreenshotTests {
         dashboard.assertTotal(25, 500)
         capture("01-progress")
         dashboard.tapChallenge("Read a little every day")
+        composeRule.waitUntil(10_000) {
+            composeRule.onAllNodes(androidx.compose.ui.test.hasTestTag("challenge_detail")).fetchSemanticsNodes().isNotEmpty()
+        }
         capture("02-goal")
     }
 

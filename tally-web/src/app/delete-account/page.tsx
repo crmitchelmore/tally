@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useUser, SignInButton, useClerk } from "@clerk/nextjs";
 import Link from "next/link";
 export default function DeleteAccount() {
-  const { isLoaded, isSignedIn } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
   const [confirmation, setConfirmation] = useState("");
   const [busy, setBusy] = useState(false);
@@ -25,6 +25,7 @@ export default function DeleteAccount() {
       <p>This permanently deletes your sign-in account, profile, challenges, entries, follows and saved preferences, including items in Trash. This cannot be undone. Export anything you want to keep from Settings first.</p>
       <p>Offline copies on other devices must be cleared on those devices. Store purchase records and essential security or backup records may be retained where needed. Contact support to request removal of historical analytics associated with your account.</p>
       {!isLoaded ? <p>Loading…</p> : !isSignedIn ? <><p>Sign in to confirm which account to delete.</p><SignInButton mode="modal"><button className="rounded-xl bg-accent text-white px-5 py-3">Sign in</button></SignInButton></> : <>
+        <p>Signed in as <strong>{user.primaryEmailAddress?.emailAddress ?? user.username ?? "your Tally account"}</strong>. Check that this is the account you want to delete.</p>
         <label className="block">Type DELETE to confirm<input className="mt-2 block w-full rounded-lg border border-border bg-surface p-3" value={confirmation} onChange={e => setConfirmation(e.target.value)} autoComplete="off" /></label>
         <button disabled={confirmation !== "DELETE" || busy} onClick={remove} className="rounded-xl bg-red-700 text-white px-5 py-3 disabled:opacity-50">{busy ? "Deleting…" : "Permanently delete account"}</button>
       </>}{error && <p role="alert">{error}</p>}

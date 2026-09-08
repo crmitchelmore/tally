@@ -119,11 +119,10 @@ export default function OfflineAppPage() {
               </h1>
             </div>
             <p className="text-base text-muted">
-              Your progress, at your pace. Saved in this browser.{" "}
+              Saved in this browser. Local tallies stay here.{" "}
               <Link href="/sign-in" className="text-accent hover:underline">
-                Sign in
-              </Link>{" "}
-              for an account with sync across devices. Local tallies stay here.
+                Sign in for synced challenges
+              </Link>.
             </p>
           </div>
           {challenges.length > 0 && (

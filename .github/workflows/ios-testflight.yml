@@ -194,8 +194,9 @@ jobs:
 
               const profiles = [];
               for (const identifier of [process.env.IOS_BUNDLE_ID, `${process.env.IOS_BUNDLE_ID}.widget`]) {
-                const bundleIds = await apiGet(`/v1/bundleIds?filter[identifier]=${encodeURIComponent(identifier)}&limit=2`, jwt);
-                const bundleId = bundleIds.data?.[0];
+                const bundleIds = await apiGet(`/v1/bundleIds?filter[identifier]=${encodeURIComponent(identifier)}&limit=200`, jwt);
+                // Apple may return prefix matches (the app plus its extensions).
+                const bundleId = bundleIds.data?.find(item => item.attributes?.identifier === identifier);
                 if (!bundleId) {
                   throw new Error(`Bundle ID not found: ${identifier}`);
                 }

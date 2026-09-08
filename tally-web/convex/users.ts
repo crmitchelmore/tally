@@ -1,3 +1,4 @@
+import { requireOwner, requireUserOwner } from "./access";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Doc } from "./_generated/dataModel";
@@ -26,6 +27,7 @@ function toApiFormat(user: Doc<"users">) {
 export const getByClerkId = query({
   args: { clerkId: v.string() },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.clerkId);
     const user = await ctx.db
       .query("users")
       .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
@@ -47,6 +49,10 @@ export const create = mutation({
     name: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.clerkId);
+    const existing = await ctx.db.query("users").withIndex("by_clerk_id", q => q.eq("clerkId", args.clerkId)).first();
+    if (existing && existing.deletedAt === undefined) return toApiFormat(existing);
+    if (existing) throw new Error("Account is deleted");
     const now = Date.now();
     const userId = await ctx.db.insert("users", {
       clerkId: args.clerkId,
@@ -72,6 +78,7 @@ export const update = mutation({
     name: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireUserOwner(ctx, args.id);
     const { id, ...updates } = args;
     await ctx.db.patch(id, {
       ...updates,
@@ -93,6 +100,7 @@ export const remove = mutation({
     deletedBy: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireUserOwner(ctx, args.id);
     const now = Date.now();
     await ctx.db.patch(args.id, { 
       deletedAt: now,
@@ -108,6 +116,7 @@ export const remove = mutation({
 export const restore = mutation({
   args: { id: v.id("users") },
   handler: async (ctx, args) => {
+    await requireUserOwner(ctx, args.id);
     await ctx.db.patch(args.id, { 
       deletedAt: undefined,
       deletedBy: undefined,
@@ -162,6 +171,7 @@ export const updatePreferences = mutation({
   })),
   },
   handler: async (ctx, args) => {
+    await requireUserOwner(ctx, args.id);
     const { id, ...updates } = args;
     await ctx.db.patch(id, {
       ...updates,
@@ -187,12 +197,19 @@ export const deleteOwnAccountData = mutation({
       for (const challenge of challenges) {
         const entries = await ctx.db.query("entries").withIndex("by_challenge_id", q => q.eq("challengeId", String(challenge._id))).collect();
         const follows = await ctx.db.query("follows").withIndex("by_challenge_id", q => q.eq("challengeId", String(challenge._id))).collect();
-        for (const record of [...entries, ...follows]) await ctx.db.delete(record._id);
+        const reports = await ctx.db.query("moderationReports").withIndex("by_challenge", q => q.eq("challengeId", challenge._id)).collect();
+        for (const record of [...entries, ...follows, ...reports]) await ctx.db.delete(record._id);
         await ctx.db.delete(challenge._id);
       }
       const entries = await ctx.db.query("entries").withIndex("by_user_id", q => q.eq("userId", userId)).collect();
       const follows = await ctx.db.query("follows").withIndex("by_user_id", q => q.eq("userId", userId)).collect();
       for (const record of [...entries, ...follows]) await ctx.db.delete(record._id);
+    }
+    for (const userId of ownerIds) {
+      const reports = await ctx.db.query("moderationReports").withIndex("by_reporter_created", q => q.eq("reporterId", userId)).collect();
+      const blocks = await ctx.db.query("userBlocks").withIndex("by_user_blocked", q => q.eq("userId", userId)).collect();
+      const blockedBy = await ctx.db.query("userBlocks").withIndex("by_blocked", q => q.eq("blockedUserId", userId)).collect();
+      for (const record of [...reports, ...blocks, ...blockedBy]) await ctx.db.delete(record._id);
     }
     for (const user of users) await ctx.db.delete(user._id);
     return { success: true };

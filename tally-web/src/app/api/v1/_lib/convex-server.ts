@@ -3,6 +3,8 @@
  * Uses fetchQuery and fetchMutation for server-side calls
  */
 
+import { auth } from "@clerk/nextjs/server";
+import { headers } from "next/headers";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
@@ -11,20 +13,31 @@ if (!process.env.NEXT_PUBLIC_CONVEX_URL) {
   throw new Error("NEXT_PUBLIC_CONVEX_URL is not set");
 }
 
-const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL);
+// Never share an authenticated client between requests: concurrent users must
+// not be able to overwrite each other's bearer token.
+export async function authenticatedClient() {
+  const session = await auth();
+  const token = session.userId
+    ? await session.getToken()
+    : (await headers()).get("authorization")?.replace(/^Bearer /, "");
+  if (!token) throw new Error("Authentication required");
+  const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+  client.setAuth(token);
+  return client;
+}
 
 // User operations
 export const convexUsers = {
-  getByClerkId: (clerkId: string) =>
-    client.query(api.users.getByClerkId, { clerkId }),
+  getByClerkId: async (clerkId: string) =>
+    (await authenticatedClient()).query(api.users.getByClerkId, { clerkId }),
   
-  create: (args: { clerkId: string; email: string; name: string }) =>
-    client.mutation(api.users.create, args),
+  create: async (args: { clerkId: string; email: string; name: string }) =>
+    (await authenticatedClient()).mutation(api.users.create, args),
   
-  update: (args: { id: Id<"users">; email?: string; name?: string }) =>
-    client.mutation(api.users.update, args),
+  update: async (args: { id: Id<"users">; email?: string; name?: string }) =>
+    (await authenticatedClient()).mutation(api.users.update, args),
   
-  updatePreferences: (args: {
+  updatePreferences: async (args: {
     id: Id<"users">;
     dashboardConfig?: {
       panels: {
@@ -37,27 +50,27 @@ export const convexUsers = {
       visible?: ("activeChallenges" | "highlights" | "personalRecords" | "progressGraph" | "burnUpChart")[];
       hidden?: ("activeChallenges" | "highlights" | "personalRecords" | "progressGraph" | "burnUpChart")[];
     };
-  }) => client.mutation(api.users.updatePreferences, args),
+  }) => (await authenticatedClient()).mutation(api.users.updatePreferences, args),
 };
 
 // Challenge operations
 export const convexChallenges = {
-  listByUser: (userId: string) =>
-    client.query(api.challenges.listByUser, { userId }),
+  listByUser: async (userId: string) =>
+    (await authenticatedClient()).query(api.challenges.listByUser, { userId }),
   
-  listActive: (userId: string) =>
-    client.query(api.challenges.listActive, { userId }),
+  listActive: async (userId: string) =>
+    (await authenticatedClient()).query(api.challenges.listActive, { userId }),
   
-  listPublic: () =>
-    client.query(api.challenges.listPublic, {}),
+  listPublic: async () =>
+    (await authenticatedClient()).query(api.challenges.listPublic, {}),
   
-  get: (id: Id<"challenges">) =>
-    client.query(api.challenges.get, { id }),
+  get: async (id: Id<"challenges">) =>
+    (await authenticatedClient()).query(api.challenges.get, { id }),
   
-  getIncludingDeleted: (id: Id<"challenges">) =>
-    client.query(api.challenges.getIncludingDeleted, { id }),
+  getIncludingDeleted: async (id: Id<"challenges">) =>
+    (await authenticatedClient()).query(api.challenges.getIncludingDeleted, { id }),
   
-  create: (args: {
+  create: async (args: {
     userId: string;
     name: string;
     target: number;
@@ -70,9 +83,9 @@ export const convexChallenges = {
     countType?: "simple" | "sets" | "custom";
     unitLabel?: string;
     defaultIncrement?: number;
-  }) => client.mutation(api.challenges.create, args),
+  }) => (await authenticatedClient()).mutation(api.challenges.create, args),
   
-  update: (args: {
+  update: async (args: {
     id: Id<"challenges">;
     name?: string;
     target?: number;
@@ -83,30 +96,30 @@ export const convexChallenges = {
     countType?: "simple" | "sets" | "custom";
     unitLabel?: string;
     defaultIncrement?: number;
-  }) => client.mutation(api.challenges.update, args),
+  }) => (await authenticatedClient()).mutation(api.challenges.update, args),
   
-  remove: (id: Id<"challenges">, deletedBy?: string) =>
-    client.mutation(api.challenges.remove, { id, deletedBy }),
+  remove: async (id: Id<"challenges">, deletedBy?: string) =>
+    (await authenticatedClient()).mutation(api.challenges.remove, { id, deletedBy }),
   
-  restore: (id: Id<"challenges">, userId: string) =>
-    client.mutation(api.challenges.restore, { id, userId }),
+  restore: async (id: Id<"challenges">, userId: string) =>
+    (await authenticatedClient()).mutation(api.challenges.restore, { id, userId }),
 };
 
 // Entry operations
 export const convexEntries = {
-  listByChallenge: (challengeId: string) =>
-    client.query(api.entries.listByChallenge, { challengeId }),
+  listByChallenge: async (challengeId: string) =>
+    (await authenticatedClient()).query(api.entries.listByChallenge, { challengeId }),
   
-  listByUser: (userId: string) =>
-    client.query(api.entries.listByUser, { userId }),
+  listByUser: async (userId: string) =>
+    (await authenticatedClient()).query(api.entries.listByUser, { userId }),
   
-  get: (id: Id<"entries">) =>
-    client.query(api.entries.get, { id }),
+  get: async (id: Id<"entries">) =>
+    (await authenticatedClient()).query(api.entries.get, { id }),
   
-  getIncludingDeleted: (id: Id<"entries">) =>
-    client.query(api.entries.getIncludingDeleted, { id }),
+  getIncludingDeleted: async (id: Id<"entries">) =>
+    (await authenticatedClient()).query(api.entries.getIncludingDeleted, { id }),
   
-  create: (args: {
+  create: async (args: {
     userId: string;
     challengeId: string;
     date: string;
@@ -114,38 +127,38 @@ export const convexEntries = {
     sets?: number[];
     note?: string;
     feeling?: "great" | "good" | "okay" | "tough";
-  }) => client.mutation(api.entries.create, args),
+  }) => (await authenticatedClient()).mutation(api.entries.create, args),
   
-  update: (args: {
+  update: async (args: {
     id: Id<"entries">;
     date?: string;
     count?: number;
     sets?: number[];
     note?: string;
     feeling?: "great" | "good" | "okay" | "tough";
-  }) => client.mutation(api.entries.update, args),
+  }) => (await authenticatedClient()).mutation(api.entries.update, args),
   
-  remove: (id: Id<"entries">, deletedBy?: string) =>
-    client.mutation(api.entries.remove, { id, deletedBy }),
+  remove: async (id: Id<"entries">, deletedBy?: string) =>
+    (await authenticatedClient()).mutation(api.entries.remove, { id, deletedBy }),
   
-  restore: (id: Id<"entries">, userId: string) =>
-    client.mutation(api.entries.restore, { id, userId }),
+  restore: async (id: Id<"entries">, userId: string) =>
+    (await authenticatedClient()).mutation(api.entries.restore, { id, userId }),
 };
 
 // Follow operations
 export const convexFollows = {
-  listByUser: (userId: string) =>
-    client.query(api.follows.listByUser, { userId }),
+  listByUser: async (userId: string) =>
+    (await authenticatedClient()).query(api.follows.listByUser, { userId }),
   
-  getFollowerCount: (challengeId: string) =>
-    client.query(api.follows.getFollowerCount, { challengeId }),
+  getFollowerCount: async (challengeId: string) =>
+    (await authenticatedClient()).query(api.follows.getFollowerCount, { challengeId }),
   
-  isFollowing: (userId: string, challengeId: string) =>
-    client.query(api.follows.isFollowing, { userId, challengeId }),
+  isFollowing: async (userId: string, challengeId: string) =>
+    (await authenticatedClient()).query(api.follows.isFollowing, { userId, challengeId }),
   
-  follow: (userId: string, challengeId: string) =>
-    client.mutation(api.follows.follow, { userId, challengeId }),
+  follow: async (userId: string, challengeId: string) =>
+    (await authenticatedClient()).mutation(api.follows.follow, { userId, challengeId }),
   
-  unfollow: (userId: string, challengeId: string, deletedBy?: string) =>
-    client.mutation(api.follows.unfollow, { userId, challengeId, deletedBy }),
+  unfollow: async (userId: string, challengeId: string, deletedBy?: string) =>
+    (await authenticatedClient()).mutation(api.follows.unfollow, { userId, challengeId, deletedBy }),
 };

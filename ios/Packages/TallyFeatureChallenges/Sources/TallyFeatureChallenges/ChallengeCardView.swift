@@ -40,7 +40,7 @@ public struct ChallengeCardView: View {
                                 .font(.headline)
                                 .foregroundStyle(Color.tallyInk)
                                 .multilineTextAlignment(.leading)
-                            Text(challenge.isPublic ? "Public challenge" : "Personal challenge")
+                            Text("Personal challenge")
                                 .font(.caption)
                                 .foregroundStyle(Color.tallyInkSecondary)
                         }
@@ -184,9 +184,6 @@ public struct ChallengeCardView: View {
             }
         } else {
             label += ", 0 of \(challenge.target) \(challenge.resolvedUnitLabel)"
-        }
-        if challenge.isPublic {
-            label += ", public challenge"
         }
         return label
     }

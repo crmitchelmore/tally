@@ -5,7 +5,6 @@ import { TallyMark } from "@/components/ui/tally-mark";
 import { UndoToast } from "@/components/ui/undo-toast";
 import { ChallengeList } from "@/components/challenges";
 import { DashboardHighlights, PersonalRecords, WeeklySummary, ProgressGraph, BurnUpChart } from "@/components/stats";
-import { FollowedChallengesSection } from "@/components/community";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import type { DragEvent } from "react";
 import { useUser } from "@clerk/nextjs";
@@ -607,7 +606,7 @@ export default function AppPage() {
       )}
 
       {/* Followed challenges */}
-      <FollowedChallengesSection onRefresh={handleRefresh} />
+
 
 
       {/* Weekly summary modal */}

@@ -35,15 +35,11 @@ struct ChallengeDialogPage {
     }
     
     var targetTextField: XCUIElement {
-        // Try accessibility identifier first
-        let byId = app.textFields["challenge-target-input"]
-        if byId.exists { return byId }
-        // Find the target text field - it's inside a stepper, labeled "Target"
-        let byLabel = app.textFields["Target"]
-        if byLabel.exists { return byLabel }
-        return app.textFields.matching(NSPredicate(format: "value CONTAINS '100'")).firstMatch
+        // Keep the stable query while the sheet animates in. Resolving a fallback
+        // before presentation can wait forever on a value that is locale-formatted.
+        app.textFields["challenge-target-input"].firstMatch
     }
-    
+
     var timeframePicker: XCUIElement {
         app.pickers["Timeframe"].firstMatch
     }

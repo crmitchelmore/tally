@@ -6,7 +6,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
 package = os.environ['ANDROID_PACKAGE_NAME']
-if package != 'com.tally.app':
+if package != 'app.tally.android':
     raise RuntimeError('Configured Play package differs from the built applicationId')
 track = os.environ.get('PLAY_TRACK', 'internal')
 if track not in ('internal', 'alpha'):

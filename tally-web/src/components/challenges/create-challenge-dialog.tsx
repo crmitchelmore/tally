@@ -57,7 +57,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
   const [customEnd, setCustomEnd] = useState("");
   const [color, setColor] = useState(PRESET_COLORS[0]);
   const [icon, setIcon] = useState("tally");
-  const [isPublic, setIsPublic] = useState(false);
+  const isPublic = false;
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -110,7 +110,6 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
       setCustomEnd("");
       setColor(PRESET_COLORS[0]);
       setIcon("tally");
-      setIsPublic(false);
       setCountType("simple");
       setUnitLabel("reps");
       setCustomUnit("");
@@ -479,28 +478,7 @@ export function CreateChallengeDialog({ open, onClose, onSubmit }: CreateChallen
             </div>
           </div>
 
-          {/* Public toggle */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              role="switch"
-              aria-checked={isPublic}
-              onClick={() => setIsPublic(!isPublic)}
-              className={`
-                relative w-11 h-6 rounded-full transition-colors
-                ${isPublic ? "bg-accent" : "bg-border"}
-              `}
-            >
-              <span
-                className={`
-                  absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow
-                  transition-transform
-                  ${isPublic ? "translate-x-5" : ""}
-                `}
-              />
-            </button>
-            <label className="text-sm text-ink">Make this challenge public</label>
-          </div>
+          <p className="text-sm text-muted">Your goals are private.</p>
         </div>
 
         {/* Footer */}

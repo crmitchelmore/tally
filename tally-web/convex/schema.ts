@@ -11,6 +11,24 @@ import { v } from "convex/values";
  */
 
 export default defineSchema({
+  moderationReports: defineTable({
+    reporterId: v.string(),
+    challengeId: v.id("challenges"),
+    reason: v.union(v.literal("abuse"), v.literal("sexual"), v.literal("violence"), v.literal("spam"), v.literal("other")),
+    detail: v.optional(v.string()),
+    status: v.union(v.literal("pending"), v.literal("removed"), v.literal("dismissed")),
+    createdAt: v.number(),
+    reviewedBy: v.optional(v.string()),
+    reviewedAt: v.optional(v.number()),
+    reviewNote: v.optional(v.string()),
+  }).index("by_challenge", ["challengeId"])
+    .index("by_reporter_challenge", ["reporterId", "challengeId"])
+    .index("by_reporter_created", ["reporterId", "createdAt"])
+    .index("by_status_created", ["status", "createdAt"]),
+  userBlocks: defineTable({
+    userId: v.string(), blockedUserId: v.string(), createdAt: v.number(),
+  }).index("by_user_blocked", ["userId", "blockedUserId"])
+    .index("by_blocked", ["blockedUserId"]),
   // Users table
   users: defineTable({
     clerkId: v.string(),
@@ -74,6 +92,7 @@ export default defineSchema({
     color: v.string(),
     icon: v.string(),
     isPublic: v.boolean(),
+    moderationStatus: v.optional(v.union(v.literal("pending"), v.literal("removed"), v.literal("reviewed"))),
     isArchived: v.boolean(),
     // Count configuration (optional for backward compatibility)
     countType: v.optional(v.union(v.literal("simple"), v.literal("sets"), v.literal("custom"))),

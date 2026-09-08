@@ -2,9 +2,8 @@ import SwiftUI
 import TallyDesign
 import TallyFeatureAuth
 
-/// Main app view with tab-based navigation
+/// Personal goals and settings. Community is unavailable in this release.
 struct AppView: View {
-    @State private var selectedTab = 0
     @State private var showSettings = false
     @Environment(\.colorScheme) private var colorScheme
     
@@ -14,36 +13,13 @@ struct AppView: View {
             Color.tallyPaper
                 .ignoresSafeArea()
             
-            TabView(selection: $selectedTab) {
-                NavigationStack {
-                    HomeView()
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                UserProfileButton {
-                                    showSettings = true
-                                }
-                            }
+            NavigationStack {
+                HomeView()
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            UserProfileButton { showSettings = true }
                         }
-                }
-                .tabItem {
-                    Label("Home", systemImage: "house.fill")
-                }
-                .tag(0)
-                
-                NavigationStack {
-                    CommunityView()
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                UserProfileButton {
-                                    showSettings = true
-                                }
-                            }
-                        }
-                }
-                .tabItem {
-                    Label("Community", systemImage: "person.2.fill")
-                }
-                .tag(1)
+                    }
             }
             .tint(.tallyAccent)
         }

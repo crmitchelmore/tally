@@ -28,12 +28,7 @@ const features = [
     description:
       "Works offline, syncs the moment you're connected. Web, iOS, and Android — your data follows you across every device.",
   },
-  {
-    id: "community",
-    title: "Share with others",
-    description:
-      "Make challenges public for accountability. Follow friends, discover new goals, and cheer each other on.",
-  },
+
 ] as const;
 
 type FeatureId = (typeof features)[number]["id"];
@@ -169,32 +164,7 @@ function FeatureVisual({ featureId }: { featureId: FeatureId }) {
     );
   }
 
-  // community
-  return (
-    <div className="fv-community" aria-hidden="true">
-      <div className="fv-public-card">
-        <span className="fv-avatar fv-avatar-pink">E</span>
-        <div className="fv-public-text">
-          <span className="fv-public-name">Draw Every Day</span>
-          <span className="fv-public-sub">@studio.lina · 289/365</span>
-        </div>
-      </div>
-      <div className="fv-public-card">
-        <span className="fv-avatar fv-avatar-blue">M</span>
-        <div className="fv-public-text">
-          <span className="fv-public-name">100 Cold Plunges</span>
-          <span className="fv-public-sub">@marcus_t · 67/100</span>
-        </div>
-      </div>
-      <div className="fv-public-card">
-        <span className="fv-avatar fv-avatar-green">S</span>
-        <div className="fv-public-text">
-          <span className="fv-public-name">Learn Mandarin</span>
-          <span className="fv-public-sub">@polyglot_sam · 142/365</span>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 function AccordionItem({

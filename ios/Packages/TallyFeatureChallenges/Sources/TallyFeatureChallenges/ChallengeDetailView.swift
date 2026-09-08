@@ -279,21 +279,6 @@ public struct ChallengeDetailView: View {
                     .foregroundColor(Color.tallyInkSecondary)
             }
             
-            // Public/Private badge
-            if challenge.isPublic {
-                HStack {
-                    Image(systemName: "globe")
-                        .font(.caption)
-                    Text("Public")
-                        .font(.tallyLabelSmall)
-                }
-                .foregroundColor(Color.tallyInkSecondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.tallyPaperTint)
-                .cornerRadius(4)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
         }
     }
     

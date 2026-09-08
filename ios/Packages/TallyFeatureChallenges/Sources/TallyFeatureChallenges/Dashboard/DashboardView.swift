@@ -39,10 +39,6 @@ public struct DashboardView: View {
                 dashboardPanels
             }
             
-            FollowedChallengesSection(
-                challenges: followedChallenges,
-                onUnfollow: onUnfollow
-            )
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

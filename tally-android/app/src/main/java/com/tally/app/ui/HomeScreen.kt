@@ -117,7 +117,7 @@ fun HomeScreen(authManager: AuthManager? = null, onNavigateToDetail: (String) ->
     // Refresh on mount
     LaunchedEffect(Unit) {
         challengesManager.refreshChallenges()
-        challengesManager.refreshCommunity()
+        // Community is unavailable in this release.
     }
     
     Scaffold(
@@ -255,30 +255,7 @@ fun HomeScreen(authManager: AuthManager? = null, onNavigateToDetail: (String) ->
                             )
                         }
 
-                        // Followed challenges section
-                        if (followedChallenges.isNotEmpty()) {
-                            item {
-                                FollowedChallengesSection(
-                                    followedChallenges = followedChallenges,
-                                    onViewAll = { /* navigate to community tab */ }
-                                )
-                            }
-                        }
 
-                        // Community preview section
-                        if (publicChallenges.isNotEmpty()) {
-                            item {
-                                CommunityPreviewSection(
-                                    challenges = publicChallenges,
-                                    onViewAll = { /* navigate to community tab */ },
-                                    onFollow = { challengeId ->
-                                        scope.launch {
-                                            challengesManager.followChallenge(challengeId)
-                                        }
-                                    }
-                                )
-                            }
-                        }
                     }
                 }
             }

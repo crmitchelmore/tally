@@ -196,7 +196,7 @@ struct HomeView: View {
         .onChange(of: scenePhase, initial: true) { _, newPhase in
             if newPhase == .active {
                 Task {
-                    await loadFollowedChallenges()
+                    followedChallenges = []
                     await challengesManager.refresh()
                 }
             }

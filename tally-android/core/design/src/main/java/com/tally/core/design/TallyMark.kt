@@ -2,6 +2,11 @@ package com.tally.core.design
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.size
@@ -38,7 +43,7 @@ import androidx.compose.ui.unit.dp
  *
  * @param count The number to display (1-10,000+)
  * @param modifier Modifier for sizing/positioning
- * @param animated Whether to animate stroke drawing
+ * @param animated Whether to acknowledge increases with a small settling pulse
  * @param size Size of the component
  */
 @Composable
@@ -51,18 +56,15 @@ fun TallyMark(
     val reduceMotion = LocalReduceMotion.current
     val shouldAnimate = animated && !reduceMotion
 
-    // Animation progress (0 to 1)
-    val progress = remember { Animatable(if (shouldAnimate) 0f else 1f) }
-
+    val scale = remember { Animatable(1f) }
+    var previousCount by remember { mutableIntStateOf(count) }
     LaunchedEffect(count, shouldAnimate) {
-        if (shouldAnimate) {
-            progress.snapTo(0f)
-            progress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = TallyMotion.StrokeDurationMs * 3)
-            )
-        } else {
-            progress.snapTo(1f)
+        val increased = count > previousCount
+        previousCount = count
+        scale.snapTo(1f)
+        if (increased && shouldAnimate) {
+            scale.animateTo(1.035f, tween(100, easing = FastOutSlowInEasing))
+            scale.animateTo(1f, tween(TallyMotion.FeedbackDurationMs, easing = FastOutSlowInEasing))
         }
     }
 
@@ -78,9 +80,13 @@ fun TallyMark(
     Canvas(
         modifier = modifier
             .size(size)
+            .graphicsLayer {
+                scaleX = if (reduceMotion) 1f else scale.value
+                scaleY = if (reduceMotion) 1f else scale.value
+            }
             .semantics { contentDescription = description }
     ) {
-        val drawProgress = progress.value
+        val drawProgress = 1f
         drawTally(count, c1, c2, c3, accent, drawProgress)
     }
 }

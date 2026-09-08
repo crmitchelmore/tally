@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { useTallyFeedback } from "@/hooks/use-tally-feedback";
 
 export interface TallyDisplayProps {
   /** The count to display */
@@ -21,7 +22,7 @@ export interface TallyDisplayProps {
  * - C2 (accent): 5th stroke diagonal slash, X marks for 25
  * - C3 (muted): Box outline for 100
  * - Accent: Horizontal line for 1000
- * 
+ *
  * Pattern:
  * - 1-4: vertical strokes
  * - 5: 4 strokes + diagonal slash (5-gate)
@@ -36,6 +37,7 @@ export const TallyDisplay = memo(function TallyDisplay({
   className = "",
   color,
 }: TallyDisplayProps) {
+  const feedbackRef = useTallyFeedback<HTMLDivElement>(count);
   const sizes = {
     sm: { stroke: 2, height: 16, gap: 3, boxSize: 12 },
     md: { stroke: 3, height: 28, gap: 4, boxSize: 16 },
@@ -56,13 +58,14 @@ export const TallyDisplay = memo(function TallyDisplay({
 
   // For 26-99, show Xs in grid positions as if filling a 100-box
   const showXsInGrid = twentyFives > 0 && twentyFives < 4;
-  
+
   // Has remainder after thousands
   const hasRemainder = hundreds > 0 || twentyFives > 0 || fives > 0 || ones > 0;
 
   return (
-    <div 
-      className={`inline-flex flex-col items-start ${className}`} 
+    <div
+      ref={feedbackRef}
+      className={`tally-display inline-flex flex-col items-start ${className}`}
       style={{ gap: sizes.gap }}
       role="img"
       aria-label={`${count} tallies`}
@@ -71,18 +74,18 @@ export const TallyDisplay = memo(function TallyDisplay({
       {Array.from({ length: thousands }).map((_, i) => (
         <ThousandBlock key={`k-${i}`} sizes={sizes} c1={c1} c3={c3} />
       ))}
-      
+
       {/* Remainder row: hundreds, 25s, 5s, 1s */}
       {hasRemainder && (
-        <div 
-          className="inline-flex items-end flex-wrap" 
+        <div
+          className="inline-flex items-end flex-wrap"
           style={{ gap: sizes.gap * 2 }}
         >
           {/* Hundreds: box with 4 Xs */}
           {Array.from({ length: hundreds }).map((_, i) => (
             <HundredBox key={`h-${i}`} sizes={sizes} c2={c2} c3={c3} />
           ))}
-          
+
           {/* Twenty-fives: X marks in grid layout (like filling a box) */}
           {showXsInGrid ? (
             <XsInGridLayout sizes={sizes} count={twentyFives} c2={c2} />
@@ -92,12 +95,12 @@ export const TallyDisplay = memo(function TallyDisplay({
               <TwentyFiveX key={`x-${i}`} sizes={sizes} color={c2} />
             ))
           )}
-          
+
           {/* Fives: standard 5-gates */}
           {Array.from({ length: fives }).map((_, i) => (
             <FiveGate key={`f-${i}`} sizes={sizes} c1={c1} c2={c2} />
           ))}
-          
+
           {/* Ones: vertical strokes */}
           {ones > 0 && (
             <div className="inline-flex items-end" style={{ gap: sizes.gap }}>
@@ -113,10 +116,10 @@ export const TallyDisplay = memo(function TallyDisplay({
 });
 
 /** Single vertical stroke */
-function Stroke({ 
-  sizes, 
+function Stroke({
+  sizes,
   color,
-}: { 
+}: {
   sizes: { stroke: number; height: number; gap: number; boxSize: number };
   color: string;
 }) {
@@ -133,20 +136,20 @@ function Stroke({
 }
 
 /** 5-gate: 4 strokes + diagonal slash */
-function FiveGate({ 
-  sizes, 
+function FiveGate({
+  sizes,
   c1,
   c2,
-}: { 
+}: {
   sizes: { stroke: number; height: number; gap: number; boxSize: number };
   c1: string;
   c2: string;
 }) {
   const gateWidth = sizes.stroke * 4 + sizes.gap * 3;
-  
+
   return (
-    <div 
-      className="relative inline-flex items-end" 
+    <div
+      className="relative inline-flex items-end"
       style={{ gap: sizes.gap, width: gateWidth }}
     >
       {Array.from({ length: 4 }).map((_, i) => (
@@ -169,18 +172,18 @@ function FiveGate({
 }
 
 /** 25-unit: X mark */
-function TwentyFiveX({ 
-  sizes, 
+function TwentyFiveX({
+  sizes,
   color,
-}: { 
+}: {
   sizes: { stroke: number; height: number; gap: number; boxSize: number };
   color: string;
 }) {
   const xSize = sizes.boxSize * 1.1;
-  
+
   return (
-    <div 
-      className="relative" 
+    <div
+      className="relative"
       style={{ width: xSize, height: xSize }}
     >
       <span
@@ -223,7 +226,7 @@ function XsInGridLayout({
   const boxSize = sizes.boxSize * 2.4;
   const xSize = sizes.boxSize * 0.9;
   const xStroke = Math.max(1, sizes.stroke - 1);
-  
+
   // Fill order: bottom-left, top-left, bottom-right (then top-right for 4th)
   const fillOrder = [
     { x: "25%", y: "75%" },  // bottom-left (1st)
@@ -231,10 +234,10 @@ function XsInGridLayout({
     { x: "75%", y: "75%" },  // bottom-right (3rd)
     { x: "75%", y: "25%" },  // top-right (4th - only when complete)
   ];
-  
+
   return (
-    <div 
-      className="relative" 
+    <div
+      className="relative"
       style={{ width: boxSize, height: boxSize }}
     >
       {fillOrder.slice(0, count).map((pos, i) => (
@@ -278,11 +281,11 @@ function XsInGridLayout({
 }
 
 /** 100-unit: Box outline with 4 X marks inside */
-function HundredBox({ 
-  sizes, 
+function HundredBox({
+  sizes,
   c2,
   c3,
-}: { 
+}: {
   sizes: { stroke: number; height: number; gap: number; boxSize: number };
   c2: string;
   c3: string;
@@ -290,7 +293,7 @@ function HundredBox({
   const boxSize = sizes.boxSize * 2.4;
   const xSize = sizes.boxSize * 0.9;
   const xStroke = Math.max(1, sizes.stroke - 1);
-  
+
   // All 4 positions filled
   const positions = [
     { x: "25%", y: "25%" }, // top-left
@@ -298,12 +301,12 @@ function HundredBox({
     { x: "25%", y: "75%" }, // bottom-left
     { x: "75%", y: "75%" }, // bottom-right
   ];
-  
+
   return (
-    <div 
+    <div
       className="relative border-2 rounded-sm"
-      style={{ 
-        width: boxSize, 
+      style={{
+        width: boxSize,
         height: boxSize,
         borderColor: c3, // Box outline in muted color (C3)
       }}
@@ -350,11 +353,11 @@ function HundredBox({
 }
 
 /** 1000-unit: Row of 10 boxes with horizontal line through */
-function ThousandBlock({ 
-  sizes, 
+function ThousandBlock({
+  sizes,
   c1,
   c3,
-}: { 
+}: {
   sizes: { stroke: number; height: number; gap: number; boxSize: number };
   c1: string;
   c3: string;
@@ -362,7 +365,7 @@ function ThousandBlock({
   const boxSize = sizes.boxSize * 0.6;
   const boxGap = sizes.gap / 2;
   const rowWidth = boxSize * 10 + boxGap * 9;
-  
+
   return (
     <div className="relative">
       {/* Row of 10 mini boxes in C3 */}

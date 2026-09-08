@@ -9,8 +9,10 @@ import com.tally.app.pages.AuthPage
 import com.tally.app.pages.ChallengeDialogPage
 import com.tally.app.pages.DashboardPage
 import com.tally.app.utils.TestData
+import com.tally.app.utils.FreshLocalDataRule
 import org.junit.Rule
 import org.junit.Test
+import java.text.NumberFormat
 import org.junit.runner.RunWith
 
 /**
@@ -20,7 +22,10 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class ChallengeTests {
     
-    @get:Rule
+    @get:Rule(order = 0)
+    val freshData = FreshLocalDataRule()
+
+    @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<MainActivity>()
     
     private val authPage by lazy { AuthPage(composeRule) }
@@ -160,7 +165,7 @@ class ChallengeTests {
         composeRule.onNodeWithText("Dashboard View", substring = true).assertExists()
         
         // Should display target
-        composeRule.onNodeWithText("5000", substring = true).assertExists()
+        composeRule.onNodeWithText(NumberFormat.getNumberInstance().format(5000), substring = true).assertExists()
     }
     
     @Test
@@ -176,7 +181,7 @@ class ChallengeTests {
         composeRule.onNodeWithText("Progress Card", substring = true).assertExists()
         
         // Should show target somewhere
-        composeRule.onNodeWithText("1000", substring = true).assertExists()
+        composeRule.onNodeWithText(NumberFormat.getNumberInstance().format(1000), substring = true).assertExists()
     }
     
     @Test

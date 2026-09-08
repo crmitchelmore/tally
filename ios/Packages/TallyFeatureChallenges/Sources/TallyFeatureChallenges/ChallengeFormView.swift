@@ -277,7 +277,7 @@ public struct ChallengeFormView: View {
         }
         .frame(minWidth: TallyMetrics.minTouchTarget, minHeight: TallyMetrics.minTouchTarget)
         .contentShape(Rectangle())
-        .buttonStyle(.plain)
+        .buttonStyle(TallyPressStyle())
         .accessibilityLabel("Color \(color)")
     }
     
@@ -296,7 +296,7 @@ public struct ChallengeFormView: View {
                         .fill(selectedIcon == icon ? Color.tallyAccentSubtle : Color.tallyPaperTint)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TallyPressStyle())
         .accessibilityLabel(icon)
     }
     

@@ -3,6 +3,7 @@
 import { TallyDisplay } from "@/components/ui/tally-display";
 import { ActivityHeatmap } from "@/components/challenges/activity-heatmap";
 import Link from "next/link";
+import { useTallyFeedback } from "@/hooks/use-tally-feedback";
 import { getIconEmoji } from "@/lib/challenge-icons";
 import type { CSSProperties } from "react";
 import type { Challenge, ChallengeStats, Entry } from "@/app/api/v1/_lib/types";
@@ -20,6 +21,7 @@ export interface ChallengeCardProps {
 export function ChallengeCard({
   challenge, stats, entries = [], className = "", onQuickAdd, href,
 }: ChallengeCardProps) {
+  const countRef = useTallyFeedback<HTMLElement>(stats.totalCount);
   const progress = challenge.target > 0
     ? Math.max(0, Math.min(100, (stats.totalCount / challenge.target) * 100))
     : 0;
@@ -32,7 +34,7 @@ export function ChallengeCard({
         {challenge.isPublic && <span className="challenge-visibility">Public</span>}
       </div>
       <h3><span className="challenge-icon" aria-hidden="true">{getIconEmoji(challenge.icon)}</span>{challenge.name}</h3>
-      <p className="challenge-count"><strong>{stats.totalCount.toLocaleString()}</strong><span> / {challenge.target.toLocaleString()}</span></p>
+      <p className="challenge-count"><strong ref={countRef}>{stats.totalCount.toLocaleString()}</strong><span> / {challenge.target.toLocaleString()}</span></p>
       <div className="challenge-progress" role="progressbar" aria-label={`${challenge.name} progress`} aria-valuemin={0} aria-valuemax={challenge.target} aria-valuenow={Math.min(challenge.target, Math.max(0, stats.totalCount))} aria-valuetext={`${stats.totalCount} of ${challenge.target} ${challenge.unitLabel || "marks"}`}>
         <span style={{ width: `${progress}%` }} />
       </div>

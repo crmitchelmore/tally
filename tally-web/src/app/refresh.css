@@ -1,0 +1,119 @@
+/* Ink + Momentum refresh. Shared surfaces keep the canonical colour tokens. */
+.tally-home { --page-width: 1200px; }
+.landing-header, .landing-footer {
+  max-width: var(--page-width); margin: 0 auto; padding: 28px 32px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+}
+.tally-wordmark { display: inline-flex; align-items: center; gap: 10px; font-size: 28px; font-weight: 650; letter-spacing: -1.5px; }
+.landing-header nav { display: flex; align-items: center; gap: 28px; font-size: 13px; font-weight: 500; }
+.landing-nav-link:hover, .hero-secondary:hover, .landing-footer a:hover { color: var(--color-accent); }
+.skip-link { position: fixed; top: 8px; left: 8px; z-index: 100; padding: 12px 20px; background: var(--color-surface); transform: translateY(-160%); }
+.skip-link:focus { transform: translateY(0); }
+main.refresh-landing { display: block; max-width: var(--page-width); margin: auto; padding: 0 32px; }
+.refresh-hero { display: grid; grid-template-columns: 1.15fr 1fr; align-items: center; gap: 72px; padding: 80px 0 88px; }
+.hero-copy .eyebrow { font-size: 10px; letter-spacing: .16em; color: var(--color-accent); font-weight: 650; }
+.hero-copy h1 { margin: 24px 0; font-size: clamp(52px, 6vw, 80px); line-height: 1.04; letter-spacing: -.07em; font-weight: 550; }
+.hero-copy h1 span { color: var(--color-accent); }
+.hero-description { color: var(--color-muted); font-size: 17px; line-height: 1.75; }
+.hero-copy .actions { margin-top: 32px; gap: 22px; align-items: center; }
+.tally-home .cta, .challenge-empty .cta { border-radius: 9px; min-height: 48px; justify-content: center; }
+.hero-secondary { font-size: 13px; text-decoration: underline; text-underline-offset: 4px; }
+.hero-footnote { font-size: 11px; color: var(--color-muted); margin-top: 16px; }
+.hero-workspace { background: var(--color-border); background: color-mix(in srgb, var(--color-border) 44%, var(--color-paper)); padding: 28px; border-radius: 16px; }
+.workspace-caption { display: flex; justify-content: space-between; font-size: 9px; font-weight: 600; letter-spacing: .14em; color: var(--color-muted); margin-bottom: 24px; }
+.hero-workspace .hero-demo { max-width: none; }
+.hero-workspace .demo-card { padding: 26px; box-shadow: 0 8px 20px rgb(27 26 23 / 4%); border-radius: 10px; }
+.hero-workspace .demo-card-header { flex-wrap: wrap; gap: 12px; margin-bottom: 8px; align-items: center; }
+.hero-workspace .demo-target { white-space: nowrap; }
+.hero-workspace .demo-target strong { color: var(--color-ink); font-size: 32px; font-weight: 550; letter-spacing: -.06em; }
+.demo-context { color: var(--color-muted); font-size: 11px; line-height: 1.6; margin-bottom: 24px; }
+.hero-workspace .demo-tally-area { min-height: 100px; border: 0; border-radius: 5px; }
+.hero-workspace .demo-placeholder { font-style: normal; font-size: 12px; }
+.hero-workspace .demo-add-btn { border-radius: 7px; min-height: 44px; }
+.workspace-note { margin-top: 20px; text-align: center; font-size: 11px; color: var(--color-muted); }
+.landing-principles { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); padding: 24px 0; gap: 24px; }
+.landing-principles p { display: flex; align-items: center; gap: 18px; font-size: 12px; }
+.landing-principles span { font-size: 10px; color: var(--color-accent); font-variant-numeric: tabular-nums; }
+.refresh-landing > section:not(.refresh-hero) { width: 100%; max-width: none; }
+.refresh-landing .feature-showcase, .refresh-landing .how-it-works, .refresh-landing .app-showcase, .refresh-landing .live-sync-demo { margin: 0; padding: 80px 0; width: 100%; max-width: none; }
+.landing-section-anchor { scroll-margin-top: 24px; }
+.refresh-landing .showcase-heading, .refresh-landing .hiw-heading, .refresh-landing .app-showcase-heading { letter-spacing: -.045em; font-weight: 550; }
+.refresh-landing .hiw-step-card { box-shadow: none; }
+.landing-closing { padding: 80px 0; margin-top: 48px; border-top: 1px solid var(--color-border); text-align: center; }
+.landing-closing > div { margin: 0 auto 24px; }
+.landing-closing .eyebrow { margin: 24px 0 16px; font-size: 10px; }
+.landing-closing h2 { font-size: clamp(36px, 5vw, 56px); line-height: 1.15; font-weight: 500; letter-spacing: -.06em; }
+.landing-closing > p:not(.eyebrow) { color: var(--color-muted); font-size: 14px; line-height: 1.8; margin: 24px 0; }
+.landing-footer { border-top: 1px solid var(--color-border); font-size: 11px; color: var(--color-muted); }
+.landing-footer .tally-wordmark { color: var(--color-ink); }
+.landing-footer > div { display: flex; gap: 24px; }
+.dashboard-intro { padding: 24px 0 32px; border-bottom: 1px solid var(--color-border); }
+.dashboard-intro > .eyebrow { font-size: 10px; margin-bottom: 14px; }
+.dashboard-title { font-size: clamp(30px, 4vw, 44px); line-height: 1.2; font-weight: 550; letter-spacing: -.055em; }
+.dashboard-intro p.text-muted { font-size: 14px; line-height: 1.7; max-width: 610px; margin-top: 10px; }
+.local-mode-badge { border: 1px solid var(--color-border); border-radius: 5px; font-size: 11px; color: var(--color-muted); padding: 5px 9px; }
+.challenge-empty { display: grid; grid-template-columns: 1.15fr 1fr; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 16px; overflow: hidden; }
+.empty-introduction { padding: clamp(28px, 4vw, 56px); }
+.empty-introduction .eyebrow, .empty-examples > .eyebrow { font-size: 9px; letter-spacing: .15em; }
+.empty-introduction h2 { font-size: clamp(30px, 3.5vw, 42px); letter-spacing: -.05em; line-height: 1.2; margin: 20px 0 16px; }
+.empty-introduction > p { max-width: 340px; color: var(--color-muted); font-size: 14px; line-height: 1.8; }
+.empty-introduction .cta { margin-top: 28px; }
+.empty-examples { padding: clamp(28px, 4vw, 48px); border-left: 1px solid var(--color-border); background: var(--color-paper); }
+.empty-example { display: flex; gap: 18px; padding: 22px 0; border-bottom: 1px solid var(--color-border); }
+.example-number { padding-top: 2px; color: var(--color-accent); font-size: 10px; }
+.empty-example h3 { font-size: 14px; font-weight: 550; }
+.empty-example p { color: var(--color-muted); font-size: 12px; margin-top: 5px; line-height: 1.6; }
+.empty-signature { margin-top: 24px; }
+.challenge-card { display: flex; flex-direction: column; min-width: 0; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 14px; overflow: hidden; transition: border-color 150ms, box-shadow 150ms; }
+.challenge-card:focus-within, .challenge-card:hover { border-color: var(--color-muted); box-shadow: 0 4px 16px rgb(27 26 23 / 4%); }
+.challenge-card-body { display: block; flex: 1; padding: 24px; min-width: 0; }
+.challenge-card-body:focus-visible { outline-offset: -3px; }
+.challenge-card-heading { display: flex; justify-content: space-between; align-items: center; min-height: 20px; gap: 8px; }
+.challenge-unit { font-size: 10px; text-transform: uppercase; letter-spacing: .12em; display: inline-flex; align-items: center; gap: 8px; color: var(--color-muted); overflow-wrap: anywhere; }
+.challenge-colour { width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: var(--challenge-colour); }
+.challenge-visibility { font-size: 10px; color: var(--color-muted); }
+.challenge-card h3 { font-size: 18px; font-weight: 550; letter-spacing: -.03em; margin: 14px 0 22px; overflow-wrap: anywhere; }
+.challenge-count { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 5px; font-variant-numeric: tabular-nums; }
+.challenge-count strong { font-size: clamp(32px, 3vw, 42px); font-weight: 500; line-height: 1.15; letter-spacing: -.06em; overflow-wrap: anywhere; }
+.challenge-count > span { color: var(--color-muted); font-size: 14px; }
+.challenge-progress { height: 4px; border-radius: 3px; overflow: hidden; background: var(--color-border); margin: 18px 0 12px; }
+.challenge-progress > span { display: block; height: 100%; background: var(--challenge-colour); transition: width 200ms; }
+.challenge-pace-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 5px; color: var(--color-muted); font-size: 11px; }
+.pace-ahead { color: var(--color-success); }
+.pace-behind { color: var(--color-muted); }
+.challenge-marks { min-height: 62px; display: flex; align-items: center; padding: 16px 0 0; overflow: auto; }
+.challenge-marks > span { color: var(--color-muted); font-size: 12px; }
+.challenge-activity { max-width: 100%; overflow: hidden; margin-top: 14px; }
+.challenge-log-button { width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; border-top: 1px solid var(--color-border); font-size: 12px; font-weight: 600; text-align: left; color: var(--color-accent); transition: background-color 150ms; }
+.challenge-log-button:hover { background: var(--color-paper); }
+.challenge-log-button:focus-visible { outline-offset: -3px; }
+.challenge-log-button > span:last-child { font-size: 20px; font-weight: 400; }
+.dashboard-highlights > div { padding: 22px; border-radius: 12px; }
+.dashboard-highlights p { font-size: 11px; }
+.dashboard-highlights span.text-2xl { font-size: 28px; letter-spacing: -.04em; font-weight: 500; }
+@media (max-width: 900px) {
+  .refresh-hero { gap: 32px; padding: 48px 0 56px; }
+  .hero-workspace { padding: 20px; }
+  .hero-workspace .demo-card { padding: 20px; }
+  .landing-principles p { gap: 10px; font-size: 11px; }
+}
+@media (max-width: 640px) {
+  .landing-header, .landing-footer { padding: 20px; gap: 16px; }
+  .landing-header nav { gap: 12px; }
+  .landing-nav-link { display: none; }
+  main.refresh-landing { padding: 0 20px; }
+  .refresh-hero { grid-template-columns: 1fr; gap: 36px; padding-top: 40px; }
+  .hero-copy h1 { font-size: clamp(48px, 12vw, 72px); }
+  .hero-description { font-size: 15px; }
+  .hero-workspace { padding: 20px; }
+  .landing-principles { grid-template-columns: 1fr; gap: 18px; }
+  .refresh-landing .feature-showcase, .refresh-landing .how-it-works, .refresh-landing .app-showcase, .refresh-landing .live-sync-demo { padding: 48px 0; }
+  .landing-footer { flex-wrap: wrap; }
+  .landing-footer > div { width: 100%; flex-wrap: wrap; }
+  .challenge-empty { grid-template-columns: 1fr; }
+  .empty-examples { border-left: 0; border-top: 1px solid var(--color-border); }
+  .dashboard-highlights > div { padding: 16px; }
+  .dashboard-highlights span.text-2xl { font-size: 24px; }
+}
+
+.challenge-icon { margin-right: 8px; font-size: 16px; }

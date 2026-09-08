@@ -14,6 +14,9 @@ export interface AddEntryDialogProps {
   entries?: Entry[];
 }
 
+// Keep the default stable: the initial-value effect depends on entries.
+const EMPTY_ENTRIES: Entry[] = [];
+
 const FEELINGS = [
   { value: "great", label: "Great", emoji: "🔥" },
   { value: "good", label: "Good", emoji: "😊" },
@@ -32,7 +35,7 @@ export function AddEntryDialog({
   open,
   onClose,
   onSubmit,
-  entries = [],
+  entries = EMPTY_ENTRIES,
 }: AddEntryDialogProps) {
   const countType = challenge.countType ?? "simple";
   const unitLabel = challenge.unitLabel ?? "marks";

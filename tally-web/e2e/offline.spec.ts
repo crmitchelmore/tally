@@ -35,3 +35,26 @@ test.describe("Offline User Experience @offline @smoke", () => {
     });
   });
 });
+
+
+test("logging from a refreshed card retains the entered count and persists it @offline", async ({ page }) => {
+  await page.goto("/offline");
+  await page.getByRole("button", { name: "Create Challenge", exact: true }).click();
+  const creation = page.getByRole("dialog", { name: "New Challenge" });
+  await creation.getByLabel("Name", { exact: true }).fill("Reading refresh test");
+  await creation.getByLabel("Target", { exact: true }).fill("500");
+  await creation.getByRole("button", { name: "Pages", exact: true }).click();
+  await creation.getByRole("button", { name: "Create Challenge", exact: true }).click();
+  await page.getByRole("button", { name: "Log progress for Reading refresh test" }).click();
+  const entry = page.getByRole("dialog");
+  await entry.getByLabel("How many pages?").fill("25");
+  await expect(entry.getByLabel("How many pages?")).toHaveValue("25");
+  await entry.getByRole("button", { name: "Add 25 pages", exact: true }).click();
+  await expect(entry).not.toBeVisible();
+  const progress = page.getByRole("progressbar", { name: "Reading refresh test progress" });
+  await expect(progress).toHaveAttribute("aria-valuenow", "25");
+  const today = new Date().toISOString().split("T")[0];
+  await expect(page.getByRole("button", { name: `${today}: 25 pages`, exact: true })).toBeVisible();
+  await page.reload();
+  await expect(progress).toHaveAttribute("aria-valuenow", "25");
+});

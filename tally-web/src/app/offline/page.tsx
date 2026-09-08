@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { TallyMark } from "@/components/ui/tally-mark";
+import { ChallengeEmptyState } from "@/components/challenges/challenge-empty-state";
 import { ChallengeCard } from "@/components/challenges/challenge-card";
 import { CreateChallengeDialog } from "@/components/challenges/create-challenge-dialog";
 import { DashboardHighlights } from "@/components/stats/dashboard-highlights";
@@ -109,23 +109,21 @@ export default function OfflineAppPage() {
   return (
     <div className="space-y-8">
       {/* Welcome section */}
-      <section className="py-6">
+      <section className="dashboard-intro">
+        <p className="eyebrow">A little more, every time</p>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-semibold tracking-tight text-ink">
+              <h1 className="dashboard-title">
                 Your Tallies
               </h1>
-              <span className="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-800 font-medium">
-                Offline
-              </span>
             </div>
             <p className="text-base text-muted">
-              Data stored locally.{" "}
+              Your progress, at your pace. Saved in this browser.{" "}
               <Link href="/sign-in" className="text-accent hover:underline">
                 Sign in
               </Link>{" "}
-              to sync across devices.
+              for an account with sync across devices. Local tallies stay here.
             </p>
           </div>
           {challenges.length > 0 && (
@@ -162,24 +160,7 @@ export default function OfflineAppPage() {
           </div>
         </div>
       ) : challenges.length === 0 ? (
-        <div className="text-center py-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-border/30 text-muted mb-3">
-            <TallyMark count={0} size="md" />
-          </div>
-          <h2 className="text-lg font-semibold text-ink">No challenges yet</h2>
-          <p className="text-muted text-sm mt-1 max-w-xs mx-auto">
-            Create your first challenge to start tracking progress.
-          </p>
-          <button
-            onClick={() => setCreateDialogOpen(true)}
-            className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-accent text-white rounded-full font-semibold hover:bg-accent/90 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Create Challenge
-          </button>
-        </div>
+        <ChallengeEmptyState onCreate={() => setCreateDialogOpen(true)} />
       ) : (
         <div className="space-y-6">
           {/* Header */}
@@ -208,6 +189,7 @@ export default function OfflineAppPage() {
                 stats={stats}
                 onQuickAdd={handleQuickAdd}
                 href={null}
+                entries={getOfflineEntriesForChallenge(challenge.id)}
               />
             ))}
           </div>

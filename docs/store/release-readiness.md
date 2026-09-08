@@ -2,7 +2,7 @@
 
 Last verified: 8 September 2026. Both public store listings are still drafts.
 
-Production deployment 34283041166 succeeded. Privacy, support and deletion pages each returned HTTP 200; the deletion page was also verified in the Codex browser, including successful sign-in with the dedicated reviewer account.
+Production deployment 34286068028 succeeded. Privacy, support and deletion pages each returned HTTP 200; the deletion page was also verified in the Codex browser, including successful sign-in with the dedicated reviewer account.
 
 ## Store records
 
@@ -49,7 +49,7 @@ Account deletion requires a verified Clerk session and uses its identity for Con
 - Android permanent package-name choice after collision.
 - Community report/block/filtering support, or an explicitly agreed first-release scope without public sharing/discovery.
 - Apple privacy labels are published. Review metadata, screenshots, current 1.9.0 build selection and review submission remain.
-- Google app-content declarations, listing assets, accepted bundle and tester configuration.
+- Google content rating, accepted bundle and tester configuration. IARC terms were accepted with explicit owner approval; the questionnaire is saved in progress pending the community-scope decision.
 - Google personal-account production access requires at least 12 opted-in closed testers continuously for 14 days, followed by an application for production access. No testers were enrolled when inspected.
 - Verify Play service-account credentials against the accepted package before relying on automated draft upload.
 
@@ -58,7 +58,7 @@ Account deletion requires a verified Clerk session and uses its identity for Con
 - Local iOS simulator build succeeded with privacy controls. The first iOS consent UI run found the decline action was unreliable; actions were moved to a fixed bottom area. The decline and relaunch test then passed in run 34280532559.
 - Android privacy instrumentation tests passed on the first consent implementation.
 - Android signed release and release unit tests passed in run 34278297388; Play then rejected its package name.
-- Web tests: 80 passed, TypeScript passed; latest web CI and browser E2E passed.
+- Web tests: 82 passed, including six authenticated account-deletion identity tests; TypeScript passed. CI 34285918781 passed on all platforms; web and Android E2E jobs in 34285918790 passed.
 - Production health returned healthy with Clerk and Convex connected after backend deployment.
 - Unauthenticated production account-deletion invocation was rejected; full signed-in deletion flow still needs an isolated test account.
 
@@ -70,8 +70,16 @@ Apple has no configured in-app purchase products. The app now shows an honest un
 
 ## Store setup saved during this release
 
-Apple privacy labels are published for nine data types: name, email, user ID, device ID, user content, fitness, product interactions, crash data and performance data. No advertising tracking is declared. Pricing is free in all 175 regions, with worldwide availability on release. Google privacy, no-ads, non-government, no-financial-services, no-advertising-ID and manual activity/fitness declarations are saved. The completed data-safety declaration discloses optional account, fitness, content, interaction, identifier and diagnostic collection. Target audience is 13–15, 16–17 and 18+, consistent with the app's 13+ policy. Productivity category, support email and website are saved. English (UK) listing copy, icon and feature graphic are saved as a draft; final screenshots and content rating remain.
+Apple privacy labels are published for nine data types: name, email, user ID, device ID, user content, fitness, product interactions, crash data and performance data. No advertising tracking is declared. Pricing is free in all 175 regions, with worldwide availability on release. Google privacy, no-ads, non-government, no-financial-services, no-advertising-ID and manual activity/fitness declarations are saved. The completed data-safety declaration discloses optional account, fitness, content, interaction, identifier and diagnostic collection. Target audience is 13–15, 16–17 and 18+, consistent with the app's 13+ policy. Productivity category, support email and website are saved. English (UK) listing copy, icon, feature graphic and two verified 1080 x 1920 Android screenshots are saved and marked Ready to send for review. Only the new feature graphic is labelled as created using AI. Content rating remains unfinished.
 
 A dedicated store review identity was provisioned with a generated password using the existing production Clerk administration credential. The password was never written to logs. Its encrypted artifact from run 34282135746 was decrypted into `~/.config/tally/release/store-review-account.json` (mode 600); encrypted GitHub secrets `APP_REVIEW_EMAIL` and `APP_REVIEW_PASSWORD` preserve the same configuration. Production sign-in succeeded with this account. Google Play confirms the saved declaration contains username, password and instructions after reload. App Store Connect's review contact still requires the owner's phone; verify the whole section after completing that field. The local RSA recovery key is `store-review-private.pem`; only its public key is saved in GitHub. Do not reset the review password during an active store review.
 
 Browser DOM snapshots can omit sensitive field values even when those fields are populated. Never interpret an empty-string match as proof a credential was saved. Load private credentials through an explicit local copy control, verify non-empty lengths, clear the clipboard, and validate the login against the actual service.
+
+## iOS 1.9.0 upload evidence
+
+Run 34285525613 uploaded build 26090890; Apple validated and processed it (build ID `caebc4b2-90cb-4bbb-8b16-f2cb8b28f082`). App Store Connect shows the existing internal Beta Testers group attached with one tester, and build status Ready to Submit. What to Test notes are saved. The App Store version picker did not offer this build when checked; build selection and review-contact saving remain unresolved.
+
+The old release workflow incorrectly printed distribution complete after failed external-review and internal-group API requests. `scripts/distribute-testflight.mjs` now verifies existing group membership, avoids external beta review for internal groups, and fails on rejected requests rather than interpreting arbitrary 409 responses as success. Seven focused tests pass. A future workflow run must verify this corrected automation against Apple; local tests alone do not prove tester delivery.
+
+Production account deletion now uses the same cookie-first identity as authentication when cookie and bearer credentials coexist. The confirmation page visibly identifies the signed-in account email. Actual destructive deletion remains untested with an isolated production account.

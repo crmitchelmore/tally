@@ -414,6 +414,10 @@ jobs:
       contents: write
 
     steps:
+      - uses: actions/checkout@v4
+      - name: Validate TestFlight distribution handling
+        run: node --test scripts/distribute-testflight.test.mjs
+
       - name: Wait for App Store Connect processing
         uses: actions/github-script@v7
         id: poll
@@ -571,67 +575,10 @@ jobs:
               .map(id => id.trim())
               .filter(Boolean);
             
-            if (betaGroupIds.length === 0) {
-              core.warning('No beta group IDs configured. Build uploaded but not distributed.');
-              return;
-            }
-            
-            // 1. Submit for beta review (required for external testers)
-            core.info('📋 Submitting for beta app review...');
-            try {
-              const reviewResponse = await fetch('https://api.appstoreconnect.apple.com/v1/betaAppReviewSubmissions', {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${jwt}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  data: {
-                    type: 'betaAppReviewSubmissions',
-                    relationships: {
-                      build: {
-                        data: { type: 'builds', id: buildId }
-                      }
-                    }
-                  }
-                })
-              });
-              
-              if (!reviewResponse.ok && reviewResponse.status !== 409) {
-                // 409 = already submitted, which is fine
-                const text = await reviewResponse.text();
-                core.warning(`Beta review submission: ${reviewResponse.status} - ${text}`);
-              } else {
-                core.info('✅ Beta app review submitted');
-              }
-            } catch (e) {
-              core.warning(`Beta review error: ${e.message}`);
-            }
-            
-            // 2. Add build to beta groups
-            for (const groupId of betaGroupIds) {
-              core.info(`📱 Adding build to beta group ${groupId}...`);
-              
-              const addResponse = await fetch(`https://api.appstoreconnect.apple.com/v1/builds/${buildId}/relationships/betaGroups`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${jwt}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  data: [{ type: 'betaGroups', id: groupId }]
-                })
-              });
-              
-              if (!addResponse.ok) {
-                const text = await addResponse.text();
-                core.warning(`Failed to add to group ${groupId}: ${addResponse.status} - ${text}`);
-              } else {
-                core.info(`✅ Added to beta group ${groupId}`);
-              }
-            }
-            
-            core.info('🎉 TestFlight distribution complete!');
+            const { configureTestFlight } = await import(`${process.env.GITHUB_WORKSPACE}/scripts/distribute-testflight.mjs`);
+            const result = await configureTestFlight({ token: jwt, buildId, groupIds: betaGroupIds });
+            core.info(`Verified access for ${result.groups} TestFlight group(s). Beta review: ${result.betaReview}.`);
+            await core.summary.addRaw(`Build ${buildId} processed. Group access verified; beta review ${result.betaReview}. This is not public App Store publication.`).write();
 
       - name: Create GitHub Release
         if: success()

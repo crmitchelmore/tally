@@ -213,7 +213,7 @@ export function logWideEvent(
  */
 // PostHog instance (typed loosely for dynamic import compatibility)
 let posthogNode: {
-  capture: (opts: { distinctId: string; event: string; properties?: Record<string, unknown> }) => void;
+  captureImmediate: (opts: { distinctId: string; event: string; properties?: Record<string, unknown> }) => Promise<void>;
 } | null = null;
 
 async function getPostHogNode() {
@@ -222,8 +222,10 @@ async function getPostHogNode() {
     const { PostHog } = await import("posthog-node");
     posthogNode = new PostHog(POSTHOG_KEY, {
       host: POSTHOG_HOST,
-      flushAt: 10,
-      flushInterval: 5000,
+      flushAt: 1,
+      flushInterval: 0,
+      requestTimeout: 2000,
+      fetchRetryCount: 0,
     });
   }
   return posthogNode;
@@ -248,17 +250,23 @@ export async function captureEvent(
   logWideEvent(event, common, domain, request);
 
   // PostHog capture (always capture for product analytics)
-  const ph = await getPostHogNode();
-  if (ph && opts.userId) {
-    ph.capture({
-      distinctId: opts.userId,
-      event,
-      properties: {
-        ...common,
-        ...domain,
-        ...request,
-      },
-    });
+  try {
+    const ph = await getPostHogNode();
+    if (ph && opts.userId) {
+      await ph.captureImmediate({
+        distinctId: opts.userId,
+        event,
+        properties: {
+          ...common,
+          ...domain,
+          ...request,
+          source: "server",
+        },
+      });
+    }
+  } catch {
+    // Telemetry outages must never fail a successfully saved user action.
+    console.warn("[PostHog] Event delivery failed");
   }
 }
 

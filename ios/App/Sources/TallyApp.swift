@@ -37,14 +37,16 @@ struct TallyApp: App {
     @StateObject private var appSettings = AppSettings()
     
     init() {
+        Analytics.configure()
         // Configure Sentry crash reporting
-        if let dsn = Configuration.sentryDsn {
+        if !CommandLine.arguments.contains("--uitesting"), let dsn = Configuration.sentryDsn {
             SentrySDK.start { options in
                 options.dsn = dsn
                 options.tracesSampleRate = 0.2
                 options.enableAppHangTracking = true
                 options.enableCaptureFailedRequests = true
-                options.attachScreenshot = true
+                options.attachScreenshot = false
+                options.sendDefaultPii = false
                 #if DEBUG
                 options.environment = "development"
                 #else
@@ -72,6 +74,7 @@ struct TallyApp: App {
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {
+                Analytics.flush()
                 // Schedule background refresh when app goes to background
                 BackgroundRefreshManager.shared.scheduleBackgroundRefresh()
             }

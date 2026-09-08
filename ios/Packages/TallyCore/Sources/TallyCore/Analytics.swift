@@ -29,6 +29,7 @@ public enum Analytics {
         config.captureApplicationLifecycleEvents = false
         config.captureScreenViews = false
         config.sessionReplay = false
+        config.preloadFeatureFlags = false
         config.captureElementInteractions = false
         config.capturePushNotificationSubscriptions = false
         config.capturePushNotificationOpened = false

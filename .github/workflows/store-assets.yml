@@ -39,7 +39,9 @@ jobs:
         if: always()
         with:
           name: android-store-screenshots
-          path: tally-android/store-assets/
+          path: |
+            tally-android/store-assets/
+            tally-android/app/build/reports/androidTests/
           retention-days: 30
   ios:
     runs-on: macos-26

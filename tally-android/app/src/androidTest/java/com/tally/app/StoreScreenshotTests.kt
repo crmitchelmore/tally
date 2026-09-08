@@ -2,7 +2,9 @@ package com.tally.app
 
 import android.graphics.Bitmap
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.platform.app.InstrumentationRegistry
+import com.tally.app.pages.AuthPage
 import com.tally.app.pages.ChallengeDialogPage
 import com.tally.app.pages.DashboardPage
 import com.tally.app.pages.EntryDialogPage
@@ -17,6 +19,11 @@ class StoreScreenshotTests {
     @get:Rule(order = 1) val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Test fun captureStoreScreens() {
+        composeRule.waitForIdle()
+        if (composeRule.onAllNodes(androidx.compose.ui.test.hasTestTag("sign_in_screen")).fetchSemanticsNodes().isNotEmpty()) {
+            AuthPage(composeRule).tapContinueWithoutAccount()
+        }
+        composeRule.onNodeWithTag("dashboard").assertExists()
         val dashboard = DashboardPage(composeRule)
         val form = ChallengeDialogPage(composeRule)
         dashboard.tapCreateChallenge()

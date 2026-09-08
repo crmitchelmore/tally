@@ -196,11 +196,7 @@ public final class ChallengesManager {
     private let dashboardConfigDefaults: UserDefaults
     private let dashboardConfigKey = "tally.dashboard.config"
     
-    private static let fullDateFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withFullDate]
-        return formatter
-    }()
+    private static let fullDateFormatter = CalendarDay.formatter()
     
     private static let timestampFormatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
@@ -339,8 +335,7 @@ public final class ChallengesManager {
     ) async {
         let tempId = UUID().uuidString
         let now = ISO8601DateFormatter().string(from: Date())
-        let dateFormatter = ISO8601DateFormatter()
-        dateFormatter.formatOptions = [.withFullDate]
+        let dateFormatter = Self.fullDateFormatter
         
         // Create local challenge immediately (optimistic)
         let challenge = Challenge(

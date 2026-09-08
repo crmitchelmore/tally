@@ -371,8 +371,7 @@ public struct ChallengeFormView: View {
         countType = challenge.countType ?? .simple
         unitLabel = challenge.unitLabel ?? ""
         
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withFullDate]
+        let formatter = CalendarDay.formatter()
         
         if let start = formatter.date(from: challenge.startDate) {
             startDate = start

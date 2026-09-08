@@ -27,12 +27,21 @@ struct PrivacyChoicesView: View {
                     Text("No advertising or tracking across other apps. These choices control optional telemetry from this device; essential account, sync and security processing still works.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
-                Section {
+            }
+            .safeAreaInset(edge: .bottom) {
+                VStack(spacing: 12) {
                     Button("Save my choices") { save(analytics: analytics, diagnostics: diagnostics) }
+                        .buttonStyle(.borderedProminent)
+                        .frame(maxWidth: .infinity)
                         .accessibilityIdentifier("privacy_save")
                     Button("Continue without sharing") { save(analytics: false, diagnostics: false) }
+                        .buttonStyle(.bordered)
+                        .frame(maxWidth: .infinity)
                         .accessibilityIdentifier("privacy_decline")
                 }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(.regularMaterial)
             }
             .navigationTitle("Your privacy choices")
             .navigationBarTitleDisplayMode(.inline)

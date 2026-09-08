@@ -8,7 +8,8 @@ final class PrivacyChoiceTests: XCTestCase {
         XCTAssertEqual(app.switches["privacy_analytics"].value as? String, "0")
         XCTAssertEqual(app.switches["privacy_diagnostics"].value as? String, "0")
         app.buttons["privacy_decline"].tap()
-        XCTAssertFalse(app.buttons["privacy_decline"].exists)
+        let disappeared = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: app.buttons["privacy_decline"])
+        XCTAssertEqual(XCTWaiter.wait(for: [disappeared], timeout: 5), .completed)
         app.terminate()
         app.launchArguments = ["--offline-mode"]
         app.launch()

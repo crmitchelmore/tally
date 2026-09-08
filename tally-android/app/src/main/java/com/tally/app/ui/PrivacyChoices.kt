@@ -9,6 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import app.tally.core.telemetry.PrivacyTelemetry
 
 @Composable
@@ -26,11 +28,11 @@ fun PrivacyChoices(onDismiss: () -> Unit) {
                 Text("A little feedback helps Tally grow. Sharing is optional. Every feature works with both choices off, and you can change them in Settings.")
                 Spacer(Modifier.height(16.dp))
                 Text("Share usage analytics", style = MaterialTheme.typography.titleSmall)
-                Switch(analytics, { analytics = it }, Modifier.testTag("privacy_analytics"))
+                Switch(analytics, { analytics = it }, Modifier.testTag("privacy_analytics").semantics { contentDescription = "Share usage analytics" })
                 Text("Send feature-use events, app and device details, and a random device identifier to PostHog in the EU. No goal names, notes, entry contents or screen recordings.")
                 Spacer(Modifier.height(16.dp))
                 Text("Share crash reports", style = MaterialTheme.typography.titleSmall)
-                Switch(diagnostics, { diagnostics = it }, Modifier.testTag("privacy_diagnostics"))
+                Switch(diagnostics, { diagnostics = it }, Modifier.testTag("privacy_diagnostics").semantics { contentDescription = "Share crash reports" })
                 Text("Send crash details, stack traces and app and device information to Sentry to help fix problems. No screenshots, screen recordings or account details.")
                 TextButton({ uri.openUri("https://tally-tracker.app/privacy") }) { Text("Read the privacy policy") }
                 Text("No advertising or tracking across other apps. Essential account, sync and security processing still works.")

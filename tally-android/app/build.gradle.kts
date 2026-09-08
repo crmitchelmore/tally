@@ -1,4 +1,5 @@
 plugins {
+    id("io.sentry.android.gradle") version "5.12.1"
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
@@ -14,7 +15,7 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = System.getenv("ANDROID_VERSION_CODE")?.toInt() ?: 26090901
-        versionName = "1.8.1"
+        versionName = "1.9.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -104,4 +105,14 @@ dependencies {
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+// Upload deobfuscation mappings only in the signed release workflow.
+sentry {
+    org.set("tally-lz")
+    projectName.set("android")
+    autoUploadProguardMapping.set(!System.getenv("SENTRY_AUTH_TOKEN").isNullOrBlank())
+    includeSourceContext.set(false)
+    autoInstallation.enabled.set(false)
+    tracingInstrumentation.enabled.set(false)
 }

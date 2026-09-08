@@ -15,7 +15,7 @@ export interface DashboardHighlightsProps {
 export function DashboardHighlights({ stats, loading }: DashboardHighlightsProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="dashboard-highlights grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="bg-surface border border-border rounded-xl p-4 animate-pulse">
             <div className="h-4 w-16 bg-border/50 rounded mb-2" />
@@ -40,7 +40,7 @@ export function DashboardHighlights({ stats, loading }: DashboardHighlightsProps
   const pace = paceConfig[stats.overallPaceStatus];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div className="dashboard-highlights grid grid-cols-2 sm:grid-cols-4 gap-4">
       {/* Total marks */}
       <div className="bg-surface border border-border rounded-xl p-4">
         <p className="text-sm text-muted mb-1">Total marks</p>

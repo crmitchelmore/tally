@@ -383,10 +383,11 @@ export default function AppPage() {
   return (
     <div className="space-y-8">
       {/* Welcome section with weekly summary button */}
-      <section className="py-6">
+      <section className="dashboard-intro">
+        <p className="eyebrow">A little more, every time</p>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-ink">
+            <h1 className="dashboard-title">
               Welcome back{user?.firstName ? `, ${user.firstName}` : ""}.
             </h1>
             <p className="mt-1 text-base text-muted">

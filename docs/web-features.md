@@ -385,7 +385,7 @@ interface PersonalRecords {
 ### Challenge Components (components/challenges/)
 | Component | Purpose |
 |-----------|---------|
-| `ChallengeCard` | Dashboard card with progress ring |
+| `ChallengeCard` | Dashboard card with tally marks, progress bar and full-width Log progress action |
 | `ChallengeList` | Grid of challenge cards |
 | `CreateChallengeDialog` | New challenge modal |
 | `ActivityHeatmap` | Year calendar with intensity |
@@ -433,7 +433,7 @@ Landing Page -> Sign Up -> Dashboard (empty) -> Create First Challenge -> Add En
 
 ### 2. Daily Entry Flow
 ```
-Dashboard -> Click Challenge Card "+" -> Add Entry Dialog -> 
+Dashboard -> Click challenge card "Log progress" -> Add Entry Dialog ->
 Select count/sets -> Optional note/feeling -> Submit -> 
 View updated stats + tally animation
 ```

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { ChallengeEmptyState } from "./challenge-empty-state";
 import { ChallengeCard } from "./challenge-card";
 import { CreateChallengeDialog } from "./create-challenge-dialog";
 import type { Challenge, ChallengeStats, CreateChallengeRequest, Entry } from "@/app/api/v1/_lib/types";
@@ -95,30 +96,8 @@ export function ChallengeList({
   // Empty state
   if (challenges.length === 0) {
     return (
-      <div className="text-center py-8">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-border/30 text-muted mb-3">
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-        </div>
-        <h2 className="text-lg font-semibold text-ink">No challenges yet</h2>
-        <p className="text-muted text-sm mt-1 max-w-xs mx-auto">
-          Create your first challenge to start tracking progress.
-        </p>
-        <button
-          onClick={() => setCreateDialogOpen(true)}
-          className="
-            mt-4 inline-flex items-center gap-2 px-5 py-2.5
-            bg-accent text-white rounded-full
-            font-semibold hover:bg-accent/90 transition-colors
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
-          "
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Create Challenge
-        </button>
+      <div>
+        <ChallengeEmptyState onCreate={() => setCreateDialogOpen(true)} />
 
         <CreateChallengeDialog
           open={createDialogOpen}

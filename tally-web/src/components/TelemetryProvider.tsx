@@ -8,7 +8,9 @@
  */
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import type { ReactNode } from "react";
 
 const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
@@ -29,7 +31,21 @@ if (typeof window !== "undefined" && POSTHOG_KEY) {
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
     capture_pageview: false, // We'll handle this manually for SPA navigation
-    capture_pageleave: true,
+    capture_pageleave: false,
+    disable_session_recording: true,
+    person_profiles: "identified_only",
+    before_send: (event) => {
+      if (!event) return event;
+      for (const key of ["$current_url", "$referrer", "$initial_current_url", "$initial_referrer"]) {
+        const value = event.properties[key];
+        if (typeof value !== "string") continue;
+        try {
+          const url = new URL(value);
+          event.properties[key] = url.origin + url.pathname;
+        } catch { delete event.properties[key]; }
+      }
+      return event;
+    },
     persistence: "localStorage+cookie",
     autocapture: false, // Explicit events only per schema
     // Respect user privacy preferences
@@ -45,6 +61,7 @@ if (typeof window !== "undefined" && POSTHOG_KEY) {
 function getCommonProperties() {
   return {
     platform: "web" as const,
+    source: "client",
     env: ENV,
     app_version: APP_VERSION,
     build_number: BUILD_NUMBER,
@@ -108,10 +125,42 @@ export function resetUser() {
 /**
  * PostHog Provider component
  */
+function AuthTelemetry() {
+  const { isLoaded, userId } = useAuth();
+  const previousUser = useRef<string | null>(posthog.get_property("$user_id") ?? null);
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (userId && userId !== previousUser.current) {
+      // Also reset when switching accounts without a signed-out intermediate render.
+      if (previousUser.current) resetUser();
+      identifyUser(userId);
+    } else if (!userId && previousUser.current) {
+      captureClientEvent("auth_signed_out");
+      resetUser();
+    }
+    previousUser.current = userId ?? null;
+  }, [isLoaded, userId]);
+  return null;
+}
+
 export function TelemetryProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const opened = useRef(false);
+  const lastPath = useRef<string | null>(null);
+  useEffect(() => {
+    if (!POSTHOG_KEY || !pathname || pathname === lastPath.current) return;
+    lastPath.current = pathname;
+    // Strip query strings and fragments, which can contain authentication tokens.
+    posthog.capture("$pageview", {
+      ...getCommonProperties(),
+      $current_url: window.location.origin + pathname,
+      $pathname: pathname,
+    });
+  }, [pathname]);
   useEffect(() => {
     // Capture app_opened on mount
-    if (POSTHOG_KEY) {
+    if (POSTHOG_KEY && !opened.current) {
+      opened.current = true;
       captureClientEvent("app_opened");
     }
   }, []);
@@ -121,5 +170,8 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
-  return <PostHogProvider client={posthog}>{children}</PostHogProvider>;
+  return <PostHogProvider client={posthog}>
+    {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? <AuthTelemetry /> : null}
+    {children}
+  </PostHogProvider>;
 }

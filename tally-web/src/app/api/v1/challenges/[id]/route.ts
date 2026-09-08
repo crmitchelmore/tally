@@ -3,6 +3,7 @@
  * PATCH /api/v1/challenges/[id] - Update challenge
  * DELETE /api/v1/challenges/[id] - Delete challenge
  */
+import { captureEvent } from "@/lib/telemetry";
 import { requireAuth, isAuthError } from "../../_lib/auth";
 import {
   getChallengeById,
@@ -85,6 +86,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (body.defaultIncrement !== undefined) challenge.defaultIncrement = body.defaultIncrement;
 
     const updated = await updateChallenge(challenge);
+    await captureEvent(body.isArchived === true ? "challenge_archived" : "challenge_updated", { userId: authResult.userId }, { challenge_id: id });
 
     return jsonOk({ challenge: updated });
   } catch (error) {

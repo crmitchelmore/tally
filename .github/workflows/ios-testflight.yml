@@ -248,6 +248,8 @@ jobs:
         env:
           TUIST_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           TUIST_API_BASE_URL: "https://tally-tracker.app"
+          TUIST_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          TUIST_POSTHOG_HOST: ${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}
           TUIST_GIT_COMMIT_SHA: ${{ github.sha }}
           # Pass manual signing settings generated above
           TUIST_DEVELOPMENT_TEAM: ${{ secrets.IOS_TEAM_ID }}

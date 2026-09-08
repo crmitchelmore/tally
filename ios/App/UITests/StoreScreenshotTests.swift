@@ -20,12 +20,17 @@ final class StoreScreenshotTests: TallyUITestCase {
         dashboard.tapChallenge(named: "Read a little every day")
         let detail = ChallengeDetailPage(app: app)
         detail.assertTitle(contains: "Read a little every day")
+        let total = app.staticTexts["challenge-total-count"]
+        let correctTotal = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == %@", "25"), object: total)
+        XCTAssertEqual(XCTWaiter.wait(for: [correctTotal], timeout: 5), .completed)
         capture("02-goal")
         waitAndTap(detail.addEntryButton)
         entry.assertIsVisible()
         capture("03-add-entry")
     }
     private func capture(_ name: String) {
+        // Accessibility can settle before the presentation/tally animation.
+        Thread.sleep(forTimeInterval: 1)
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = name
         attachment.lifetime = .keepAlways

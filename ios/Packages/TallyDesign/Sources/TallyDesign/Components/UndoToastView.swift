@@ -39,14 +39,14 @@ public struct UndoToastView: View {
                         .background(Color.tallyPaper.opacity(0.2))
                         .cornerRadius(8)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(TallyPressStyle())
                 
                 Button(action: onDismiss) {
                     Image(systemName: "xmark")
                         .font(.caption)
                         .foregroundColor(Color.tallyPaper.opacity(0.7))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(TallyPressStyle())
                 .accessibilityLabel("Dismiss")
             }
             .tallyPadding(.horizontal, TallySpacing.md)

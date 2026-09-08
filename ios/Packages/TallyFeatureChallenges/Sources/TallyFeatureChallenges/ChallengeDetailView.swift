@@ -676,7 +676,7 @@ public struct ChallengeDetailView: View {
             .background(sortField == field ? Color.tallyAccent.opacity(0.12) : Color.clear)
             .cornerRadius(6)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TallyPressStyle())
         .foregroundColor(sortField == field ? Color.tallyAccent : Color.tallyInkSecondary)
     }
     
@@ -795,13 +795,13 @@ private struct DayEntryRow: View {
             Button(action: onEdit) {
                 Image(systemName: "pencil")
             }
-            .buttonStyle(.plain)
+            .buttonStyle(TallyPressStyle())
             .foregroundColor(Color.tallyInkSecondary)
             
             Button(action: onDelete) {
                 Image(systemName: "trash")
             }
-            .buttonStyle(.plain)
+            .buttonStyle(TallyPressStyle())
             .foregroundColor(Color.tallyError)
         }
         .tallyPadding()
@@ -911,14 +911,14 @@ private struct RecentEntryRow: View {
             Button(action: onEdit) {
                 Image(systemName: "pencil")
             }
-            .buttonStyle(.plain)
+            .buttonStyle(TallyPressStyle())
             .foregroundColor(Color.tallyInkSecondary)
             .accessibilityLabel("Edit entry")
             
             Button(action: onDelete) {
                 Image(systemName: "trash")
             }
-            .buttonStyle(.plain)
+            .buttonStyle(TallyPressStyle())
             .foregroundColor(Color.tallyError)
             .accessibilityLabel("Delete entry")
         }

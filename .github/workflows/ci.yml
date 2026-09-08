@@ -148,6 +148,9 @@ jobs:
   # ─────────────────────────────────────────────────────────────
   auto-release:
     name: Auto Version & Release
+    concurrency:
+      group: tally-auto-release
+      cancel-in-progress: false
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -249,6 +252,13 @@ jobs:
           fi
 
           RELEASE_SHA=$(git rev-parse HEAD)
+          # A newer main push may have finished while this build was running.
+          # Release only the current head; its own CI run will tag it when green.
+          MAIN_SHA=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$RELEASE_SHA" != "$MAIN_SHA" ]; then
+            echo "A newer main commit exists; skipping superseded release."
+            exit 0
+          fi
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

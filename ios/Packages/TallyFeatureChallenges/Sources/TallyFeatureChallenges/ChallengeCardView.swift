@@ -55,6 +55,7 @@ public struct ChallengeCardView: View {
                         Text(stats?.totalCount ?? 0, format: .number)
                             .font(.system(size: countFontSize, weight: .medium, design: .rounded))
                             .monospacedDigit()
+                            .tallyValueFeedback(value: stats?.totalCount ?? 0)
                             .foregroundStyle(Color.tallyInk)
                             .minimumScaleFactor(0.6)
                             .lineLimit(1)
@@ -65,6 +66,7 @@ public struct ChallengeCardView: View {
 
                     ProgressView(value: progress)
                         .tint(challengeColor)
+                        .tallyAnimation(TallyMotion.easeDeliberate, value: progress)
                         .accessibilityHidden(true)
 
                     statusLabel
@@ -72,7 +74,7 @@ public struct ChallengeCardView: View {
                 .padding(TallySpacing.lg)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(TallyPressStyle())
             .accessibilityLabel(accessibilityLabel)
             .accessibilityHint("View challenge details")
 
@@ -159,7 +161,7 @@ public struct ChallengeCardView: View {
                 .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.tallyInk.opacity(0.08)))
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TallyPressStyle())
         .accessibilityLabel("Log progress for \(challenge.name)")
         .accessibilityIdentifier("quick-add")
     }

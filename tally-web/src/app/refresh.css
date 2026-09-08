@@ -117,3 +117,30 @@ main.refresh-landing { display: block; max-width: var(--page-width); margin: aut
 }
 
 .challenge-icon { margin-right: 8px; font-size: 16px; }
+
+/* Short, one-shot motion: settle in, acknowledge a tap, then stay still. */
+@keyframes tally-arrive {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-copy, .hero-workspace, .dashboard-intro, .challenge-empty, .challenge-card {
+    animation: tally-arrive 320ms cubic-bezier(.22, 1, .36, 1) both;
+  }
+  .hero-workspace, .challenge-card:nth-child(2) { animation-delay: 40ms; }
+  .challenge-card:nth-child(3) { animation-delay: 80ms; }
+  .challenge-card:nth-child(n+4) { animation-delay: 120ms; }
+  :where(button, .cta, .ghost, .app-nav a) {
+    transition: scale 160ms cubic-bezier(.22, 1, .36, 1), background-color 150ms, color 150ms;
+  }
+  :where(button, .cta, .ghost):active:not(:disabled) { scale: .98; }
+  .challenge-count strong, .tally-display { transform-origin: left center; }
+  .challenge-progress > span { transition: width 350ms cubic-bezier(.22, 1, .36, 1); }
+  .challenge-log-button > span:last-child { transition: transform 220ms cubic-bezier(.22, 1, .36, 1); }
+  .challenge-log-button:hover > span:last-child { transform: rotate(90deg); }
+  .app-nav a { transition: background-color 150ms, color 150ms, translate 180ms; }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  :where(.cta, .ghost, .demo-add-btn):hover { translate: 0 -1px; }
+  :where(.cta, .ghost, .demo-add-btn) { transition: translate 180ms, scale 160ms, background-color 150ms; }
+}

@@ -64,6 +64,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tally.app.data.ChallengeWithCount
 import com.tally.app.ui.components.MiniHeatmap
+import com.tally.core.design.tallyProgress
+import com.tally.core.design.tallyPress
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
 import com.tally.core.design.TallyMark
 import com.tally.core.design.TallySpacing
 import com.tally.core.network.Entry
@@ -86,6 +90,8 @@ fun ChallengeCard(
     val challenge = challengeWithCount.challenge
     val stats = challengeWithCount.stats
     val numberFormat = NumberFormat.getNumberInstance()
+    val progressMotion = tallyProgress(challengeWithCount.progress)
+    val addInteraction = remember { MutableInteractionSource() }
     
     // Parse color from hex
     val tintColor = parseHexColor(challenge.color)
@@ -189,7 +195,8 @@ fun ChallengeCard(
 
                 FilledTonalIconButton(
                     onClick = onAddEntry,
-                    modifier = Modifier.testTag("add_entry_${challenge.name}"),
+                    interactionSource = addInteraction,
+                    modifier = Modifier.tallyPress(addInteraction).testTag("add_entry_${challenge.name}"),
                     colors = IconButtonDefaults.filledTonalIconButtonColors(
                         containerColor = tintColor.copy(alpha = 0.2f),
                         contentColor = tintColor
@@ -218,7 +225,7 @@ fun ChallengeCard(
                 TallyMark(
                     count = challengeWithCount.totalCount,
                     modifier = Modifier.size(tallySize),
-                    animated = false
+                    animated = true
                 )
 
                 Spacer(modifier = Modifier.width(TallySpacing.md))
@@ -247,7 +254,7 @@ fun ChallengeCard(
 
             // Progress bar with tint color
             LinearProgressIndicator(
-                progress = { challengeWithCount.progress },
+                progress = { progressMotion.value },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(10.dp)

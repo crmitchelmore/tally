@@ -9,7 +9,6 @@ public struct TallyMarkView: View {
     let size: CGFloat
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var animationProgress: Double = 0
     
     public init(count: Int, animated: Bool = false, size: CGFloat = 60) {
         self.count = max(0, count)
@@ -38,15 +37,7 @@ public struct TallyMarkView: View {
         }
         .frame(width: scaledWidthForCount, height: scaledHeightForCount, alignment: .leading)
         .accessibilityLabel(accessibilityLabel)
-        .onAppear {
-            if animated && !reduceMotion {
-                withAnimation(TallyMotion.strokeDraw) {
-                    animationProgress = 1.0
-                }
-            } else {
-                animationProgress = 1.0
-            }
-        }
+        .tallyValueFeedback(value: count, enabled: animated)
     }
     
     private var accessibilityLabel: String {

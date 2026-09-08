@@ -78,7 +78,7 @@ struct ChallengeDialogPage {
         
         // Fill target only if specified (use default otherwise)
         if let target = target, targetTextField.waitForExistence(timeout: 3) {
-            targetTextField.tap()
+            targetTextField.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
             
             // Clear existing value by deleting characters
             let currentValue = targetTextField.value as? String ?? ""
@@ -87,6 +87,7 @@ struct ChallengeDialogPage {
                 targetTextField.typeText(deleteString)
             }
             targetTextField.typeText(target)
+            XCTAssertEqual((targetTextField.value as? String)?.replacingOccurrences(of: ",", with: ""), target)
         }
         
         if let timeframe = timeframe, timeframePicker.exists {

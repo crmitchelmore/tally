@@ -2,6 +2,8 @@
 
 Last verified: 8 September 2026. Both public store listings are still drafts.
 
+Production deployment 34283041166 succeeded. Privacy, support and deletion pages each returned HTTP 200; the deletion page was also verified in the Codex browser, including successful sign-in with the dedicated reviewer account.
+
 ## Store records
 
 - Apple app: 6757677046, bundle `app.tally.ios`, team `8X4ZN58TYH`.
@@ -42,7 +44,7 @@ Account deletion requires a verified Clerk session and uses its identity for Con
 
 ## Remaining release gates
 
-- Owner App Review contact phone number (name, email, dedicated login and reviewer instructions are saved).
+- Owner App Review contact phone number. Complete and verify the Apple review-contact section with the saved dedicated login after providing the required phone number.
 - Account-wide Apple MRDP personal-services declaration.
 - Android permanent package-name choice after collision.
 - Community report/block/filtering support, or an explicitly agreed first-release scope without public sharing/discovery.
@@ -68,6 +70,8 @@ Apple has no configured in-app purchase products. The app now shows an honest un
 
 ## Store setup saved during this release
 
-Apple privacy labels are published for nine data types: name, email, user ID, device ID, user content, fitness, product interactions, crash data and performance data. No advertising tracking is declared. Pricing is free in all 175 regions, with worldwide availability on release. Google privacy, no-ads, non-government, no-financial-services and manual activity/fitness declarations are saved. The data-safety draft discloses optional account, fitness, content, interaction, identifier and diagnostic collection; final submission also requires the target-audience declaration.
+Apple privacy labels are published for nine data types: name, email, user ID, device ID, user content, fitness, product interactions, crash data and performance data. No advertising tracking is declared. Pricing is free in all 175 regions, with worldwide availability on release. Google privacy, no-ads, non-government, no-financial-services, no-advertising-ID and manual activity/fitness declarations are saved. The completed data-safety declaration discloses optional account, fitness, content, interaction, identifier and diagnostic collection. Target audience is 13–15, 16–17 and 18+, consistent with the app's 13+ policy. Productivity category, support email and website are saved. English (UK) listing copy, icon and feature graphic are saved as a draft; final screenshots and content rating remain.
 
-A dedicated store review identity was provisioned with a generated password using the existing production Clerk administration credential. The password was never written to logs. Its encrypted artifact from run 34282135746 was decrypted into `~/.config/tally/release/store-review-account.json` (mode 600); encrypted GitHub secrets `APP_REVIEW_EMAIL` and `APP_REVIEW_PASSWORD` preserve the same configuration. App Store Connect login fields were saved and verified after reloading. The local RSA recovery key is `store-review-private.pem`; only its public key is saved in GitHub. Do not reset the review password during an active store review.
+A dedicated store review identity was provisioned with a generated password using the existing production Clerk administration credential. The password was never written to logs. Its encrypted artifact from run 34282135746 was decrypted into `~/.config/tally/release/store-review-account.json` (mode 600); encrypted GitHub secrets `APP_REVIEW_EMAIL` and `APP_REVIEW_PASSWORD` preserve the same configuration. Production sign-in succeeded with this account. Google Play confirms the saved declaration contains username, password and instructions after reload. App Store Connect's review contact still requires the owner's phone; verify the whole section after completing that field. The local RSA recovery key is `store-review-private.pem`; only its public key is saved in GitHub. Do not reset the review password during an active store review.
+
+Browser DOM snapshots can omit sensitive field values even when those fields are populated. Never interpret an empty-string match as proof a credential was saved. Load private credentials through an explicit local copy control, verify non-empty lengths, clear the clipboard, and validate the login against the actual service.

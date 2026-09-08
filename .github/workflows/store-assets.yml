@@ -39,6 +39,7 @@ jobs:
             ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+            adb shell wm size 1080x1920
             adb shell am instrument -w -e class com.tally.app.StoreScreenshotTests com.tally.app.test/androidx.test.runner.AndroidJUnitRunner > store-test-result.txt
             cat store-test-result.txt
             grep -q 'OK (1 test)' store-test-result.txt

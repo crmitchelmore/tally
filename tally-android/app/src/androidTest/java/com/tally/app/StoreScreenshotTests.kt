@@ -50,6 +50,10 @@ class StoreScreenshotTests {
     private fun capture(name: String) {
         composeRule.waitForIdle()
         val instrumentation = InstrumentationRegistry.getInstrumentation()
+        // Semantics can be ready before the window compositor presents the
+        // final navigation frame. Capture the settled screen, not the old one.
+        instrumentation.waitForIdleSync()
+        android.os.SystemClock.sleep(1_000)
         val directory = File(instrumentation.targetContext.filesDir, "store-screenshots").apply { mkdirs() }
         val bitmap = checkNotNull(instrumentation.uiAutomation.takeScreenshot())
         File(directory, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }

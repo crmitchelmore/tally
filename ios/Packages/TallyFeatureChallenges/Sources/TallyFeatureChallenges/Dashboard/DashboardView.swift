@@ -4,6 +4,7 @@ import TallyFeatureAPIClient
 
 /// Dashboard view with highlights, charts, heatmap, and configurable panels
 public struct DashboardView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Bindable var manager: ChallengesManager
     let onConfigure: () -> Void
     let onWeeklySummary: () -> Void
@@ -33,9 +34,10 @@ public struct DashboardView: View {
     
     public var body: some View {
         LazyVStack(spacing: TallySpacing.lg) {
-            welcomeSection
-            
-            dashboardPanels
+            if !manager.challenges.isEmpty {
+                welcomeSection
+                dashboardPanels
+            }
             
             FollowedChallengesSection(
                 challenges: followedChallenges,
@@ -43,9 +45,6 @@ public struct DashboardView: View {
             )
         }
         .tallyPadding(.vertical)
-        .refreshable {
-            await manager.refresh()
-        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -93,7 +92,7 @@ public struct DashboardView: View {
     private var activeChallengesPanel: some View {
         VStack(alignment: .leading, spacing: TallySpacing.sm) {
             Text("Active Challenges")
-                .font(.tallyTitleSmall)
+                .font(.title3.weight(.semibold))
                 .foregroundColor(Color.tallyInk)
                 .tallyPadding(.horizontal)
             
@@ -102,14 +101,20 @@ public struct DashboardView: View {
                     Text("No active challenges")
                         .font(.tallyBodyMedium)
                         .foregroundColor(Color.tallyInkSecondary)
-                    Text("Create your first challenge to get started")
+                    Text("Start another challenge with the + button above.")
                         .font(.tallyBodySmall)
                         .foregroundColor(Color.tallyInkTertiary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, TallySpacing.lg)
             } else {
-                LazyVStack(spacing: TallySpacing.sm) {
+                LazyVGrid(
+                    columns: dynamicTypeSize.isAccessibilitySize
+                        ? [GridItem(.flexible())]
+                        : [GridItem(.adaptive(minimum: 320), spacing: TallySpacing.base)],
+                    alignment: .leading,
+                    spacing: TallySpacing.base
+                ) {
                     ForEach(manager.activeChallenges) { challenge in
                         // Show card even for newly-created challenges that may not have stats yet
                         ChallengeCardView(
@@ -119,41 +124,34 @@ public struct DashboardView: View {
                             onTap: { onSelectChallenge(challenge) },
                             onQuickAdd: { onQuickAdd(challenge) }
                         )
-                        .tallyPadding(.horizontal)
                     }
                 }
+                .tallyPadding(.horizontal)
             }
         }
     }
     
     private var welcomeSection: some View {
-        HStack(alignment: .top, spacing: TallySpacing.md) {
-            VStack(alignment: .leading, spacing: TallySpacing.xs) {
-                Text("Welcome back")
-                    .font(.tallyTitleMedium)
-                    .foregroundColor(Color.tallyInk)
-                Text("Your tallies are ready. Log progress below.")
-                    .font(.tallyBodySmall)
-                    .foregroundColor(Color.tallyInkSecondary)
-            }
-            
-            Spacer()
-            
-            Button {
-                onWeeklySummary()
-            } label: {
-                Text("Weekly Summary")
-                    .font(.tallyLabelMedium)
-                    .foregroundColor(Color.tallyInk)
-                    .padding(.horizontal, TallySpacing.md)
-                    .padding(.vertical, TallySpacing.sm)
-                    .background(Color.tallyPaperTint)
-                    .cornerRadius(12)
+        VStack(alignment: .leading, spacing: TallySpacing.md) {
+            Text(Date.now, format: .dateTime.weekday(.wide).month(.wide).day())
+                .font(.subheadline)
+                .foregroundStyle(Color.tallyInkSecondary)
+            Text("Small steps.\nReal progress.")
+                .font(.largeTitle.weight(.semibold))
+                .tracking(-0.8)
+                .foregroundStyle(Color.tallyInk)
+            Button(action: onWeeklySummary) {
+                Label("Your week in review", systemImage: "chart.bar.xaxis")
+                    .font(.subheadline.weight(.medium))
+                    .frame(minHeight: 44)
             }
             .buttonStyle(.plain)
+            .foregroundStyle(Color.tallyAccent)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .tallyPadding(.horizontal)
     }
+
 }
 
 // MARK: - Preview

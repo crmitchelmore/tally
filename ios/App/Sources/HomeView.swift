@@ -69,9 +69,14 @@ struct HomeView: View {
                 )
             }
             .tallyPadding(.vertical)
+            .frame(maxWidth: 1100)
+            .frame(maxWidth: .infinity)
         }
+        .refreshable { await challengesManager.refresh() }
         .accessibilityIdentifier("dashboard")
+        .background(Color.tallyPaper)
         .navigationTitle("Tally")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             // Sync status in leading position (won't overlap with title)
             ToolbarItem(placement: .navigationBarLeading) {
@@ -87,6 +92,7 @@ struct HomeView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
+                .accessibilityLabel("Create challenge")
                 .accessibilityIdentifier("create-challenge-button")
             }
         }
@@ -242,55 +248,33 @@ struct SyncStatusToolbarItem: View {
     
     var body: some View {
         Group {
-            if isRefreshing {
-                HStack(spacing: 4) {
-                    ProgressView()
-                        .scaleEffect(0.6)
-                    Text("Updating")
-                        .font(.caption)
-                        .foregroundColor(Color.tallyInkSecondary)
-                }
+            if isRefreshing || syncState == .syncing {
+                ProgressView()
+                    .accessibilityLabel(isRefreshing ? "Updating challenges" : "Syncing changes")
             } else {
-                switch syncState {
-                case .synced:
-                    // Show checkmark briefly or just "Up to date" text
-                    Text("Up to date")
-                        .font(.caption)
-                        .foregroundColor(Color.tallyInkTertiary)
-                case .pending(let count):
-                    HStack(spacing: 4) {
-                        Image(systemName: "clock.fill")
-                            .font(.caption)
-                        Text("\(count) pending")
-                            .font(.caption)
-                    }
-                    .foregroundColor(Color.tallyWarning)
-                case .syncing:
-                    HStack(spacing: 4) {
-                        ProgressView()
-                            .scaleEffect(0.6)
-                        Text("Syncing")
-                            .font(.caption)
-                    }
-                    .foregroundColor(Color.tallyInkSecondary)
-                case .offline:
-                    HStack(spacing: 4) {
-                        Image(systemName: "wifi.slash")
-                            .font(.caption)
-                        Text("Offline")
-                            .font(.caption)
-                    }
-                    .foregroundColor(Color.tallyInkSecondary)
-                case .failed:
-                    HStack(spacing: 4) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.caption)
-                        Text("Sync failed")
-                            .font(.caption)
-                    }
-                    .foregroundColor(Color.tallyError)
-                }
+                Image(systemName: iconName)
+                    .foregroundStyle(statusColor)
+                    .accessibilityLabel(syncState.displayText)
             }
+        }
+        .frame(width: 24, height: 24)
+    }
+
+    private var statusColor: Color {
+        switch syncState {
+        case .failed: return .tallyError
+        case .pending: return .tallyWarning
+        default: return .tallyInkSecondary
+        }
+    }
+
+    private var iconName: String {
+        switch syncState {
+        case .synced: return "checkmark.icloud"
+        case .pending: return "clock.badge.exclamationmark"
+        case .syncing: return "arrow.triangle.2.circlepath"
+        case .offline: return "wifi.slash"
+        case .failed: return "exclamationmark.icloud"
         }
     }
 }

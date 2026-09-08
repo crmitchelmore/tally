@@ -4,6 +4,7 @@ import TallyFeatureAPIClient
 
 /// Dashboard highlights showing key stats
 public struct DashboardHighlightsView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let stats: DashboardStats
     
     public init(stats: DashboardStats) {
@@ -19,10 +20,7 @@ public struct DashboardHighlightsView: View {
                 Spacer()
             }
             
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: TallySpacing.md) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), spacing: TallySpacing.md) {
                 HighlightCard(
                     title: "Total marks",
                     value: formatNumber(stats.totalMarks),
@@ -37,7 +35,7 @@ public struct DashboardHighlightsView: View {
                 
                 HighlightCard(
                     title: "Best streak",
-                    value: "\(stats.bestStreak) days"
+                    value: "\(stats.bestStreak) \(stats.bestStreak == 1 ? "day" : "days")"
                 )
                 
                 HighlightCard(
@@ -79,23 +77,25 @@ struct HighlightCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: TallySpacing.xs) {
             Text(title)
-                .font(.tallyLabelSmall)
+                .font(.caption)
                 .foregroundColor(Color.tallyInkSecondary)
             
             HStack(alignment: .firstTextBaseline, spacing: TallySpacing.xs) {
                 Text(value)
-                    .font(.tallyMonoDisplay)
+                    .font(.title.weight(.medium))
+                    .monospacedDigit()
                     .foregroundColor(Color.tallyInk)
                 
                 if let tallyCount {
-                    TallyMarkView(count: min(tallyCount, 5), size: 18)
+                    TallyMarkView(count: tallyCount, size: 18)
+                        .accessibilityHidden(true)
                         .opacity(0.7)
                 }
             }
         }
         .frame(maxWidth: .infinity, minHeight: 84, alignment: .leading)
         .padding(TallySpacing.md)
-        .background(Color.tallyPaperTint)
+        .background(Color.tallySurface)
         .cornerRadius(12)
     }
 }

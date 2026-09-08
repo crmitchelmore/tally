@@ -51,7 +51,7 @@ class TallyUITestCase: XCTestCase {
     // MARK: - Text Entry
     
     func clearAndType(_ element: XCUIElement, text: String) {
-        element.tap()
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
         if let currentValue = element.value as? String, !currentValue.isEmpty {
             let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: currentValue.count)
             element.typeText(deleteString)

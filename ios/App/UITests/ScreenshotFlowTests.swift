@@ -2,7 +2,6 @@ import XCTest
 
 /// UI test to capture key screenshots for product review
 final class ScreenshotFlowTests: TallyUITestCase {
-    private let screenshotDirectory = "/Users/cm/work/tally"
 
     lazy var dashboardPage = DashboardPage(app: app)
     lazy var challengeDialog = ChallengeDialogPage(app: app)
@@ -72,12 +71,9 @@ final class ScreenshotFlowTests: TallyUITestCase {
     }
 
     private func captureScreenshot(named name: String) {
-        let screenshot = XCUIScreen.main.screenshot()
-        let screenshotPath = "\(screenshotDirectory)/\(name).png"
-        do {
-            try screenshot.pngRepresentation.write(to: URL(fileURLWithPath: screenshotPath))
-        } catch {
-            XCTFail("Failed to save screenshot to \(screenshotPath): \(error)")
-        }
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 }

@@ -70,6 +70,25 @@ public struct ChallengeFormView: View {
     public var body: some View {
         NavigationStack {
             Form {
+                if !isEditing && name.isEmpty {
+                    Section {
+                        Button { applyIdea(name: "Read a little every day", target: 500, unit: "pages", icon: "book.fill", color: "#2563EB") } label: {
+                            Label("Reading · 500 pages", systemImage: "book.fill")
+                        }
+                        .accessibilityIdentifier("reading-idea")
+                        Button { applyIdea(name: "Make time to move", target: 300, unit: "minutes", icon: "figure.run", color: "#16A34A") } label: {
+                            Label("Movement · 300 minutes", systemImage: "figure.run")
+                        }
+                        Button { applyIdea(name: "A little practice each day", target: 20, unit: "sessions", icon: "music.note", color: "#D94343") } label: {
+                            Label("Practice · 20 sessions", systemImage: "music.note")
+                        }
+                    } header: {
+                        Text("Start with an idea")
+                    } footer: {
+                        Text("Monthly goals to make your own. Everything is editable before you create it.")
+                    }
+                }
+
                 // Name section
                 Section {
                     TextField("Challenge name", text: $name)
@@ -283,6 +302,17 @@ public struct ChallengeFormView: View {
     
     // MARK: - Helpers
     
+    private func applyIdea(name: String, target: Int, unit: String, icon: String, color: String) {
+        self.name = name
+        self.target = target
+        unitLabel = unit
+        selectedIcon = icon
+        selectedColor = color
+        timeframeType = .month
+        periodOffset = 0
+        updateDatesForTimeframe(.month)
+    }
+
     private var isEditing: Bool {
         existingChallenge != nil
     }

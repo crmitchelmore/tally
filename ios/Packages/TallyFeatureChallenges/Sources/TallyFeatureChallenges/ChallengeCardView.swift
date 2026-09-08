@@ -4,13 +4,12 @@ import TallyFeatureAPIClient
 
 /// Dashboard card for a challenge showing progress and stats
 public struct ChallengeCardView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let challenge: Challenge
     let stats: ChallengeStats?
     let entries: [Entry]
     let onTap: () -> Void
     let onQuickAdd: () -> Void
-    
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
     public init(
         challenge: Challenge,
@@ -27,114 +26,115 @@ public struct ChallengeCardView: View {
     }
     
     public var body: some View {
-        ZStack(alignment: .topTrailing) {
+        VStack(spacing: 0) {
             Button(action: onTap) {
-                VStack(alignment: .leading, spacing: TallySpacing.md) {
-                // Header: icon, name, badges
-                HStack {
-                    // Challenge icon with tint
-                    Image(systemName: iconName)
-                        .font(.tallyTitleSmall)
-                        .foregroundColor(challengeColor)
-                    
-                    Circle()
-                        .fill(challengeColor)
-                        .frame(width: 6, height: 6)
-                    
-                    Text(challenge.name)
-                        .font(.tallyTitleSmall)
-                        .foregroundColor(Color.tallyInk)
-                        .lineLimit(1)
-                    
-                    if challenge.isPublic {
-                        Text("Public")
-                            .font(.tallyLabelSmall)
-                            .foregroundColor(Color.tallyInkSecondary)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.tallyPaperTint)
-                            .cornerRadius(6)
-                    }
-                    
-                    Spacer()
-                }
-                
-                // Progress content with ring
-                HStack(alignment: .top, spacing: TallySpacing.md) {
-                    VStack(alignment: .leading, spacing: TallySpacing.xs) {
-                        // Current / Target
-                        HStack(alignment: .firstTextBaseline, spacing: TallySpacing.xs) {
-                            Text("\(stats?.totalCount ?? 0)")
-                                .font(.tallyMonoDisplay)
-                                .foregroundColor(Color.tallyInk)
-                            
-                            Text("/ \(challenge.target)")
-                                .font(.tallyMonoBody)
-                                .foregroundColor(Color.tallyInkSecondary)
-                            
-                            Text(challenge.resolvedUnitLabel)
-                                .font(.tallyLabelSmall)
-                                .foregroundColor(Color.tallyInkSecondary)
+                VStack(alignment: .leading, spacing: TallySpacing.base) {
+                    HStack(alignment: .top, spacing: TallySpacing.md) {
+                        Image(systemName: iconName)
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(challengeColor)
+                            .frame(width: 40, height: 40)
+                            .background(challengeColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(challenge.name)
+                                .font(.headline)
+                                .foregroundStyle(Color.tallyInk)
+                                .multilineTextAlignment(.leading)
+                            Text(challenge.isPublic ? "Public challenge" : "Personal challenge")
+                                .font(.caption)
+                                .foregroundStyle(Color.tallyInkSecondary)
                         }
-                        
-                        // Status badge: future challenges show "Starts in X days", active challenges show pace
-                        if challenge.isFuture, let startsText = challenge.startsInText {
-                            FutureChallengeBadge(text: startsText)
-                        } else if let stats = stats {
-                            HStack(spacing: TallySpacing.xs) {
-                                PaceIndicator(status: stats.paceStatus)
-                                
-                                if stats.daysRemaining > 0 {
-                                    Text("· \(stats.daysRemaining) days left")
-                                        .font(.tallyLabelSmall)
-                                        .foregroundColor(Color.tallyInkSecondary)
-                                }
-                            }
-                        }
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Color.tallyInkSecondary)
+                            .padding(.top, 12)
                     }
-                    
-                    Spacer()
-                    
-                    ProgressRingView(progress: progress, color: challengeColor, size: 56)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(stats?.totalCount ?? 0, format: .number)
+                            .font(.system(size: countFontSize, weight: .medium, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundStyle(Color.tallyInk)
+                            .minimumScaleFactor(0.6)
+                            .lineLimit(1)
+                        Text("of \(challenge.target.formatted()) \(challenge.resolvedUnitLabel)")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.tallyInkSecondary)
+                    }
+
+                    ProgressView(value: progress)
+                        .tint(challengeColor)
                         .accessibilityHidden(true)
+
+                    statusLabel
                 }
-                
-                // Mini activity heatmap (last 8 weeks)
-                MiniHeatmapView(
-                    entries: entries,
-                    colorHex: challenge.color,
-                    weeksToShow: 8
-                )
-                }
-                .tallyPadding()
-                .background(Color.tallyPaper)
-                .cornerRadius(12)
-                .shadow(color: Color.tallyInk.opacity(0.06), radius: 4, x: 0, y: 2)
-                // Color accent on left edge
-                .overlay(alignment: .leading) {
-                    Rectangle()
-                        .fill(challengeColor)
-                        .frame(width: 4)
-                        .cornerRadius(2)
-                        .padding(.vertical, 8)
-                }
+                .padding(TallySpacing.lg)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            
-            quickAddButton
-                .padding(.top, 12)
-                .padding(.trailing, 12)
-                .opacity(challenge.isFuture ? 0 : 1) // Hide quick-add for future challenges
-                .allowsHitTesting(!challenge.isFuture)
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityHint("View challenge details")
+
+            if !challenge.isFuture && !challenge.isArchived {
+                quickAddButton
+                    .padding(.horizontal, TallySpacing.lg)
+                    .padding(.bottom, TallySpacing.lg)
+            }
+            if !dynamicTypeSize.isAccessibilitySize && !challenge.isFuture {
+                activity
+                    .padding(.horizontal, TallySpacing.lg)
+                    .padding(.bottom, TallySpacing.lg)
+            }
         }
+        .frame(maxWidth: .infinity)
+        .background(Color.tallySurface, in: RoundedRectangle(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(Color.tallyInk.opacity(0.09)))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("challenge-card-\(challenge.name)")
-        .accessibilityLabel(accessibilityLabel)
-        .accessibilityHint("Double tap to view details")
-        .accessibilityAddTraits(.isButton)
-        .frame(maxWidth: .infinity)
     }
-    
+
+    @ScaledMetric(relativeTo: .largeTitle) private var countFontSize: CGFloat = 48
+
+    @ViewBuilder private var statusLabel: some View {
+        if challenge.isFuture, let startsText = challenge.startsInText {
+            Text(startsText)
+                .font(.subheadline)
+                .foregroundStyle(Color.tallyInkSecondary)
+        } else if let stats {
+            VStack(alignment: .leading, spacing: 4) {
+                if stats.paceStatus != .none {
+                    Text(paceText(stats.paceStatus))
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(Color.tallyInk)
+                }
+                Text("\(stats.daysRemaining) days left")
+                    .font(.caption)
+                    .foregroundStyle(Color.tallyInkSecondary)
+            }
+        }
+    }
+
+    private func paceText(_ status: PaceStatus) -> String {
+        switch status {
+        case .ahead: return "Ahead of pace"
+        case .onPace: return "On pace"
+        case .behind: return "Room to catch up"
+        case .none: return ""
+        }
+    }
+
+    private var activity: some View {
+        HStack(spacing: TallySpacing.md) {
+            Text("Activity · last 8 weeks")
+                .font(.caption)
+                .foregroundStyle(Color.tallyInkSecondary)
+            Spacer(minLength: 0)
+            MiniHeatmapView(entries: entries, colorHex: challenge.color, weeksToShow: 8)
+        }
+        .accessibilityHidden(true)
+    }
+
     /// Map web icon names to SF Symbols
     private var iconName: String {
         IconMapper.sfSymbol(for: challenge.icon)
@@ -151,22 +151,19 @@ public struct ChallengeCardView: View {
     
     private var quickAddButton: some View {
         Button(action: onQuickAdd) {
-            Image(systemName: "plus")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
-                .frame(width: 36, height: 36)
-                .background(Color.tallyAccent)
-                .clipShape(Circle())
-                .shadow(color: Color.tallyInk.opacity(0.12), radius: 2, x: 0, y: 1)
+            Label("Log progress", systemImage: "plus")
+                .font(.body.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: 48)
+                .foregroundStyle(Color.tallyInk)
+                .background(Color.tallyInk.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.tallyInk.opacity(0.08)))
+                .contentShape(Rectangle())
         }
-        .frame(minWidth: TallyMetrics.minTouchTarget, minHeight: TallyMetrics.minTouchTarget)
-        .contentShape(Rectangle())
         .buttonStyle(.plain)
-        .accessibilityLabel("Add one to \(challenge.name)")
+        .accessibilityLabel("Log progress for \(challenge.name)")
         .accessibilityIdentifier("quick-add")
-        .allowsHitTesting(true)
     }
-    
+
     private var accessibilityLabel: String {
         var label = challenge.name
         
@@ -175,7 +172,7 @@ public struct ChallengeCardView: View {
             label += ", \(startsText)"
             label += ", target \(challenge.target) \(challenge.resolvedUnitLabel)"
         } else if let stats = stats {
-            label += ", \(stats.totalCount) of \(challenge.target)"
+            label += ", \(stats.totalCount) of \(challenge.target) \(challenge.resolvedUnitLabel)"
             label += ", \(stats.daysRemaining) days remaining"
             switch stats.paceStatus {
             case .ahead: label += ", ahead of pace"
@@ -183,6 +180,8 @@ public struct ChallengeCardView: View {
             case .behind: label += ", behind pace"
             case .none: break
             }
+        } else {
+            label += ", 0 of \(challenge.target) \(challenge.resolvedUnitLabel)"
         }
         if challenge.isPublic {
             label += ", public challenge"
@@ -341,89 +340,36 @@ struct PaceIndicator: View {
     }
 }
 
-private struct ProgressRingView: View {
-    let progress: Double
-    let color: Color
-    let size: CGFloat
-    
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(Color.tallyPaperTint, lineWidth: 4)
-            
-            Circle()
-                .trim(from: 0, to: max(0, min(progress, 1)))
-                .stroke(color, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .animation(.easeInOut(duration: 0.25), value: progress)
-        }
-        .frame(width: size, height: size)
-    }
-}
-
-// MARK: - Mini Heatmap
-
-/// Compact heatmap showing recent activity without labels
+/// Compact recent activity, including the current week. Future days stay blank.
 private struct MiniHeatmapView: View {
     let entries: [Entry]
     let colorHex: String?
     let weeksToShow: Int
-    
-    private let calendar = Calendar.current
-    private let daysInWeek = 7
-    
+
     var body: some View {
-        HStack(spacing: 2) {
-            ForEach(0..<weeksToShow, id: \.self) { weekIndex in
-                VStack(spacing: 2) {
-                    ForEach(0..<daysInWeek, id: \.self) { dayIndex in
-                        let date = dateFor(weekIndex: weekIndex, dayIndex: dayIndex)
-                        let count = countFor(date: date)
-                        
-                        RoundedRectangle(cornerRadius: 1.5)
-                            .fill(heatmapColor(for: count))
-                            .frame(width: 8, height: 8)
+        let days = RecentActivity.days(entries: entries, weeks: weeksToShow)
+        HStack(spacing: 3) {
+            ForEach(0..<weeksToShow, id: \.self) { week in
+                VStack(spacing: 3) {
+                    ForEach(0..<7, id: \.self) { day in
+                        let activity = days[week * 7 + day]
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(color(for: activity.count))
+                            .frame(width: 7, height: 7)
+                            .opacity(activity.isFuture ? 0 : 1)
                     }
                 }
             }
         }
-        .frame(height: 64)
     }
-    
-    // MARK: - Helpers
-    
-    private var entriesByDate: [String: Int] {
-        var dict: [String: Int] = [:]
-        for entry in entries {
-            dict[entry.date, default: 0] += entry.count
-        }
-        return dict
-    }
-    
-    private func dateFor(weekIndex: Int, dayIndex: Int) -> Date {
-        let today = Date()
-        let start = calendar.date(byAdding: .weekOfYear, value: -weeksToShow, to: today) ?? today
-        let weekday = calendar.component(.weekday, from: start)
-        let offsetToSunday = weekday == 1 ? 0 : -(weekday - 1)
-        let gridStart = calendar.date(byAdding: .day, value: offsetToSunday, to: start) ?? start
-        let daysForward = weekIndex * 7 + dayIndex
-        return calendar.date(byAdding: .day, value: daysForward, to: gridStart) ?? today
-    }
-    
-    private func countFor(date: Date) -> Int {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withFullDate]
-        let dateString = formatter.string(from: date)
-        return entriesByDate[dateString] ?? 0
-    }
-    
-    private func heatmapColor(for count: Int) -> Color {
-        let base = Color(hex: colorHex ?? "") ?? Color.tallySuccess
+
+    private func color(for count: Int) -> Color {
+        let base = Color(hex: colorHex ?? "") ?? Color.tallyAccent
         switch count {
-        case 0: return Color.tallyPaperTint
-        case 1...5: return base.opacity(0.3)
-        case 6...15: return base.opacity(0.5)
-        case 16...30: return base.opacity(0.7)
+        case ...0: return Color.tallyInk.opacity(0.08)
+        case 1...5: return base.opacity(0.35)
+        case 6...15: return base.opacity(0.55)
+        case 16...30: return base.opacity(0.75)
         default: return base
         }
     }
@@ -432,7 +378,7 @@ private struct MiniHeatmapView: View {
 // MARK: - Color Extension
 
 public extension Color {
-    public init?(hex: String) {
+    init?(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
         

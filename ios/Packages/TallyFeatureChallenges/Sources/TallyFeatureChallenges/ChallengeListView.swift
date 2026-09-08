@@ -38,9 +38,6 @@ public struct ChallengeListView: View {
                 challengesList
             }
         }
-        .refreshable {
-            await manager.refresh()
-        }
         .task {
             await manager.refresh()
         }
@@ -234,49 +231,38 @@ struct ErrorStateView: View {
 
 struct EmptyStateView: View {
     let onCreateChallenge: () -> Void
-    
+
     var body: some View {
-        VStack(spacing: TallySpacing.lg) {
-            // Tally mark illustration
-            TallyMarkView(count: 5, size: 80)
-            
-            Text("No challenges yet")
-                .font(.tallyTitleMedium)
-                .foregroundColor(Color.tallyInk)
-            
-            Text("Create your first challenge and start tracking your progress.")
-                .font(.tallyBodyMedium)
-                .foregroundColor(Color.tallyInkSecondary)
-                .multilineTextAlignment(.center)
-            
-            Button {
-                onCreateChallenge()
-            } label: {
+        VStack(alignment: .leading, spacing: TallySpacing.lg) {
+            TallyMarkView(count: 5, size: 56)
+                .accessibilityHidden(true)
+            Text("Something worth\nshowing up for.")
+                .font(.largeTitle.weight(.semibold))
+                .tracking(-0.8)
+                .foregroundStyle(Color.tallyInk)
+            Text("A few pages. A little movement. Time to practise. Pick one thing, set a goal, and make your first mark.")
+                .font(.body)
+                .foregroundStyle(Color.tallyInkSecondary)
+            Button(action: onCreateChallenge) {
                 Label("Create Challenge", systemImage: "plus")
-                    .font(.tallyTitleSmall)
+                    .font(.body.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 48)
             }
             .buttonStyle(.borderedProminent)
             .tint(Color.tallyAccent)
-            .tallyPadding(.top, TallySpacing.sm)
             .accessibilityIdentifier("create-challenge-empty-button")
+            Label("Start small. You can adjust your goal later.", systemImage: "sparkle")
+                .font(.subheadline)
+                .foregroundStyle(Color.tallyInkSecondary)
         }
-        .tallyPadding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(TallySpacing.lg)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.tallySurface, in: RoundedRectangle(cornerRadius: 20))
+        .padding(.horizontal, TallySpacing.base)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("empty-state")
     }
 }
-
-    #Preview("List") {
-        NavigationStack {
-            ChallengeListView(
-                manager: ChallengesManager(),
-                onSelectChallenge: { _ in },
-                onCreateChallenge: {},
-                onQuickAdd: { _ in },
-                onDeleteChallenge: { _ in }
-            )
-            .navigationTitle("Challenges")
-        }
-    }
 
 #Preview("Empty") {
     EmptyStateView(onCreateChallenge: {})

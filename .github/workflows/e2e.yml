@@ -86,23 +86,46 @@ jobs:
           CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           API_BASE_URL: https://tally-tracker.app
 
+      - name: Select an available iPhone simulator
+        id: simulator
+        run: |
+          SIMULATOR_ID=$(xcrun simctl list devices available --json | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          iphones = [d for runtime, group in devices.items() if ".iOS-" in runtime for d in group if d["name"].startswith("iPhone") and d.get("isAvailable", False)]
+          if not iphones:
+              sys.exit("No available iPhone simulator")
+          print(iphones[0]["udid"])
+          ')
+          echo "id=$SIMULATOR_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Run challenge unit tests
+        working-directory: ios
+        run: |
+          xcodebuild test \
+            -workspace Tally.xcworkspace \
+            -scheme TallyFeatureChallenges \
+            -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}' \
+            -parallel-testing-enabled NO \
+            -resultBundlePath UnitTestResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO
+
       - name: Run UI tests
         working-directory: ios
         run: |
-          eval "$(mise activate bash)"
           xcodebuild test \
             -workspace Tally.xcworkspace \
             -scheme App \
-            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+            -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}' \
+            -parallel-testing-enabled NO \
             -resultBundlePath TestResults.xcresult \
-            CODE_SIGNING_ALLOWED=NO \
-            || true  # Don't fail CI if tests fail (still in development)
+            CODE_SIGNING_ALLOWED=NO
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ios-test-results
-          path: ios/TestResults.xcresult
+          path: ios/*TestResults.xcresult
           retention-days: 7
 
   android-ui:

@@ -68,6 +68,7 @@ final class ChallengeTests: TallyUITestCase {
             // Change target
             if challengeDialog.targetTextField.waitForExistence(timeout: 5) {
                 clearAndType(challengeDialog.targetTextField, text: "1500")
+                XCTAssertEqual((challengeDialog.targetTextField.value as? String)?.replacingOccurrences(of: ",", with: ""), "1500")
                 challengeDialog.tapSaveAndWaitForDismiss()
             }
         }
@@ -76,9 +77,8 @@ final class ChallengeTests: TallyUITestCase {
         challengeDetail.tapBack()
         let card = dashboardPage.challengeCard(named: "Edit Test")
         XCTAssertTrue(card.waitForExistence(timeout: 10))
-        let predicate = NSPredicate(format: "label CONTAINS[c] %@", "1500")
-        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: card)
-        XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 10), .completed)
+        let details = card.buttons.matching(NSPredicate(format: "label CONTAINS %@", "of 1500")).firstMatch
+        XCTAssertTrue(details.waitForExistence(timeout: 10), "The details action should announce the updated target.")
     }
     
     func testDeleteChallengeWithConfirmation() throws {

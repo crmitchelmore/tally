@@ -107,6 +107,10 @@ class EntryTests {
         // Add entry and save
         entryDialog.addEntry(TestData.ENTRY_COUNT)
         composeRule.waitForIdle()
+        dashboardPage.assertTotal(TestData.ENTRY_COUNT.toInt(), 10000)
+        composeRule.activityRule.scenario.recreate()
+        composeRule.waitForIdle()
+        dashboardPage.assertTotal(TestData.ENTRY_COUNT.toInt(), 10000)
     }
     
     @Test
@@ -148,6 +152,7 @@ class EntryTests {
         
         entryDialog.addEntry("5")
         composeRule.waitForIdle()
+        dashboardPage.assertTotal(5, 10000)
     }
     
     // MARK: - Multiple Entries
@@ -181,5 +186,6 @@ class EntryTests {
         
         entryDialog.addEntry("25")
         composeRule.waitForIdle()
+        dashboardPage.assertTotal(55, 10000)
     }
 }

@@ -6,6 +6,8 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import java.text.NumberFormat
 import androidx.compose.ui.test.assertIsDisplayed
 
 /**
@@ -50,7 +52,7 @@ class DashboardPage(private val composeRule: ComposeTestRule) {
     }
     
     fun tapQuickAdd(name: String) {
-        quickAddButton(name).performClick()
+        quickAddButton(name).performScrollTo().performClick()
         composeRule.waitForIdle()
     }
 
@@ -88,6 +90,14 @@ class DashboardPage(private val composeRule: ComposeTestRule) {
         throw lastError ?: AssertionError("Challenge '$name' not found within ${timeoutMs}ms")
     }
     
+    fun assertTotal(total: Int, target: Int) {
+        val format = NumberFormat.getNumberInstance()
+        val text = "${format.format(total)} / ${format.format(target)}"
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodes(hasText(text)).fetchSemanticsNodes().isNotEmpty()
+        }
+    }
+
     fun assertChallengeNotExists(name: String) {
         composeRule.waitForIdle()
         val exists = composeRule

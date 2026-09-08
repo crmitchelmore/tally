@@ -19,6 +19,12 @@ public extension Color {
         dark: Color(red: 0.14, green: 0.14, blue: 0.15)
     )
     
+    /// Raised content surface, distinct from the paper canvas in either appearance.
+    static let tallySurface = Color(
+        light: .white,
+        dark: Color(red: 0.14, green: 0.14, blue: 0.15)
+    )
+
     // MARK: - Ink (Foreground)
     
     /// Primary ink color for strokes and text

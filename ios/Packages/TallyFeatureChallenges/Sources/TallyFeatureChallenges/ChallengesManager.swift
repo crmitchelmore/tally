@@ -196,11 +196,7 @@ public final class ChallengesManager {
     private let dashboardConfigDefaults: UserDefaults
     private let dashboardConfigKey = "tally.dashboard.config"
     
-    private static let fullDateFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withFullDate]
-        return formatter
-    }()
+    private static let fullDateFormatter = CalendarDay.formatter()
     
     private static let timestampFormatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
@@ -225,6 +221,7 @@ public final class ChallengesManager {
         self.challenges = localStore.loadChallenges()
         self.stats = localStore.loadStats()
         self.dashboardConfig = loadDashboardConfig()
+        refreshCachedProgress()
         updateSyncState()
         Task {
             await refreshDashboardConfig()
@@ -283,6 +280,7 @@ public final class ChallengesManager {
             // Reload from local storage on error
             challenges = localStore.loadChallenges()
             stats = localStore.loadStats()
+            refreshCachedProgress()
             serverDashboardStats = nil
             serverPersonalRecords = nil
             print("[ChallengesManager] refresh() loaded from local: \(challenges.count) challenges")
@@ -297,6 +295,7 @@ public final class ChallengesManager {
             // Reload from local storage on error
             challenges = localStore.loadChallenges()
             stats = localStore.loadStats()
+            refreshCachedProgress()
             serverDashboardStats = nil
             serverPersonalRecords = nil
             print("[ChallengesManager] refresh() loaded from local: \(challenges.count) challenges")
@@ -339,8 +338,7 @@ public final class ChallengesManager {
     ) async {
         let tempId = UUID().uuidString
         let now = ISO8601DateFormatter().string(from: Date())
-        let dateFormatter = ISO8601DateFormatter()
-        dateFormatter.formatOptions = [.withFullDate]
+        let dateFormatter = Self.fullDateFormatter
         
         // Create local challenge immediately (optimistic)
         let challenge = Challenge(
@@ -363,21 +361,8 @@ public final class ChallengesManager {
         )
         
         // Create initial stats for new challenge
-        let initialStats = ChallengeStats(
-            challengeId: tempId,
-            totalCount: 0,
-            remaining: target,
-            daysElapsed: 0,
-            daysRemaining: Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 365,
-            perDayRequired: Double(target) / Double(max(1, Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 365)),
-            currentPace: 0,
-            paceStatus: .none,
-            streakCurrent: 0,
-            streakBest: 0,
-            bestDay: nil,
-            dailyAverage: 0
-        )
-        
+        let initialStats = ChallengeProgress.updating(challenge: challenge, total: 0)
+
         localStore.upsertChallenge(challenge)
         localStore.upsertStats(initialStats, for: tempId)
         localStore.addPendingChange(.create(id: tempId))
@@ -427,6 +412,7 @@ public final class ChallengesManager {
         localStore.upsertChallenge(updated)
         localStore.addPendingChange(.update(id: id))
         challenges = localStore.loadChallenges()
+        updateStatsOptimistically(for: id, addedCount: 0)
         updateSyncState()
         
         if isOnline {
@@ -514,48 +500,22 @@ public final class ChallengesManager {
     
     /// Update stats locally after adding entry (optimistic update)
     private func updateStatsOptimistically(for challengeId: String, addedCount: Int) {
-        guard var currentStats = stats[challengeId] else { return }
-        
-        // Update stats optimistically
-        let newTotal = currentStats.totalCount + addedCount
-        let challenge = challenges.first { $0.id == challengeId }
-        let target = challenge?.target ?? currentStats.totalCount + currentStats.remaining
-        let newRemaining = max(0, target - newTotal)
-        
-        // Calculate new pace
-        let daysElapsed = max(1, currentStats.daysElapsed)
-        let newPace = Double(newTotal) / Double(daysElapsed)
-        
-        // Determine pace status
-        let newPaceStatus: PaceStatus
-        if currentStats.perDayRequired > 0 {
-            let ratio = newPace / currentStats.perDayRequired
-            if ratio >= 1.1 {
-                newPaceStatus = .ahead
-            } else if ratio >= 0.9 {
-                newPaceStatus = .onPace
-            } else {
-                newPaceStatus = .behind
-            }
-        } else {
-            newPaceStatus = .none
-        }
-        
-        let updatedStats = ChallengeStats(
-            challengeId: challengeId,
-            totalCount: newTotal,
-            remaining: newRemaining,
-            daysElapsed: currentStats.daysElapsed,
-            daysRemaining: currentStats.daysRemaining,
-            perDayRequired: currentStats.perDayRequired,
-            currentPace: newPace,
-            paceStatus: newPaceStatus,
-            streakCurrent: currentStats.streakCurrent,
-            streakBest: currentStats.streakBest,
-            bestDay: currentStats.bestDay,
-            dailyAverage: newPace
+        guard let challenge = challenges.first(where: { $0.id == challengeId }) else { return }
+        let currentStats = stats[challengeId]
+        let newTotal = max(0, (currentStats?.totalCount ?? 0) + addedCount)
+        let cachedEntries = localEntryStore.loadEntries(forChallenge: challengeId)
+        let activeDays = Set(cachedEntries.map(\.date)).count
+        // Recompute the active-day average only when the cached history is complete.
+        let average: Double? = cachedEntries.reduce(0, { $0 + $1.count }) == newTotal
+            ? (activeDays > 0 ? (Double(newTotal) / Double(activeDays) * 10).rounded() / 10 : 0)
+            : nil
+        let updatedStats = ChallengeProgress.updating(
+            challenge: challenge,
+            total: newTotal,
+            previous: currentStats,
+            dailyAverage: average
         )
-        
+
         // Update in-memory and persisted stats
         var updatedStatsMap = stats
         updatedStatsMap[challengeId] = updatedStats
@@ -563,6 +523,20 @@ public final class ChallengesManager {
         localStore.upsertStats(updatedStats, for: challengeId)
     }
     
+    /// Cached dates advance even when the account is offline or no entry is added.
+    private func refreshCachedProgress() {
+        var refreshed = stats
+        for challenge in challenges {
+            guard let previous = stats[challenge.id] else { continue }
+            let current = ChallengeProgress.updating(challenge: challenge, total: previous.totalCount, previous: previous)
+            if current != previous {
+                refreshed[challenge.id] = current
+                localStore.upsertStats(current, for: challenge.id)
+            }
+        }
+        stats = refreshed
+    }
+
     /// Get recent entries for a challenge (from local cache)
     public func recentEntries(for challengeId: String, limit: Int = 10) -> [Entry] {
         localEntryStore.loadEntries(forChallenge: challengeId)

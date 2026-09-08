@@ -12,13 +12,13 @@ Sentry organisation: [Tally (`tally-lz`)](https://tally-lz.sentry.io/). Web proj
 
 API analytics captures creation, edits, archival, entry deletion, and import/export using the existing canonical event names. Delivery is awaited with a bounded timeout, and telemetry failures do not fail successful user actions. Browser events use `source=client`; API events use `source=server`. API events describe persisted changes, while native client events describe local actions; do not sum the two as separate conversions.
 
-Next.js request-error and router-transition hooks connect server rendering failures and browser navigation tracing to Sentry. Add a scoped `SENTRY_AUTH_TOKEN` repository secret to enable web source-map uploads; the build integration is wired, but token creation and upload verification require Sentry account access. This token is build-only and must never use a `NEXT_PUBLIC_` prefix. Existing Vercel build configuration is preserved when the GitHub token is absent.
+Next.js request-error and router-transition hooks connect server rendering failures and browser navigation tracing to Sentry. The scoped `SENTRY_AUTH_TOKEN` repository secret enables web source-map uploads. Its Sentry organization token is named `Tally GitHub Actions uploads`, with only the `org:ci` scope. This token is build-only and must never use a `NEXT_PUBLIC_` prefix. Existing Vercel build configuration is preserved when the GitHub token is absent. A labelled informational smoke event was verified in the Sentry dashboard on 8 September 2026.
 
 ## iOS
 
 The shipped app lives in `ios/`, not the historical `tally-ios/` tree. Its TallyCore analytics facade uses the official PostHog SDK, with explicit app-open, auth, challenge and entry events. Goal names, notes, email addresses, screen contents and session replays are not captured. Tests disable analytics and Sentry. The SDK handles its local event queue and flushes when the app backgrounds.
 
-The TestFlight workflow passes `TUIST_POSTHOG_KEY` and `TUIST_POSTHOG_HOST` from the same repository secrets into Tuist. Local builds have analytics disabled unless a key is explicitly supplied before `tuist generate`. Existing native Sentry crash reporting remains connected; automatic screenshots are disabled. Native symbol-upload verification still requires access to the existing Sentry iOS project.
+The TestFlight workflow passes `TUIST_POSTHOG_KEY` and `TUIST_POSTHOG_HOST` from the same repository secrets into Tuist. Local builds have analytics disabled unless a key is explicitly supplied before `tuist generate`. Existing native Sentry crash reporting remains connected; automatic screenshots are disabled. The TestFlight archive uploads dSYMs to the existing `apple-ios` project using the same scoped CI token.
 
 ## Verification
 

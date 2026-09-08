@@ -44,7 +44,6 @@ public struct DashboardView: View {
                 onUnfollow: onUnfollow
             )
         }
-        .tallyPadding(.vertical)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -136,7 +135,7 @@ public struct DashboardView: View {
             Text(Date.now, format: .dateTime.weekday(.wide).month(.wide).day())
                 .font(.subheadline)
                 .foregroundStyle(Color.tallyInkSecondary)
-            Text("Small steps.\nReal progress.")
+            Text("Your progress")
                 .font(.largeTitle.weight(.semibold))
                 .tracking(-0.8)
                 .foregroundStyle(Color.tallyInk)

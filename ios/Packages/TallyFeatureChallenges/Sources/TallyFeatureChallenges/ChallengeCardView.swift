@@ -67,21 +67,7 @@ public struct ChallengeCardView: View {
                         .tint(challengeColor)
                         .accessibilityHidden(true)
 
-                    if dynamicTypeSize.isAccessibilitySize {
-                        statusLabel
-                    } else {
-                        ViewThatFits(in: .horizontal) {
-                            HStack(alignment: .center) {
-                                statusLabel
-                                Spacer(minLength: TallySpacing.base)
-                                activity
-                            }
-                            VStack(alignment: .leading, spacing: TallySpacing.md) {
-                                statusLabel
-                                activity
-                            }
-                        }
-                    }
+                    statusLabel
                 }
                 .padding(TallySpacing.lg)
                 .contentShape(Rectangle())
@@ -92,6 +78,11 @@ public struct ChallengeCardView: View {
 
             if !challenge.isFuture && !challenge.isArchived {
                 quickAddButton
+                    .padding(.horizontal, TallySpacing.lg)
+                    .padding(.bottom, TallySpacing.lg)
+            }
+            if !dynamicTypeSize.isAccessibilitySize && !challenge.isFuture {
+                activity
                     .padding(.horizontal, TallySpacing.lg)
                     .padding(.bottom, TallySpacing.lg)
             }
@@ -134,11 +125,11 @@ public struct ChallengeCardView: View {
     }
 
     private var activity: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("LAST 8 WEEKS")
-                .font(.caption2.weight(.medium))
-                .tracking(0.6)
+        HStack(spacing: TallySpacing.md) {
+            Text("Activity · last 8 weeks")
+                .font(.caption)
                 .foregroundStyle(Color.tallyInkSecondary)
+            Spacer(minLength: 0)
             MiniHeatmapView(entries: entries, colorHex: challenge.color, weeksToShow: 8)
         }
         .accessibilityHidden(true)

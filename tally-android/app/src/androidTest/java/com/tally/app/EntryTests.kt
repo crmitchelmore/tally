@@ -86,14 +86,14 @@ class EntryTests {
             throw AssertionError("Challenge creation failed")
         }
         
-        // Tap challenge card to open entry dialog
+        // Open the dashboard quick-add dialog
         dashboardPage.tapQuickAdd("Push-ups Entry")
         composeRule.waitForIdle()
         Thread.sleep(500) // Wait for dialog animation
         
         // Entry dialog should open directly - look for Save button
         val dialogVisible = try {
-            composeRule.onNodeWithTag("saveButton").assertExists()
+            entryDialog.assertIsVisible()
             true
         } catch (e: AssertionError) {
             false
@@ -101,7 +101,7 @@ class EntryTests {
         
         if (!dialogVisible) {
             // Dialog didn't open, fail gracefully
-            throw AssertionError("Entry dialog did not open when tapping challenge")
+            throw AssertionError("Entry dialog did not open from quick-add")
         }
         
         // Add entry and save
@@ -120,13 +120,13 @@ class EntryTests {
             throw AssertionError("Challenge creation failed")
         }
         
-        // Tap challenge card
+        // Open quick-add
         dashboardPage.tapQuickAdd("Quick Add Entry")
         composeRule.waitForIdle()
         Thread.sleep(500)
         
         // Look for Save button which indicates entry dialog
-        composeRule.onNodeWithTag("saveButton").assertExists()
+        entryDialog.assertIsVisible()
     }
     
     // MARK: - Entry Feedback
@@ -145,7 +145,7 @@ class EntryTests {
         
         // Check dialog is visible via Save button
         try {
-            composeRule.onNodeWithTag("saveButton").assertExists()
+            entryDialog.assertIsVisible()
         } catch (e: AssertionError) {
             throw AssertionError("Entry dialog did not open")
         }
@@ -170,7 +170,7 @@ class EntryTests {
         Thread.sleep(500)
         
         try {
-            composeRule.onNodeWithTag("saveButton").assertExists()
+            entryDialog.assertIsVisible()
         } catch (e: AssertionError) {
             throw AssertionError("Entry dialog did not open for first entry")
         }

@@ -105,7 +105,6 @@ jobs:
           # Create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/certificate.p12
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          PROFILE_PATH=$RUNNER_TEMP/profile.mobileprovision
 
           # Decode from base64 (use BSD-compatible -D flag for macOS)
           echo -n "$P12_BASE64" | base64 -D -o "$CERTIFICATE_PATH"
@@ -135,7 +134,7 @@ jobs:
             exit 1
           fi
 
-          # Create a matching App Store provisioning profile for this certificate
+          # Each embedded bundle needs its own matching App Store profile.
           export CERT_SERIAL APP_STORE_CONNECT_KEY_ID APP_STORE_CONNECT_ISSUER_ID APP_STORE_CONNECT_PRIVATE_KEY IOS_BUNDLE_ID
           PROFILE_JSON=$(node <<'NODE'
             const crypto = require('crypto');
@@ -193,33 +192,35 @@ jobs:
                 throw new Error(`No DISTRIBUTION certificate in ASC matched serial ${process.env.CERT_SERIAL}`);
               }
 
-              const bundleIds = await apiGet(`/v1/bundleIds?filter[identifier]=${encodeURIComponent(process.env.IOS_BUNDLE_ID)}&limit=2`, jwt);
-              const bundleId = bundleIds.data?.[0];
-              if (!bundleId) {
-                throw new Error(`Bundle ID not found: ${process.env.IOS_BUNDLE_ID}`);
-              }
-
-              const profileName = `Tally App Store CI ${Date.now()}`;
-              const created = await apiPost('/v1/profiles', jwt, {
-                data: {
-                  type: 'profiles',
-                  attributes: {
-                    name: profileName,
-                    profileType: 'IOS_APP_STORE'
-                  },
-                  relationships: {
-                    bundleId: { data: { type: 'bundleIds', id: bundleId.id } },
-                    certificates: { data: [{ type: 'certificates', id: matchingCert.id }] }
-                  }
+              const profiles = [];
+              for (const identifier of [process.env.IOS_BUNDLE_ID, `${process.env.IOS_BUNDLE_ID}.widget`]) {
+                const bundleIds = await apiGet(`/v1/bundleIds?filter[identifier]=${encodeURIComponent(identifier)}&limit=2`, jwt);
+                const bundleId = bundleIds.data?.[0];
+                if (!bundleId) {
+                  throw new Error(`Bundle ID not found: ${identifier}`);
                 }
-              });
 
-              const profile = created.data;
-              console.log(JSON.stringify({
-                uuid: profile.attributes?.uuid,
-                name: profile.attributes?.name,
-                content: profile.attributes?.profileContent
-              }));
+                const profileName = `Tally ${identifier} App Store CI ${Date.now()}`;
+                const created = await apiPost('/v1/profiles', jwt, {
+                  data: {
+                    type: 'profiles',
+                    attributes: { name: profileName, profileType: 'IOS_APP_STORE' },
+                    relationships: {
+                      bundleId: { data: { type: 'bundleIds', id: bundleId.id } },
+                      certificates: { data: [{ type: 'certificates', id: matchingCert.id }] }
+                    }
+                  }
+                });
+
+                const profile = created.data;
+                profiles.push({
+                  identifier,
+                  uuid: profile.attributes?.uuid,
+                  name: profile.attributes?.name,
+                  content: profile.attributes?.profileContent
+                });
+              }
+              console.log(JSON.stringify(profiles));
             })().catch((error) => {
               console.error(error.message);
               process.exit(1);
@@ -227,20 +228,22 @@ jobs:
           NODE
           )
 
-          PROFILE_UUID=$(echo "$PROFILE_JSON" | jq -r '.uuid')
-          PROFILE_NAME=$(echo "$PROFILE_JSON" | jq -r '.name')
-          PROFILE_CONTENT=$(echo "$PROFILE_JSON" | jq -r '.content')
-
-          if [ -z "$PROFILE_UUID" ] || [ -z "$PROFILE_NAME" ] || [ -z "$PROFILE_CONTENT" ] || [ "$PROFILE_UUID" = "null" ] || [ "$PROFILE_NAME" = "null" ] || [ "$PROFILE_CONTENT" = "null" ]; then
-            echo "Failed to create provisioning profile from App Store Connect: $PROFILE_JSON" >&2
-            exit 1
-          fi
-
-          echo "$PROFILE_CONTENT" | base64 -D -o "$PROFILE_PATH"
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp "$PROFILE_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision
-          echo "PROVISIONING_PROFILE_UUID=$PROFILE_UUID" >> $GITHUB_ENV
-          echo "PROVISIONING_PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
+          for INDEX in 0 1; do
+            PROFILE_UUID=$(echo "$PROFILE_JSON" | jq -r ".[$INDEX].uuid")
+            PROFILE_NAME=$(echo "$PROFILE_JSON" | jq -r ".[$INDEX].name")
+            PROFILE_CONTENT=$(echo "$PROFILE_JSON" | jq -r ".[$INDEX].content")
+            if [ -z "$PROFILE_UUID" ] || [ -z "$PROFILE_NAME" ] || [ -z "$PROFILE_CONTENT" ] || [ "$PROFILE_UUID" = "null" ] || [ "$PROFILE_NAME" = "null" ] || [ "$PROFILE_CONTENT" = "null" ]; then
+              echo "Failed to create provisioning profile for bundle index $INDEX" >&2
+              exit 1
+            fi
+            echo "$PROFILE_CONTENT" | base64 -D -o "$HOME/Library/MobileDevice/Provisioning Profiles/${PROFILE_UUID}.mobileprovision"
+            if [ "$INDEX" = "0" ]; then
+              echo "PROVISIONING_PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
+            else
+              echo "WIDGET_PROVISIONING_PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
+            fi
+          done
 
       - name: Generate Xcode project with Tuist
         working-directory: ios
@@ -253,6 +256,7 @@ jobs:
           # Pass manual signing settings generated above
           TUIST_DEVELOPMENT_TEAM: ${{ secrets.IOS_TEAM_ID }}
           TUIST_PROVISIONING_PROFILE_SPECIFIER: ${{ env.PROVISIONING_PROFILE_NAME }}
+          TUIST_WIDGET_PROVISIONING_PROFILE_SPECIFIER: ${{ env.WIDGET_PROVISIONING_PROFILE_NAME }}
           TUIST_CODE_SIGN_IDENTITY: "Apple Distribution"
         run: |
           mise use -g tuist@4.32.0
@@ -335,6 +339,8 @@ jobs:
               <dict>
                   <key>${{ env.IOS_BUNDLE_ID }}</key>
                   <string>${{ env.PROVISIONING_PROFILE_NAME }}</string>
+                  <key>${{ env.IOS_BUNDLE_ID }}.widget</key>
+                  <string>${{ env.WIDGET_PROVISIONING_PROFILE_NAME }}</string>
               </dict>
           </dict>
           </plist>

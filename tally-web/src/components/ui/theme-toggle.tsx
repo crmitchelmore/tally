@@ -34,8 +34,8 @@ export function ThemeToggle({ className = "" }: ThemeToggleProps) {
       type="button"
       onClick={cycleTheme}
       className={`
-        p-2 rounded-lg text-muted hover:text-ink dark:hover:text-paper
-        hover:bg-ink/5 dark:hover:bg-paper/5 transition-colors
+        min-w-11 min-h-11 p-2 rounded-lg text-muted hover:text-ink
+        hover:bg-ink/5 transition-colors
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
         ${className}
       `}

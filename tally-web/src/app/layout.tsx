@@ -5,6 +5,7 @@ import { TelemetryProvider } from "@/components/TelemetryProvider";
 import { ConvexClientProvider } from "@/lib/convex";
 import { DebugBridgeInit } from "@/components/DebugBridgeInit";
 import "./globals.css";
+import "./refresh.css";
 
 const inter = Inter({
   variable: "--font-inter",

@@ -420,7 +420,7 @@ export function AppShowcase() {
         Native on every platform
       </h2>
       <p className="app-showcase-subhead">
-        SwiftUI on iOS. Jetpack Compose on Android. Offline-first, always in sync.
+        At home on your phone. Ready when inspiration strikes.
       </p>
 
       <div className="platform-toggle" role="tablist">
@@ -432,7 +432,7 @@ export function AppShowcase() {
             className={`platform-tab ${activePlatform === platform.id ? "active" : ""}`}
             onClick={() => setActivePlatform(platform.id)}
           >
-            {platform.id === "ios" ? "🍎" : "🤖"} {platform.label}
+            {platform.label}
           </button>
         ))}
       </div>
@@ -477,9 +477,9 @@ export function AppShowcase() {
       </div>
 
       <div className="app-showcase-stores">
-        <a href="/ios" className="store-link store-link-live"><span className="store-icon">🍎</span> App Store</a>
+        <a href="/ios" className="store-link store-link-live">App Store</a>
         <span className="store-divider">·</span>
-        <a href="/android" className="store-link"><span className="store-icon">▶️</span> Google Play <span className="store-soon">(coming soon)</span></a>
+        <a href="/android" className="store-link">Google Play <span className="store-soon">(coming soon)</span></a>
       </div>
     </section>
   );

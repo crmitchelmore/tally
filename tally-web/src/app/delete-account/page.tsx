@@ -28,6 +28,12 @@ export default function DeleteAccount() {
         <label className="block">Type DELETE to confirm<input className="mt-2 block w-full rounded-lg border border-border bg-surface p-3" value={confirmation} onChange={e => setConfirmation(e.target.value)} autoComplete="off" /></label>
         <button disabled={confirmation !== "DELETE" || busy} onClick={remove} className="rounded-xl bg-red-700 text-white px-5 py-3 disabled:opacity-50">{busy ? "Deleting…" : "Permanently delete account"}</button>
       </>}{error && <p role="alert">{error}</p>}
-    </>}<p><Link href="/support" className="underline">Contact support</Link> · <Link href="/privacy" className="underline">Privacy policy</Link></p>
+    </>}
+    <section className="space-y-3 border-t border-border pt-6">
+      <h2 className="text-xl font-semibold">Delete specific data and keep your account</h2>
+      <p>To request removal of particular goals, entries or historical analytics while keeping your account, <a className="underline" href="mailto:chrismitchelmore@gmail.com?subject=Tally%20data%20deletion%20request">email Tally support</a> from your account email. Tell us which records to delete and which to keep. We will verify ownership before removing account data.</p>
+      <p>Deleting cloud records does not clear offline copies on other devices. Backup, security and store transaction records may remain for their necessary retention period.</p>
+    </section>
+    <p><Link href="/support" className="underline">Contact support</Link> · <Link href="/privacy" className="underline">Privacy policy</Link></p>
   </main>;
 }

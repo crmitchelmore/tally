@@ -1,9 +1,6 @@
 name: Store Screenshots
 on:
   workflow_dispatch:
-  push:
-    branches: [codex/store-readiness]
-    paths: [.github/workflows/store-assets.yml]
 permissions:
   contents: read
 jobs:

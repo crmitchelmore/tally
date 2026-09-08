@@ -1,8 +1,5 @@
 name: Android Store Release
 on:
-  push:
-    branches: [codex/store-readiness]
-    paths: [.github/workflows/android-store.yml]
   workflow_dispatch:
     inputs:
       track:

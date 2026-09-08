@@ -1,9 +1,6 @@
 name: Prepare Store Review Account
 on:
   workflow_dispatch:
-  push:
-    branches: [codex/store-readiness]
-    paths: [.github/workflows/store-review-account.yml]
 permissions:
   contents: read
 jobs:

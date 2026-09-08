@@ -42,7 +42,7 @@ Account deletion requires a verified Clerk session and uses its identity for Con
 
 ## Remaining release gates
 
-- Owner App Review contact phone number.
+- Owner App Review contact phone number (name, email, dedicated login and reviewer instructions are saved).
 - Account-wide Apple MRDP personal-services declaration.
 - Android permanent package-name choice after collision.
 - Community report/block/filtering support, or an explicitly agreed first-release scope without public sharing/discovery.
@@ -53,7 +53,7 @@ Account deletion requires a verified Clerk session and uses its identity for Con
 
 ## Verification captured
 
-- Local iOS simulator build succeeded with privacy controls. The first iOS consent UI run found the decline action was unreliable; actions were moved to a fixed bottom area and a rerun is required.
+- Local iOS simulator build succeeded with privacy controls. The first iOS consent UI run found the decline action was unreliable; actions were moved to a fixed bottom area. The decline and relaunch test then passed in run 34280532559.
 - Android privacy instrumentation tests passed on the first consent implementation.
 - Android signed release and release unit tests passed in run 34278297388; Play then rejected its package name.
 - Web tests: 80 passed, TypeScript passed; latest web CI and browser E2E passed.
@@ -65,3 +65,9 @@ Do not describe TestFlight processing, draft Play uploads or passing CI as publi
 ## Optional tips
 
 Apple has no configured in-app purchase products. The app now shows an honest unavailable state after loading instead of an endless spinner. No new tip prices have been invented or activated. Product IDs in both clients are `tip_small`, `tip_medium`, and `tip_large`.
+
+## Store setup saved during this release
+
+Apple privacy labels are published for nine data types: name, email, user ID, device ID, user content, fitness, product interactions, crash data and performance data. No advertising tracking is declared. Pricing is free in all 175 regions, with worldwide availability on release. Google privacy, no-ads, non-government, no-financial-services and manual activity/fitness declarations are saved. The data-safety draft discloses optional account, fitness, content, interaction, identifier and diagnostic collection; final submission also requires the target-audience declaration.
+
+A dedicated store review identity was provisioned with a generated password using the existing production Clerk administration credential. The password was never written to logs. Its encrypted artifact from run 34282135746 was decrypted into `~/.config/tally/release/store-review-account.json` (mode 600); encrypted GitHub secrets `APP_REVIEW_EMAIL` and `APP_REVIEW_PASSWORD` preserve the same configuration. App Store Connect login fields were saved and verified after reloading. The local RSA recovery key is `store-review-private.pem`; only its public key is saved in GitHub. Do not reset the review password during an active store review.

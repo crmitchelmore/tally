@@ -9,6 +9,10 @@ permissions:
   contents: read
   statuses: write
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ─────────────────────────────────────────────────────────────
   # Web: lint + build

@@ -262,15 +262,14 @@ jobs:
       - name: Update version and build number
         working-directory: ios/App
         run: |
-          # Update version in generated Info.plist (Tuist puts it in Derived/InfoPlists/)
+          # The app and embedded widget must carry the same release version/build.
           INFO_PLIST="Derived/InfoPlists/App-Info.plist"
-          
-          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.params.outputs.VERSION }}" "$INFO_PLIST" 2>/dev/null || \
-          /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string ${{ steps.params.outputs.VERSION }}" "$INFO_PLIST"
-          
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.build_number.outputs.BUILD_NUMBER }}" "$INFO_PLIST" 2>/dev/null || \
-          /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${{ steps.build_number.outputs.BUILD_NUMBER }}" "$INFO_PLIST"
-          
+          WIDGET_INFO_PLIST="../Packages/TallyWidgetExtension/Derived/InfoPlists/TallyWidgetExtension-Info.plist"
+          for PLIST in "$INFO_PLIST" "$WIDGET_INFO_PLIST"; do
+            /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.params.outputs.VERSION }}" "$PLIST"
+            /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.build_number.outputs.BUILD_NUMBER }}" "$PLIST"
+          done
+
           # Add Git commit SHA (short version for display)
           GIT_COMMIT_SHORT=$(echo "${{ github.sha }}" | cut -c1-7)
           /usr/libexec/PlistBuddy -c "Set :GIT_COMMIT_SHA $GIT_COMMIT_SHORT" "$INFO_PLIST" 2>/dev/null || \

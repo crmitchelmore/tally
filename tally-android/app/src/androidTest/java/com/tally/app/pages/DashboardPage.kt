@@ -28,7 +28,7 @@ class DashboardPage(private val composeRule: ComposeTestRule) {
     fun syncStatus() = composeRule.onNodeWithTag("sync_status")
     
     fun quickAddButton(challengeName: String) = 
-        composeRule.onNodeWithTag("quick_add_$challengeName")
+        composeRule.onNodeWithTag("add_entry_$challengeName")
     
     // MARK: - Actions
     
@@ -49,6 +49,11 @@ class DashboardPage(private val composeRule: ComposeTestRule) {
         composeRule.waitForIdle()
     }
     
+    fun tapQuickAdd(name: String) {
+        quickAddButton(name).performClick()
+        composeRule.waitForIdle()
+    }
+
     fun tapChallenge(name: String) {
         composeRule.waitForIdle()
         challengeCard(name).performClick()

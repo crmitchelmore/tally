@@ -145,6 +145,15 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Resolve Gradle distribution
+        working-directory: tally-android
+        run: |
+          for attempt in 1 2 3; do
+            if ./gradlew --version; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
@@ -185,7 +194,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           working-directory: tally-android
-          script: ./gradlew connectedAndroidTest || true  # Don't fail CI if tests fail
+          script: ./gradlew connectedAndroidTest --no-daemon
         env:
           CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           API_BASE_URL: https://tally-tracker.app

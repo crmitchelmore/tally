@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tally.app.pages.AuthPage
 import com.tally.app.pages.DashboardPage
 import org.junit.Assume.assumeTrue
+import com.tally.app.utils.FreshLocalDataRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -21,7 +22,10 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class AuthTests {
     
-    @get:Rule
+    @get:Rule(order = 0)
+    val freshData = FreshLocalDataRule()
+
+    @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<MainActivity>()
     
     private val authPage by lazy { AuthPage(composeRule) }

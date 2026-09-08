@@ -113,6 +113,13 @@ jobs:
         run: ./gradlew assembleDebug --no-daemon
       - name: Run Android unit tests
         run: ./gradlew testDebugUnitTest --no-daemon
+      - name: Upload Android preview APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: tally-android-debug
+          path: tally-android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
 
   # Required branch-protection status context (configured as "build")
   build:

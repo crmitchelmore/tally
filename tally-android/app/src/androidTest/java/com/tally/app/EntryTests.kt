@@ -10,6 +10,7 @@ import com.tally.app.pages.ChallengeDialogPage
 import com.tally.app.pages.DashboardPage
 import com.tally.app.pages.EntryDialogPage
 import com.tally.app.utils.TestData
+import com.tally.app.utils.FreshLocalDataRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,12 +20,15 @@ import org.junit.runner.RunWith
  * Maps to cucumber/04-entry-logging.feature
  * 
  * Note: In current Android implementation, clicking a challenge card 
- * opens the AddEntryDialog directly (no separate detail screen).
+ * opens the detail screen; the quick-add button opens AddEntryDialog.
  */
 @RunWith(AndroidJUnit4::class)
 class EntryTests {
     
-    @get:Rule
+    @get:Rule(order = 0)
+    val freshData = FreshLocalDataRule()
+
+    @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<MainActivity>()
     
     private val authPage by lazy { AuthPage(composeRule) }
@@ -79,18 +83,17 @@ class EntryTests {
     fun testAddSimpleEntryToChallenge() {
         val created = createTestChallenge("Push-ups Entry")
         if (!created) {
-            // Challenge creation failed, skip test
-            return
+            throw AssertionError("Challenge creation failed")
         }
         
         // Tap challenge card to open entry dialog
-        dashboardPage.tapChallenge("Push-ups Entry")
+        dashboardPage.tapQuickAdd("Push-ups Entry")
         composeRule.waitForIdle()
         Thread.sleep(500) // Wait for dialog animation
         
         // Entry dialog should open directly - look for Save button
         val dialogVisible = try {
-            composeRule.onNodeWithText("Save").assertExists()
+            composeRule.onNodeWithTag("saveButton").assertExists()
             true
         } catch (e: AssertionError) {
             false
@@ -107,19 +110,19 @@ class EntryTests {
     }
     
     @Test
-    fun testTapChallengeOpensEntryDialog() {
+    fun testQuickAddOpensEntryDialog() {
         val created = createTestChallenge("Quick Add Entry")
         if (!created) {
-            return
+            throw AssertionError("Challenge creation failed")
         }
         
         // Tap challenge card
-        dashboardPage.tapChallenge("Quick Add Entry")
+        dashboardPage.tapQuickAdd("Quick Add Entry")
         composeRule.waitForIdle()
         Thread.sleep(500)
         
         // Look for Save button which indicates entry dialog
-        composeRule.onNodeWithText("Save").assertExists()
+        composeRule.onNodeWithTag("saveButton").assertExists()
     }
     
     // MARK: - Entry Feedback
@@ -128,17 +131,17 @@ class EntryTests {
     fun testSuccessFeedbackOnEntry() {
         val created = createTestChallenge("Feedback Entry")
         if (!created) {
-            return
+            throw AssertionError("Challenge creation failed")
         }
         
         // Tap to open entry dialog
-        dashboardPage.tapChallenge("Feedback Entry")
+        dashboardPage.tapQuickAdd("Feedback Entry")
         composeRule.waitForIdle()
         Thread.sleep(500)
         
         // Check dialog is visible via Save button
         try {
-            composeRule.onNodeWithText("Save").assertExists()
+            composeRule.onNodeWithTag("saveButton").assertExists()
         } catch (e: AssertionError) {
             throw AssertionError("Entry dialog did not open")
         }
@@ -153,16 +156,16 @@ class EntryTests {
     fun testAddMultipleEntriesOnSameDay() {
         val created = createTestChallenge("Multiple Entry")
         if (!created) {
-            return  
+            throw AssertionError("Challenge creation failed")
         }
         
         // Add first entry
-        dashboardPage.tapChallenge("Multiple Entry")
+        dashboardPage.tapQuickAdd("Multiple Entry")
         composeRule.waitForIdle()
         Thread.sleep(500)
         
         try {
-            composeRule.onNodeWithText("Save").assertExists()
+            composeRule.onNodeWithTag("saveButton").assertExists()
         } catch (e: AssertionError) {
             throw AssertionError("Entry dialog did not open for first entry")
         }
@@ -172,7 +175,7 @@ class EntryTests {
         Thread.sleep(500)
         
         // Add second entry
-        dashboardPage.tapChallenge("Multiple Entry")
+        dashboardPage.tapQuickAdd("Multiple Entry")
         composeRule.waitForIdle()
         Thread.sleep(500)
         

@@ -10,6 +10,7 @@ import com.tally.app.pages.ChallengeDialogPage
 import com.tally.app.pages.DashboardPage
 import com.tally.app.utils.TestData
 import com.tally.app.utils.FreshLocalDataRule
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import java.text.NumberFormat
@@ -73,7 +74,7 @@ class OnboardingTests {
             false
         }
         
-        assert(hasDashboard) { "Should be on dashboard" }
+        assertTrue("Should be on dashboard", hasDashboard)
     }
     
     // MARK: - Quick Start Flow
@@ -119,7 +120,7 @@ class OnboardingTests {
             .onAllNodes(hasText(NumberFormat.getNumberInstance().format(TestData.CHALLENGE_TARGET.toInt()), substring = true))
             .fetchSemanticsNodes()
             .isNotEmpty()
-        assert(hasTarget) { "Expected to find target ${TestData.CHALLENGE_TARGET} on dashboard" }
+        assertTrue("Expected to find target ${TestData.CHALLENGE_TARGET} on dashboard", hasTarget)
     }
     
     // MARK: - Understanding the Interface

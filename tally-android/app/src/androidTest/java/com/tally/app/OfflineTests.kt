@@ -9,6 +9,7 @@ import com.tally.app.pages.ChallengeDialogPage
 import com.tally.app.pages.DashboardPage
 import com.tally.app.pages.EntryDialogPage
 import com.tally.app.utils.FreshLocalDataRule
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -72,7 +73,7 @@ class OfflineTests {
             false
         }
         
-        assert(hasDashboard) { "Should be on dashboard" }
+        assertTrue("Should be on dashboard", hasDashboard)
     }
     
     @Test

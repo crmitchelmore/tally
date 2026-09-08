@@ -18,7 +18,7 @@ Next.js request-error and router-transition hooks connect server rendering failu
 
 The shipped app lives in `ios/`, not the historical `tally-ios/` tree. Its TallyCore analytics facade uses the official PostHog SDK, with explicit app-open, auth, challenge and entry events. Goal names, notes, email addresses, screen contents and session replays are not captured. Tests disable analytics and Sentry. The SDK handles its local event queue and flushes when the app backgrounds.
 
-The TestFlight workflow passes `TUIST_POSTHOG_KEY` and `TUIST_POSTHOG_HOST` from the same repository secrets into Tuist. Local builds have analytics disabled unless a key is explicitly supplied before `tuist generate`. Existing native Sentry crash reporting remains connected; automatic screenshots are disabled. The TestFlight archive uploads dSYMs to the existing `apple-ios` project using the same scoped CI token.
+The TestFlight workflow passes `TUIST_POSTHOG_KEY` and `TUIST_POSTHOG_HOST` from the same repository secrets into Tuist. Local builds have analytics disabled unless a key is explicitly supplied before `tuist generate`. PostHog and Sentry remain off until separately enabled in the privacy prompt or Settings. Withdrawal closes the corresponding SDK. Native analytics disables GeoIP enrichment, and API events honour the consent header and exclude goal/entry content. Sentry excludes screenshots, view hierarchy, account details and breadcrumbs. The TestFlight archive uploads dSYMs to the existing `apple-ios` project using the same scoped CI token.
 
 ## Verification
 
@@ -27,3 +27,7 @@ From `tally-web`, run `bun run test`, `bunx tsc --noEmit`, and `bun run build` w
 For an explicit live smoke test, provide the two public ingestion credentials in the environment and run `node scripts/verify-observability.mjs`. It emits `telemetry_verification` under `env=verification`, plus an informational Sentry event. The output includes a verification ID and Sentry event ID. Confirm them in the service dashboards: a completed SDK request or flushed queue alone is not proof of dashboard ingestion. The script creates no challenges, entries or user accounts.
 
 Official SDK guidance: [PostHog Vercel delivery](https://posthog.com/docs/libraries/vercel), [PostHog iOS](https://posthog.com/docs/libraries/ios), [Sentry Next.js setup](https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/).
+
+## Android
+
+`core:telemetry/PrivacyTelemetry.kt` initializes PostHog and Sentry only after their independent persisted choices. The SDK auto-init and advertising-ID permission are disabled. The signed release workflow supplies the ingestion settings and uploads mappings to Sentry project `android` (4510687487328337). Android currently records anonymous explicit app-open, goal-created and entry-created events.

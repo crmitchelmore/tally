@@ -20,7 +20,7 @@ Last verified: 8 September 2026. Both public store listings are still drafts.
 - `.github/workflows/store-assets.yml` captures real iPhone Pro Max, iPad Pro 13-inch and Android emulator screenshots using fictional local data.
 - `.github/workflows/deploy-production.yml` deploys Convex before the website.
 - Production Convex: `bright-jackal-396`; deployment-only credential is saved as GitHub `CONVEX_DEPLOY_KEY`. The production backup created on 8 September before the auth/deletion deployment completed successfully.
-- Sentry organization `tally-lz`, projects `ios` and `android`; Android project ID 4510687487328337. DSNs and upload token are GitHub secrets.
+- Sentry organization `tally-lz`, projects `apple-ios` and `android`; Android project ID 4510687487328337. DSNs and upload token are GitHub secrets.
 - PostHog EU project 114447; public ingestion key is provided through existing GitHub configuration.
 
 ## Android upload-key recovery
@@ -46,18 +46,22 @@ Account deletion requires a verified Clerk session and uses its identity for Con
 - Account-wide Apple MRDP personal-services declaration.
 - Android permanent package-name choice after collision.
 - Community report/block/filtering support, or an explicitly agreed first-release scope without public sharing/discovery.
-- Apple privacy questionnaire completion, review metadata, screenshots, current 1.9.0 build selection and review submission.
+- Apple privacy labels are published. Review metadata, screenshots, current 1.9.0 build selection and review submission remain.
 - Google app-content declarations, listing assets, accepted bundle and tester configuration.
 - Google personal-account production access requires at least 12 opted-in closed testers continuously for 14 days, followed by an application for production access. No testers were enrolled when inspected.
 - Verify Play service-account credentials against the accepted package before relying on automated draft upload.
 
 ## Verification captured
 
-- Local iOS simulator build succeeded with privacy controls.
+- Local iOS simulator build succeeded with privacy controls. The first iOS consent UI run found the decline action was unreliable; actions were moved to a fixed bottom area and a rerun is required.
 - Android privacy instrumentation tests passed on the first consent implementation.
 - Android signed release and release unit tests passed in run 34278297388; Play then rejected its package name.
-- Web tests: 79 passed, TypeScript passed; latest web CI and browser E2E passed.
+- Web tests: 80 passed, TypeScript passed; latest web CI and browser E2E passed.
 - Production health returned healthy with Clerk and Convex connected after backend deployment.
 - Unauthenticated production account-deletion invocation was rejected; full signed-in deletion flow still needs an isolated test account.
 
 Do not describe TestFlight processing, draft Play uploads or passing CI as public store publication. Confirm the actual store release state.
+
+## Optional tips
+
+Apple has no configured in-app purchase products. The app now shows an honest unavailable state after loading instead of an endless spinner. No new tip prices have been invented or activated. Product IDs in both clients are `tip_small`, `tip_medium`, and `tip_large`.

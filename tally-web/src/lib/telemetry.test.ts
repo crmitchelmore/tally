@@ -36,6 +36,16 @@ describe("server analytics delivery", () => {
     const { captureEvent } = await import("./telemetry");
     await expect(captureEvent("entry_created", { userId: "test-user" })).resolves.toBeUndefined();
   });
+  it("excludes native goal and entry content even when analytics is enabled", async () => {
+    requestHeaders.mockResolvedValue(new Headers({ "x-tally-analytics": "enabled" }));
+    const { captureEvent } = await import("./telemetry");
+    await captureEvent("entry_created", { userId: "test-user" }, { entry_count: 25, feeling: "tough", challenge_id: "private-goal" });
+    const properties = deliver.mock.calls[0][0].properties;
+    expect(properties).not.toHaveProperty("entry_count");
+    expect(properties).not.toHaveProperty("feeling");
+    expect(properties).not.toHaveProperty("challenge_id");
+    expect(properties).toHaveProperty("$geoip_disable", true);
+  });
   it("does not send without a configured project", async () => {
     vi.stubEnv("NEXT_PUBLIC_POSTHOG_KEY", "");
     const { captureEvent } = await import("./telemetry");

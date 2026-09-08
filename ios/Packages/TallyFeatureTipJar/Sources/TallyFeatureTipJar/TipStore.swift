@@ -7,6 +7,7 @@ public final class TipStore: ObservableObject {
     public static let shared = TipStore()
     
     @Published public private(set) var products: [Product] = []
+    @Published public private(set) var isLoading = true
     @Published public private(set) var purchaseState: PurchaseState = .ready
     
     public enum PurchaseState: Equatable {
@@ -26,6 +27,8 @@ public final class TipStore: ObservableObject {
     
     /// Load available tip products from the App Store.
     public func loadProducts() async {
+        isLoading = true
+        defer { isLoading = false }
         do {
             products = try await Product.products(for: productIDs)
                 .sorted { $0.price < $1.price }

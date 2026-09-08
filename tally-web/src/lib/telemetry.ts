@@ -262,8 +262,8 @@ export async function captureEvent(
         event,
         properties: {
           ...common,
-          ...domain,
-          ...request,
+          ...(nativeConsent === "enabled" ? {} : domain),
+          ...(nativeConsent === "enabled" ? {} : request),
           source: "server",
           $geoip_disable: true,
         },

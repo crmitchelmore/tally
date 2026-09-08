@@ -22,6 +22,8 @@ class TipManager(private val activity: Activity) : PurchasesUpdatedListener {
 
     private val _products = MutableStateFlow<List<ProductDetails>>(emptyList())
     val products: StateFlow<List<ProductDetails>> = _products.asStateFlow()
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _purchaseState = MutableStateFlow<PurchaseState>(PurchaseState.Ready)
     val purchaseState: StateFlow<PurchaseState> = _purchaseState.asStateFlow()
@@ -39,12 +41,14 @@ class TipManager(private val activity: Activity) : PurchasesUpdatedListener {
      * Connect to billing service and load products.
      */
     fun connect(onReady: () -> Unit = {}) {
+        _isLoading.value = true
         pendingOnReady = onReady
         billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                     queryProducts(onReady)
                 } else {
+                    _isLoading.value = false
                     _purchaseState.value = PurchaseState.Failed(
                         result.debugMessage.ifEmpty { "Failed to connect to billing service" }
                     )
@@ -73,6 +77,7 @@ class TipManager(private val activity: Activity) : PurchasesUpdatedListener {
             .build()
 
         billingClient.queryProductDetailsAsync(params) { result, queryResult ->
+            _isLoading.value = false
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                 _products.value = queryResult.productDetailsList.sortedBy {
                     it.oneTimePurchaseOfferDetails?.priceAmountMicros ?: 0

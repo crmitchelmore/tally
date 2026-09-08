@@ -194,7 +194,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           working-directory: tally-android
-          script: ./gradlew connectedAndroidTest --no-daemon
+          script: ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace
         env:
           CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           API_BASE_URL: https://tally-tracker.app

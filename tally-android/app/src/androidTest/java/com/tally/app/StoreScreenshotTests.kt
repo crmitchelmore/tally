@@ -19,9 +19,15 @@ class StoreScreenshotTests {
     @get:Rule(order = 1) val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Test fun captureStoreScreens() {
-        composeRule.waitForIdle()
+        composeRule.waitUntil(20_000) {
+            composeRule.onAllNodes(androidx.compose.ui.test.hasTestTag("sign_in_screen")).fetchSemanticsNodes().isNotEmpty() ||
+                composeRule.onAllNodes(androidx.compose.ui.test.hasTestTag("dashboard")).fetchSemanticsNodes().isNotEmpty()
+        }
         if (composeRule.onAllNodes(androidx.compose.ui.test.hasTestTag("sign_in_screen")).fetchSemanticsNodes().isNotEmpty()) {
             AuthPage(composeRule).tapContinueWithoutAccount()
+        }
+        composeRule.waitUntil(10_000) {
+            composeRule.onAllNodes(androidx.compose.ui.test.hasTestTag("dashboard")).fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithTag("dashboard").assertExists()
         val dashboard = DashboardPage(composeRule)

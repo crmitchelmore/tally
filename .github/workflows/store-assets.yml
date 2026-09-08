@@ -55,6 +55,9 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.2.0'
       - uses: jdx/mise-action@v2
         with:
           version: 2025.12.1
@@ -75,8 +78,9 @@ jobs:
           for label,match in [('iphone','Pro Max'),('ipad','iPad Pro 13-inch')]:
               selected=next((d for d in candidates if match in d['name']),None)
               if not selected: raise SystemExit(f'No suitable {label} simulator')
-              subprocess.run(['xcodebuild','test','-workspace','Tally.xcworkspace','-scheme','App','-destination',f'platform=iOS Simulator,id={selected["udid"]}','-parallel-testing-enabled','NO','-only-testing:AppUITests/StoreScreenshotTests','-only-testing:AppUITests/PrivacyChoiceTests', '-resultBundlePath',f'{label}.xcresult','CODE_SIGNING_ALLOWED=NO'],check=True)
+              result=subprocess.run(['xcodebuild','test','-workspace','Tally.xcworkspace','-scheme','App','-destination',f'platform=iOS Simulator,id={selected["udid"]}','-parallel-testing-enabled','NO','-only-testing:AppUITests/StoreScreenshotTests','-only-testing:AppUITests/PrivacyChoiceTests', '-resultBundlePath',f'{label}.xcresult','CODE_SIGNING_ALLOWED=NO'])
               subprocess.run(['xcrun','xcresulttool','export','attachments','--path',f'{label}.xcresult','--output-path',f'store-assets/{label}'],check=True)
+              result.check_returncode()
           PY
       - uses: actions/upload-artifact@v4
         if: always()

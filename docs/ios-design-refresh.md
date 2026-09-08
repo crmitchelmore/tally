@@ -5,6 +5,7 @@ The native dashboard shares the web app's paper, ink, and red palette while keep
 - Challenge cards show a prominent total, target, progress bar, pace, and eight weeks of activity. The activity chart includes the current week and leaves future days blank.
 - A separate, full-width **Log progress** button opens the existing entry sheet. Future and archived challenges do not offer logging from their card.
 - An empty account has one introduction and one create action. Empty analytics panels are hidden until a challenge exists.
+- Cached days remaining and pace are recalculated from today when creating, editing, logging, or returning offline, using the API's five-percent pace tolerance.
 - Calendar dates stay in the local time zone when creating or editing goals, including monthly boundaries.
 - New challenges offer optional reading, movement, and practice ideas. These prefill editable monthly goals; the user still presses Create to save.
 - Pull to refresh belongs to the Home scroll view. The date and weekly review link sit above the configurable panels.

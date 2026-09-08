@@ -265,6 +265,7 @@ export async function captureEvent(
           ...domain,
           ...request,
           source: "server",
+          $geoip_disable: true,
         },
       });
     }

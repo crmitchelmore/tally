@@ -73,7 +73,7 @@ object PrivacyTelemetry {
 
     fun capture(event: String) {
         if (analyticsStarted && analyticsEnabled && event in setOf("app_opened", "challenge_created", "entry_created")) {
-            PostHog.capture(event, properties = mapOf("platform" to "android", "source" to "client", "app_version" to version))
+            PostHog.capture(event, properties = mapOf("platform" to "android", "source" to "client", "app_version" to version, "\$geoip_disable" to true))
         }
     }
 }

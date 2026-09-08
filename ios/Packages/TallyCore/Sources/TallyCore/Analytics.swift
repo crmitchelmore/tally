@@ -35,6 +35,7 @@ public enum Analytics {
         config.errorTrackingConfig.autoCapture = false
         PostHogSDK.shared.setup(config)
         PostHogSDK.shared.optIn()
+        PostHogSDK.shared.register(["$geoip_disable": true])
         identifiedUser = UserDefaults.standard.string(forKey: identityKey)
         enabled = true
         capture(.appOpened)
@@ -56,6 +57,7 @@ public enum Analytics {
         if identifiedUser != nil {
             capture(.signedOut)
             PostHogSDK.shared.reset()
+            PostHogSDK.shared.register(["$geoip_disable": true])
         }
         identifiedUser = userID
         UserDefaults.standard.set(userID, forKey: identityKey)

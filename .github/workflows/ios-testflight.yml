@@ -193,7 +193,7 @@ jobs:
               }
 
               // Reuse valid profiles for this exact bundle and signing certificate.
-              // Creating new profiles on every build needlessly depends on Apple's
+              // Creating new profiles on every build needlessly depends on the Apple
               // profile-creation endpoint, which has repeatedly returned HTTP 500.
               const existingProfiles = [];
               let nextProfiles = '/v1/profiles?filter[profileType]=IOS_APP_STORE&filter[profileState]=ACTIVE&include=bundleId,certificates&limit=200';

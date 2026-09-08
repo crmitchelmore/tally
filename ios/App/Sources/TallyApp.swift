@@ -34,27 +34,18 @@ class AppSettings: ObservableObject {
 @main
 struct TallyApp: App {
     @Environment(\.scenePhase) private var scenePhase
+    @State private var showPrivacyChoice = false
     @StateObject private var appSettings = AppSettings()
     
     init() {
-        Analytics.configure()
-        // Configure Sentry crash reporting
-        if !CommandLine.arguments.contains("--uitesting"), let dsn = Configuration.sentryDsn {
-            SentrySDK.start { options in
-                options.dsn = dsn
-                options.tracesSampleRate = 0.2
-                options.enableAppHangTracking = true
-                options.enableCaptureFailedRequests = true
-                options.attachScreenshot = false
-                options.sendDefaultPii = false
-                #if DEBUG
-                options.environment = "development"
-                #else
-                options.environment = "production"
-                #endif
-            }
+        if CommandLine.arguments.contains("--uitesting") {
+            if CommandLine.arguments.contains("--privacy-testing") {
+                UserDefaults.standard.removeObject(forKey: PrivacyPreferences.choiceKey)
+            } else { PrivacyPreferences().save(analytics: false, diagnostics: false) }
         }
-        
+        Analytics.configure()
+        Diagnostics.applyPrivacyChoice()
+
         // Register background refresh tasks on app launch
         BackgroundRefreshManager.shared.registerBackgroundTasks()
     }
@@ -71,6 +62,12 @@ struct TallyApp: App {
             .environment(\.clerk, Clerk.shared)
             .environmentObject(appSettings)
             .preferredColorScheme(appSettings.appearanceMode.colorScheme)
+            .task {
+                showPrivacyChoice = !PrivacyPreferences().hasChosen &&
+                    (!CommandLine.arguments.contains("--uitesting") || CommandLine.arguments.contains("--privacy-testing"))
+            }
+            .sheet(isPresented: $showPrivacyChoice) { PrivacyChoicesView() }
+
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {

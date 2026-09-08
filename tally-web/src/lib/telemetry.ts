@@ -251,6 +251,10 @@ export async function captureEvent(
 
   // PostHog capture (always capture for product analytics)
   try {
+    const { headers } = await import("next/headers");
+    let nativeConsent: string | null = null;
+    try { nativeConsent = (await headers()).get("x-tally-analytics"); } catch { /* non-request verification */ }
+    if (nativeConsent === "disabled") return;
     const ph = await getPostHogNode();
     if (ph && opts.userId) {
       await ph.captureImmediate({

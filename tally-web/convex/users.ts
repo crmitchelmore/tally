@@ -173,3 +173,28 @@ export const updatePreferences = mutation({
     return toApiFormat(user);
   },
 });
+
+/** Permanent deletion, including records previously moved to Trash. No user ID is accepted from the caller. */
+export const deleteOwnAccountData = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Authentication required");
+    const users = await ctx.db.query("users").withIndex("by_clerk_id", q => q.eq("clerkId", identity.subject)).collect();
+    const ownerIds = new Set([identity.subject, ...users.map(user => String(user._id))]);
+    for (const userId of ownerIds) {
+      const challenges = await ctx.db.query("challenges").withIndex("by_user_id", q => q.eq("userId", userId)).collect();
+      for (const challenge of challenges) {
+        const entries = await ctx.db.query("entries").withIndex("by_challenge_id", q => q.eq("challengeId", String(challenge._id))).collect();
+        const follows = await ctx.db.query("follows").withIndex("by_challenge_id", q => q.eq("challengeId", String(challenge._id))).collect();
+        for (const record of [...entries, ...follows]) await ctx.db.delete(record._id);
+        await ctx.db.delete(challenge._id);
+      }
+      const entries = await ctx.db.query("entries").withIndex("by_user_id", q => q.eq("userId", userId)).collect();
+      const follows = await ctx.db.query("follows").withIndex("by_user_id", q => q.eq("userId", userId)).collect();
+      for (const record of [...entries, ...follows]) await ctx.db.delete(record._id);
+    }
+    for (const user of users) await ctx.db.delete(user._id);
+    return { success: true };
+  },
+});

@@ -48,6 +48,7 @@ public actor APIClient {
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue(PrivacyPreferences().analyticsEnabled ? "enabled" : "disabled", forHTTPHeaderField: "X-Tally-Analytics")
         
         // Add Bearer token if available
         if let token = getAuthToken() {

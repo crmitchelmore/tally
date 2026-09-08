@@ -24,7 +24,6 @@ export async function requireAuth(): Promise<AuthResult | AuthError> {
   const { userId } = await auth();
   
   if (userId) {
-    console.log("[Auth] Authenticated via cookies, userId:", userId);
     return { userId };
   }
   
@@ -34,7 +33,6 @@ export async function requireAuth(): Promise<AuthResult | AuthError> {
   
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.substring(7); // Remove "Bearer " prefix
-    console.log("[Auth] Bearer token found, length:", token.length, "prefix:", token.substring(0, 20));
     
     try {
       // Verify the session token using Clerk's verifyToken
@@ -42,7 +40,6 @@ export async function requireAuth(): Promise<AuthResult | AuthError> {
         secretKey: process.env.CLERK_SECRET_KEY,
       });
       
-      console.log("[Auth] Token verified successfully, sub:", verifiedToken?.sub);
       
       if (verifiedToken?.sub) {
         return { userId: verifiedToken.sub };
@@ -51,7 +48,6 @@ export async function requireAuth(): Promise<AuthResult | AuthError> {
       console.error("[Auth] Bearer token verification failed:", error);
     }
   } else {
-    console.log("[Auth] No Bearer token in Authorization header");
   }
 
   return {

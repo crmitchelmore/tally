@@ -7,16 +7,19 @@ plugins {
 
 android {
     namespace = "com.tally.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.tally.app"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 36
+        versionCode = System.getenv("ANDROID_VERSION_CODE")?.toInt() ?: 26090901
+        versionName = "1.8.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "POSTHOG_KEY", "\"${System.getenv("NEXT_PUBLIC_POSTHOG_KEY") ?: ""}\"")
+        buildConfigField("String", "SENTRY_DSN", "\"${System.getenv("ANDROID_SENTRY_DSN") ?: ""}\"")
 
         // Clerk and API configuration - use env var or fallback to prod key
         // This is the prod Clerk instance (clerk.tally-tracker.app)
@@ -29,8 +32,20 @@ android {
         buildConfigField("String", "API_BASE_URL", "\"$apiUrl\"")
     }
 
+    signingConfigs {
+        if (!System.getenv("ANDROID_KEYSTORE_PATH").isNullOrBlank()) {
+            create("upload") {
+                storeFile = file(System.getenv("ANDROID_KEYSTORE_PATH"))
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("upload")
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -55,6 +70,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:telemetry"))
     implementation(project(":core:data"))
     implementation(project(":core:design"))
     implementation(project(":core:auth"))

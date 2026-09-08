@@ -192,6 +192,17 @@ jobs:
                 throw new Error(`No DISTRIBUTION certificate in ASC matched serial ${process.env.CERT_SERIAL}`);
               }
 
+              // Reuse valid profiles for this exact bundle and signing certificate.
+              // Creating new profiles on every build needlessly depends on Apple's
+              // profile-creation endpoint, which has repeatedly returned HTTP 500.
+              const existingProfiles = [];
+              let nextProfiles = '/v1/profiles?filter[profileType]=IOS_APP_STORE&filter[profileState]=ACTIVE&include=bundleId,certificates&limit=200';
+              while (nextProfiles) {
+                const page = await apiGet(nextProfiles, jwt);
+                existingProfiles.push(...page.data);
+                const next = page.links?.next ? new URL(page.links.next) : null;
+                nextProfiles = next ? `${next.pathname}${next.search}` : null;
+              }
               const profiles = [];
               for (const identifier of [process.env.IOS_BUNDLE_ID, `${process.env.IOS_BUNDLE_ID}.widget`]) {
                 const bundleIds = await apiGet(`/v1/bundleIds?filter[identifier]=${encodeURIComponent(identifier)}&limit=200`, jwt);
@@ -204,7 +215,15 @@ jobs:
                 // Apple limits provisioning profile names to 50 characters.
                 const profileLabel = identifier === process.env.IOS_BUNDLE_ID ? "App" : "Widget";
                 const profileName = `Tally ${profileLabel} App Store CI ${Date.now()}`;
-                const created = await apiPost('/v1/profiles', jwt, {
+                let profile = existingProfiles
+                  .filter(item => item.attributes?.profileState === 'ACTIVE'
+                    && item.attributes?.profileType === 'IOS_APP_STORE'
+                    && new Date(item.attributes.expirationDate).getTime() > Date.now() + 86400000
+                    && item.relationships?.bundleId?.data?.id === bundleId.id
+                    && item.relationships?.certificates?.data?.some(cert => cert.id === matchingCert.id))
+                  .sort((a, b) => new Date(b.attributes.createdDate) - new Date(a.attributes.createdDate))[0];
+                if (!profile) {
+                  const created = await apiPost('/v1/profiles', jwt, {
                   data: {
                     type: 'profiles',
                     attributes: { name: profileName, profileType: 'IOS_APP_STORE' },
@@ -215,7 +234,8 @@ jobs:
                   }
                 });
 
-                const profile = created.data;
+                  profile = created.data;
+                }
                 profiles.push({
                   identifier,
                   uuid: profile.attributes?.uuid,

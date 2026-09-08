@@ -247,6 +247,8 @@ jobs:
         env:
           TUIST_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           TUIST_API_BASE_URL: "https://tally-tracker.app"
+          TUIST_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          TUIST_POSTHOG_HOST: ${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}
           TUIST_GIT_COMMIT_SHA: ${{ github.sha }}
           # Pass manual signing settings generated above
           TUIST_DEVELOPMENT_TEAM: ${{ secrets.IOS_TEAM_ID }}
@@ -299,6 +301,15 @@ jobs:
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
             CODE_SIGN_IDENTITY="Apple Distribution"
+
+      - name: Upload debug symbols to Sentry
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: tally-lz
+          SENTRY_PROJECT: apple-ios
+        run: |
+          test -n "$SENTRY_AUTH_TOKEN" || { echo "Missing Sentry CI upload token"; exit 1; }
+          npx --yes @sentry/cli@2.58.6 debug-files upload "$RUNNER_TEMP/App.xcarchive/dSYMs"
 
       - name: Create ExportOptions.plist
         run: |

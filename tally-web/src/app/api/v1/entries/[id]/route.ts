@@ -3,6 +3,7 @@
  * PATCH /api/v1/entries/[id] - Update entry
  * DELETE /api/v1/entries/[id] - Delete entry
  */
+import { captureEvent } from "@/lib/telemetry";
 import { requireAuth, isAuthError } from "../../_lib/auth";
 import { getEntryById, updateEntry, deleteEntry } from "../../_lib/store";
 import {
@@ -77,6 +78,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (body.feeling !== undefined) entry.feeling = body.feeling || undefined;
 
     const updated = await updateEntry(entry);
+    await captureEvent("entry_updated", { userId: authResult.userId }, { entry_id: id, challenge_id: entry.challengeId });
 
     return jsonOk({ entry: updated });
   } catch (error) {
@@ -105,6 +107,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     const result = await deleteEntry(id);
+    await captureEvent("entry_deleted", { userId: authResult.userId }, { entry_id: id, challenge_id: entry.challengeId });
 
     // Return deletedAt for undo capability
     return jsonOk({ success: true, id, deletedAt: result.deletedAt });

@@ -366,6 +366,7 @@ public final class ChallengesManager {
         localStore.upsertChallenge(challenge)
         localStore.upsertStats(initialStats, for: tempId)
         localStore.addPendingChange(.create(id: tempId))
+        Analytics.capture(.challengeCreated)
         challenges = localStore.loadChallenges()
         stats = localStore.loadStats()
         print("[ChallengesManager] Created challenge '\(name)' with id \(tempId), total challenges: \(challenges.count)")
@@ -411,6 +412,7 @@ public final class ChallengesManager {
         
         localStore.upsertChallenge(updated)
         localStore.addPendingChange(.update(id: id))
+        Analytics.capture(isArchived == true ? .challengeArchived : .challengeUpdated)
         challenges = localStore.loadChallenges()
         updateStatsOptimistically(for: id, addedCount: 0)
         updateSyncState()
@@ -483,6 +485,7 @@ public final class ChallengesManager {
         // Save locally and queue for sync
         localEntryStore.upsertEntry(entry)
         localEntryStore.addPendingChange(.create(id: tempId, request: request))
+        Analytics.capture(.entryCreated)
         
         // Update stats optimistically
         updateStatsOptimistically(for: request.challengeId, addedCount: request.count)
@@ -587,6 +590,7 @@ public final class ChallengesManager {
         )
         localEntryStore.upsertEntry(updated)
         localEntryStore.addPendingChange(.update(id: entry.id, request: syncRequest))
+        Analytics.capture(.entryUpdated)
         updateStatsForEntryUpdate(entry, updated)
         markEntriesUpdated()
         updateSyncState()
@@ -602,6 +606,7 @@ public final class ChallengesManager {
     public func deleteEntry(_ entry: Entry) {
         localEntryStore.removeEntry(id: entry.id)
         localEntryStore.addPendingChange(.delete(id: entry.id))
+        Analytics.capture(.entryDeleted)
         updateStatsForEntryDelete(entry)
         markEntriesUpdated()
         updateSyncState()

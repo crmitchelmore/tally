@@ -29,7 +29,7 @@ fun PrivacyChoices(onDismiss: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
                 Text("Share usage analytics", style = MaterialTheme.typography.titleSmall)
                 Switch(analytics, { analytics = it }, Modifier.testTag("privacy_analytics").semantics { contentDescription = "Share usage analytics" })
-                Text("Send feature-use events, app and device details, and a random device identifier to PostHog in the EU. No goal names, notes, entry contents or screen recordings.")
+                Text("Send feature-use events, app and device details, and a random device identifier to PostHog in the EU. If signed in, server events are linked to your account ID. No goal names, notes, entry contents or screen recordings.")
                 Spacer(Modifier.height(16.dp))
                 Text("Share crash reports", style = MaterialTheme.typography.titleSmall)
                 Switch(diagnostics, { diagnostics = it }, Modifier.testTag("privacy_diagnostics").semantics { contentDescription = "Share crash reports" })

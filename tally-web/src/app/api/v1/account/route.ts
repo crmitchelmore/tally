@@ -1,5 +1,4 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../../../convex/_generated/api";
@@ -13,8 +12,12 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
   }
   try {
-    const bearer = (await headers()).get("authorization")?.replace(/^Bearer /, "");
-    const token = bearer || await (await auth()).getToken();
+    const session = await auth();
+    // Match requireAuth's cookie-first precedence so mixed credentials cannot
+    // delete one account's data and another account's sign-in identity.
+    const token = session.userId
+      ? await session.getToken()
+      : request.headers.get("authorization")?.replace(/^Bearer /, "");
     if (!token || !process.env.NEXT_PUBLIC_CONVEX_URL) throw new Error("Account service unavailable");
     const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL);
     convex.setAuth(token);

@@ -73,9 +73,11 @@ export const HeroMicroDemo = memo(function HeroMicroDemo() {
         <div className="demo-card-header">
           <span className="demo-challenge-name">Daily pushups</span>
           <span className="demo-target">
-            {count} / {maxCount}
+            <strong>{count}</strong><span> / {maxCount}</span>
           </span>
         </div>
+
+        <p className="demo-context">A few today. A little stronger tomorrow.</p>
 
         {/* Tally marks display */}
         <div
@@ -95,6 +97,7 @@ export const HeroMicroDemo = memo(function HeroMicroDemo() {
         <div
           className="demo-progress-track"
           role="progressbar"
+          aria-label="Daily pushups progress"
           aria-valuenow={count}
           aria-valuemin={0}
           aria-valuemax={maxCount}

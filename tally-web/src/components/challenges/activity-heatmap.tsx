@@ -109,7 +109,9 @@ export function ActivityHeatmap({
 
   const displayedWeeks = useMemo(() => {
     if (!isCompact) return weeks;
-    return weeks.slice(-8);
+    // A compact preview shows recent activity, not the final (often future) weeks.
+    const startedWeeks = weeks.filter((week) => week.some((day) => day.date && !day.isFuture));
+    return (startedWeeks.length > 0 ? startedWeeks : weeks.slice(0, 8)).slice(-8);
   }, [isCompact, weeks]);
 
   // Generate month labels

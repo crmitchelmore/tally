@@ -35,6 +35,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:telemetry"))
     implementation(project(":core:network"))
     implementation(project(":core:auth"))
 

@@ -1,0 +1,46 @@
+name: Store Screenshots
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/store-readiness]
+    paths: [.github/workflows/store-assets.yml]
+permissions:
+  contents: read
+jobs:
+  ios:
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+        with:
+          version: 2025.12.1
+          install: false
+      - name: Generate app
+        working-directory: ios
+        run: |
+          mise install tuist@4.32.0
+          mise exec tuist@4.32.0 -- tuist install
+          mise exec tuist@4.32.0 -- tuist generate --no-open
+      - name: Capture iPhone and iPad
+        working-directory: ios
+        run: |
+          python3 - <<'PY'
+          import json,subprocess
+          devices=json.loads(subprocess.check_output(['xcrun','simctl','list','devices','available','--json']))['devices']
+          candidates=[d for runtime,group in devices.items() if '.iOS-' in runtime for d in group]
+          for label,match in [('iphone','Pro Max'),('ipad','iPad Pro 13-inch')]:
+              selected=next((d for d in candidates if match in d['name']),None)
+              if not selected: raise SystemExit(f'No suitable {label} simulator')
+              subprocess.run(['xcodebuild','test','-workspace','Tally.xcworkspace','-scheme','App','-destination',f'platform=iOS Simulator,id={selected["udid"]}','-parallel-testing-enabled','NO','-only-testing:AppUITests/StoreScreenshotTests', '-resultBundlePath',f'{label}.xcresult','CODE_SIGNING_ALLOWED=NO'],check=True)
+              subprocess.run(['xcrun','xcresulttool','export','attachments','--path',f'{label}.xcresult','--output-path',f'store-assets/{label}'],check=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-store-screenshots
+          path: |
+            ios/store-assets/
+            ios/iphone.xcresult
+            ios/ipad.xcresult
+          retention-days: 30

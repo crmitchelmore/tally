@@ -11,6 +11,7 @@ import { PostHogProvider } from "posthog-js/react";
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
+import { scrubAnalyticsURLs } from "@/lib/analytics-privacy";
 import type { ReactNode } from "react";
 
 const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
@@ -36,14 +37,7 @@ if (typeof window !== "undefined" && POSTHOG_KEY) {
     person_profiles: "identified_only",
     before_send: (event) => {
       if (!event) return event;
-      for (const key of ["$current_url", "$referrer", "$initial_current_url", "$initial_referrer"]) {
-        const value = event.properties[key];
-        if (typeof value !== "string") continue;
-        try {
-          const url = new URL(value);
-          event.properties[key] = url.origin + url.pathname;
-        } catch { delete event.properties[key]; }
-      }
+      scrubAnalyticsURLs(event.properties);
       return event;
     },
     persistence: "localStorage+cookie",

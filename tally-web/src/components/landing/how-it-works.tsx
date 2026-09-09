@@ -19,7 +19,7 @@ const steps = [
     number: 2,
     title: "Log your progress",
     description:
-      "Tap to add entries whenever you complete a session. Each mark feels like drawing on paper — quick, satisfying, and permanent.",
+      "Tap to add entries whenever you complete a session. Each mark feels like drawing on paper — quick, satisfying, and yours to adjust.",
     // Tally strokes: 2 strokes for step 2
     strokes: 2,
   },
@@ -27,7 +27,7 @@ const steps = [
     number: 3,
     title: "See your pace",
     description:
-      "Watch your tally marks grow. Know instantly if you're ahead, on track, or need to catch up — no judgment, just clarity.",
+      "Watch your tally marks grow. Know instantly if you're ahead, on track, or have room to grow — no judgement, just clarity.",
     // Tally strokes: 3 strokes for step 3
     strokes: 3,
   },

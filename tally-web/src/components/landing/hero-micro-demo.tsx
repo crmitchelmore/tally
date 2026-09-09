@@ -136,7 +136,7 @@ export const HeroMicroDemo = memo(function HeroMicroDemo() {
 
         {/* Completion message */}
         {count >= maxCount && (
-          <p className="demo-complete-msg">Challenge complete!</p>
+          <p className="demo-complete-msg">25 little marks. Look how far you came.</p>
         )}
       </div>
     </div>

@@ -144,3 +144,8 @@ main.refresh-landing { display: block; max-width: var(--page-width); margin: aut
   :where(.cta, .ghost, .demo-add-btn):hover { translate: 0 -1px; }
   :where(.cta, .ghost, .demo-add-btn) { transition: translate 180ms, scale 160ms, background-color 150ms; }
 }
+
+/* Store pages carry the same paper, ink and honest encouragement as the app. */
+.platform-release-note { display: grid; justify-items: center; gap: 12px; margin: 0 0 32px; color: var(--color-ink); }
+.platform-release-note p { margin: 0; color: var(--color-muted); line-height: 1.6; }
+.platform-app-icon { border-radius: 16px; margin-bottom: 4px; }

@@ -8,22 +8,22 @@ const platforms = [
     id: "ios",
     label: "iOS",
     features: [
-      "Native SwiftUI interface",
+      "Made for iPhone and iPad",
       "Lock Screen & Home Screen widgets",
-      "Haptic milestone celebrations",
-      "Offline-first with sync queue",
-      "Tip jar with StoreKit",
+      "A little haptic nudge for each milestone",
+      "Keep logging offline; sync when connected",
+      "Private goals, at your own pace",
     ],
   },
   {
     id: "android",
     label: "Android",
     features: [
-      "Material You + Jetpack Compose",
+      "Feels at home on Android",
       "Dashboard with customisable panels",
-      "Offline-first with sync queue",
+      "Keep logging offline; sync when connected",
       "Data export & import",
-      "Tip jar with Google Play Billing",
+      "Your choice of analytics and crash reporting",
     ],
   },
 ] as const;
@@ -298,73 +298,6 @@ function ChallengePreview({ isAndroid }: { isAndroid: boolean }) {
   );
 }
 
-function CommunityPreview({ isAndroid }: { isAndroid: boolean }) {
-  return (
-    <>
-      <div className="preview-search">
-        <span className="preview-search-icon">⌕</span>
-        <span className="preview-search-text">Search challenges…</span>
-      </div>
-
-      <div className="preview-tabs">
-        <span className="preview-tab active">Discover</span>
-        <span className="preview-tab">Following <span className="badge">4</span></span>
-      </div>
-
-      <div className="preview-public-card">
-        <div className="preview-public-header">
-          <span className="preview-avatar preview-avatar-pink">E</span>
-          <div className="preview-public-info">
-            <span className="preview-public-name">Draw Every Day</span>
-            <span className="preview-public-owner">by @studio.lina</span>
-          </div>
-          <button className="preview-follow-btn following">Following</button>
-        </div>
-        <div className="preview-public-footer">
-          <div className="preview-tally-wrapper-xs">
-            <TallyDisplay count={5} size="sm" />
-          </div>
-          <span className="preview-public-stats-text">289 / 365 drawings</span>
-        </div>
-      </div>
-
-      <div className="preview-public-card">
-        <div className="preview-public-header">
-          <span className="preview-avatar preview-avatar-blue">M</span>
-          <div className="preview-public-info">
-            <span className="preview-public-name">100 Cold Plunges</span>
-            <span className="preview-public-owner">by @marcus_t</span>
-          </div>
-          <button className="preview-follow-btn">Follow</button>
-        </div>
-        <div className="preview-public-footer">
-          <div className="preview-tally-wrapper-xs">
-            <TallyDisplay count={10} size="sm" />
-          </div>
-          <span className="preview-public-stats-text">67 / 100 plunges</span>
-        </div>
-      </div>
-
-      <div className="preview-public-card">
-        <div className="preview-public-header">
-          <span className="preview-avatar preview-avatar-green">S</span>
-          <div className="preview-public-info">
-            <span className="preview-public-name">Learn Mandarin</span>
-            <span className="preview-public-owner">by @polyglot_sam</span>
-          </div>
-          <button className="preview-follow-btn">Follow</button>
-        </div>
-        <div className="preview-public-footer">
-          <div className="preview-tally-wrapper-xs">
-            <TallyDisplay count={5} size="sm" />
-          </div>
-          <span className="preview-public-stats-text">142 / 365 sessions</span>
-        </div>
-      </div>
-    </>
-  );
-}
-
 function PlatformFeatures({ platform }: { platform: (typeof platforms)[number] }) {
   return (
     <div className="platform-features">
@@ -403,7 +336,7 @@ export function AppShowcase() {
   return (
     <section ref={sectionRef} className="app-showcase" aria-labelledby="app-showcase-heading">
       <h2 id="app-showcase-heading" className="app-showcase-heading">
-        Native on every platform
+        Your tally, wherever you are
       </h2>
       <p className="app-showcase-subhead">
         At home on your phone. Ready when inspiration strikes.
@@ -463,9 +396,9 @@ export function AppShowcase() {
       </div>
 
       <div className="app-showcase-stores">
-        <a href="/ios" className="store-link store-link-live">App Store</a>
+        <a href="/ios" className="store-link">iOS <span className="store-soon">(in review)</span></a>
         <span className="store-divider">·</span>
-        <a href="/android" className="store-link">Google Play <span className="store-soon">(coming soon)</span></a>
+        <a href="/android" className="store-link">Android <span className="store-soon">(closed beta)</span></a>
       </div>
     </section>
   );

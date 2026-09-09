@@ -54,7 +54,7 @@ export default function Home() {
       <footer className="landing-footer">
         <Link href="/" className="tally-wordmark"><TallyMark count={5} size="sm" /><span>tally</span></Link>
         <span>Small efforts. Real progress.</span>
-        <div><Link href="/ios">iOS app</Link><Link href="/android">Android · coming soon</Link></div>
+        <div><Link href="/ios">iOS app</Link><Link href="/android">Android · closed beta</Link></div>
       </footer>
     </div>
   );

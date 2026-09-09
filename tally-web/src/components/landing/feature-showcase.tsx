@@ -91,7 +91,7 @@ function FeatureVisual({ featureId }: { featureId: FeatureId }) {
     return (
       <div className="fv-progress-visual" aria-hidden="true">
         <div className="fv-streak-row">
-          <span className="fv-streak-badge">🔥 23-day streak</span>
+          <span className="fv-streak-badge">23 days of showing up</span>
           <span className="fv-pace-pill fv-pace-ahead">↑ 3d ahead</span>
         </div>
         <div className="fv-heatmap">

@@ -128,8 +128,11 @@ export function InkGlyph({ width, height, stroke, color, segments, className = "
   const id = useId();
   const seed = Array.from(id).reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) | 0, 0);
   const noise = (index: number) => {
-    const raw = Math.sin(seed + index * 127.1) * 43758.5453;
-    return (raw - Math.floor(raw)) * 2 - 1;
+    // Integer mixing is identical in server and browser JS engines.
+    let value = (seed + Math.imul(index + 1, 0x9e3779b9)) | 0;
+    value = Math.imul(value ^ (value >>> 16), 0x21f0aaad);
+    value = Math.imul(value ^ (value >>> 15), 0x735a2d97);
+    return ((value ^ (value >>> 15)) >>> 0) / 0xffffffff * 2 - 1;
   };
   return <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}
     className={`overflow-visible shrink-0 ${className}`} aria-hidden="true" fill="none">

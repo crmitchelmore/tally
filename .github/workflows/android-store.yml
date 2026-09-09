@@ -39,7 +39,11 @@ jobs:
           umask 077
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/tally-upload.keystore"
           echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/tally-upload.keystore" >> "$GITHUB_ENV"
-          echo "ANDROID_VERSION_CODE=$(date +%s)" >> "$GITHUB_ENV"
+          # Preserve ordering above the first uploaded Unix-seconds code, then
+          # consume one code per workflow run instead of one per second.
+          VERSION_CODE=$((1800000000 + ${{ github.run_number }}))
+          test "$VERSION_CODE" -le 2100000000
+          echo "ANDROID_VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
       - name: Build signed app bundle and verify
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}

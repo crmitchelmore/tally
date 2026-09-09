@@ -1,94 +1,66 @@
 # Tally 1.9.0 store release
 
-Last verified: 9 September 2026. Both public store listings are still drafts.
+Last verified: 9 September 2026. Neither public store release is live.
 
-Production deployment 34286068028 succeeded. Privacy, support and deletion pages each returned HTTP 200; the deletion page was also verified in the Codex browser, including successful sign-in with the dedicated reviewer account.
+## Current evidence
+
+Private-release commit `19d8512` passed web, iOS and Android CI and all three UI/E2E jobs (runs 34291174034 and 34291174041). It was deployed to https://tally-tracker.app by run 34291612345. Production health is healthy; signed-in creation of a private reading goal and logging 25 pages worked and persisted after reload. Anonymous direct database queries are rejected.
+
+The icon refresh supersedes that candidate. Re-run builds and select the new icon-bearing build before submitting to Apple or Google.
 
 ## Store records
 
-- Apple app: 6757677046, bundle `app.tally.ios`, team `8X4ZN58TYH`.
-- Widget: `app.tally.ios.widget`, shared group `group.app.tally-tracker.shared`.
-- App Store draft: 1.9.0, English (UK), Productivity / Lifestyle.
-- Google developer: 7672785519943663522; app record: 4975549330736448398.
-- Android package `app.tally.android` was approved by the owner after the original identifier collision. Code, upload guard and GitHub package secret are updated; acceptance of the new bundle remains to be verified.
-- App policy: https://tally-tracker.app/privacy
-- Support: https://tally-tracker.app/support
-- Account deletion: https://tally-tracker.app/delete-account
+- Apple app 6757677046; bundle `app.tally.ios`; team `8X4ZN58TYH`; widget `app.tally.ios.widget`; shared group `group.app.tally-tracker.shared`.
+- Apple draft 1.9.0: English (UK), Productivity/Lifestyle, free in 175 regions. Review identity and owner contact, including phone, are saved. Validate the full section again on submission.
+- Apple MRDP no-personal-services declaration is Active. Content rights are saved as no third-party content. Age rating is 13+ (legacy OS 12+, regional exceptions). Privacy labels are published for nine data types with no advertising tracking.
+- Last fully verified processed TestFlight build: 1.9.0 (26090883), build ID `4bc6aace-5c27-4a22-aecd-909120698f89`, run 34288281110. One existing internal group was verified. This older build is not the private release candidate.
+- Google developer 7672785519943663522; app 4975549330736448398; permanent package `app.tally.android`.
+- Google accepted the signed 1.9.0 bundle, code 1788910465, into Alpha draft release 1, track 4698619127693668718. UK and US regions are saved. The initial large version-code jump needs confirmation; future codes use 1800000000 plus workflow run number, leaving nearly 300 million updates rather than advancing every second.
+- Google IARC completed: Everyone/PEGI 3/USK all ages/IARC 3+. Audience 13–15, 16–17, 18+. Data safety, app access, no ads, non-government, no financial services, no advertising ID, support and deletion declarations are saved.
+- Two Android screenshots from private-release run 34291205728 were uploaded and verified after reopening the listing. iOS screenshots must be refreshed for the private release. Icon and feature-graphic changes must also be saved in Play.
 
-## Release configuration
+## Delivery configuration
 
-- `.github/workflows/ios-testflight.yml` manages the existing Apple signing/upload lane (see `docs/ios-testflight-setup.md`).
-- `.github/workflows/android-store.yml` builds a signed AAB, runs release unit tests, verifies the signature, uploads Sentry mappings and retains the bundle/mapping artifacts. Optional Play upload creates a draft in internal or alpha testing.
-- `.github/workflows/store-assets.yml` captures real iPhone Pro Max, iPad Pro 13-inch and Android emulator screenshots using fictional local data.
-- `.github/workflows/deploy-production.yml` deploys the authenticated website client before enforcing Convex authorization, then runs smoke checks. This keeps old unauthenticated server calls from failing during the web build.
-- Production Convex: `bright-jackal-396`; deployment-only credential is saved as GitHub `CONVEX_DEPLOY_KEY`. The production backup created on 8 September before the auth/deletion deployment completed successfully.
-- Sentry organization `tally-lz`, projects `apple-ios` and `android`; Android project ID 4510687487328337. DSNs and upload token are GitHub secrets.
-- PostHog EU project 114447; public ingestion key is provided through existing GitHub configuration.
+- `.github/workflows/ios-testflight.yml`: existing signing, upload, processing and verified internal-group distribution. `scripts/distribute-testflight.mjs` fails on API errors and does not mistake arbitrary 409s for success; seven focused tests pass.
+- `.github/workflows/android-store.yml`: signed AAB, release tests, signature verification, Sentry mappings and retained artifacts; optional upload creates a draft on internal or Alpha testing only.
+- `.github/workflows/store-assets.yml`: real iPhone/iPad/Android screenshots with fictional local data.
+- `.github/workflows/deploy-production.yml`: authenticated web client first, then Convex enforcement, then smoke tests.
+- Convex production `bright-jackal-396`, with deployment credential in GitHub `CONVEX_DEPLOY_KEY`. Pre-auth/deletion deployment backup completed on 8 September.
+- Sentry `tally-lz`, projects `apple-ios`, `android` and `javascript-nextjs`. PostHog EU project 114447. Ingestion keys and DSNs are existing GitHub secrets.
+- Google Cloud project `tally-tracker-484110`, existing service account `tally-tracker-service-account@tally-tracker-484110.iam.gserviceaccount.com`. A valid replacement JSON key was saved privately and in GitHub on 9 September; the Android Publisher API was enabled. App-scoped Play permissions still require verification before automated upload can be considered working.
 
-## Android upload-key recovery
+## Private recovery configuration
 
-The previous GitHub keystore value was invalid, and Play confirmed there were no existing bundles. A first upload key was created on 8 September 2026.
+`~/.config/tally/release/` is outside Git, mode 700, with files mode 600. It contains the private checkpoint, review credentials, Android upload key/signing JSON, Google Play service-account JSON, tester shortlist and unsent invitation draft. Do not print or commit secrets. Back up these files securely.
 
-Private recovery files are outside Git at `~/.config/tally/release/` (directory mode 700, files mode 600): `android-upload.p12` and `android-signing.json`. Back these up securely; do not commit them. GitHub has `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_PASSWORD`, and `ANDROID_KEY_ALIAS`.
-
-Alias: `tally-upload`. Format: PKCS12. Public certificate SHA-256:
+The Android upload alias is `tally-upload`; PKCS12 certificate SHA-256:
 `A3:C9:D4:8B:19:68:9E:F7:0E:E1:F0:81:53:CA:37:E4:96:E2:AA:78:8F:F7:EA:B9:5E:22:B3:60:F6:E7:12:54`.
 
-## Privacy behavior
+Dedicated review credentials are also stored as encrypted GitHub secrets. Google review sign-in instructions are saved and real production sign-in succeeded. Do not reset that password during review. Browser snapshots can redact sensitive fields; an empty string is not proof of persistence. Verify actual login, clear the clipboard after private credential entry, and do not log passwords.
 
-Native analytics and crash reporting are independently default-off. Initial setup offers Save my choices and Continue without sharing; Settings can withdraw either choice. SDKs are initialized only after consent. Native PostHog captures explicit feature events, with replay, automatic screen/lifecycle capture and advertising identifiers disabled. GeoIP enrichment is disabled. Sentry excludes account details, screenshots, view hierarchy, breadcrumbs and performance traces.
+## Privacy and data ownership
 
-Apple ATT is not used: there is no cross-company advertising tracking. SDK installation does not provide consent automatically. Essential login, sync and security processing remains separate from optional telemetry. API requests propagate native analytics consent to prevent server-side events bypassing the choice.
+Optional native analytics and crash reporting are independently off until consent. Setup offers Save my choices and Continue without sharing; Settings can withdraw either choice. Native PostHog uses explicit feature events, no replay, automatic screen/lifecycle capture, advertising IDs or GeoIP enrichment. Sentry excludes account details, screenshots, view hierarchy, breadcrumbs and performance traces. API events respect the native analytics consent header.
 
-Account deletion requires a verified Clerk session and uses its identity for Convex deletion; callers cannot select another account. It removes owned goals, entries, follows and user records, including Trash, then deletes the Clerk account. Offline copies and retained provider backups require the handling described in the privacy policy.
+There is no cross-company advertising tracking and no Apple ATT prompt. Essential login/sync/security processing is separate from optional telemetry. Account deletion uses the verified cookie-first Clerk identity, deletes owned goals/entries/follows including Trash, moderation reports/blocks and then the Clerk account. Full destructive production deletion still needs a separate disposable test account.
 
-## Remaining release gates
+Every public Convex user/goal/entry function verifies JWT ownership, including legacy owner IDs. Concurrent API requests use independent authenticated Convex clients. Private-release discovery returns no goals, sharing controls and community navigation are hidden across all clients, new/updated goals stay private, and new follows are rejected. Existing data is preserved.
 
-- Apple review contact and dedicated login were entered and saved on 9 September. Verify persistence and validation on the final candidate.
-- Apple MRDP: owner confirmed no personal services; declaration saved and status verified Active on 9 September.
-- Owner approved a private first release. Community navigation, sharing controls and public data access are disabled across clients and Convex. Test and deploy these changes before submission.
-- Apple privacy labels and required iPhone/iPad screenshots are saved. Refresh screenshots and select the new private-release build before final content declarations and review submission.
-- Google content rating, accepted bundle and tester configuration. IARC terms were accepted with explicit owner approval; the questionnaire is saved in progress pending the private-release questionnaire update.
-- Google personal-account production access requires at least 12 opted-in closed testers continuously for 14 days, followed by an application for production access. No testers were enrolled when inspected.
-- Verify Play service-account credentials against the accepted package before relying on automated draft upload.
+Moderation reports quarantine legacy public goals immediately and have deduplication/rate limits. Block lists are private. The review queue at `/app/moderation` is allowlisted with the owner's Clerk identity through `COMMUNITY_MODERATOR_IDS`; positive admin UI access still needs verification. Decisions record moderator identity, timestamp and reason and never republish content.
 
-## Verification captured
+Before ever re-enabling community, add report/block controls on each platform, enforce blocks in discovery/follow queries, require standards acceptance and establish the response/appeal process. The current backend is moderation infrastructure for a disabled community, not a complete live community workflow.
 
-- Local iOS simulator build succeeded with privacy controls. The first iOS consent UI run found the decline action was unreliable; actions were moved to a fixed bottom area. The decline and relaunch test then passed in run 34280532559.
-- Android privacy instrumentation tests passed on the first consent implementation.
-- Android signed release and release unit tests passed in run 34278297388; Play then rejected its package name.
-- Web tests: 82 passed, including six authenticated account-deletion identity tests; TypeScript passed. CI 34285918781 passed on all platforms; web and Android E2E jobs in 34285918790 passed.
-- Production health returned healthy with Clerk and Convex connected after backend deployment.
-- Unauthenticated production account-deletion invocation was rejected; full signed-in deletion flow still needs an isolated test account.
+## Remaining external gates
 
-Do not describe TestFlight processing, draft Play uploads or passing CI as public store publication. Confirm the actual store release state.
+1. Upload and select the icon-bearing private iOS build, replace old community screenshots, validate review fields and submit to App Review.
+2. Verify Play service-account permissions and new draft upload, update listing artwork and roll out the closed test once testers are configured.
+3. Obtain at least 12 real Android testers opted in continuously for 14 days, then apply for production access. No testers are enrolled and no 14-day clock has started. Contacts are only a shortlist; invitation sending still awaits explicit owner approval.
+4. Complete any review feedback, publish and verify both actual public store pages.
+
+The hourly `finish-tally-store-releases` follow-up continues these gates and stays quiet unless there is meaningful progress or required input. TestFlight processing, draft uploads and green CI are not public store publication.
 
 ## Optional tips
 
-Apple has no configured in-app purchase products. The app now shows an honest unavailable state after loading instead of an endless spinner. No new tip prices have been invented or activated. Product IDs in both clients are `tip_small`, `tip_medium`, and `tip_large`.
+No Apple or Google tip products are configured. The app honestly shows unavailable after loading; no prices or paid services have been invented. Revisit store purchase declarations before activating products `tip_small`, `tip_medium` or `tip_large`.
 
-## Store setup saved during this release
-
-Apple privacy labels are published for nine data types: name, email, user ID, device ID, user content, fitness, product interactions, crash data and performance data. No advertising tracking is declared. Pricing is free in all 175 regions, with worldwide availability on release. Google privacy, no-ads, non-government, no-financial-services, no-advertising-ID and manual activity/fitness declarations are saved. The completed data-safety declaration discloses optional account, fitness, content, interaction, identifier and diagnostic collection. Target audience is 13–15, 16–17 and 18+, consistent with the app's 13+ policy. Productivity category, support email and website are saved. English (UK) listing copy, icon, feature graphic and two verified 1080 x 1920 Android screenshots are saved and marked Ready to send for review. Only the new feature graphic is labelled as created using AI. Content rating remains unfinished.
-
-A dedicated store review identity was provisioned with a generated password using the existing production Clerk administration credential. The password was never written to logs. Its encrypted artifact from run 34282135746 was decrypted into `~/.config/tally/release/store-review-account.json` (mode 600); encrypted GitHub secrets `APP_REVIEW_EMAIL` and `APP_REVIEW_PASSWORD` preserve the same configuration. Production sign-in succeeded with this account. Google Play confirms the saved declaration contains username, password and instructions after reload. App Store Connect's review contact still requires the owner's phone; verify the whole section after completing that field. The local RSA recovery key is `store-review-private.pem`; only its public key is saved in GitHub. Do not reset the review password during an active store review.
-
-Browser DOM snapshots can omit sensitive field values even when those fields are populated. Never interpret an empty-string match as proof a credential was saved. Load private credentials through an explicit local copy control, verify non-empty lengths, clear the clipboard, and validate the login against the actual service.
-
-## iOS 1.9.0 upload evidence
-
-Run 34285525613 uploaded build 26090890; Apple validated and processed it (build ID `caebc4b2-90cb-4bbb-8b16-f2cb8b28f082`). App Store Connect shows the existing internal Beta Testers group attached with one tester, and build status Ready to Submit. What to Test notes are saved. The App Store version picker did not offer this build when checked; build selection and review-contact saving remain unresolved.
-
-The old release workflow incorrectly printed distribution complete after failed external-review and internal-group API requests. `scripts/distribute-testflight.mjs` now verifies existing group membership, avoids external beta review for internal groups, and fails on rejected requests rather than interpreting arbitrary 409 responses as success. Seven focused tests pass. A future workflow run must verify this corrected automation against Apple; local tests alone do not prove tester delivery.
-
-Production account deletion now uses the same cookie-first identity as authentication when cookie and bearer credentials coexist. The confirmation page visibly identifies the signed-in account email. Actual destructive deletion remains untested with an isolated production account.
-
-## Private release and moderation
-
-Every user, goal and entry Convex function now verifies ownership using the Clerk JWT, including legacy database owner IDs. API requests create separate authenticated Convex clients so concurrent sessions cannot share tokens. Public discovery returns no goals, new/updated goals are private, and follow creation is rejected. Existing records are preserved.
-
-Moderation reports quarantine legacy public goals immediately, enforce a daily reporting limit and deduplicate retries. Block lists are private to each signed-in user. The review queue at `/app/moderation` requires an explicit `COMMUNITY_MODERATOR_IDS` allowlist in the Convex deployment; the default denies all reviewers. Review decisions are recorded with moderator identity, timestamp and note, and never republish a goal. Account deletion removes associated reports and block records.
-
-This is moderation infrastructure for the disabled community feature. Before re-enabling discovery, configure and verify moderators, add report/block controls to each community screen, enforce blocks in discovery/follow queries, require community standards acceptance, and establish the response/appeal process. Do not re-enable sharing merely by restoring the old UI.
-
-Google tester candidates are saved privately outside Git. They have not been invited, confirmed as Android users, or enrolled. The hourly release follow-up is `finish-tally-store-releases`; no 14-day eligibility date exists until the required real opt-ins are observed.
+Policy: https://tally-tracker.app/privacy · Support: https://tally-tracker.app/support · Deletion: https://tally-tracker.app/delete-account

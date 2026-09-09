@@ -1,10 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
   <rect width="1024" height="500" fill="#fffcf7"/>
-  <circle cx="875" cy="250" r="222" fill="#f6e9dc"/>
-  <circle cx="875" cy="250" r="169" fill="#fffcf7"/>
-  <g fill="none" stroke="#282824" stroke-width="18" stroke-linecap="round">
-    <path d="M758 181v138 M802 176v146 M846 182v134 M890 178v143"/>
-    <path d="M737 297l176-101" stroke="#ce563c"/>
+  <circle cx="875" cy="250" r="222" fill="#e7e3ff"/>
+  <circle cx="875" cy="250" r="169" fill="#4F46E5"/>
+  <g transform="translate(691 66) scale(.36)">
+  <g fill="none" stroke="#FFF9F2" stroke-width="76" stroke-linecap="round">
+    <path d="M314 276V750M446 276V750M578 276V750M710 276V750"/>
+    <path d="M222 699L810 358" stroke="#FF947E" stroke-width="66"/>
+  </g>
   </g>
   <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" fill="#282824">
     <text x="64" y="119" font-size="28" font-weight="700" letter-spacing="-0.6">Tally Tracker</text>

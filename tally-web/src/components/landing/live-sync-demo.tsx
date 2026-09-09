@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { TallyDisplay } from "@/components/ui/tally-display";
 
 type SyncState = "offline" | "queued" | "syncing" | "synced";
 
@@ -167,30 +168,7 @@ export function LiveSyncDemo() {
 
       {/* Tally marks visualization */}
       <div className="sync-tally-visual" aria-hidden="true">
-        <div className="sync-tally-group">
-          {/* Show 2 complete five-gates (10 marks) */}
-          {[0, 1].map((gate) => (
-            <div key={gate} className="sync-five-gate">
-              <span className="sync-stroke" />
-              <span className="sync-stroke" />
-              <span className="sync-stroke" />
-              <span className="sync-stroke" />
-              <span className="sync-slash" />
-            </div>
-          ))}
-          {/* Show remaining strokes */}
-          <div className="sync-partial">
-            {Array.from({ length: Math.min(devices[0].count - 10, 4) }).map((_, i) => (
-              <span 
-                key={i} 
-                className={`sync-stroke ${i === devices[0].count - 11 && isAnimating ? "sync-stroke-new" : ""}`}
-              />
-            ))}
-            {devices[0].count >= 15 && (
-              <span className="sync-slash" />
-            )}
-          </div>
-        </div>
+        <TallyDisplay count={devices[0].count} size="md" />
       </div>
 
       <div className="sync-demo-actions">

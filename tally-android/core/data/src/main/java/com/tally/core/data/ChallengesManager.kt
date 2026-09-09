@@ -167,6 +167,7 @@ class ChallengesManager(
         
         // Save locally and queue for sync
         entryStore.upsertEntry(entry)
+        app.tally.core.telemetry.PrivacyTelemetry.capture("entry_created")
         entryStore.addPendingChange(
             EntryPendingChange.Create(
                 entryId = tempId,
@@ -248,6 +249,8 @@ class ChallengesManager(
         _challenges.value = updated
         challengeStore.saveChallenges(updated)
         
+        app.tally.core.telemetry.PrivacyTelemetry.capture("challenge_created")
+
         // Initialize empty stats for the new challenge
         val newStats = ChallengeStats(
             challengeId = challenge.id,

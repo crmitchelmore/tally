@@ -65,7 +65,7 @@ fun CreateChallengeDialog(
     var countType by remember { mutableStateOf(CountType.SIMPLE) }
     var unitLabel by remember { mutableStateOf("") }
     var defaultIncrement by remember { mutableFloatStateOf(1f) }
-    var isPublic by remember { mutableStateOf(false) }
+    val isPublic = false
 
     val isValid = name.isNotBlank() && (targetStr.toIntOrNull() ?: 0) > 0
 
@@ -227,27 +227,10 @@ fun CreateChallengeDialog(
 
                 Spacer(modifier = Modifier.height(TallySpacing.sm))
 
-                // Public toggle
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .selectable(
-                            selected = isPublic,
-                            onClick = { isPublic = !isPublic },
-                            role = Role.Checkbox
-                        ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = isPublic,
-                        onCheckedChange = null // handled by selectable
-                    )
-                    Text(
-                        text = "Make this challenge public",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
+                Text(
+                    text = "Your goals are private",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
         },
         confirmButton = {

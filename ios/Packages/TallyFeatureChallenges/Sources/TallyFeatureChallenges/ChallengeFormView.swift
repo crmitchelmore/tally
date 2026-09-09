@@ -214,16 +214,11 @@ public struct ChallengeFormView: View {
                     Text("Appearance")
                 }
                 
-                // Visibility section
                 Section {
-                    Toggle("Public Challenge", isOn: $isPublic)
-                        .accessibilityIdentifier("public-toggle")
-                } header: {
-                    Text("Visibility")
-                } footer: {
-                    Text(isPublic ? "Anyone can see your progress and cheer you on." : "Only you can see this challenge.")
+                    Label("Your goals are private", systemImage: "lock")
+                        .foregroundStyle(Color.tallyInkSecondary)
                 }
-                
+
                 // Validation error
                 if let error = validationError {
                     Section {
@@ -367,7 +362,7 @@ public struct ChallengeFormView: View {
         timeframeType = challenge.timeframeType
         selectedColor = challenge.color
         selectedIcon = challenge.icon
-        isPublic = challenge.isPublic
+        isPublic = false
         countType = challenge.countType ?? .simple
         unitLabel = challenge.unitLabel ?? ""
         
@@ -401,7 +396,7 @@ public struct ChallengeFormView: View {
                 target: target,
                 color: selectedColor,
                 icon: selectedIcon,
-                isPublic: isPublic
+                isPublic: false
             )
         } else {
             // Create new
@@ -414,7 +409,7 @@ public struct ChallengeFormView: View {
                 endDate: endDate,
                 color: selectedColor,
                 icon: selectedIcon,
-                isPublic: isPublic,
+                isPublic: false,
                 countType: countType,
                 unitLabel: unitLabel.isEmpty ? nil : unitLabel,
                 defaultIncrement: nil

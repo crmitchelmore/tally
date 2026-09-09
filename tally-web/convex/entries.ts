@@ -1,3 +1,4 @@
+import { requireOwner, requireChallengeOwner, requireEntryOwner } from "./access";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Doc } from "./_generated/dataModel";
@@ -29,6 +30,7 @@ function toApiFormat(entry: Doc<"entries">) {
 export const listByChallenge = query({
   args: { challengeId: v.string() },
   handler: async (ctx, args) => {
+    await requireChallengeOwner(ctx, args.challengeId);
     const entries = await ctx.db
       .query("entries")
       .withIndex("by_challenge_id", (q) => q.eq("challengeId", args.challengeId))
@@ -48,6 +50,7 @@ export const listByChallenge = query({
 export const listByUser = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userId);
     const entries = await ctx.db
       .query("entries")
       .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
@@ -67,6 +70,7 @@ export const listByUser = query({
 export const get = query({
   args: { id: v.id("entries") },
   handler: async (ctx, args) => {
+    await requireEntryOwner(ctx, args.id);
     const entry = await ctx.db.get(args.id);
     if (!entry || !isNotDeleted(entry)) return null;
     return toApiFormat(entry);
@@ -79,6 +83,7 @@ export const get = query({
 export const getIncludingDeleted = query({
   args: { id: v.id("entries") },
   handler: async (ctx, args) => {
+    await requireEntryOwner(ctx, args.id);
     const entry = await ctx.db.get(args.id);
     if (!entry) return null;
     return {
@@ -107,6 +112,9 @@ export const create = mutation({
     )),
   },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userId);
+    const parent = await requireChallengeOwner(ctx, args.challengeId);
+    if (parent.deletedAt !== undefined) throw new Error("Challenge not found");
     const now = Date.now();
     const entryId = await ctx.db.insert("entries", {
       userId: args.userId,
@@ -143,6 +151,7 @@ export const update = mutation({
     )),
   },
   handler: async (ctx, args) => {
+    await requireEntryOwner(ctx, args.id);
     const { id, ...updates } = args;
     await ctx.db.patch(id, {
       ...updates,
@@ -163,6 +172,7 @@ export const remove = mutation({
     deletedBy: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireEntryOwner(ctx, args.id);
     const now = Date.now();
     await ctx.db.patch(args.id, { 
       deletedAt: now,
@@ -182,6 +192,7 @@ export const restore = mutation({
     userId: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireEntryOwner(ctx, args.id);
     const entry = await ctx.db.get(args.id);
     if (!entry) throw new Error("Entry not found");
     

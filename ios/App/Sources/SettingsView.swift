@@ -11,6 +11,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable private var authManager = AuthManager.shared
     @EnvironmentObject private var appSettings: AppSettings
+    @State private var showPrivacyChoices = false
     @State private var showTipJar = false
     @State private var showExportSheet = false
     @State private var showImportPicker = false
@@ -30,6 +31,13 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section("Privacy") {
+                    Button("Analytics & crash reports") { showPrivacyChoices = true }
+                    Link("Privacy policy", destination: URL(string: "https://tally-tracker.app/privacy")!)
+                    Link("Delete your account", destination: URL(string: "https://tally-tracker.app/delete-account")!)
+                    Link("Support", destination: URL(string: "https://tally-tracker.app/support")!)
+                }
+
                 // Data Management section
                 Section {
                     // Export data
@@ -322,6 +330,7 @@ struct SettingsView: View {
             ) { result in
                 Task { await handleImport(result) }
             }
+            .sheet(isPresented: $showPrivacyChoices) { PrivacyChoicesView() }
             .alert("Delete Local Data?", isPresented: $showDeleteConfirm) {
                 Button("Export & Delete", role: .destructive) {
                     Task { await exportAndDeleteLocalData() }

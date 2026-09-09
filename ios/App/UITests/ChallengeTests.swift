@@ -62,17 +62,13 @@ final class ChallengeTests: TallyUITestCase {
         dashboardPage.tapChallenge(named: "Edit Test")
         
         // Edit the challenge
-        if challengeDetail.actionsMenu.waitForExistence(timeout: 5) {
-            challengeDetail.tapEdit()
-            
-            // Change target
-            if challengeDialog.targetTextField.waitForExistence(timeout: 5) {
-                clearAndType(challengeDialog.targetTextField, text: "1500")
-                XCTAssertEqual((challengeDialog.targetTextField.value as? String)?.replacingOccurrences(of: ",", with: ""), "1500")
-                challengeDialog.tapSaveAndWaitForDismiss()
-            }
-        }
-        
+        XCTAssertTrue(challengeDetail.actionsMenu.waitForExistence(timeout: 5))
+        challengeDetail.tapEdit()
+        XCTAssertTrue(challengeDialog.targetTextField.waitForExistence(timeout: 10), "The edit form must open before changing the target.")
+        clearAndType(challengeDialog.targetTextField, text: "1500")
+        XCTAssertEqual((challengeDialog.targetTextField.value as? String)?.replacingOccurrences(of: ",", with: ""), "1500")
+        challengeDialog.tapSaveAndWaitForDismiss()
+
         // Verify the update on dashboard card
         challengeDetail.tapBack()
         let card = dashboardPage.challengeCard(named: "Edit Test")

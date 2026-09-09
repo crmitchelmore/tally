@@ -44,4 +44,51 @@ final class ChallengeProgressTests: XCTestCase {
         XCTAssertEqual(future.daysRemaining, 30)
         XCTAssertEqual(future.paceStatus, .none)
     }
+
+    private func entry(_ id: String, day: Int, count: Int) -> Entry {
+        Entry(id: id, userId: "test", challengeId: challenge.id, date: String(format: "2026-09-%02d", day), count: count, createdAt: "", updatedAt: "")
+    }
+
+    func testFirstOfflineEntryUpdatesRecordsAndStreaks() {
+        let cached = ChallengeProgress.updating(challenge: challenge, total: 0, today: day(8), calendar: calendar)
+        let stats = ChallengeProgress.updating(challenge: challenge, total: 25, previous: cached, entries: [entry("one", day: 8, count: 25)], today: day(8), calendar: calendar)
+        XCTAssertEqual(stats.bestDay, .init(date: "2026-09-08", count: 25))
+        XCTAssertEqual(stats.streakCurrent, 1)
+        XCTAssertEqual(stats.streakBest, 1)
+        XCTAssertEqual(stats.dailyAverage, 25)
+    }
+
+    func testSameDayEntriesAggregateAndEditingHistoryChangesRecords() {
+        let history = [entry("one", day: 6, count: 10), entry("two", day: 7, count: 20), entry("three", day: 7, count: 15), entry("four", day: 8, count: 5)]
+        let stats = ChallengeProgress.updating(challenge: challenge, total: 50, entries: history, today: day(8), calendar: calendar)
+        XCTAssertEqual(stats.bestDay, .init(date: "2026-09-07", count: 35))
+        XCTAssertEqual(stats.streakCurrent, 3)
+        XCTAssertEqual(stats.streakBest, 3)
+        XCTAssertEqual(stats.dailyAverage, 16.7)
+        let edited = ChallengeProgress.updating(challenge: challenge, total: 30, previous: stats, entries: [history[0], history[2], history[3]], today: day(8), calendar: calendar)
+        XCTAssertEqual(edited.bestDay, .init(date: "2026-09-07", count: 15))
+        XCTAssertEqual(edited.dailyAverage, 10)
+        let empty = ChallengeProgress.updating(challenge: challenge, total: 0, previous: edited, entries: [], today: day(8), calendar: calendar)
+        XCTAssertNil(empty.bestDay)
+        XCTAssertEqual(empty.streakCurrent, 0)
+        XCTAssertEqual(empty.streakBest, 0)
+    }
+
+    func testStreakAllowsYesterdayThenExpiresWithoutLosingBestRecord() {
+        let history = [entry("one", day: 7, count: 10), entry("two", day: 8, count: 15)]
+        let yesterday = ChallengeProgress.updating(challenge: challenge, total: 25, entries: history, today: day(9), calendar: calendar)
+        XCTAssertEqual(yesterday.streakCurrent, 2)
+        let expired = ChallengeProgress.updating(challenge: challenge, total: 25, previous: yesterday, entries: history, today: day(10), calendar: calendar)
+        XCTAssertEqual(expired.streakCurrent, 0)
+        XCTAssertEqual(expired.streakBest, 2)
+        XCTAssertEqual(expired.bestDay?.count, 15)
+    }
+
+    func testPartialCacheDoesNotEraseServerRecords() {
+        let complete = ChallengeProgress.updating(challenge: challenge, total: 25, entries: [entry("one", day: 7, count: 10), entry("two", day: 8, count: 15)], today: day(8), calendar: calendar)
+        let partial = ChallengeProgress.updating(challenge: challenge, total: 30, previous: complete, entries: [entry("local", day: 8, count: 5)], today: day(8), calendar: calendar)
+        XCTAssertEqual(partial.bestDay, complete.bestDay)
+        XCTAssertEqual(partial.streakBest, complete.streakBest)
+        XCTAssertEqual(partial.dailyAverage, complete.dailyAverage)
+    }
 }

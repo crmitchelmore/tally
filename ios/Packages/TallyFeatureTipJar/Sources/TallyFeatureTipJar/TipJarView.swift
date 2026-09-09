@@ -27,9 +27,13 @@ public struct TipJarView: View {
             .padding(.top)
             
             // Tip Options
-            if store.products.isEmpty {
+            if store.isLoading {
                 ProgressView("Loading...")
-                    .task { await store.loadProducts() }
+            } else if store.products.isEmpty {
+                Text("Tips aren't available right now. Enjoy Tally — all features are free.")
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+                Button("Try again") { Task { await store.loadProducts() } }
             } else {
                 VStack(spacing: 12) {
                     ForEach(store.products, id: \.id) { product in
@@ -64,6 +68,7 @@ public struct TipJarView: View {
         }
         .padding()
         .frame(minWidth: 300, minHeight: 400)
+        .task { await store.loadProducts() }
     }
 }
 

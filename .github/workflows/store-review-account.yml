@@ -1,0 +1,24 @@
+name: Prepare Store Review Account
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Create dedicated review account
+        run: node scripts/create-store-review-account.mjs
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          STORE_REVIEW_PUBLIC_KEY: ${{ secrets.STORE_REVIEW_PUBLIC_KEY }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: encrypted-store-review-credentials
+          path: store-review-credentials.enc
+          retention-days: 7

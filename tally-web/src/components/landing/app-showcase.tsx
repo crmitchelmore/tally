@@ -39,11 +39,7 @@ const screens = [
     label: "Challenge Detail",
     description: "Drill into any challenge to see tally marks grow, a weekly burn-up chart, pace status, and your full entry history.",
   },
-  {
-    id: "community",
-    label: "Community",
-    description: "Discover public challenges, follow friends, and share your own progress for accountability and motivation.",
-  },
+
 ] as const;
 
 type PlatformId = (typeof platforms)[number]["id"];
@@ -76,7 +72,7 @@ function ScreenPreview({ screenId, platform }: { screenId: ScreenId; platform: P
         <div className="screen-nav-bar">
           <span className="screen-title">
             {screenId === "dashboard" ? "Dashboard" :
-             screenId === "challenge" ? "Morning Run" : "Community"}
+             "Morning Run"}
           </span>
           {screenId === "dashboard" && (
             <span className="screen-sync-badge">✓ Synced</span>
@@ -90,19 +86,9 @@ function ScreenPreview({ screenId, platform }: { screenId: ScreenId; platform: P
       <div className="screen-content">
         {screenId === "dashboard" && <DashboardPreview isAndroid={isAndroid} />}
         {screenId === "challenge" && <ChallengePreview isAndroid={isAndroid} />}
-        {screenId === "community" && <CommunityPreview isAndroid={isAndroid} />}
       </div>
 
-      <div className="screen-bottom-nav">
-        <div className={`screen-nav-item ${screenId !== "community" ? "active" : ""}`}>
-          <span className="nav-icon">{isAndroid ? "⊞" : "⌂"}</span>
-          <span className="nav-label">Home</span>
-        </div>
-        <div className={`screen-nav-item ${screenId === "community" ? "active" : ""}`}>
-          <span className="nav-icon">{isAndroid ? "⊕" : "◎"}</span>
-          <span className="nav-label">Community</span>
-        </div>
-      </div>
+
     </div>
   );
 }

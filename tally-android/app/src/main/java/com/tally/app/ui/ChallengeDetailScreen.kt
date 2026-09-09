@@ -1,5 +1,7 @@
 package com.tally.app.ui
 
+import androidx.compose.ui.platform.testTag
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -146,7 +148,7 @@ fun ChallengeDetailScreen(
                 }
             )
         },
-        modifier = modifier
+        modifier = modifier.testTag("challenge_detail")
     ) { paddingValues ->
         Column(
             modifier = Modifier

@@ -11,7 +11,6 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Challenges", href: "/app" },
-  { label: "Community", href: "/app/community" },
   { label: "Settings", href: "/app/settings" },
 ];
 

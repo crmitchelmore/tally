@@ -192,6 +192,17 @@ jobs:
                 throw new Error(`No DISTRIBUTION certificate in ASC matched serial ${process.env.CERT_SERIAL}`);
               }
 
+              // Reuse valid profiles for this exact bundle and signing certificate.
+              // Creating new profiles on every build needlessly depends on the Apple
+              // profile-creation endpoint, which has repeatedly returned HTTP 500.
+              const existingProfiles = [];
+              let nextProfiles = '/v1/profiles?filter[profileType]=IOS_APP_STORE&filter[profileState]=ACTIVE&include=bundleId,certificates&limit=200';
+              while (nextProfiles) {
+                const page = await apiGet(nextProfiles, jwt);
+                existingProfiles.push(...page.data);
+                const next = page.links?.next ? new URL(page.links.next) : null;
+                nextProfiles = next ? `${next.pathname}${next.search}` : null;
+              }
               const profiles = [];
               for (const identifier of [process.env.IOS_BUNDLE_ID, `${process.env.IOS_BUNDLE_ID}.widget`]) {
                 const bundleIds = await apiGet(`/v1/bundleIds?filter[identifier]=${encodeURIComponent(identifier)}&limit=200`, jwt);
@@ -204,7 +215,15 @@ jobs:
                 // Apple limits provisioning profile names to 50 characters.
                 const profileLabel = identifier === process.env.IOS_BUNDLE_ID ? "App" : "Widget";
                 const profileName = `Tally ${profileLabel} App Store CI ${Date.now()}`;
-                const created = await apiPost('/v1/profiles', jwt, {
+                let profile = existingProfiles
+                  .filter(item => item.attributes?.profileState === 'ACTIVE'
+                    && item.attributes?.profileType === 'IOS_APP_STORE'
+                    && new Date(item.attributes.expirationDate).getTime() > Date.now() + 86400000
+                    && item.relationships?.bundleId?.data?.id === bundleId.id
+                    && item.relationships?.certificates?.data?.some(cert => cert.id === matchingCert.id))
+                  .sort((a, b) => new Date(b.attributes.createdDate) - new Date(a.attributes.createdDate))[0];
+                if (!profile) {
+                  const created = await apiPost('/v1/profiles', jwt, {
                   data: {
                     type: 'profiles',
                     attributes: { name: profileName, profileType: 'IOS_APP_STORE' },
@@ -215,7 +234,8 @@ jobs:
                   }
                 });
 
-                const profile = created.data;
+                  profile = created.data;
+                }
                 profiles.push({
                   identifier,
                   uuid: profile.attributes?.uuid,
@@ -414,6 +434,10 @@ jobs:
       contents: write
 
     steps:
+      - uses: actions/checkout@v4
+      - name: Validate TestFlight distribution handling
+        run: node --test scripts/distribute-testflight.test.mjs
+
       - name: Wait for App Store Connect processing
         uses: actions/github-script@v7
         id: poll
@@ -571,67 +595,10 @@ jobs:
               .map(id => id.trim())
               .filter(Boolean);
             
-            if (betaGroupIds.length === 0) {
-              core.warning('No beta group IDs configured. Build uploaded but not distributed.');
-              return;
-            }
-            
-            // 1. Submit for beta review (required for external testers)
-            core.info('📋 Submitting for beta app review...');
-            try {
-              const reviewResponse = await fetch('https://api.appstoreconnect.apple.com/v1/betaAppReviewSubmissions', {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${jwt}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  data: {
-                    type: 'betaAppReviewSubmissions',
-                    relationships: {
-                      build: {
-                        data: { type: 'builds', id: buildId }
-                      }
-                    }
-                  }
-                })
-              });
-              
-              if (!reviewResponse.ok && reviewResponse.status !== 409) {
-                // 409 = already submitted, which is fine
-                const text = await reviewResponse.text();
-                core.warning(`Beta review submission: ${reviewResponse.status} - ${text}`);
-              } else {
-                core.info('✅ Beta app review submitted');
-              }
-            } catch (e) {
-              core.warning(`Beta review error: ${e.message}`);
-            }
-            
-            // 2. Add build to beta groups
-            for (const groupId of betaGroupIds) {
-              core.info(`📱 Adding build to beta group ${groupId}...`);
-              
-              const addResponse = await fetch(`https://api.appstoreconnect.apple.com/v1/builds/${buildId}/relationships/betaGroups`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${jwt}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  data: [{ type: 'betaGroups', id: groupId }]
-                })
-              });
-              
-              if (!addResponse.ok) {
-                const text = await addResponse.text();
-                core.warning(`Failed to add to group ${groupId}: ${addResponse.status} - ${text}`);
-              } else {
-                core.info(`✅ Added to beta group ${groupId}`);
-              }
-            }
-            
-            core.info('🎉 TestFlight distribution complete!');
+            const { configureTestFlight } = await import(`${process.env.GITHUB_WORKSPACE}/scripts/distribute-testflight.mjs`);
+            const result = await configureTestFlight({ token: jwt, buildId, groupIds: betaGroupIds });
+            core.info(`Verified access for ${result.groups} TestFlight group(s). Beta review: ${result.betaReview}.`);
+            await core.summary.addRaw(`Build ${buildId} processed. Group access verified; beta review ${result.betaReview}. This is not public App Store publication.`).write();
 
       - name: Create GitHub Release
         if: success()

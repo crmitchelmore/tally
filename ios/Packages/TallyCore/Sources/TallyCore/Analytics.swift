@@ -20,7 +20,7 @@ public enum Analytics {
     private static let identityKey = "tally.analytics.identifiedUser"
 
     public static func configure() {
-        guard !enabled, !CommandLine.arguments.contains("--uitesting"),
+        guard PrivacyPreferences().analyticsEnabled, !enabled, !CommandLine.arguments.contains("--uitesting"),
               ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
               let key = Bundle.main.object(forInfoDictionaryKey: "POSTHOG_KEY") as? String,
               !key.isEmpty, !key.hasPrefix("$(") else { return }
@@ -29,14 +29,28 @@ public enum Analytics {
         config.captureApplicationLifecycleEvents = false
         config.captureScreenViews = false
         config.sessionReplay = false
+        config.preloadFeatureFlags = false
         config.captureElementInteractions = false
         config.capturePushNotificationSubscriptions = false
         config.capturePushNotificationOpened = false
         config.errorTrackingConfig.autoCapture = false
         PostHogSDK.shared.setup(config)
+        PostHogSDK.shared.optIn()
+        PostHogSDK.shared.register(["$geoip_disable": true])
         identifiedUser = UserDefaults.standard.string(forKey: identityKey)
         enabled = true
         capture(.appOpened)
+    }
+
+    public static func applyPrivacyChoice() {
+        if PrivacyPreferences().analyticsEnabled { configure() }
+        else if enabled {
+            enabled = false
+            PostHogSDK.shared.optOut()
+            PostHogSDK.shared.close()
+            identifiedUser = nil
+            UserDefaults.standard.removeObject(forKey: identityKey)
+        }
     }
 
     public static func identify(_ userID: String?) {
@@ -44,6 +58,7 @@ public enum Analytics {
         if identifiedUser != nil {
             capture(.signedOut)
             PostHogSDK.shared.reset()
+            PostHogSDK.shared.register(["$geoip_disable": true])
         }
         identifiedUser = userID
         UserDefaults.standard.set(userID, forKey: identityKey)

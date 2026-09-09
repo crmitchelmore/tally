@@ -35,15 +35,11 @@ struct ChallengeDialogPage {
     }
     
     var targetTextField: XCUIElement {
-        // Try accessibility identifier first
-        let byId = app.textFields["challenge-target-input"]
-        if byId.exists { return byId }
-        // Find the target text field - it's inside a stepper, labeled "Target"
-        let byLabel = app.textFields["Target"]
-        if byLabel.exists { return byLabel }
-        return app.textFields.matching(NSPredicate(format: "value CONTAINS '100'")).firstMatch
+        // Keep the stable query while the sheet animates in. Resolving a fallback
+        // before presentation can wait forever on a value that is locale-formatted.
+        app.textFields["challenge-target-input"].firstMatch
     }
-    
+
     var timeframePicker: XCUIElement {
         app.pickers["Timeframe"].firstMatch
     }
@@ -78,7 +74,7 @@ struct ChallengeDialogPage {
         
         // Fill target only if specified (use default otherwise)
         if let target = target, targetTextField.waitForExistence(timeout: 3) {
-            targetTextField.tap()
+            targetTextField.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
             
             // Clear existing value by deleting characters
             let currentValue = targetTextField.value as? String ?? ""
@@ -87,6 +83,7 @@ struct ChallengeDialogPage {
                 targetTextField.typeText(deleteString)
             }
             targetTextField.typeText(target)
+            XCTAssertEqual((targetTextField.value as? String)?.replacingOccurrences(of: ",", with: ""), target)
         }
         
         if let timeframe = timeframe, timeframePicker.exists {

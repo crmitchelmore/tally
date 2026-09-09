@@ -1,6 +1,7 @@
 name: Deploy Production
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
 
@@ -60,6 +61,10 @@ jobs:
             --build-env NEXT_PUBLIC_POSTHOG_HOST="${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}" \
             --build-env NEXT_PUBLIC_SENTRY_DSN="${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}" \
             "${SENTRY_BUILD_ARGS[@]}"
+      - name: Deploy Convex backend
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+        run: bunx convex deploy --yes
       - name: Smoke tests
         env:
           VERCEL_PROD_URL: ${{ secrets.VERCEL_PROD_URL }}

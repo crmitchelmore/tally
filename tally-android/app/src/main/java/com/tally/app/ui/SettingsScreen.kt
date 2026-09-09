@@ -61,6 +61,8 @@ fun SettingsScreen(
     onSignOut: () -> Unit,
     viewModel: ChallengesViewModel? = null
 ) {
+    var showPrivacy by remember { mutableStateOf(false) }
+    if (showPrivacy) PrivacyChoices { showPrivacy = false }
     var showTipJar by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var showDashboardConfig by remember { mutableStateOf(false) }
@@ -216,6 +218,13 @@ fun SettingsScreen(
         
         Spacer(modifier = Modifier.height(24.dp))
         
+        TextButton(onClick = { showPrivacy = true }) { Text("Analytics & crash reports") }
+        val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+        TextButton(onClick = { uriHandler.openUri("https://tally-tracker.app/privacy") }) { Text("Privacy policy") }
+        TextButton(onClick = { uriHandler.openUri("https://tally-tracker.app/support") }) { Text("Support") }
+
+        TextButton(onClick = { uriHandler.openUri("https://tally-tracker.app/delete-account") }) { Text("Delete your account") }
+
         // Appearance section
         Text(
             text = "APPEARANCE",

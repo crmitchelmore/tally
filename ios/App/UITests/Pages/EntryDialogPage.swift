@@ -42,6 +42,8 @@ struct EntryDialogPage {
     }
     
     var saveButton: XCUIElement {
+        let navigationButton = app.buttons["addEntryNavButton"].firstMatch
+        if navigationButton.exists { return navigationButton }
         let byId = app.buttons["saveEntryButton"].firstMatch
         return byId.exists ? byId : app.buttons["Save"].firstMatch
     }
@@ -60,16 +62,13 @@ struct EntryDialogPage {
     
     func enterCount(_ count: String) {
         if countInput.waitForExistence(timeout: 3) {
-            countInput.tap()
+            countInput.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
             if let existingText = countInput.value as? String, !existingText.isEmpty {
                 let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: existingText.count)
                 countInput.typeText(deleteString)
             }
-            if countInput.value as? String != "0" {
-                countInput.tap()
-                countInput.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6))
-            }
             countInput.typeText(count)
+            XCTAssertEqual(countInput.value as? String, count)
         }
     }
     

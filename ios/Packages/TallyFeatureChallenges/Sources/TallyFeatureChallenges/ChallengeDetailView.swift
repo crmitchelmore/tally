@@ -35,6 +35,7 @@ public struct ChallengeDetailView: View {
         onDeleteChallenge: ((Challenge) -> Void)? = nil
     ) {
         _challenge = State(initialValue: challenge)
+        _stats = State(initialValue: manager.stats(for: challenge.id))
         self.manager = manager
         self.onAddEntry = onAddEntry
         self.onEdit = onEdit
@@ -278,21 +279,6 @@ public struct ChallengeDetailView: View {
                     .foregroundColor(Color.tallyInkSecondary)
             }
             
-            // Public/Private badge
-            if challenge.isPublic {
-                HStack {
-                    Image(systemName: "globe")
-                        .font(.caption)
-                    Text("Public")
-                        .font(.tallyLabelSmall)
-                }
-                .foregroundColor(Color.tallyInkSecondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.tallyPaperTint)
-                .cornerRadius(4)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
         }
     }
     
@@ -682,6 +668,9 @@ public struct ChallengeDetailView: View {
     
     private func loadStats() async {
         isLoadingStats = true
+        // Keep local progress visible while network requests refresh the detail.
+        // Offline goals must not appear empty until a request times out.
+        stats = manager.stats(for: challenge.id) ?? stats
         
         // Load entries for the burn-up chart
         entries = manager.entries(for: challenge.id)

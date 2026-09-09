@@ -9,6 +9,10 @@ permissions:
   contents: read
   statuses: write
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ─────────────────────────────────────────────────────────────
   # Web: lint + build
@@ -23,6 +27,8 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install
+      - name: Verify shared app icons
+        run: node ../scripts/verify-icons.cjs
       - name: Lint
         run: bun run lint
       - name: Build
@@ -278,5 +284,7 @@ jobs:
           # Best-effort VERSION file update
           echo "$NEW_VERSION" > ios/VERSION
           git add ios/VERSION
-          git commit -m "chore: bump iOS version to $NEW_VERSION"
-          git push origin main || echo "⚠️ Could not push VERSION bump (branch protection)"
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: bump iOS version to $NEW_VERSION"
+            git push origin main || echo "⚠️ Could not push VERSION bump (branch protection)"
+          fi

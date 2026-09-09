@@ -15,6 +15,9 @@ function ensureNavigator(req: NextRequest) {
 const isPublicRoute = createRouteMatcher([
   "/",
   "/offline(.*)",
+  "/privacy",
+  "/support",
+  "/delete-account",
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/__clerk(.*)",

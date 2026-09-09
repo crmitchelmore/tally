@@ -98,7 +98,7 @@ export default function IOSPage() {
             <span className="platform-feature-icon" aria-hidden="true">
               ✦
             </span>
-            <span>Community challenges — discover &amp; follow others</span>
+            <span>Private goals — your progress, at your pace</span>
           </li>
         </ul>
       </section>

@@ -203,24 +203,7 @@ export default function ChallengeDetailPage() {
   };
 
   // Toggle public/private visibility
-  const handleTogglePublic = async () => {
-    if (!data) return;
-    try {
-      const res = await fetch(`/api/v1/challenges/${challengeId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isPublic: !data.challenge.isPublic }),
-      });
-      if (res.ok) {
-        fetchData();
-        refreshChallenges();
-      }
-    } catch {
-      // Ignore
-    }
-  };
 
-  // Delete
   const handleDelete = async () => {
     if (!data) return;
     const challengeName = data.challenge.name;
@@ -356,18 +339,6 @@ export default function ChallengeDetailPage() {
                   />
                   <div className="absolute right-0 top-full mt-2 z-50 w-56 bg-surface border border-border rounded-xl shadow-lg overflow-hidden">
                     <div className="py-1">
-                      <button
-                        onClick={() => { handleTogglePublic(); setShowSettings(false); }}
-                        className="w-full text-left px-4 py-3 hover:bg-border/30 transition-colors"
-                      >
-                        <p className="font-medium text-ink text-sm">
-                          {challenge.isPublic ? "Make Private" : "Make Public"}
-                        </p>
-                        <p className="text-xs text-muted">
-                          {challenge.isPublic ? "Remove from community" : "Share in community challenges"}
-                        </p>
-                      </button>
-                      <div className="border-t border-border" />
                       <button
                         onClick={() => { handleToggleArchive(); setShowSettings(false); }}
                         className="w-full text-left px-4 py-3 hover:bg-border/30 transition-colors"

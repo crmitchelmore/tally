@@ -226,6 +226,7 @@ class TallyApiClient(
                 requestMethod = method
                 setRequestProperty("Authorization", "Bearer $token")
                 setRequestProperty("Content-Type", "application/json")
+                setRequestProperty("X-Tally-Analytics", if (app.tally.core.telemetry.PrivacyTelemetry.analyticsEnabled) "enabled" else "disabled")
                 setRequestProperty("Accept", "application/json")
                 connectTimeout = 30_000
                 readTimeout = 30_000
@@ -294,6 +295,7 @@ class TallyApiClient(
                 requestMethod = method
                 setRequestProperty("Authorization", "Bearer $token")
                 setRequestProperty("Content-Type", "application/json")
+                setRequestProperty("X-Tally-Analytics", if (app.tally.core.telemetry.PrivacyTelemetry.analyticsEnabled) "enabled" else "disabled")
                 connectTimeout = 30_000
                 readTimeout = 30_000
             }

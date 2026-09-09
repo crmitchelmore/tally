@@ -1,0 +1,79 @@
+name: Android Store Release
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: Google Play testing track
+        type: choice
+        options: [internal, alpha]
+        default: internal
+      upload:
+        description: Upload a draft release to Google Play (first upload may require Console)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: android-store-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: tally-android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Prepare existing upload key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          test -n "$KEYSTORE_BASE64"
+          umask 077
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/tally-upload.keystore"
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/tally-upload.keystore" >> "$GITHUB_ENV"
+          # Preserve ordering above the first uploaded Unix-seconds code, then
+          # consume one code per workflow run instead of one per second.
+          VERSION_CODE=$((1800000000 + ${{ github.run_number }}))
+          test "$VERSION_CODE" -le 2100000000
+          echo "ANDROID_VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
+      - name: Build signed app bundle and verify
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          ANDROID_SENTRY_DSN: ${{ secrets.ANDROID_SENTRY_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          test -n "$NEXT_PUBLIC_POSTHOG_KEY"
+          test -n "$ANDROID_SENTRY_DSN"
+          ./gradlew :app:bundleRelease testReleaseUnitTest --no-daemon
+          jarsigner -verify app/build/outputs/bundle/release/app-release.aab
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tally-android-store-${{ env.ANDROID_VERSION_CODE }}
+          path: |
+            tally-android/app/build/outputs/bundle/release/*.aab
+            tally-android/app/build/outputs/mapping/release/mapping.txt
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload draft to Play testing track
+        if: inputs.upload
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
+          PLAY_TRACK: ${{ inputs.track }}
+        run: |
+          python -m pip install 'google-api-python-client==2.190.0' 'google-auth==2.48.0'
+          python ../scripts/publish-android.py
+      - name: Remove signing material
+        if: always()
+        run: rm -f "$RUNNER_TEMP/tally-upload.keystore"

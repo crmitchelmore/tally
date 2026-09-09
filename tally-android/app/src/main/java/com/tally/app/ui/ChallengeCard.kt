@@ -174,15 +174,7 @@ fun ChallengeCard(
                                 overflow = TextOverflow.Ellipsis
                             )
                             
-                            // Public badge
-                            if (challenge.isPublic) {
-                                Icon(
-                                    imageVector = Icons.Default.Public,
-                                    contentDescription = "Public",
-                                    modifier = Modifier.size(16.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
+
                         }
                         
                         Text(

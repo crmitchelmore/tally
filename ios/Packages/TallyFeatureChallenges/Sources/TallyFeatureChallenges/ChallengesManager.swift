@@ -507,16 +507,11 @@ public final class ChallengesManager {
         let currentStats = stats[challengeId]
         let newTotal = max(0, (currentStats?.totalCount ?? 0) + addedCount)
         let cachedEntries = localEntryStore.loadEntries(forChallenge: challengeId)
-        let activeDays = Set(cachedEntries.map(\.date)).count
-        // Recompute the active-day average only when the cached history is complete.
-        let average: Double? = cachedEntries.reduce(0, { $0 + $1.count }) == newTotal
-            ? (activeDays > 0 ? (Double(newTotal) / Double(activeDays) * 10).rounded() / 10 : 0)
-            : nil
         let updatedStats = ChallengeProgress.updating(
             challenge: challenge,
             total: newTotal,
             previous: currentStats,
-            dailyAverage: average
+            entries: cachedEntries
         )
 
         // Update in-memory and persisted stats
@@ -531,7 +526,7 @@ public final class ChallengesManager {
         var refreshed = stats
         for challenge in challenges {
             guard let previous = stats[challenge.id] else { continue }
-            let current = ChallengeProgress.updating(challenge: challenge, total: previous.totalCount, previous: previous)
+            let current = ChallengeProgress.updating(challenge: challenge, total: previous.totalCount, previous: previous, entries: localEntryStore.loadEntries(forChallenge: challenge.id))
             if current != previous {
                 refreshed[challenge.id] = current
                 localStore.upsertStats(current, for: challenge.id)

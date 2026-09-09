@@ -6,7 +6,7 @@ Last verified: 9 September 2026. Neither public store release is live.
 
 Private-release commit `19d8512` passed web, iOS and Android CI and all three UI/E2E jobs (runs 34291174034 and 34291174041). It was deployed to https://tally-tracker.app by run 34291612345. Production health is healthy; signed-in creation of a private reading goal and logging 25 pages worked and persisted after reload. Anonymous direct database queries are rejected.
 
-The icon refresh supersedes that candidate. Re-run builds and select the new icon-bearing build before submitting to Apple or Google.
+The icon refresh and subsequent offline-records correction supersede that candidate. The offline regression was observed in real iOS screenshots: 25 logged pages showed best day 0 and streak 0. Complete cached histories now recompute records on entry edits/deletions and date changes; partial caches preserve server records. Seven focused pure-Swift progress tests pass, and store capture now asserts the correct best-day value. Re-run builds and select the new icon-bearing build before submitting to Apple or Google.
 
 ## Store records
 
@@ -27,7 +27,7 @@ The icon refresh supersedes that candidate. Re-run builds and select the new ico
 - `.github/workflows/deploy-production.yml`: authenticated web client first, then Convex enforcement, then smoke tests.
 - Convex production `bright-jackal-396`, with deployment credential in GitHub `CONVEX_DEPLOY_KEY`. Pre-auth/deletion deployment backup completed on 8 September.
 - Sentry `tally-lz`, projects `apple-ios`, `android` and `javascript-nextjs`. PostHog EU project 114447. Ingestion keys and DSNs are existing GitHub secrets.
-- Google Cloud project `tally-tracker-484110`, existing service account `tally-tracker-service-account@tally-tracker-484110.iam.gserviceaccount.com`. A valid replacement JSON key was saved privately and in GitHub on 9 September; the Android Publisher API was enabled. App-scoped Play permissions still require verification before automated upload can be considered working.
+- Google Cloud project `tally-tracker-484110`, existing service account `tally-tracker-service-account@tally-tracker-484110.iam.gserviceaccount.com`. A valid replacement JSON key was saved privately and in GitHub on 9 September; the Android Publisher API was enabled. Tally-only testing/track/store permissions are Active; a discarded edit transaction verified authentication and track listing with HTTP 200. Automated bundle upload still needs a successful workflow receipt.
 
 ## Private recovery configuration
 

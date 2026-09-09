@@ -23,6 +23,7 @@ final class StoreScreenshotTests: TallyUITestCase {
         let total = app.staticTexts["challenge-total-count"]
         let correctTotal = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == %@", "25"), object: total)
         XCTAssertEqual(XCTWaiter.wait(for: [correctTotal], timeout: 5), .completed)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Best day: 25 pages")).firstMatch.waitForExistence(timeout: 5))
         capture("02-goal")
         waitAndTap(detail.addEntryButton)
         entry.assertIsVisible()

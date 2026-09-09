@@ -10,3 +10,19 @@ Motion acknowledges an action without postponing saving, navigation or an update
 There are no looping decorative effects, added animation libraries, delayed writes, confetti or animated intermediate numbers. Repeated input interrupts feedback rather than queuing it.
 
 The TestFlight runner uses macOS 26 / Xcode 26.2 to meet Apple's current upload requirements. Automatic releases serialize and skip superseded main commits.
+
+### Hand-drawn ink (September 2026)
+
+Marks now vary their endpoints, gentle curvature and stroke weight for each mounted
+canvas/glyph. Seeds persist while counts and motion preferences change; rendering
+never samples fresh randomness per animation frame. Web uses hydration-safe React
+IDs; SwiftUI stores a drawing seed and Compose remembers a canvas renderer. Xs,
+box outlines and thousand-row closures use the same ink treatment. Shapes retain
+round caps, clear spacing and the red fifth stroke. Web entry sheets share the
+card renderer and its reduced-motion-aware feedback instead of duplicating geometry.
+
+The iOS goal chart uses automatic date ticks (five normally, three at accessibility
+text sizes), with collision avoidance and 12-point spacing. Swift Charts formats
+dates for the visible range, so short goals can show days and long goals retain
+year context. Chart data is calculated once per body evaluation rather than once
+for each plotted series and callout.

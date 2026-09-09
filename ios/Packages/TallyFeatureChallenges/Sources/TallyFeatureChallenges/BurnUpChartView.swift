@@ -5,6 +5,7 @@ import TallyFeatureAPIClient
 
 /// Burn-up chart showing progress over challenge duration with pace projection
 public struct BurnUpChartView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let challenge: Challenge
     let stats: ChallengeStats
     let entries: [Entry]
@@ -99,6 +100,7 @@ public struct BurnUpChartView: View {
     }
     
     public var body: some View {
+        let data = chartData
         VStack(alignment: .leading, spacing: TallySpacing.sm) {
             // Header
             Text("\(challenge.name) Progress")
@@ -108,19 +110,19 @@ public struct BurnUpChartView: View {
             // Chart
             Chart {
                 // Target horizontal line
-                RuleMark(y: .value("Target", chartData.targetValue))
+                RuleMark(y: .value("Target", data.targetValue))
                     .foregroundStyle(challengeColor.opacity(0.35))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
                 
                 // Projected completion date marker
-                if let projectedDate = chartData.projectedTargetDate {
+                if let projectedDate = data.projectedTargetDate {
                     RuleMark(x: .value("Projected", projectedDate))
                         .foregroundStyle(challengeColor.opacity(0.5))
                         .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
                 }
                 
                 // Target line (dashed, light)
-                ForEach(chartData.target, id: \.date) { point in
+                ForEach(data.target, id: \.date) { point in
                     LineMark(
                         x: .value("Date", point.date),
                         y: .value("Count", point.value),
@@ -131,7 +133,7 @@ public struct BurnUpChartView: View {
                 }
                 
                 // Projected line (dashed, accent)
-                ForEach(chartData.projected, id: \.date) { point in
+                ForEach(data.projected, id: \.date) { point in
                     LineMark(
                         x: .value("Date", point.date),
                         y: .value("Count", point.value),
@@ -142,7 +144,7 @@ public struct BurnUpChartView: View {
                 }
                 
                 // Actual progress line (solid)
-                ForEach(chartData.actual, id: \.date) { point in
+                ForEach(data.actual, id: \.date) { point in
                     LineMark(
                         x: .value("Date", point.date),
                         y: .value("Count", point.value),
@@ -153,7 +155,7 @@ public struct BurnUpChartView: View {
                 }
                 
                 // Current position marker
-                if let lastActual = chartData.actual.last {
+                if let lastActual = data.actual.last {
                     PointMark(
                         x: .value("Date", lastActual.date),
                         y: .value("Count", lastActual.value)
@@ -163,7 +165,7 @@ public struct BurnUpChartView: View {
                 }
                 
                 // Target marker
-                if let endPoint = chartData.target.last {
+                if let endPoint = data.target.last {
                     PointMark(
                         x: .value("Date", endPoint.date),
                         y: .value("Count", endPoint.value)
@@ -175,9 +177,9 @@ public struct BurnUpChartView: View {
             }
             .chartYScale(domain: 0...(max(challenge.target, stats.totalCount) + 10))
             .chartXAxis {
-                AxisMarks(values: .stride(by: .month)) { value in
+                AxisMarks(values: .automatic(desiredCount: dynamicTypeSize.isAccessibilitySize ? 3 : 5)) { value in
                     AxisGridLine()
-                    AxisValueLabel(format: .dateTime.month(.abbreviated))
+                    AxisValueLabel(collisionResolution: .greedy(minimumSpacing: 12))
                 }
             }
             .chartYAxis {
@@ -189,14 +191,14 @@ public struct BurnUpChartView: View {
             HStack(spacing: TallySpacing.md) {
                 LegendItem(color: challengeColor, label: "Progress", isDashed: false)
                 LegendItem(color: Color.tallyInkTertiary, label: "Target pace", isDashed: true)
-                if !chartData.projected.isEmpty {
+                if !data.projected.isEmpty {
                     LegendItem(color: challengeColor.opacity(0.5), label: "Projected", isDashed: true)
                 }
             }
             .font(.tallyLabelSmall)
             
             // Projection callout
-            if let projectedEnd = chartData.projected.last {
+            if let projectedEnd = data.projected.last {
                 let willHitTarget = projectedEnd.value >= challenge.target
                 HStack(spacing: TallySpacing.xs) {
                     Image(systemName: willHitTarget ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
@@ -211,7 +213,7 @@ public struct BurnUpChartView: View {
                 .padding(.top, TallySpacing.xs)
             }
             
-            if let projectedDate = chartData.projectedTargetDate {
+            if let projectedDate = data.projectedTargetDate {
                 HStack(spacing: TallySpacing.xs) {
                     Image(systemName: "flag.checkered")
                         .foregroundColor(Color.tallyInkSecondary)

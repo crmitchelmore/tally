@@ -1,5 +1,6 @@
 "use client";
 
+import { InkGlyph } from "@/components/ui/tally-display";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { memo, useState, useCallback } from "react";
 
@@ -169,7 +170,8 @@ function TallyStrokeElement({ stroke }: { stroke: TallyStroke }) {
   return (
     <span
       className={`demo-stroke ${stroke.animating ? "demo-stroke-animating" : ""}`}
-    />
+      style={{ background: "none" }}
+    ><InkGlyph width={3} height={28} stroke={2.8} color="currentColor" segments={[[1.5, 1.5, 1.5, 26.5]]} /></span>
   );
 }
 
@@ -180,7 +182,8 @@ function TallySlashElement({ stroke }: { stroke: TallyStroke }) {
   return (
     <span
       className={`demo-slash ${stroke.animating ? "demo-slash-animating" : ""}`}
-    />
+      style={{ background: "none" }}
+    ><InkGlyph width={3} height={36} stroke={2.8} color="var(--color-accent)" segments={[[1.5, 1.5, 1.5, 34.5]]} /></span>
   );
 }
 

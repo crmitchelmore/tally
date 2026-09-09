@@ -4,6 +4,7 @@ import SwiftUI
 /// Hierarchical tally-mark visualization that stays intuitive at any scale
 /// by collapsing detail at exact completion thresholds.
 public struct TallyMarkView: View {
+    @State private var drawingSeed = Int.random(in: 0..<1_000_000)
     let count: Int
     let animated: Bool
     let size: CGFloat
@@ -195,7 +196,7 @@ public struct TallyMarkView: View {
     }
     
     private func signedNoise(seed: Int) -> CGFloat {
-        let raw = sin(Double(seed) * 12.9898 + 78.233) * 43758.5453
+        let raw = sin(Double(seed + drawingSeed) * 12.9898 + 78.233) * 43758.5453
         let fraction = raw - floor(raw)
         return CGFloat(fraction * 2 - 1)
     }
@@ -210,6 +211,8 @@ public struct TallyMarkView: View {
         curveBiasX: CGFloat = 0,
         curveBiasY: CGFloat = 0
     ) {
+        // Include the group's location so repeated gates and boxes differ too.
+        let seed = seed + Int(context.transform.tx * 11 + context.transform.ty * 17)
         let topShift = signedNoise(seed: seed + 1) * baseWidth * 0.28
         let bottomShift = signedNoise(seed: seed + 2) * baseWidth * 0.28
         let controlX = (start.x + end.x) * 0.5
@@ -221,9 +224,9 @@ public struct TallyMarkView: View {
         let width = max(1, baseWidth * (1 + signedNoise(seed: seed + 5) * 0.12))
         
         let path = Path { p in
-            p.move(to: CGPoint(x: start.x + topShift, y: start.y))
+            p.move(to: CGPoint(x: start.x + topShift, y: start.y + signedNoise(seed: seed + 6) * baseWidth * 0.3))
             p.addQuadCurve(
-                to: CGPoint(x: end.x + bottomShift, y: end.y),
+                to: CGPoint(x: end.x + bottomShift, y: end.y + signedNoise(seed: seed + 7) * baseWidth * 0.3),
                 control: CGPoint(x: controlX, y: controlY)
             )
         }
@@ -232,26 +235,48 @@ public struct TallyMarkView: View {
         context.stroke(path, with: .color(color), style: style)
     }
     
+    private func strokeInkPath(_ path: Path, in context: GraphicsContext, color: Color, width: CGFloat) {
+        var current = CGPoint.zero
+        var origin = CGPoint.zero
+        path.forEach { element in
+            switch element {
+            case .move(to: let point):
+                current = point
+                origin = point
+            case .line(to: let point):
+                drawInkStroke(in: context, from: current, to: point, baseWidth: width,
+                              color: color, seed: Int(current.x * 19 + current.y * 31))
+                current = point
+            case .closeSubpath:
+                drawInkStroke(in: context, from: current, to: origin, baseWidth: width,
+                              color: color, seed: Int(current.x * 19 + current.y * 31))
+                current = origin
+            default: break // Callers supply straight segments and rectangles only.
+            }
+        }
+    }
+
     // MARK: - Drawing Functions
     
     private func drawVerticalStrokes(in context: GraphicsContext, bounds: CGRect, count: Int, metrics: RowMetrics? = nil) {
         let strokeWidth = metrics?.strokeWidth ?? max(1.6, bounds.width / 10)
         let strokeHeight = bounds.height * 0.88
         let spacing = metrics?.strokeSpacing ?? (strokeWidth * 1.4)
-        let totalWidth = CGFloat(count - 1) * spacing
+        let step = strokeWidth + spacing
+        let totalWidth = CGFloat(count - 1) * step
         let startX = (bounds.width - totalWidth) / 2
         let topY = bounds.maxY - strokeHeight + strokeWidth * 0.2
         let bottomY = bounds.maxY - strokeWidth * 0.2
         
         for i in 0..<count {
-            let x = startX + CGFloat(i) * spacing
+            let x = startX + CGFloat(i) * step
             drawInkStroke(
                 in: context,
                 from: CGPoint(x: x, y: topY),
                 to: CGPoint(x: x, y: bottomY),
                 baseWidth: strokeWidth,
                 color: .tallyInk,
-                seed: i + count * 13
+                seed: i * 7
             )
         }
     }
@@ -385,7 +410,7 @@ public struct TallyMarkView: View {
             p.addLine(to: CGPoint(x: inset, y: bounds.height - inset))
         }
         let style = StrokeStyle(lineWidth: max(2.0, bounds.width * 0.08), lineCap: .round)
-        context.stroke(xPath, with: .color(.tallyAccent), style: style)
+        strokeInkPath(xPath, in: context, color: .tallyAccent, width: style.lineWidth)
     }
 
     private func drawTwentyFiveGrid(in context: GraphicsContext, bounds: CGRect, count: Int, metrics: RowMetrics) {
@@ -407,7 +432,7 @@ public struct TallyMarkView: View {
                 p.addLine(to: CGPoint(x: pos.x - half, y: pos.y + half))
             }
             let style = StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
-            context.stroke(xPath, with: .color(.tallyAccent), style: style)
+            strokeInkPath(xPath, in: context, color: .tallyAccent, width: style.lineWidth)
         }
     }
     
@@ -504,14 +529,14 @@ public struct TallyMarkView: View {
             let startY = rowBottom - strokeHeight + metrics.strokeWidth * 0.2
             let endY = rowBottom - metrics.strokeWidth * 0.2
             for i in 0..<ones {
-                let x = currentX + CGFloat(i) * metrics.strokeSpacing
+                let x = currentX + metrics.strokeWidth / 2 + CGFloat(i) * (metrics.strokeWidth + metrics.strokeSpacing)
                 drawInkStroke(
                     in: context,
                     from: CGPoint(x: x, y: startY),
                     to: CGPoint(x: x, y: endY),
                     baseWidth: metrics.strokeWidth,
                     color: .tallyInk,
-                    seed: i + count * 17 + 900
+                    seed: i * 7
                 )
             }
         }
@@ -529,7 +554,7 @@ public struct TallyMarkView: View {
         let squarePath = Path { p in
             p.addRect(CGRect(x: inset, y: yInset, width: boxSize, height: boxSize))
         }
-        context.stroke(squarePath, with: .color(.tallyInkTertiary), lineWidth: max(1.2, xStroke))
+        strokeInkPath(squarePath, in: context, color: .tallyInkTertiary, width: max(1.2, xStroke))
         
         // Draw 4 Xs in 2x2 grid inside the box (accent color)
         let positions: [(x: CGFloat, y: CGFloat)] = [
@@ -553,7 +578,7 @@ public struct TallyMarkView: View {
                 p.addLine(to: CGPoint(x: centerX - halfX, y: centerY + halfX))
             }
             let style = StrokeStyle(lineWidth: xStroke, lineCap: .round)
-            context.stroke(xPath, with: .color(.tallyAccent), style: style)
+            strokeInkPath(xPath, in: context, color: .tallyAccent, width: style.lineWidth)
         }
     }
     
@@ -578,7 +603,7 @@ public struct TallyMarkView: View {
             let rect = Path { p in
                 p.addRect(blockBounds)
             }
-            context.stroke(rect, with: .color(.tallyInkTertiary), lineWidth: 1.5)
+            strokeInkPath(rect, in: context, color: .tallyInkTertiary, width: 1.5)
         }
     }
     
@@ -591,7 +616,7 @@ public struct TallyMarkView: View {
             let squarePath = Path { p in
                 p.addRect(CGRect(x: x, y: startY, width: metrics.boxSize, height: metrics.boxSize))
             }
-            context.stroke(squarePath, with: .color(.tallyInkTertiary), lineWidth: metrics.boxStrokeWidth)
+            strokeInkPath(squarePath, in: context, color: .tallyInkTertiary, width: metrics.boxStrokeWidth)
         }
         
         let linePath = Path { p in
@@ -599,7 +624,7 @@ public struct TallyMarkView: View {
             p.addLine(to: CGPoint(x: metrics.rowWidth, y: bounds.height / 2))
         }
         let style = StrokeStyle(lineWidth: metrics.lineWidth, lineCap: .round)
-        context.stroke(linePath, with: .color(.tallyAccent), style: style)
+        strokeInkPath(linePath, in: context, color: .tallyAccent, width: style.lineWidth)
     }
     
     private func drawThousandStack(in context: GraphicsContext, bounds: CGRect, count: Int) {
@@ -644,7 +669,7 @@ public struct TallyMarkView: View {
             p.move(to: CGPoint(x: inset, y: inset))
             p.addLine(to: CGPoint(x: bounds.width - inset, y: bounds.height - inset))
         }
-        context.stroke(diagonalPath, with: .color(.tallyInkSecondary), lineWidth: 4.0)
+        strokeInkPath(diagonalPath, in: context, color: .tallyInkSecondary, width: 4.0)
     }
 }
 

@@ -22,3 +22,16 @@ test("hand-drawn ink varies without jumping on count or motion changes @offline"
   await add.click();
   expect(await paths.first().getAttribute("d")).not.toBe(first);
 });
+
+
+test("sync demo uses accurate hand-drawn totals beyond fifteen @offline", async ({ page }) => {
+  await page.goto("/");
+  const demo = page.getByRole("region", { name: "Live sync demonstration" });
+  const add = page.getByRole("button", { name: "Add a mark to demonstrate sync" });
+  for (let count = 13; count <= 16; count++) {
+    await add.click();
+    await expect(demo.locator(".tally-display")).toHaveAttribute("aria-label", `${count} tallies`);
+    await expect(add).toBeEnabled();
+  }
+  await expect(demo.locator(".tally-display path")).toHaveCount(16);
+});

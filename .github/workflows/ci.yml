@@ -120,7 +120,7 @@ jobs:
       - name: Run Android unit tests
         run: ./gradlew testDebugUnitTest --no-daemon
       - name: Upload Android preview APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tally-android-debug
           path: tally-android/app/build/outputs/apk/debug/*.apk

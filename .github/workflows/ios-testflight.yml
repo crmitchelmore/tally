@@ -439,7 +439,7 @@ jobs:
         run: node --test scripts/distribute-testflight.test.mjs
 
       - name: Wait for App Store Connect processing
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         id: poll
         env:
           ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
@@ -553,7 +553,7 @@ jobs:
 
       - name: Distribute to TestFlight testers
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
@@ -603,7 +603,7 @@ jobs:
       - name: Create GitHub Release
         if: success()
         continue-on-error: true
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const version = '${{ needs.build-and-upload.outputs.version }}';

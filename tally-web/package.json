@@ -48,7 +48,7 @@
     "convex-test": "0.0.41",
     "debug-bridge-browser": "^0.2.0",
     "eslint": "9",
-    "eslint-config-next": "^15.5.9",
+    "eslint-config-next": "^16.3.4",
     "postcss": "^8.5.23",
     "tailwindcss": "3",
     "typescript": "5.4.5",

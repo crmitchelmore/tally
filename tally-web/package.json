@@ -19,14 +19,14 @@
   "dependencies": {
     "@clerk/nextjs": "^6.36.8",
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/api-logs": "^0.210.0",
-    "@opentelemetry/exporter-logs-otlp-http": "^0.210.0",
-    "@opentelemetry/exporter-metrics-otlp-http": "^0.210.0",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.210.0",
-    "@opentelemetry/resources": "^2.4.0",
-    "@opentelemetry/sdk-logs": "^0.210.0",
-    "@opentelemetry/sdk-metrics": "^2.4.0",
-    "@opentelemetry/sdk-node": "^0.210.0",
+    "@opentelemetry/api-logs": "^0.222.0",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.222.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.222.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.222.0",
+    "@opentelemetry/resources": "^2.11.0",
+    "@opentelemetry/sdk-logs": "^0.222.0",
+    "@opentelemetry/sdk-metrics": "^2.11.0",
+    "@opentelemetry/sdk-node": "^0.222.0",
     "@opentelemetry/semantic-conventions": "^1.39.0",
     "@sentry/nextjs": "^10.40.0",
     "convex": "^1.31.5",
@@ -49,9 +49,12 @@
     "debug-bridge-browser": "^0.2.0",
     "eslint": "9",
     "eslint-config-next": "^15.5.9",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.23",
     "tailwindcss": "3",
     "typescript": "5.4.5",
     "vitest": "^4.0.18"
+  },
+  "overrides": {
+    "postcss": "^8.5.23"
   }
 }

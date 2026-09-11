@@ -54,6 +54,8 @@ jobs:
         with:
           # Match the shipping SDK and avoid the retiring macOS 14 runner pool.
           xcode-version: "26.2.0"
+      - name: Test Apple sign-in provisioning validation
+        run: node ../scripts/apple-signin-profile.test.cjs
       - name: Install Tuist via mise
         uses: jdx/mise-action@v2
         with:

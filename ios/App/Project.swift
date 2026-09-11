@@ -66,6 +66,7 @@ let project = Project(
             sources: ["Sources/**"],
             resources: ["Resources/**"],
             entitlements: .dictionary([
+                "com.apple.developer.applesignin": .array([.string("Default")]),
                 "com.apple.security.application-groups": .array([
                     .string(appGroupIdentifier)
                 ])

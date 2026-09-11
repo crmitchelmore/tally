@@ -72,7 +72,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Install mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v4
 
       - name: Install Tuist
         run: |

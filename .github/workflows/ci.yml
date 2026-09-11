@@ -57,7 +57,7 @@ jobs:
       - name: Test Apple sign-in provisioning validation
         run: node ../scripts/apple-signin-profile.test.cjs
       - name: Install Tuist via mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v4
         with:
           install_args: tuist@4.32.0
       - name: Generate Xcode project

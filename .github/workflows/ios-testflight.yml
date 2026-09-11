@@ -41,7 +41,7 @@ jobs:
           xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Install Tuist via mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v4
         with:
           install_args: tuist@4.32.0
 

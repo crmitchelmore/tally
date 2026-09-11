@@ -214,7 +214,7 @@ export function EntryList({
                             className="
                               w-8 h-8 rounded-lg flex items-center justify-center
                               text-muted hover:text-ink hover:bg-border/50
-                              transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                              transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
                             "
                             aria-label="Edit entry"
                           >
@@ -231,7 +231,7 @@ export function EntryList({
                             className="
                               w-8 h-8 rounded-lg flex items-center justify-center
                               text-muted hover:text-error hover:bg-error/10
-                              transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                              transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
                               disabled:opacity-50
                             "
                             aria-label="Delete entry"

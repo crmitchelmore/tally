@@ -128,7 +128,7 @@ export function PublicChallengeCard({
           disabled={loading}
           className={`
             px-4 py-2 rounded-lg text-sm font-medium transition-colors
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
+            focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
             ${
               following
                 ? "bg-border/50 text-ink hover:bg-border"

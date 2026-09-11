@@ -99,7 +99,7 @@ export function WeeklySummary({ entries, challenges, open, onClose }: WeeklySumm
       }}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-ink/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-ink/30 backdrop-blur-xs" onClick={onClose} />
       
       {/* Modal */}
       <div 

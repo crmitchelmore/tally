@@ -24,7 +24,7 @@ export function CommunitySection({ onRefresh }: CommunitySectionProps) {
             px-3 py-1.5 rounded-lg text-sm font-medium
             text-muted hover:text-ink hover:bg-border/50
             transition-colors
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+            focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
           "
         >
           {expanded ? "Hide" : "Browse public challenges"}

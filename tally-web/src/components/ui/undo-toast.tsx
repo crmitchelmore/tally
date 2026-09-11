@@ -87,7 +87,7 @@ export function UndoToast({
               px-3 py-1.5 rounded-lg text-sm font-semibold
               bg-paper/20 hover:bg-paper/30 text-paper
               transition-colors disabled:opacity-50
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper
+              focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-paper
             "
           >
             {isRestoring ? "Restoring..." : "Undo"}
@@ -97,7 +97,7 @@ export function UndoToast({
             className="
               w-6 h-6 rounded flex items-center justify-center
               text-paper/60 hover:text-paper hover:bg-paper/10
-              transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper
+              transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-paper
             "
             aria-label="Dismiss"
           >

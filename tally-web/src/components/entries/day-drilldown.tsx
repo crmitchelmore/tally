@@ -95,7 +95,7 @@ export function DayDrilldown({
       className="
         fixed inset-0 z-[1400] m-auto
         w-full max-w-lg p-0
-        bg-transparent backdrop:bg-ink/40 backdrop:backdrop-blur-sm
+        bg-transparent backdrop:bg-ink/40 backdrop:backdrop-blur-xs
         open:animate-dialog-in
       "
     >
@@ -114,7 +114,7 @@ export function DayDrilldown({
             className="
               w-8 h-8 rounded-full flex items-center justify-center
               text-muted hover:text-ink hover:bg-border/50
-              transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+              transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
             "
             aria-label="Close"
           >
@@ -145,7 +145,7 @@ export function DayDrilldown({
                     mt-4 px-4 py-2 rounded-xl
                     bg-accent text-white font-medium
                     hover:bg-accent/90 transition-colors
-                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
+                    focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
                   "
                 >
                   Add an entry
@@ -203,7 +203,7 @@ export function DayDrilldown({
                           className="
                             w-8 h-8 rounded-lg flex items-center justify-center
                             text-muted hover:text-ink hover:bg-border/50
-                            transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                            transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
                           "
                           aria-label="Edit entry"
                         >
@@ -219,7 +219,7 @@ export function DayDrilldown({
                           className="
                             w-8 h-8 rounded-lg flex items-center justify-center
                             text-muted hover:text-error hover:bg-error/10
-                            transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                            transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
                           "
                           aria-label="Delete entry"
                         >
@@ -246,7 +246,7 @@ export function DayDrilldown({
                 w-full py-3 rounded-xl
                 border border-border text-ink font-medium
                 hover:bg-border/50 transition-colors
-                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
+                focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
               "
             >
               Add another entry

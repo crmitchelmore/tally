@@ -45,7 +45,7 @@
     "@types/react": "18.2.79",
     "@types/react-dom": "18.2.25",
     "autoprefixer": "^10.4.23",
-    "convex-test": "0.0.41",
+    "convex-test": "0.0.56",
     "debug-bridge-browser": "^0.2.0",
     "eslint": "9",
     "eslint-config-next": "^15.5.9",

@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
@@ -41,7 +41,7 @@ jobs:
           xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Install Tuist via mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v4
         with:
           install_args: tuist@4.32.0
 
@@ -439,7 +439,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate TestFlight distribution handling
         run: node --test scripts/distribute-testflight.test.mjs
 

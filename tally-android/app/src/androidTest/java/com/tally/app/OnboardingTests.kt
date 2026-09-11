@@ -9,8 +9,11 @@ import com.tally.app.pages.AuthPage
 import com.tally.app.pages.ChallengeDialogPage
 import com.tally.app.pages.DashboardPage
 import com.tally.app.utils.TestData
+import com.tally.app.utils.FreshLocalDataRule
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import java.text.NumberFormat
 import org.junit.runner.RunWith
 
 /**
@@ -20,7 +23,10 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class OnboardingTests {
     
-    @get:Rule
+    @get:Rule(order = 0)
+    val freshData = FreshLocalDataRule()
+
+    @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<MainActivity>()
     
     private val authPage by lazy { AuthPage(composeRule) }
@@ -68,7 +74,7 @@ class OnboardingTests {
             false
         }
         
-        assert(hasDashboard) { "Should be on dashboard" }
+        assertTrue("Should be on dashboard", hasDashboard)
     }
     
     // MARK: - Quick Start Flow
@@ -111,10 +117,10 @@ class OnboardingTests {
         
         // Verify at least one node shows target info (there may be multiple from previous runs)
         val hasTarget = composeRule
-            .onAllNodes(hasText(TestData.CHALLENGE_TARGET, substring = true))
+            .onAllNodes(hasText(NumberFormat.getNumberInstance().format(TestData.CHALLENGE_TARGET.toInt()), substring = true))
             .fetchSemanticsNodes()
             .isNotEmpty()
-        assert(hasTarget) { "Expected to find target ${TestData.CHALLENGE_TARGET} on dashboard" }
+        assertTrue("Expected to find target ${TestData.CHALLENGE_TARGET} on dashboard", hasTarget)
     }
     
     // MARK: - Understanding the Interface

@@ -2,6 +2,11 @@ package com.tally.core.design
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.size
@@ -38,7 +43,7 @@ import androidx.compose.ui.unit.dp
  *
  * @param count The number to display (1-10,000+)
  * @param modifier Modifier for sizing/positioning
- * @param animated Whether to animate stroke drawing
+ * @param animated Whether to acknowledge increases with a small settling pulse
  * @param size Size of the component
  */
 @Composable
@@ -48,21 +53,19 @@ fun TallyMark(
     animated: Boolean = false,
     size: Dp = 64.dp
 ) {
+    val ink = remember { TallyInk(kotlin.random.Random.nextInt()) }
     val reduceMotion = LocalReduceMotion.current
     val shouldAnimate = animated && !reduceMotion
 
-    // Animation progress (0 to 1)
-    val progress = remember { Animatable(if (shouldAnimate) 0f else 1f) }
-
+    val scale = remember { Animatable(1f) }
+    var previousCount by remember { mutableIntStateOf(count) }
     LaunchedEffect(count, shouldAnimate) {
-        if (shouldAnimate) {
-            progress.snapTo(0f)
-            progress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = TallyMotion.StrokeDurationMs * 3)
-            )
-        } else {
-            progress.snapTo(1f)
+        val increased = count > previousCount
+        previousCount = count
+        scale.snapTo(1f)
+        if (increased && shouldAnimate) {
+            scale.animateTo(1.035f, tween(100, easing = FastOutSlowInEasing))
+            scale.animateTo(1f, tween(TallyMotion.FeedbackDurationMs, easing = FastOutSlowInEasing))
         }
     }
 
@@ -78,10 +81,14 @@ fun TallyMark(
     Canvas(
         modifier = modifier
             .size(size)
+            .graphicsLayer {
+                scaleX = if (reduceMotion) 1f else scale.value
+                scaleY = if (reduceMotion) 1f else scale.value
+            }
             .semantics { contentDescription = description }
     ) {
-        val drawProgress = progress.value
-        drawTally(count, c1, c2, c3, accent, drawProgress)
+        val drawProgress = 1f
+        ink.draw(this, count, c1, c2, c3, accent, drawProgress)
     }
 }
 
@@ -115,6 +122,46 @@ private fun buildTallyDescription(count: Int): String {
         }
     }
 }
+
+/** One seed per mounted canvas; repainting never generates fresh randomness. */
+private class TallyInk(private val seed: Int) {
+    private var ordinal = 0
+
+    fun draw(scope: DrawScope, count: Int, c1: Color, c2: Color, c3: Color, accent: Color, progress: Float) {
+        ordinal = 0
+        with(scope) { drawTally(count, c1, c2, c3, accent, progress) }
+    }
+
+    private fun noise(index: Int): Float {
+        val raw = kotlin.math.sin(seed.toDouble() + index * 127.1) * 43758.5453
+        return ((raw - kotlin.math.floor(raw)) * 2 - 1).toFloat()
+    }
+
+    private fun DrawScope.drawInkLine(color: Color, start: Offset, end: Offset, strokeWidth: Float, cap: StrokeCap = StrokeCap.Round) {
+        val n = ordinal++ * 7
+        val delta = end - start
+        val length = delta.getDistance().coerceAtLeast(1f)
+        val bend = minOf(length * 0.035f, strokeWidth * 0.8f) * noise(n + 1)
+        val jitter = strokeWidth * 0.3f
+        val control = (start + end) / 2f + Offset(-delta.y / length, delta.x / length) * bend
+        val from = start + Offset(noise(n + 2), noise(n + 3)) * jitter
+        val to = end + Offset(noise(n + 4), noise(n + 5)) * jitter
+        val path = Path().apply {
+            moveTo(from.x, from.y)
+            quadraticBezierTo(control.x, control.y, to.x, to.y)
+        }
+        drawPath(path, color, style = Stroke(strokeWidth * (1 + noise(n + 6) * 0.1f), cap = cap, join = StrokeJoin.Round))
+    }
+
+    private fun DrawScope.drawInkRect(color: Color, topLeft: Offset, size: androidx.compose.ui.geometry.Size, style: Stroke) {
+        val topRight = topLeft + Offset(size.width, 0f)
+        val bottomRight = topLeft + Offset(size.width, size.height)
+        val bottomLeft = topLeft + Offset(0f, size.height)
+        drawInkLine(color, topLeft, topRight, style.width)
+        drawInkLine(color, topRight, bottomRight, style.width)
+        drawInkLine(color, bottomRight, bottomLeft, style.width)
+        drawInkLine(color, bottomLeft, topLeft, style.width)
+    }
 
 /**
  * Main drawing function for tally marks.
@@ -167,7 +214,7 @@ private fun DrawScope.drawStrokes(
         if (strokeProgress > 0f) {
             val x = startX + i * spacing
             val currentBottom = topY + (bottomY - topY) * strokeProgress
-            drawLine(
+            drawInkLine(
                 color = color,
                 start = Offset(x, topY),
                 end = Offset(x, currentBottom),
@@ -200,7 +247,7 @@ private fun DrawScope.drawFiveGate(
         if (strokeProgress > 0f) {
             val x = startX + i * spacing
             val currentBottom = topY + (bottomY - topY) * strokeProgress
-            drawLine(
+            drawInkLine(
                 color = inkColor,
                 start = Offset(x, topY),
                 end = Offset(x, currentBottom),
@@ -221,7 +268,7 @@ private fun DrawScope.drawFiveGate(
         val currentEndX = slashStartX + (slashEndX - slashStartX) * slashProgress
         val currentEndY = slashStartY + (slashEndY - slashStartY) * slashProgress
 
-        drawLine(
+        drawInkLine(
             color = accentColor,
             start = Offset(slashStartX, slashStartY),
             end = Offset(currentEndX, currentEndY),
@@ -321,7 +368,7 @@ private fun DrawScope.drawMiniGate(
     val drawCount = strokeCount.coerceAtMost(4)
     for (i in 0 until drawCount) {
         val x = startX + i * spacing
-        drawLine(
+        drawInkLine(
             color = inkColor,
             start = Offset(x, topY),
             end = Offset(x, bottomY),
@@ -336,7 +383,7 @@ private fun DrawScope.drawMiniGate(
         val slashEndX = startX + 3 * spacing + spacing * 0.2f
         val slashEndY = topY + (bottomY - topY) * 0.1f
 
-        drawLine(
+        drawInkLine(
             color = accentColor,
             start = Offset(slashStartX, slashStartY),
             end = Offset(slashEndX, slashEndY),
@@ -366,14 +413,14 @@ private fun DrawScope.drawTwentyFiveUnit(
         val h = size.height
         val padding = w * 0.1f
 
-        drawLine(
+        drawInkLine(
             color = xColor,
             start = Offset(padding, padding),
             end = Offset(w - padding, h - padding),
             strokeWidth = strokeWidth * 1.5f,
             cap = StrokeCap.Round
         )
-        drawLine(
+        drawInkLine(
             color = xColor,
             start = Offset(w - padding, padding),
             end = Offset(padding, h - padding),
@@ -469,14 +516,14 @@ private fun DrawScope.drawMini25(
 
     if (showOverlay && count >= 25) {
         val padding = unitSize * 0.1f
-        drawLine(
+        drawInkLine(
             color = xColor,
             start = Offset(padding, padding),
             end = Offset(unitSize - padding, unitSize - padding),
             strokeWidth = strokeWidth * 1.5f,
             cap = StrokeCap.Round
         )
-        drawLine(
+        drawInkLine(
             color = xColor,
             start = Offset(unitSize - padding, padding),
             end = Offset(padding, unitSize - padding),
@@ -500,7 +547,7 @@ private fun DrawScope.draw100Cap(
     val innerSize = w - 2 * padding
 
     // Square outline in C3 (muted)
-    drawRect(
+    drawInkRect(
         color = c3,
         topLeft = Offset(padding, padding),
         size = androidx.compose.ui.geometry.Size(innerSize, innerSize),
@@ -521,14 +568,14 @@ private fun DrawScope.draw100Cap(
         val centerY = padding + innerSize * pos.y
         val halfX = xSize / 2
 
-        drawLine(
+        drawInkLine(
             color = xColor,
             start = Offset(centerX - halfX, centerY - halfX),
             end = Offset(centerX + halfX, centerY + halfX),
             strokeWidth = strokeWidth,
             cap = StrokeCap.Round
         )
-        drawLine(
+        drawInkLine(
             color = xColor,
             start = Offset(centerX + halfX, centerY - halfX),
             end = Offset(centerX - halfX, centerY + halfX),
@@ -589,7 +636,7 @@ private fun DrawScope.drawMini100(
     val innerSize = blockSize - 2 * padding
 
     // Square outline (muted)
-    drawRect(
+    drawInkRect(
         color = c3,
         topLeft = Offset(padding, padding),
         size = androidx.compose.ui.geometry.Size(innerSize, innerSize),
@@ -610,14 +657,14 @@ private fun DrawScope.drawMini100(
         val centerY = padding + innerSize * pos.y
         val halfX = xSize / 2
 
-        drawLine(
+        drawInkLine(
             color = xColor,
             start = Offset(centerX - halfX, centerY - halfX),
             end = Offset(centerX + halfX, centerY + halfX),
             strokeWidth = strokeWidth * 0.8f,
             cap = StrokeCap.Round
         )
-        drawLine(
+        drawInkLine(
             color = xColor,
             start = Offset(centerX + halfX, centerY - halfX),
             end = Offset(centerX - halfX, centerY + halfX),
@@ -682,7 +729,7 @@ private fun DrawScope.draw1000Cap(
     for (i in 0 until 10) {
         val x = i * blockSize + padding
         val y = (h - squareSize) / 2
-        drawRect(
+        drawInkRect(
             color = c3,
             topLeft = Offset(x, y),
             size = androidx.compose.ui.geometry.Size(squareSize, squareSize),
@@ -691,7 +738,7 @@ private fun DrawScope.draw1000Cap(
     }
 
     // Horizontal line through all (accent color)
-    drawLine(
+    drawInkLine(
         color = accent,
         start = Offset(0f, h / 2),
         end = Offset(w, h / 2),
@@ -757,7 +804,7 @@ private fun DrawScope.drawMini1000Row(
     for (i in 0 until 10) {
         val x = i * blockSize + padding
         val y = (rowHeight - squareSize) / 2
-        drawRect(
+        drawInkRect(
             color = c3,
             topLeft = Offset(x, y),
             size = androidx.compose.ui.geometry.Size(squareSize, squareSize),
@@ -766,7 +813,7 @@ private fun DrawScope.drawMini1000Row(
     }
 
     // Horizontal line in accent color
-    drawLine(
+    drawInkLine(
         color = accent,
         start = Offset(0f, rowHeight / 2),
         end = Offset(rowWidth, rowHeight / 2),
@@ -799,7 +846,7 @@ private fun DrawScope.draw10000Plus(
         for (col in 0 until 10) {
             val x = offsetX + col * cellSize + (cellSize - squareSize) / 2
             val y = offsetY + row * cellSize + (cellSize - squareSize) / 2
-            drawRect(
+            drawInkRect(
                 color = c3,
                 topLeft = Offset(x, y),
                 size = androidx.compose.ui.geometry.Size(squareSize, squareSize),
@@ -811,7 +858,7 @@ private fun DrawScope.draw10000Plus(
     // Horizontal lines through each row (accent color)
     for (row in 0 until 10) {
         val y = offsetY + row * cellSize + cellSize / 2
-        drawLine(
+        drawInkLine(
             color = accent,
             start = Offset(offsetX, y),
             end = Offset(offsetX + 10 * cellSize, y),
@@ -823,7 +870,7 @@ private fun DrawScope.draw10000Plus(
     // Diagonal closure stroke (at 10000+)
     // Always show for 10000 or more to indicate completion
     if (count >= 10000) {
-        drawLine(
+        drawInkLine(
             color = accent,
             start = Offset(offsetX, offsetY),
             end = Offset(offsetX + 10 * cellSize, offsetY + 10 * cellSize),
@@ -831,6 +878,8 @@ private fun DrawScope.draw10000Plus(
             cap = StrokeCap.Round
         )
     }
+}
+
 }
 
 @Preview(showBackground = true)

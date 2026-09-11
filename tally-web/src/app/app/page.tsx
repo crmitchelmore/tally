@@ -5,7 +5,6 @@ import { TallyMark } from "@/components/ui/tally-mark";
 import { UndoToast } from "@/components/ui/undo-toast";
 import { ChallengeList } from "@/components/challenges";
 import { DashboardHighlights, PersonalRecords, WeeklySummary, ProgressGraph, BurnUpChart } from "@/components/stats";
-import { FollowedChallengesSection } from "@/components/community";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import type { DragEvent } from "react";
 import { useUser } from "@clerk/nextjs";
@@ -383,10 +382,11 @@ export default function AppPage() {
   return (
     <div className="space-y-8">
       {/* Welcome section with weekly summary button */}
-      <section className="py-6">
+      <section className="dashboard-intro">
+        <p className="eyebrow">A little more, every time</p>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-ink">
+            <h1 className="dashboard-title">
               Welcome back{user?.firstName ? `, ${user.firstName}` : ""}.
             </h1>
             <p className="mt-1 text-base text-muted">
@@ -606,7 +606,7 @@ export default function AppPage() {
       )}
 
       {/* Followed challenges */}
-      <FollowedChallengesSection onRefresh={handleRefresh} />
+
 
 
       {/* Weekly summary modal */}

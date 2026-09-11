@@ -46,6 +46,24 @@
       }
     },
     {
+      "identity" : "posthog-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/PostHog/posthog-ios.git",
+      "state" : {
+        "revision" : "113b33e7a634919cd45e630ffa29660f57e0775a",
+        "version" : "3.71.6"
+      }
+    },
+    {
+      "identity" : "sentry-cocoa",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/getsentry/sentry-cocoa",
+      "state" : {
+        "revision" : "f196cbb98e0388381d57908f2f5a9bdc385cde68",
+        "version" : "8.58.4"
+      }
+    },
+    {
       "identity" : "simplekeychain",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/auth0/SimpleKeychain",

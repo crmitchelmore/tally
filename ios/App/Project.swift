@@ -13,6 +13,8 @@ let appGroupIdentifier = "group.app.tally-tracker.shared"
 let clerkKey = Environment.clerkPublishableKey.getString(default: defaultClerkKey)
 let apiUrl = Environment.apiBaseURL.getString(default: defaultApiUrl)
 let sentryDsn = Environment.sentryDsn.getString(default: defaultSentryDsn)
+let posthogKey = Environment.posthogKey.getString(default: "")
+let posthogHost = Environment.posthogHost.getString(default: "https://eu.i.posthog.com")
 let gitCommit = Environment.gitCommitSha.getString(default: "")
 
 // CI signing settings (passed via environment, e.g., from GitHub Actions)
@@ -56,7 +58,9 @@ let project = Project(
                     "API_BASE_URL": "$(API_BASE_URL)",
                     "GIT_COMMIT_SHA": "$(GIT_COMMIT_SHA)",
                     "ITSAppUsesNonExemptEncryption": false,
-                    "SENTRY_DSN": "$(SENTRY_DSN)"
+                    "SENTRY_DSN": "$(SENTRY_DSN)",
+                    "POSTHOG_KEY": "$(POSTHOG_KEY)",
+                    "POSTHOG_HOST": "$(POSTHOG_HOST)"
                 ]
             ),
             sources: ["Sources/**"],
@@ -85,6 +89,8 @@ let project = Project(
                     "CLERK_PUBLISHABLE_KEY": .init(stringLiteral: clerkKey),
                     "API_BASE_URL": .init(stringLiteral: apiUrl),
                     "SENTRY_DSN": .init(stringLiteral: sentryDsn),
+                    "POSTHOG_KEY": .init(stringLiteral: posthogKey),
+                    "POSTHOG_HOST": .init(stringLiteral: posthogHost),
                     "GIT_COMMIT_SHA": .init(stringLiteral: gitCommit)
                 ],
                 configurations: [

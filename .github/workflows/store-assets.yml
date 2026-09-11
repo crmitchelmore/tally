@@ -1,0 +1,99 @@
+name: Store Screenshots
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platforms to capture
+        type: choice
+        default: all
+        options: [all, ios, android]
+permissions:
+  contents: read
+jobs:
+  android:
+    if: inputs.platform != 'ios'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: android-actions/setup-android@v3
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          arch: x86_64
+          target: google_apis
+          profile: pixel_7
+          disable-animations: true
+          working-directory: tally-android
+          script: |
+            ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon
+            adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+            adb shell wm size 1080x1920
+            adb shell am instrument -w -e class com.tally.app.StoreScreenshotTests app.tally.android.test/androidx.test.runner.AndroidJUnitRunner > store-test-result.txt
+            cat store-test-result.txt
+            grep -q 'OK (1 test)' store-test-result.txt
+            mkdir -p store-assets
+            adb exec-out run-as app.tally.android tar -C files/store-screenshots -cf - . > store-assets.tar
+            tar -xf store-assets.tar -C store-assets
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-store-screenshots
+          path: |
+            tally-android/store-assets/
+            tally-android/app/build/reports/androidTests/
+            tally-android/store-test-result.txt
+          retention-days: 30
+  ios:
+    if: inputs.platform != 'android'
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.2.0'
+      - uses: jdx/mise-action@v2
+        with:
+          version: 2025.12.1
+          install: false
+      - name: Generate app
+        working-directory: ios
+        run: |
+          mise install tuist@4.32.0
+          mise exec tuist@4.32.0 -- tuist install
+          mise exec tuist@4.32.0 -- tuist generate --no-open
+      - name: Capture iPhone and iPad
+        working-directory: ios
+        run: |
+          python3 - <<'PY'
+          import json,subprocess
+          devices=json.loads(subprocess.check_output(['xcrun','simctl','list','devices','available','--json']))['devices']
+          candidates=[d for runtime,group in devices.items() if '.iOS-' in runtime for d in group]
+          for label,match in [('iphone','Pro Max'),('ipad','iPad Pro 13-inch')]:
+              selected=next((d for d in candidates if match in d['name']),None)
+              if not selected: raise SystemExit(f'No suitable {label} simulator')
+              result=subprocess.run(['xcodebuild','test','-workspace','Tally.xcworkspace','-scheme','App','-destination',f'platform=iOS Simulator,id={selected["udid"]}','-parallel-testing-enabled','NO','-only-testing:AppUITests/StoreScreenshotTests','-only-testing:AppUITests/PrivacyChoiceTests', '-resultBundlePath',f'{label}.xcresult','CODE_SIGNING_ALLOWED=NO'])
+              subprocess.run(['xcrun','xcresulttool','export','attachments','--path',f'{label}.xcresult','--output-path',f'store-assets/{label}'],check=True)
+              result.check_returncode()
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-store-screenshots
+          path: |
+            ios/store-assets/
+            ios/iphone.xcresult
+            ios/ipad.xcresult
+          retention-days: 30

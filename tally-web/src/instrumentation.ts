@@ -7,6 +7,10 @@
  * All three signals (traces, metrics, logs) are sent to Honeycomb via OTLP.
  */
 
+import * as Sentry from "@sentry/nextjs";
+
+export const onRequestError = Sentry.captureRequestError;
+
 export async function register() {
   // Sentry server-side init
   if (process.env.NEXT_RUNTIME === "nodejs") {
@@ -91,7 +95,7 @@ export async function register() {
     // Set up LoggerProvider with processors passed via constructor (new API)
     const loggerProvider = new LoggerProvider({
       resource,
-      processors: [new SimpleLogRecordProcessor(logExporter)],
+      processors: [new SimpleLogRecordProcessor({ exporter: logExporter })],
     });
     logs.setGlobalLoggerProvider(loggerProvider);
 

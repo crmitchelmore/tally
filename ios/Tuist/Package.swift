@@ -7,7 +7,8 @@ import ProjectDescription
 let packageSettings = PackageSettings(
     productTypes: [
         "Clerk": .framework,
-        "Sentry": .framework
+        "Sentry": .framework,
+        "PostHog": .framework
     ]
 )
 #endif
@@ -16,6 +17,7 @@ let package = Package(
     name: "TallyDependencies",
     dependencies: [
         .package(url: "https://github.com/clerk/clerk-ios", from: "0.50.0"),
-        .package(url: "https://github.com/getsentry/sentry-cocoa", from: "8.48.0")
+        .package(url: "https://github.com/getsentry/sentry-cocoa", from: "8.48.0"),
+        .package(url: "https://github.com/PostHog/posthog-ios.git", from: "3.71.6")
     ]
 )

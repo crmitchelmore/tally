@@ -183,6 +183,7 @@ public final class AuthManager: TokenRefresher {
     
     /// Enable offline/local-only mode (user choice)
     public func enableOfflineMode() {
+        Analytics.identify(nil)
         prefersOfflineMode = true
         isLocalOnlyMode = true
         isAuthenticated = false
@@ -281,11 +282,13 @@ public final class AuthManager: TokenRefresher {
             // Sync token to Keychain and provision user BEFORE marking as authenticated
             await syncTokenAndProvisionUser()
             isAuthenticated = true
+            Analytics.identify(clerkUser.id)
             print("[AuthManager] isAuthenticated set to true")
         } else {
             print("[AuthManager] No clerk user found")
             isAuthenticated = false
             currentUser = nil
+            Analytics.identify(nil)
             KeychainService.shared.deleteToken()
         }
         
@@ -386,6 +389,7 @@ public final class AuthManager: TokenRefresher {
             try await clerk.signOut()
             isAuthenticated = false
             currentUser = nil
+            Analytics.identify(nil)
             serverDataCheckResult = nil
             KeychainService.shared.deleteToken()
             error = nil

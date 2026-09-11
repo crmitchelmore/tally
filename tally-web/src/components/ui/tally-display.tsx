@@ -1,6 +1,7 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useId } from "react";
+import { useTallyFeedback } from "@/hooks/use-tally-feedback";
 
 export interface TallyDisplayProps {
   /** The count to display */
@@ -21,7 +22,7 @@ export interface TallyDisplayProps {
  * - C2 (accent): 5th stroke diagonal slash, X marks for 25
  * - C3 (muted): Box outline for 100
  * - Accent: Horizontal line for 1000
- * 
+ *
  * Pattern:
  * - 1-4: vertical strokes
  * - 5: 4 strokes + diagonal slash (5-gate)
@@ -36,6 +37,7 @@ export const TallyDisplay = memo(function TallyDisplay({
   className = "",
   color,
 }: TallyDisplayProps) {
+  const feedbackRef = useTallyFeedback<HTMLDivElement>(count);
   const sizes = {
     sm: { stroke: 2, height: 16, gap: 3, boxSize: 12 },
     md: { stroke: 3, height: 28, gap: 4, boxSize: 16 },
@@ -56,13 +58,14 @@ export const TallyDisplay = memo(function TallyDisplay({
 
   // For 26-99, show Xs in grid positions as if filling a 100-box
   const showXsInGrid = twentyFives > 0 && twentyFives < 4;
-  
+
   // Has remainder after thousands
   const hasRemainder = hundreds > 0 || twentyFives > 0 || fives > 0 || ones > 0;
 
   return (
-    <div 
-      className={`inline-flex flex-col items-start ${className}`} 
+    <div
+      ref={feedbackRef}
+      className={`tally-display inline-flex flex-col items-start ${className}`}
       style={{ gap: sizes.gap }}
       role="img"
       aria-label={`${count} tallies`}
@@ -71,18 +74,18 @@ export const TallyDisplay = memo(function TallyDisplay({
       {Array.from({ length: thousands }).map((_, i) => (
         <ThousandBlock key={`k-${i}`} sizes={sizes} c1={c1} c3={c3} />
       ))}
-      
+
       {/* Remainder row: hundreds, 25s, 5s, 1s */}
       {hasRemainder && (
-        <div 
-          className="inline-flex items-end flex-wrap" 
+        <div
+          className="inline-flex items-end flex-wrap"
           style={{ gap: sizes.gap * 2 }}
         >
           {/* Hundreds: box with 4 Xs */}
           {Array.from({ length: hundreds }).map((_, i) => (
             <HundredBox key={`h-${i}`} sizes={sizes} c2={c2} c3={c3} />
           ))}
-          
+
           {/* Twenty-fives: X marks in grid layout (like filling a box) */}
           {showXsInGrid ? (
             <XsInGridLayout sizes={sizes} count={twentyFives} c2={c2} />
@@ -92,12 +95,12 @@ export const TallyDisplay = memo(function TallyDisplay({
               <TwentyFiveX key={`x-${i}`} sizes={sizes} color={c2} />
             ))
           )}
-          
+
           {/* Fives: standard 5-gates */}
           {Array.from({ length: fives }).map((_, i) => (
             <FiveGate key={`f-${i}`} sizes={sizes} c1={c1} c2={c2} />
           ))}
-          
+
           {/* Ones: vertical strokes */}
           {ones > 0 && (
             <div className="inline-flex items-end" style={{ gap: sizes.gap }}>
@@ -112,288 +115,95 @@ export const TallyDisplay = memo(function TallyDisplay({
   );
 });
 
-/** Single vertical stroke */
-function Stroke({ 
-  sizes, 
-  color,
-}: { 
-  sizes: { stroke: number; height: number; gap: number; boxSize: number };
-  color: string;
+type Sizes = { stroke: number; height: number; gap: number; boxSize: number };
+type Segment = [number, number, number, number];
+
+/** A seed belongs to the mounted drawing, never the count or an animation frame.
+ * useId keeps server rendering and hydration identical without global randomness.
+ */
+export function InkGlyph({ width, height, stroke, color, segments, className = "" }: {
+  width: number; height: number; stroke: number; color: string;
+  segments: Segment[]; className?: string;
 }) {
-  return (
-    <span
-      className="rounded-full"
-      style={{
-        width: sizes.stroke,
-        height: sizes.height,
-        backgroundColor: color,
-      }}
-    />
-  );
+  const id = useId();
+  const seed = Array.from(id).reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) | 0, 0);
+  const noise = (index: number) => {
+    // Integer mixing is identical in server and browser JS engines.
+    let value = (seed + Math.imul(index + 1, 0x9e3779b9)) | 0;
+    value = Math.imul(value ^ (value >>> 16), 0x21f0aaad);
+    value = Math.imul(value ^ (value >>> 15), 0x735a2d97);
+    return ((value ^ (value >>> 15)) >>> 0) / 0xffffffff * 2 - 1;
+  };
+  return <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}
+    className={`overflow-visible shrink-0 ${className}`} aria-hidden="true" fill="none">
+    {segments.map(([x1, y1, x2, y2], i) => {
+      const n = i * 7;
+      const dx = x2 - x1, dy = y2 - y1;
+      const length = Math.hypot(dx, dy) || 1;
+      const bend = Math.min(length * 0.035, stroke * 0.8) * noise(n + 1);
+      const j = stroke * 0.3;
+      const d = `M ${x1 + noise(n + 2) * j} ${y1 + noise(n + 3) * j} Q ${(x1 + x2) / 2 - dy / length * bend} ${(y1 + y2) / 2 + dx / length * bend} ${x2 + noise(n + 4) * j} ${y2 + noise(n + 5) * j}`;
+      return <path key={i} d={d} stroke={color} strokeWidth={stroke * (1 + noise(n + 6) * 0.1)} strokeLinecap="round" strokeLinejoin="round" />;
+    })}
+  </svg>;
 }
 
-/** 5-gate: 4 strokes + diagonal slash */
-function FiveGate({ 
-  sizes, 
-  c1,
-  c2,
-}: { 
-  sizes: { stroke: number; height: number; gap: number; boxSize: number };
-  c1: string;
-  c2: string;
-}) {
-  const gateWidth = sizes.stroke * 4 + sizes.gap * 3;
-  
-  return (
-    <div 
-      className="relative inline-flex items-end" 
-      style={{ gap: sizes.gap, width: gateWidth }}
-    >
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Stroke key={i} sizes={sizes} color={c1} />
-      ))}
-      {/* Diagonal slash in accent color (C2) */}
-      <span
-        className="absolute rounded-full"
-        style={{
-          width: sizes.stroke,
-          height: gateWidth * 1.3,
-          backgroundColor: c2,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%) rotate(-65deg)",
-        }}
-      />
-    </div>
-  );
+function Stroke({ sizes, color }: { sizes: Sizes; color: string }) {
+  return <InkGlyph width={sizes.stroke} height={sizes.height} stroke={sizes.stroke} color={color}
+    segments={[[sizes.stroke / 2, sizes.stroke / 2, sizes.stroke / 2, sizes.height - sizes.stroke / 2]]} />;
 }
 
-/** 25-unit: X mark */
-function TwentyFiveX({ 
-  sizes, 
-  color,
-}: { 
-  sizes: { stroke: number; height: number; gap: number; boxSize: number };
-  color: string;
-}) {
-  const xSize = sizes.boxSize * 1.1;
-  
-  return (
-    <div 
-      className="relative" 
-      style={{ width: xSize, height: xSize }}
-    >
-      <span
-        className="absolute rounded-full"
-        style={{
-          width: sizes.stroke,
-          height: xSize * 1.3,
-          backgroundColor: color,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%) rotate(45deg)",
-        }}
-      />
-      <span
-        className="absolute rounded-full"
-        style={{
-          width: sizes.stroke,
-          height: xSize * 1.3,
-          backgroundColor: color,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%) rotate(-45deg)",
-        }}
-      />
-    </div>
-  );
+function FiveGate({ sizes, c1, c2 }: { sizes: Sizes; c1: string; c2: string }) {
+  const width = sizes.stroke * 4 + sizes.gap * 3;
+  return <div className="relative inline-flex items-end" style={{ gap: sizes.gap, width }}>
+    {Array.from({ length: 4 }, (_, i) => <Stroke key={i} sizes={sizes} color={c1} />)}
+    <InkGlyph className="absolute inset-0" width={width} height={sizes.height} stroke={sizes.stroke} color={c2}
+      segments={[[0, sizes.height * 0.78, width, sizes.height * 0.22]]} />
+  </div>;
 }
 
-/** Xs displayed in 2x2 grid positions (for 26-99 range) */
-function XsInGridLayout({
-  sizes,
-  count,
-  c2,
-}: {
-  sizes: { stroke: number; height: number; gap: number; boxSize: number };
-  count: number; // 1-3 Xs
-  c2: string;
-}) {
-  // Box size matches HundredBox for visual consistency
-  const boxSize = sizes.boxSize * 2.4;
-  const xSize = sizes.boxSize * 0.9;
-  const xStroke = Math.max(1, sizes.stroke - 1);
-  
-  // Fill order: bottom-left, top-left, bottom-right (then top-right for 4th)
-  const fillOrder = [
-    { x: "25%", y: "75%" },  // bottom-left (1st)
-    { x: "25%", y: "25%" },  // top-left (2nd)
-    { x: "75%", y: "75%" },  // bottom-right (3rd)
-    { x: "75%", y: "25%" },  // top-right (4th - only when complete)
-  ];
-  
-  return (
-    <div 
-      className="relative" 
-      style={{ width: boxSize, height: boxSize }}
-    >
-      {fillOrder.slice(0, count).map((pos, i) => (
-        <div
-          key={i}
-          className="absolute"
-          style={{
-            left: pos.x,
-            top: pos.y,
-            transform: "translate(-50%, -50%)",
-            width: xSize,
-            height: xSize,
-          }}
-        >
-          <span
-            className="absolute rounded-full"
-            style={{
-              width: xStroke,
-              height: xSize * 1.2,
-              backgroundColor: c2,
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%) rotate(45deg)",
-            }}
-          />
-          <span
-            className="absolute rounded-full"
-            style={{
-              width: xStroke,
-              height: xSize * 1.2,
-              backgroundColor: c2,
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%) rotate(-45deg)",
-            }}
-          />
-        </div>
-      ))}
-    </div>
-  );
+function TwentyFiveX({ sizes, color }: { sizes: Sizes; color: string }) {
+  const side = sizes.boxSize * 0.9;
+  return <InkGlyph width={side} height={side} stroke={Math.max(1, sizes.stroke - 1)} color={color}
+    segments={[[1, 1, side - 1, side - 1], [side - 1, 1, 1, side - 1]]} />;
 }
 
-/** 100-unit: Box outline with 4 X marks inside */
-function HundredBox({ 
-  sizes, 
-  c2,
-  c3,
-}: { 
-  sizes: { stroke: number; height: number; gap: number; boxSize: number };
-  c2: string;
-  c3: string;
-}) {
-  const boxSize = sizes.boxSize * 2.4;
-  const xSize = sizes.boxSize * 0.9;
-  const xStroke = Math.max(1, sizes.stroke - 1);
-  
-  // All 4 positions filled
-  const positions = [
-    { x: "25%", y: "25%" }, // top-left
-    { x: "75%", y: "25%" }, // top-right
-    { x: "25%", y: "75%" }, // bottom-left
-    { x: "75%", y: "75%" }, // bottom-right
-  ];
-  
-  return (
-    <div 
-      className="relative border-2 rounded-sm"
-      style={{ 
-        width: boxSize, 
-        height: boxSize,
-        borderColor: c3, // Box outline in muted color (C3)
-      }}
-    >
-      {/* 4 X marks inside in accent color (C2) */}
-      {positions.map((pos, i) => (
-        <div
-          key={i}
-          className="absolute"
-          style={{
-            left: pos.x,
-            top: pos.y,
-            transform: "translate(-50%, -50%)",
-            width: xSize,
-            height: xSize,
-          }}
-        >
-          <span
-            className="absolute rounded-full"
-            style={{
-              width: xStroke,
-              height: xSize * 1.2,
-              backgroundColor: c2, // X in accent color
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%) rotate(45deg)",
-            }}
-          />
-          <span
-            className="absolute rounded-full"
-            style={{
-              width: xStroke,
-              height: xSize * 1.2,
-              backgroundColor: c2, // X in accent color
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%) rotate(-45deg)",
-            }}
-          />
-        </div>
-      ))}
-    </div>
-  );
+function XsInGridLayout({ sizes, count, c2 }: { sizes: Sizes; count: number; c2: string }) {
+  const side = sizes.boxSize * 2.4;
+  return <div className="relative" style={{ width: side, height: side }}>
+    {[[25, 75], [25, 25], [75, 75], [75, 25]].slice(0, count).map(([x, y], i) =>
+      <div key={i} className="absolute" style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}>
+        <TwentyFiveX sizes={sizes} color={c2} />
+      </div>)}
+  </div>;
 }
 
-/** 1000-unit: Row of 10 boxes with horizontal line through */
-function ThousandBlock({ 
-  sizes, 
-  c1,
-  c3,
-}: { 
-  sizes: { stroke: number; height: number; gap: number; boxSize: number };
-  c1: string;
-  c3: string;
-}) {
-  const boxSize = sizes.boxSize * 0.6;
-  const boxGap = sizes.gap / 2;
-  const rowWidth = boxSize * 10 + boxGap * 9;
-  
-  return (
-    <div className="relative">
-      {/* Row of 10 mini boxes in C3 */}
-      <div className="flex" style={{ gap: sizes.gap / 2 }}>
-        {Array.from({ length: 10 }).map((_, i) => (
-          <div
-            key={i}
-            className="border"
-            style={{
-              width: boxSize,
-              height: boxSize,
-              borderColor: c3,
-              borderWidth: Math.max(1, sizes.stroke - 1),
-            }}
-          />
-        ))}
-      </div>
-      {/* Horizontal line through in accent color */}
-      <span
-        className="absolute rounded-full"
-        style={{
-          width: rowWidth + boxGap * 2,
-          height: sizes.stroke,
-          backgroundColor: "var(--color-accent)",
-          left: -boxGap,
-          top: "50%",
-          transform: "translateY(-50%)",
-        }}
-      />
+function InkBox({ side, stroke, color }: { side: number; stroke: number; color: string }) {
+  const inset = stroke / 2;
+  const end = side - inset;
+  return <InkGlyph width={side} height={side} stroke={stroke} color={color}
+    segments={[[inset, inset, end, inset], [end, inset, end, end], [end, end, inset, end], [inset, end, inset, inset]]} />;
+}
+
+function HundredBox({ sizes, c2, c3 }: { sizes: Sizes; c2: string; c3: string }) {
+  const side = sizes.boxSize * 2.4;
+  return <div className="relative">
+    <InkBox side={side} stroke={2} color={c3} />
+    <div className="absolute inset-0"><XsInGridLayout sizes={sizes} count={4} c2={c2} /></div>
+  </div>;
+}
+
+function ThousandBlock({ sizes, c3 }: { sizes: Sizes; c1: string; c3: string }) {
+  const side = sizes.boxSize * 0.6;
+  const gap = sizes.gap / 2;
+  const width = side * 10 + gap * 9;
+  return <div className="relative">
+    <div className="flex" style={{ gap }}>
+      {Array.from({ length: 10 }, (_, i) => <InkBox key={i} side={side} stroke={Math.max(1, sizes.stroke - 1)} color={c3} />)}
     </div>
-  );
+    <InkGlyph className="absolute inset-0" width={width} height={side} stroke={sizes.stroke}
+      color="var(--color-accent)" segments={[[0, side / 2, width, side / 2]]} />
+  </div>;
 }
 
 export default TallyDisplay;

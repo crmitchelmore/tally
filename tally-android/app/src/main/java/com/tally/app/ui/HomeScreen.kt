@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -64,6 +66,7 @@ import java.time.LocalDate
  * Home screen showing user's challenges with optimistic saves.
  * Loads from cache instantly, refreshes in background.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(authManager: AuthManager? = null, onNavigateToDetail: (String) -> Unit = {}) {
     val context = LocalContext.current
@@ -114,7 +117,7 @@ fun HomeScreen(authManager: AuthManager? = null, onNavigateToDetail: (String) ->
     // Refresh on mount
     LaunchedEffect(Unit) {
         challengesManager.refreshChallenges()
-        challengesManager.refreshCommunity()
+        // Community is unavailable in this release.
     }
     
     Scaffold(
@@ -144,13 +147,12 @@ fun HomeScreen(authManager: AuthManager? = null, onNavigateToDetail: (String) ->
         ) {
             // Welcome section (only when there are challenges)
             if (challenges.isNotEmpty()) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = TallySpacing.md)
                         .padding(top = TallySpacing.sm),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(TallySpacing.sm)
                 ) {
                     Column {
                         Text(
@@ -165,9 +167,10 @@ fun HomeScreen(authManager: AuthManager? = null, onNavigateToDetail: (String) ->
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(TallySpacing.sm)
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalArrangement = Arrangement.spacedBy(TallySpacing.xs)
                     ) {
                         TextButton(
                             onClick = { showWeeklySummary = true },
@@ -252,30 +255,7 @@ fun HomeScreen(authManager: AuthManager? = null, onNavigateToDetail: (String) ->
                             )
                         }
 
-                        // Followed challenges section
-                        if (followedChallenges.isNotEmpty()) {
-                            item {
-                                FollowedChallengesSection(
-                                    followedChallenges = followedChallenges,
-                                    onViewAll = { /* navigate to community tab */ }
-                                )
-                            }
-                        }
 
-                        // Community preview section
-                        if (publicChallenges.isNotEmpty()) {
-                            item {
-                                CommunityPreviewSection(
-                                    challenges = publicChallenges,
-                                    onViewAll = { /* navigate to community tab */ },
-                                    onFollow = { challengeId ->
-                                        scope.launch {
-                                            challengesManager.followChallenge(challengeId)
-                                        }
-                                    }
-                                )
-                            }
-                        }
                     }
                 }
             }

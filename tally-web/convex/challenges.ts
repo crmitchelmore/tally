@@ -1,3 +1,4 @@
+import { requireOwner, requireChallengeOwner } from "./access";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
@@ -19,7 +20,7 @@ function toApiFormat(challenge: Doc<"challenges">) {
     endDate: challenge.endDate,
     color: challenge.color,
     icon: challenge.icon,
-    isPublic: challenge.isPublic,
+    isPublic: false,
     isArchived: challenge.isArchived,
     countType: challenge.countType,
     unitLabel: challenge.unitLabel,
@@ -35,6 +36,7 @@ function toApiFormat(challenge: Doc<"challenges">) {
 export const listByUser = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userId);
     const challenges = await ctx.db
       .query("challenges")
       .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
@@ -49,6 +51,7 @@ export const listByUser = query({
 export const listActive = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userId);
     const now = new Date().toISOString().split("T")[0];
     const challenges = await ctx.db
       .query("challenges")
@@ -67,22 +70,10 @@ export const listActive = query({
 /**
  * Get public challenges (for community) - excluding soft-deleted
  */
+// Community is unavailable in this release, including direct database calls.
 export const listPublic = query({
   args: {},
-  handler: async (ctx) => {
-    const now = new Date().toISOString().split("T")[0];
-    const challenges = await ctx.db
-      .query("challenges")
-      .withIndex("by_public", (q) =>
-        q.eq("isPublic", true).eq("isArchived", false)
-      )
-      .collect();
-    
-    // Filter by end date and exclude soft-deleted
-    return challenges
-      .filter((c) => isNotDeleted(c) && c.endDate >= now)
-      .map(toApiFormat);
-  },
+  handler: async () => [] as ReturnType<typeof toApiFormat>[],
 });
 
 /**
@@ -91,6 +82,7 @@ export const listPublic = query({
 export const get = query({
   args: { id: v.id("challenges") },
   handler: async (ctx, args) => {
+    await requireChallengeOwner(ctx, args.id);
     const challenge = await ctx.db.get(args.id);
     if (!challenge || !isNotDeleted(challenge)) return null;
     return toApiFormat(challenge);
@@ -103,6 +95,7 @@ export const get = query({
 export const getIncludingDeleted = query({
   args: { id: v.id("challenges") },
   handler: async (ctx, args) => {
+    await requireChallengeOwner(ctx, args.id);
     const challenge = await ctx.db.get(args.id);
     if (!challenge) return null;
     return {
@@ -131,6 +124,7 @@ export const create = mutation({
     defaultIncrement: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userId);
     const now = Date.now();
     const challengeId = await ctx.db.insert("challenges", {
       userId: args.userId,
@@ -141,7 +135,7 @@ export const create = mutation({
       endDate: args.endDate,
       color: args.color,
       icon: args.icon,
-      isPublic: args.isPublic,
+      isPublic: false,
       isArchived: false,
       countType: args.countType,
       unitLabel: args.unitLabel,
@@ -172,9 +166,11 @@ export const update = mutation({
     defaultIncrement: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    await requireChallengeOwner(ctx, args.id);
     const { id, ...updates } = args;
     await ctx.db.patch(id, {
       ...updates,
+      isPublic: false,
       updatedAt: Date.now(),
     });
     const challenge = await ctx.db.get(id);
@@ -192,6 +188,7 @@ export const remove = mutation({
     deletedBy: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireChallengeOwner(ctx, args.id);
     const now = Date.now();
     
     // Soft delete all entries for this challenge
@@ -244,6 +241,7 @@ export const restore = mutation({
     userId: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userId);
     const challenge = await ctx.db.get(args.id);
     if (!challenge) throw new Error("Challenge not found");
     

@@ -5,6 +5,7 @@ import { TelemetryProvider } from "@/components/TelemetryProvider";
 import { ConvexClientProvider } from "@/lib/convex";
 import { DebugBridgeInit } from "@/components/DebugBridgeInit";
 import "./globals.css";
+import "./refresh.css";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -17,11 +18,12 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon.svg?v=20260909", sizes: "any", type: "image/svg+xml" },
+      { url: "/favicon.ico?v=20260909", sizes: "any" },
+      { url: "/favicon-16x16.png?v=20260909", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png?v=20260909", sizes: "32x32", type: "image/png" },
     ],
-    apple: "/apple-touch-icon.png",
+    apple: "/apple-touch-icon.png?v=20260909",
   },
 };
 

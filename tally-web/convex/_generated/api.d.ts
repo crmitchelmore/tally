@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as access from "../access.js";
+import type * as moderation from "../moderation.js";
 import type * as challenges from "../challenges.js";
 import type * as entries from "../entries.js";
 import type * as follows from "../follows.js";
@@ -20,6 +22,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  access: typeof access;
+  moderation: typeof moderation;
   challenges: typeof challenges;
   entries: typeof entries;
   follows: typeof follows;

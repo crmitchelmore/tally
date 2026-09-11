@@ -36,6 +36,7 @@ android {
 
 dependencies {
     implementation(project(":core:auth"))
+    implementation(project(":core:telemetry"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.serialization.json)

@@ -1,5 +1,7 @@
 package com.tally.app.ui
 
+import androidx.compose.ui.platform.testTag
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,6 +59,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tally.app.ui.components.AddEntryDialog
 import com.tally.app.ui.dashboard.ActivityHeatmap
+import com.tally.core.design.tallyProgress
+import com.tally.core.design.tallyPress
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.tally.core.design.TallyMark
 import com.tally.core.design.TallySpacing
 import com.tally.core.network.Challenge
@@ -143,7 +148,7 @@ fun ChallengeDetailScreen(
                 }
             )
         },
-        modifier = modifier
+        modifier = modifier.testTag("challenge_detail")
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -295,7 +300,7 @@ private fun ProgressSection(
             TallyMark(
                 count = totalCount,
                 modifier = Modifier.size(96.dp),
-                animated = false
+                animated = true
             )
             
             Spacer(modifier = Modifier.height(TallySpacing.md))
@@ -324,10 +329,14 @@ private fun ProgressSection(
             
             Spacer(modifier = Modifier.height(TallySpacing.md))
             
+            val addInteraction = remember { MutableInteractionSource() }
+            val progressMotion = tallyProgress(progress)
+
             // Add Entry button
             Button(
                 onClick = onAddEntry,
-                modifier = Modifier
+                interactionSource = addInteraction,
+                modifier = Modifier.tallyPress(addInteraction)
                     .fillMaxWidth()
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -341,7 +350,7 @@ private fun ProgressSection(
             
             // Progress bar
             LinearProgressIndicator(
-                progress = { progress },
+                progress = { progressMotion.value },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp)

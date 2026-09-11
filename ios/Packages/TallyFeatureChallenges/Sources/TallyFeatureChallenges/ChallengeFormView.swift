@@ -70,6 +70,25 @@ public struct ChallengeFormView: View {
     public var body: some View {
         NavigationStack {
             Form {
+                if !isEditing && name.isEmpty {
+                    Section {
+                        Button { applyIdea(name: "Read a little every day", target: 500, unit: "pages", icon: "book.fill", color: "#2563EB") } label: {
+                            Label("Reading · 500 pages", systemImage: "book.fill")
+                        }
+                        .accessibilityIdentifier("reading-idea")
+                        Button { applyIdea(name: "Make time to move", target: 300, unit: "minutes", icon: "figure.run", color: "#16A34A") } label: {
+                            Label("Movement · 300 minutes", systemImage: "figure.run")
+                        }
+                        Button { applyIdea(name: "A little practice each day", target: 20, unit: "sessions", icon: "music.note", color: "#D94343") } label: {
+                            Label("Practice · 20 sessions", systemImage: "music.note")
+                        }
+                    } header: {
+                        Text("Start with an idea")
+                    } footer: {
+                        Text("Monthly goals to make your own. Everything is editable before you create it.")
+                    }
+                }
+
                 // Name section
                 Section {
                     TextField("Challenge name", text: $name)
@@ -195,16 +214,11 @@ public struct ChallengeFormView: View {
                     Text("Appearance")
                 }
                 
-                // Visibility section
                 Section {
-                    Toggle("Public Challenge", isOn: $isPublic)
-                        .accessibilityIdentifier("public-toggle")
-                } header: {
-                    Text("Visibility")
-                } footer: {
-                    Text(isPublic ? "Anyone can see your progress and cheer you on." : "Only you can see this challenge.")
+                    Label("Your goals are private", systemImage: "lock")
+                        .foregroundStyle(Color.tallyInkSecondary)
                 }
-                
+
                 // Validation error
                 if let error = validationError {
                     Section {
@@ -258,7 +272,7 @@ public struct ChallengeFormView: View {
         }
         .frame(minWidth: TallyMetrics.minTouchTarget, minHeight: TallyMetrics.minTouchTarget)
         .contentShape(Rectangle())
-        .buttonStyle(.plain)
+        .buttonStyle(TallyPressStyle())
         .accessibilityLabel("Color \(color)")
     }
     
@@ -277,12 +291,23 @@ public struct ChallengeFormView: View {
                         .fill(selectedIcon == icon ? Color.tallyAccentSubtle : Color.tallyPaperTint)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TallyPressStyle())
         .accessibilityLabel(icon)
     }
     
     // MARK: - Helpers
     
+    private func applyIdea(name: String, target: Int, unit: String, icon: String, color: String) {
+        self.name = name
+        self.target = target
+        unitLabel = unit
+        selectedIcon = icon
+        selectedColor = color
+        timeframeType = .month
+        periodOffset = 0
+        updateDatesForTimeframe(.month)
+    }
+
     private var isEditing: Bool {
         existingChallenge != nil
     }
@@ -337,12 +362,11 @@ public struct ChallengeFormView: View {
         timeframeType = challenge.timeframeType
         selectedColor = challenge.color
         selectedIcon = challenge.icon
-        isPublic = challenge.isPublic
+        isPublic = false
         countType = challenge.countType ?? .simple
         unitLabel = challenge.unitLabel ?? ""
         
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withFullDate]
+        let formatter = CalendarDay.formatter()
         
         if let start = formatter.date(from: challenge.startDate) {
             startDate = start
@@ -372,7 +396,7 @@ public struct ChallengeFormView: View {
                 target: target,
                 color: selectedColor,
                 icon: selectedIcon,
-                isPublic: isPublic
+                isPublic: false
             )
         } else {
             // Create new
@@ -385,7 +409,7 @@ public struct ChallengeFormView: View {
                 endDate: endDate,
                 color: selectedColor,
                 icon: selectedIcon,
-                isPublic: isPublic,
+                isPublic: false,
                 countType: countType,
                 unitLabel: unitLabel.isEmpty ? nil : unitLabel,
                 defaultIncrement: nil

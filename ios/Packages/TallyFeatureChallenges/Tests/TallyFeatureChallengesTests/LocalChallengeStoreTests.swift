@@ -1,6 +1,6 @@
 import XCTest
 @testable import TallyFeatureChallenges
-import TallyFeatureAPIClient
+@testable import TallyFeatureAPIClient
 
 final class LocalChallengeStoreTests: XCTestCase {
     var store: LocalChallengeStore!
@@ -136,7 +136,15 @@ final class LocalChallengeStoreTests: XCTestCase {
             makeChallenge(id: "2", name: "Server Only")
         ]
         
-        store.mergeWithServer(serverChallenges)
+        store.mergeWithServer(serverChallenges.map { challenge in
+            let stats = ChallengeStats(
+                challengeId: challenge.id, totalCount: 0, remaining: challenge.target,
+                daysElapsed: 1, daysRemaining: 364, perDayRequired: 1,
+                currentPace: 0, paceStatus: .none, streakCurrent: 0,
+                streakBest: 0, bestDay: nil, dailyAverage: 0
+            )
+            return ChallengeWithStats(challenge: challenge, stats: stats)
+        })
         
         let merged = store.loadChallenges()
         

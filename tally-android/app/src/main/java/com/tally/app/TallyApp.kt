@@ -67,7 +67,6 @@ fun TallyApp(
     onSignOut: () -> Unit
 ) {
     val navController = rememberNavController()
-    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -85,50 +84,7 @@ fun TallyApp(
                 }
             )
         },
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = selectedTab == 0,
-                    onClick = {
-                        selectedTab = 0
-                        navController.navigate(HomeRoute) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = if (selectedTab == 0) Icons.Filled.Home else Icons.Outlined.Home,
-                            contentDescription = null
-                        )
-                    },
-                    label = { Text(stringResource(R.string.tab_home)) }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 1,
-                    onClick = {
-                        selectedTab = 1
-                        navController.navigate(CommunityRoute) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = if (selectedTab == 1) Icons.Filled.Person else Icons.Outlined.Person,
-                            contentDescription = null
-                        )
-                    },
-                    label = { Text(stringResource(R.string.tab_community)) }
-                )
-            }
-        }
+
     ) { innerPadding ->
         NavHost(
             navController = navController,
@@ -142,9 +98,6 @@ fun TallyApp(
                         navController.navigate(ChallengeDetailRoute(challengeId))
                     }
                 )
-            }
-            composable<CommunityRoute> {
-                CommunityScreen(authManager = authManager)
             }
             composable<ChallengeDetailRoute> { backStackEntry ->
                 val route = backStackEntry.toRoute<ChallengeDetailRoute>()

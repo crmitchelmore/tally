@@ -1,5 +1,8 @@
 package com.tally.core.design
 
+import android.database.ContentObserver
+import android.os.Handler
+import android.os.Looper
 import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -12,6 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -62,18 +69,21 @@ fun TallyTheme(
 ) {
     val context = LocalContext.current
 
-    // Check system "Remove animations" setting
-    val reduceMotion = remember {
-        try {
-            val scale = Settings.Global.getFloat(
-                context.contentResolver,
-                Settings.Global.ANIMATOR_DURATION_SCALE,
-                1f
-            )
-            scale == 0f
-        } catch (e: Exception) {
-            false
+    // Follow changes while the app is open as well as the initial setting.
+    val resolver = context.contentResolver
+    fun readReduceMotion(): Boolean = Settings.Global.getFloat(
+        resolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f
+    ) == 0f
+    var reduceMotion by remember(resolver) { mutableStateOf(readReduceMotion()) }
+    DisposableEffect(resolver) {
+        val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
+            override fun onChange(selfChange: Boolean) { reduceMotion = readReduceMotion() }
         }
+        resolver.registerContentObserver(
+            Settings.Global.getUriFor(Settings.Global.ANIMATOR_DURATION_SCALE), false, observer
+        )
+        reduceMotion = readReduceMotion()
+        onDispose { resolver.unregisterContentObserver(observer) }
     }
 
     val colorScheme = when {

@@ -371,7 +371,7 @@ public struct AddEntrySheet: View {
     
     private var optionsToggle: some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(reduceMotion ? nil : TallyMotion.ease) {
                 showOptions.toggle()
             }
         } label: {
@@ -428,7 +428,7 @@ public struct AddEntrySheet: View {
                                     )
                             )
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(TallyPressStyle())
                         .accessibilityIdentifier(feelingIdentifier(feelingOption))
                     }
                 }
@@ -521,13 +521,15 @@ public struct AddEntrySheet: View {
 // MARK: - Increment Button Style
 
 private struct IncrementButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .foregroundColor(configuration.isPressed ? Color.tallyInk : Color.tallyInkSecondary)
             .frame(width: 52, height: TallyMetrics.minTouchTarget)
             .background(Color.tallyPaperTint)
             .cornerRadius(8)
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.98 : 1.0)
+            .tallyAnimation(TallyMotion.easeQuick, value: configuration.isPressed)
     }
 }
 

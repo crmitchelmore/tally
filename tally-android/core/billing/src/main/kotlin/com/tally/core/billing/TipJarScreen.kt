@@ -20,6 +20,7 @@ fun TipJarScreen(
     modifier: Modifier = Modifier
 ) {
     val products by tipManager.products.collectAsStateWithLifecycle()
+    val isLoading by tipManager.isLoading.collectAsStateWithLifecycle()
     val purchaseState by tipManager.purchaseState.collectAsStateWithLifecycle()
     
     LaunchedEffect(Unit) {
@@ -65,7 +66,7 @@ fun TipJarScreen(
         Spacer(modifier = Modifier.height(24.dp))
         
         // Tip options
-        if (products.isEmpty()) {
+        if (isLoading) {
             CircularProgressIndicator()
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -73,6 +74,9 @@ fun TipJarScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        } else if (products.isEmpty()) {
+            Text("Tips aren't available right now. Enjoy Tally — all features are free.")
+            TextButton(onClick = { tipManager.connect() }) { Text("Try again") }
         } else {
             products.forEach { product ->
                 TipButton(

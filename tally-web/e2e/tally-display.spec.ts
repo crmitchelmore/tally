@@ -203,8 +203,8 @@ test.describe("Sets and Reps Entry Mode @entries @sets", () => {
     await page.waitForTimeout(500);
 
     // In offline mode, cards don't link to detail view - use the quick-add button
-    // The quick-add button has aria-label "Add 1 reps" for sets challenges
-    const quickAddButton = page.getByRole("button", { name: /add 1/i }).first();
+    // The card opens the entry form instead of immediately adding a mark.
+    const quickAddButton = page.getByRole("button", { name: /log progress for push-ups/i }).first();
     await expect(quickAddButton).toBeVisible({ timeout: 5000 });
     await quickAddButton.click();
     await page.waitForTimeout(300);

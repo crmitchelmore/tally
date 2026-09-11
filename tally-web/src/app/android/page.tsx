@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Tally for Android — Coming Soon",
+  title: "Tally for Android — Closed Beta",
   description:
-    "Track your progress with tactile tally marks on Android. Sign up to be notified when Tally launches on Google Play.",
+    "Track your progress with tactile tally marks on Android. Tally is in closed testing on Google Play. Invited testers can join the beta; everyone can start on the web.",
 };
 
 export default function AndroidPage() {
@@ -21,32 +21,23 @@ export default function AndroidPage() {
         </div>
 
         <span className="platform-eyebrow">Tally for Android</span>
-        <h1 className="platform-heading">Coming soon to Android</h1>
+        <h1 className="platform-heading">A little more you, every day.</h1>
         <p className="platform-subhead">
-          The same calm, tactile tracking experience — native on Android.
-          Sign up to be the first to know when we launch.
+          Familiar tally marks, a gentle nudge, and room to find your pace.
+          Made for Android, currently in closed testing.
         </p>
 
-        {/* Google Play placeholder button */}
-        <div className="platform-store-btn" aria-label="Get it on Google Play (coming soon)">
-          <svg
-            className="platform-store-icon"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path d="M3 20.5v-17c0-.83.52-1.51 1.25-1.79l8.75 9.29-8.75 9.29C3.52 22.01 3 21.33 3 20.5zm10.29-9.29l2.32-2.46 5.74 3.31c.83.48.83 1.64 0 2.12l-5.74 3.31-2.32-2.46 2.71-1.91-2.71-1.91zm-1.41 1.5L4.2 21.08l7.68-8.37zm0-1.42l7.68-8.37-7.68 8.37z" />
-          </svg>
-          <div className="platform-store-text">
-            <span className="platform-store-label">Coming soon on</span>
-            <span className="platform-store-name">Google Play</span>
-          </div>
+        <div className="platform-release-note">
+          <img src="/icon.svg" alt="" width="64" height="64" className="platform-app-icon" />
+          <strong>A small group. A few first marks.</strong>
+          <p>The Google Play beta is open to invited testers. Use the Google account from your invitation to join.</p>
+          <a className="link" href="https://play.google.com/apps/testing/app.tally.android">Invited? Join the Android beta</a>
         </div>
 
         {/* CTA to web app */}
         <div className="platform-actions">
-          <Link className="cta" href="/app">
-            Try the web app now
+          <Link className="cta" href="/offline">
+            Make your first mark
           </Link>
           <Link className="link" href="/">
             Back to home
@@ -64,13 +55,13 @@ export default function AndroidPage() {
             <span className="platform-feature-icon" aria-hidden="true">
               ✦
             </span>
-            <span>Material Design with tactile tally animations</span>
+            <span>Familiar Android controls, with a little ink and warmth</span>
           </li>
           <li className="platform-feature-item">
             <span className="platform-feature-icon" aria-hidden="true">
               ✦
             </span>
-            <span>Real-time sync across all your devices</span>
+            <span>Your progress across devices when connected</span>
           </li>
           <li className="platform-feature-item">
             <span className="platform-feature-icon" aria-hidden="true">

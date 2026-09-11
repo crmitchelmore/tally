@@ -9,6 +9,10 @@ permissions:
   contents: read
   statuses: write
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ─────────────────────────────────────────────────────────────
   # Web: lint + build
@@ -23,6 +27,8 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install
+      - name: Verify shared app icons
+        run: node ../scripts/verify-icons.cjs
       - name: Lint
         run: bun run lint
       - name: Build
@@ -37,7 +43,7 @@ jobs:
   # iOS: generate + build (macOS runner)
   # ─────────────────────────────────────────────────────────────
   ios:
-    runs-on: macos-14
+    runs-on: macos-26
     defaults:
       run:
         working-directory: ios
@@ -46,8 +52,8 @@ jobs:
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          # Must be new enough for Clerk's Swift macros/attributes used by our auth UI.
-          xcode-version: "16.2.0"
+          # Match the shipping SDK and avoid the retiring macOS 14 runner pool.
+          xcode-version: "26.2.0"
       - name: Install Tuist via mise
         uses: jdx/mise-action@v2
         with:
@@ -65,7 +71,7 @@ jobs:
               -workspace Tally.xcworkspace \
               -scheme App \
               -configuration Debug \
-              -destination 'platform=iOS Simulator,name=iPhone 16' \
+              -destination 'generic/platform=iOS Simulator' \
               build \
               CODE_SIGN_IDENTITY="" \
               CODE_SIGNING_REQUIRED=NO \
@@ -76,7 +82,7 @@ jobs:
               -workspace Tally.xcworkspace \
               -scheme App \
               -configuration Debug \
-              -destination 'platform=iOS Simulator,name=iPhone 16' \
+              -destination 'generic/platform=iOS Simulator' \
               build \
               CODE_SIGN_IDENTITY="" \
               CODE_SIGNING_REQUIRED=NO \
@@ -113,6 +119,13 @@ jobs:
         run: ./gradlew assembleDebug --no-daemon
       - name: Run Android unit tests
         run: ./gradlew testDebugUnitTest --no-daemon
+      - name: Upload Android preview APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: tally-android-debug
+          path: tally-android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
 
   # Required branch-protection status context (configured as "build")
   build:
@@ -148,6 +161,9 @@ jobs:
   # ─────────────────────────────────────────────────────────────
   auto-release:
     name: Auto Version & Release
+    concurrency:
+      group: tally-auto-release
+      cancel-in-progress: false
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -249,6 +265,13 @@ jobs:
           fi
 
           RELEASE_SHA=$(git rev-parse HEAD)
+          # A newer main push may have finished while this build was running.
+          # Release only the current head; its own CI run will tag it when green.
+          MAIN_SHA=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$RELEASE_SHA" != "$MAIN_SHA" ]; then
+            echo "A newer main commit exists; skipping superseded release."
+            exit 0
+          fi
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -261,5 +284,7 @@ jobs:
           # Best-effort VERSION file update
           echo "$NEW_VERSION" > ios/VERSION
           git add ios/VERSION
-          git commit -m "chore: bump iOS version to $NEW_VERSION"
-          git push origin main || echo "⚠️ Could not push VERSION bump (branch protection)"
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: bump iOS version to $NEW_VERSION"
+            git push origin main || echo "⚠️ Could not push VERSION bump (branch protection)"
+          fi

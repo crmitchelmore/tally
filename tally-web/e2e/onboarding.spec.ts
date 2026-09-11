@@ -38,3 +38,23 @@ test.describe("New User Onboarding @web @smoke @onboarding", () => {
     });
   });
 });
+
+// Public store information must work before a visitor creates an account.
+test.describe("Public platform pages @web @smoke @onboarding", () => {
+  for (const platform of ["ios", "android"]) {
+    test(`${platform} visitors can start without signing in`, async ({ page }) => {
+      await page.goto(`/${platform}`);
+      await expect(page).toHaveURL(new RegExp(`/${platform}$`));
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await page.getByRole("link", { name: "Make your first mark", exact: true }).click();
+      await expect(page).toHaveURL(/\/offline$/);
+      await expect(page.getByRole("button", { name: "Create Challenge", exact: true })).toBeVisible();
+    });
+  }
+
+  test("private challenge data still requires authentication", async ({ request }) => {
+    const response = await request.get("/api/v1/challenges");
+    expect(response.status()).toBe(401);
+    expect(await response.json()).toEqual({ error: "Unauthorized" });
+  });
+});

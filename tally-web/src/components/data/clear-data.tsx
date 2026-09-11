@@ -82,7 +82,7 @@ export function ClearData({ onClearComplete }: ClearDataProps) {
           px-4 py-2.5 rounded-xl border border-error/50
           text-sm font-medium text-error
           hover:bg-error/10 transition-colors
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error
+          focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-error
         "
       >
         Clear All Data
@@ -102,7 +102,7 @@ export function ClearData({ onClearComplete }: ClearDataProps) {
         className="
           fixed inset-0 z-[1500] m-auto p-0
           w-full max-w-md
-          bg-transparent backdrop:bg-ink/40 backdrop:backdrop-blur-sm
+          bg-transparent backdrop:bg-ink/40 backdrop:backdrop-blur-xs
           open:animate-dialog-in
         "
       >
@@ -138,7 +138,7 @@ export function ClearData({ onClearComplete }: ClearDataProps) {
                 className="
                   w-full px-4 py-3 rounded-xl border border-border
                   bg-paper text-ink placeholder:text-muted/50
-                  focus:outline-none focus:ring-2 focus:ring-error focus:border-transparent
+                  focus:outline-hidden focus:ring-2 focus:ring-error focus:border-transparent
                 "
               />
             </div>

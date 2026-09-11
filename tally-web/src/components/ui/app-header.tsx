@@ -29,14 +29,14 @@ export function AppHeader({
   onSignOut,
 }: AppHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 bg-paper/80 dark:bg-paper/80 backdrop-blur-sm border-b border-border">
+    <header className="sticky top-0 z-50 bg-paper/80 dark:bg-paper/80 backdrop-blur-xs border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo and nav */}
           <div className="flex items-center gap-8">
             <Link
               href="/app"
-              className="flex items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 rounded-lg"
+              className="flex items-center gap-2 group focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 rounded-lg"
             >
               <TallyMark count={5} size="sm" className="text-ink" />
               <span className="text-2xl font-semibold tracking-tight text-ink">

@@ -129,7 +129,7 @@ export function PublicChallengesList({ onRefresh }: PublicChallengesListProps) {
             w-full pl-9 pr-4 py-2.5
             bg-surface border border-border rounded-xl
             text-sm text-ink placeholder:text-muted
-            focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
+            focus:outline-hidden focus:ring-2 focus:ring-accent focus:border-transparent
             transition-colors
           "
         />

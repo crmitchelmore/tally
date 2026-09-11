@@ -3,9 +3,10 @@ export const metadata = { title: "Privacy policy · Tally" };
 export default function Privacy() {
   return <main className="mx-auto max-w-2xl px-6 py-16 space-y-6">
     <Link href="/">← Tally</Link><h1 className="text-3xl font-semibold">Tally privacy policy</h1>
-    <p>Updated 8 September 2026. Tally Tracker is provided by Chris Mitchelmore. For privacy questions, contact <a className="underline" href="mailto:chrismitchelmore@gmail.com">chrismitchelmore@gmail.com</a>.</p>
+    <p>Updated 11 September 2026. Tally Tracker is provided by Chris Mitchelmore. For privacy questions, contact <a className="underline" href="mailto:chrismitchelmore@gmail.com">chrismitchelmore@gmail.com</a>.</p>
     <h2 className="text-xl font-semibold">Your progress and account</h2>
     <p>You can use Tally locally without creating an account. In local mode, goals and entries stay on your device unless you export or choose to sync them. If you sign in, we process your name, email, account ID, goals, dates, counts, sets, optional notes and feelings, follows and preferences to provide your account and sync. Clerk provides authentication and Convex stores synced data. Goals you make public and your public profile can be viewed by other users.</p>
+    <p>Sign in with Apple requests only your name and email address. You can choose Hide My Email to use an Apple relay address instead of sharing your personal email with Tally or Clerk. Apple sign-in is not used to collect your interactions for advertising.</p>
     <h2 className="text-xl font-semibold">Optional analytics and diagnostics</h2>
     <p>Usage analytics helps us understand which features are useful. PostHog receives feature-use events, app/browser and device information, a random device identifier and, when signed in, your account ID. We use PostHog&apos;s EU region. Native analytics does not include goal names, notes, entry contents or screen recordings.</p>
     <p>Crash reporting sends error details, stack traces, app/browser and device information to Sentry to diagnose failures. Native crash reporting excludes screenshots, screen recordings and account details. We do not sell your data, use advertising identifiers, or track you across other companies&apos; apps for advertising.</p>

@@ -5,9 +5,13 @@ export default function SignUpPage() {
     <div className="min-h-screen flex items-center justify-center bg-paper">
       <SignUp
         appearance={{
+          layout: {
+            socialButtonsVariant: "blockButton",
+            socialButtonsPlacement: "top",
+          },
           elements: {
             rootBox: "mx-auto",
-            card: "rounded-2xl shadow-sm border border-border",
+            card: "rounded-2xl shadow-xs border border-border",
             headerTitle: "text-ink font-semibold",
             headerSubtitle: "text-muted",
             socialButtonsBlockButton: "border-border hover:bg-ink/5",

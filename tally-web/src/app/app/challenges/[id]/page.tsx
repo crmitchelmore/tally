@@ -313,7 +313,7 @@ export default function ChallengeDetailPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowAddEntry(true)}
-              className="px-4 py-2 rounded-xl font-medium bg-accent text-white hover:bg-accent/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+              className="px-4 py-2 rounded-xl font-medium bg-accent text-white hover:bg-accent/90 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
               + Add Entry
             </button>

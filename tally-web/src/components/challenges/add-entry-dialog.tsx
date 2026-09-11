@@ -213,7 +213,7 @@ export function AddEntryDialog({ open, challenge, onClose, onSubmit }: AddEntryD
                             flex-1 px-3 py-2 rounded-lg
                             bg-paper border border-border
                             text-ink placeholder:text-muted/60 tabular-nums text-center
-                            focus:outline-none focus:ring-2 focus:ring-accent
+                            focus:outline-hidden focus:ring-2 focus:ring-accent
                           "
                         />
                         <span className="text-sm text-muted w-12">{unitLabel}</span>
@@ -256,7 +256,7 @@ export function AddEntryDialog({ open, challenge, onClose, onSubmit }: AddEntryD
                         flex-1 px-4 py-3 rounded-lg text-xl
                         bg-paper border border-border
                         text-ink placeholder:text-muted/60 tabular-nums text-center
-                        focus:outline-none focus:ring-2 focus:ring-accent
+                        focus:outline-hidden focus:ring-2 focus:ring-accent
                       "
                     />
                     <span className="text-muted">{unitLabel}</span>

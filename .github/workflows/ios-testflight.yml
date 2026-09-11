@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
@@ -41,7 +41,7 @@ jobs:
           xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Install Tuist via mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v4
         with:
           install_args: tuist@4.32.0
 
@@ -138,6 +138,7 @@ jobs:
           export CERT_SERIAL APP_STORE_CONNECT_KEY_ID APP_STORE_CONNECT_ISSUER_ID APP_STORE_CONNECT_PRIVATE_KEY IOS_BUNDLE_ID
           PROFILE_JSON=$(node <<'NODE'
             const crypto = require('crypto');
+            const { supportsAppleSignIn } = require('./scripts/apple-signin-profile.cjs');
 
             function makeJWT(keyId, issuerId, privateKey) {
               const header = { alg: 'ES256', kid: keyId, typ: 'JWT' };
@@ -220,7 +221,8 @@ jobs:
                     && item.attributes?.profileType === 'IOS_APP_STORE'
                     && new Date(item.attributes.expirationDate).getTime() > Date.now() + 86400000
                     && item.relationships?.bundleId?.data?.id === bundleId.id
-                    && item.relationships?.certificates?.data?.some(cert => cert.id === matchingCert.id))
+                    && item.relationships?.certificates?.data?.some(cert => cert.id === matchingCert.id)
+                    && (identifier !== process.env.IOS_BUNDLE_ID || supportsAppleSignIn(item.attributes?.profileContent)))
                   .sort((a, b) => new Date(b.attributes.createdDate) - new Date(a.attributes.createdDate))[0];
                 if (!profile) {
                   const created = await apiPost('/v1/profiles', jwt, {
@@ -235,6 +237,9 @@ jobs:
                 });
 
                   profile = created.data;
+                }
+                if (identifier === process.env.IOS_BUNDLE_ID && !supportsAppleSignIn(profile.attributes?.profileContent)) {
+                  throw new Error('App provisioning profile is missing Sign in with Apple. Enable the capability for the app identifier before releasing.');
                 }
                 profiles.push({
                   identifier,
@@ -434,7 +439,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate TestFlight distribution handling
         run: node --test scripts/distribute-testflight.test.mjs
 

@@ -1,20 +1,62 @@
+# Weekly patch and minor updates arrive as one grouped pull request per
+# ecosystem and directory; security fixes are grouped the same way. Major
+# updates open individually for review.
 version: 2
 updates:
-  - package-ecosystem: npm
-    directory: /tally-web
-    open-pull-requests-limit: 0
+  - package-ecosystem: "npm"
+    directory: "/tally-web"
     schedule:
-      interval: weekly
+      interval: "weekly"
+    open-pull-requests-limit: 5
     groups:
       security:
         applies-to: security-updates
-        patterns: ['*']
-  - package-ecosystem: github-actions
-    directory: /
-    open-pull-requests-limit: 0
+        patterns: ["*"]
+      minor-and-patch:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "swift"
+    directories:
+      - "/ios/Tuist"
+      - "/tally-ios/TallyCore"
     schedule:
-      interval: weekly
+      interval: "weekly"
+    open-pull-requests-limit: 5
     groups:
       security:
         applies-to: security-updates
-        patterns: ['*']
+        patterns: ["*"]
+      minor-and-patch:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "gradle"
+    directory: "/tally-android"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      security:
+        applies-to: security-updates
+        patterns: ["*"]
+      minor-and-patch:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      security:
+        applies-to: security-updates
+        patterns: ["*"]
+      minor-and-patch:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["minor", "patch"]

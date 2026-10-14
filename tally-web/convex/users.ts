@@ -211,6 +211,12 @@ export const deleteOwnAccountData = mutation({
       const blockedBy = await ctx.db.query("userBlocks").withIndex("by_blocked", q => q.eq("blockedUserId", userId)).collect();
       for (const record of [...reports, ...blocks, ...blockedBy]) await ctx.db.delete(record._id);
     }
+    for (const table of ["apiKeys", "entryReceipts"] as const) {
+      const records = table === "apiKeys"
+        ? await ctx.db.query("apiKeys").withIndex("by_owner", q => q.eq("userId", identity.subject)).collect()
+        : await ctx.db.query("entryReceipts").withIndex("by_owner_event", q => q.eq("userId", identity.subject)).collect();
+      for (const record of records) await ctx.db.delete(record._id);
+    }
     for (const user of users) await ctx.db.delete(user._id);
     return { success: true };
   },

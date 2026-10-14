@@ -52,6 +52,7 @@ export default function SettingsPage() {
       </Link>
 
       <h1 className="text-2xl font-semibold text-ink">Settings</h1>
+      <Link href="/app/settings/api-keys" className="text-sm underline">Manage integration API keys</Link>
 
       {/* Account section */}
       <section className="bg-surface border border-border rounded-2xl p-6">

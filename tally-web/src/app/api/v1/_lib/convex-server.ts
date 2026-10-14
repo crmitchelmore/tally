@@ -120,6 +120,7 @@ export const convexEntries = {
     (await authenticatedClient()).query(api.entries.getIncludingDeleted, { id }),
   
   create: async (args: {
+    externalEventId?: string;
     userId: string;
     challengeId: string;
     date: string;

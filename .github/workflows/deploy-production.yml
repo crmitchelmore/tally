@@ -24,7 +24,13 @@ jobs:
             mkdir -p .vercel
             printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" > .vercel/project.json
           fi
-      - run: bun install
+      - run: bun install --frozen-lockfile
+      - name: Deployment target guard tests
+        run: node ../scripts/verify-convex-target.test.cjs
+      - name: Unit and capability tests
+        run: bun run test
+      - name: Typecheck
+        run: bunx tsc --noEmit --incremental false
       - name: bun run build
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
@@ -36,6 +42,17 @@ jobs:
           NEXT_PUBLIC_POSTHOG_HOST: ${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}
           NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
         run: bun run build
+      # Additive backend goes first. Convex supplies its resolved target URL to
+      # the command; refuse to push if it differs from the matching web target.
+      - name: Deploy matching Convex backend
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+        run: bunx convex deploy --yes --cmd 'node ../scripts/verify-convex-target.cjs' --cmd-url-env-var-name TALLY_RESOLVED_CONVEX_URL
+      - name: Verify deployed backend capability before web release
+        env:
+          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+        run: node ../scripts/verify-backend-capability.cjs
       - name: Deploy (Vercel)
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -61,10 +78,6 @@ jobs:
             --build-env NEXT_PUBLIC_POSTHOG_HOST="${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}" \
             --build-env NEXT_PUBLIC_SENTRY_DSN="${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}" \
             "${SENTRY_BUILD_ARGS[@]}"
-      - name: Deploy Convex backend
-        env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
-        run: bunx convex deploy --yes
       - name: Smoke tests
         env:
           VERCEL_PROD_URL: ${{ secrets.VERCEL_PROD_URL }}

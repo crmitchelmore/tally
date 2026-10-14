@@ -43,7 +43,12 @@ export default async function middleware(req: NextRequest) {
   const clerk = clerkMiddleware(async (auth, request) => {
     const { pathname } = request.nextUrl;
 
-    if (!isPublicRoute(request)) {
+    // Only these exact method/path pairs accept scoped opaque API keys.
+    // Route handlers and Convex validate them; all other endpoints remain Clerk-only.
+    const keyRequest = request.headers.get("authorization")?.startsWith("Bearer tally_") &&
+      ((request.method === "GET" && pathname === "/api/v1/challenges") ||
+       (request.method === "POST" && pathname === "/api/v1/entries"));
+    if (!isPublicRoute(request) && !keyRequest) {
       const { userId } = await auth();
       if (!userId) {
         // API routes return 401 JSON

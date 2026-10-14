@@ -29,12 +29,16 @@ jobs:
         run: bun install
       - name: Verify shared app icons
         run: node ../scripts/verify-icons.cjs
+      - name: Unit and capability tests
+        run: bun run test
+      - name: Typecheck
+        run: bunx tsc --noEmit --incremental false
       - name: Lint
         run: bun run lint
       - name: Build
         env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_Zm9yay1jaS5jbGVyay5hY2NvdW50cy5kZXYk' }}
+          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL || 'https://fork-ci.convex.cloud' }}
           HONEYCOMB_API_KEY: ${{ secrets.HONEYCOMB_API_KEY }}
           NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
         run: bun run build

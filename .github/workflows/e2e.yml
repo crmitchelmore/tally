@@ -17,6 +17,8 @@ env:
 
 jobs:
   web-e2e:
+    # Forks have no secrets; never expose owner credentials to untrusted code.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     name: Web E2E (Playwright)
     runs-on: ubuntu-latest
     timeout-minutes: 30

@@ -587,3 +587,5 @@ Health check endpoint. No authentication required.
 ## Rate Limits, Pagination, Sorting
 
 Not currently enforced in API routes.
+
+Integration keys: see [API-key setup and retry semantics](api-keys.md).

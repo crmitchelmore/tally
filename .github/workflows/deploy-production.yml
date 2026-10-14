@@ -49,6 +49,10 @@ jobs:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
           NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
         run: bunx convex deploy --yes --cmd 'node ../scripts/verify-convex-target.cjs' --cmd-url-env-var-name TALLY_RESOLVED_CONVEX_URL
+      - name: Verify deployed backend capability before web release
+        env:
+          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+        run: node ../scripts/verify-backend-capability.cjs
       - name: Deploy (Vercel)
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}

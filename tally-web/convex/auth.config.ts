@@ -1,7 +1,9 @@
 import type { AuthConfig } from "convex/server";
 // Set CLERK_JWT_ISSUER_DOMAIN on isolated deployments only. Preserve the
 // established production issuer when no override is configured.
-const issuer = process.env.CLERK_JWT_ISSUER_DOMAIN || "https://clerk.tally-tracker.app";
+const configuredIssuer = process.env.CLERK_JWT_ISSUER_DOMAIN || "https://clerk.tally-tracker.app";
+// Clerk dashboard/older deployment configuration may use a bare hostname.
+const issuer = configuredIssuer.includes("://") ? configuredIssuer : `https://${configuredIssuer}`;
 if (!/^https:\/\/[^/]+\/?$/.test(issuer)) {
   throw new Error("CLERK_JWT_ISSUER_DOMAIN must be an HTTPS origin");
 }

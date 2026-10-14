@@ -202,7 +202,7 @@ export function validateCreateEntry(data: unknown): ValidationResult {
   }
 
   if (body.externalEventId !== undefined && (typeof body.externalEventId !== "string" || !body.externalEventId.trim() || body.externalEventId.length > 200)) errors.push({field:"externalEventId",message:"Use a stable event ID of 1–200 characters"});
-  if (body.sets !== undefined && (!Array.isArray(body.sets) || body.sets.length > 1000 || body.sets.some(s => typeof s !== "number" || !Number.isFinite(s) || s < 1 || s > 1000000))) errors.push({field:"sets",message:"Use up to 1000 positive finite sets"});
+  if (body.sets !== undefined && body.sets !== null && (!Array.isArray(body.sets) || body.sets.length > 1000 || body.sets.some(s => typeof s !== "number" || !Number.isFinite(s) || s < 1 || s > 1000000))) errors.push({field:"sets",message:"Use up to 1000 positive finite sets"});
   return { valid: errors.length === 0, errors };
 }
 

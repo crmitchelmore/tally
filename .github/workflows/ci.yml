@@ -29,6 +29,10 @@ jobs:
         run: bun install
       - name: Verify shared app icons
         run: node ../scripts/verify-icons.cjs
+      - name: Unit and capability tests
+        run: bun run test
+      - name: Typecheck
+        run: bunx tsc --noEmit --incremental false
       - name: Lint
         run: bun run lint
       - name: Build

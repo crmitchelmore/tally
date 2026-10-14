@@ -1,17 +1,10 @@
 # Integration API keys
 
-Implemented locally; deploying Next.js alone is insufficient. The existing `.github/workflows/deploy-production.yml` runs on main pushes or manual dispatch and currently deploys Vercel before Convex: review that ordering for this additive backend dependency before release. This task has not pushed, dispatched or modified that workflow. Deploy the Convex schema/functions first through the project's approved workflow, regenerate Convex types, then deploy the matching web release. Validate on an isolated development account before production. No deployment or live key issuance is implied by this document.
+The release workflow verifies unit/capability tests, TypeScript and the credential-backed web build before publishing. It then deploys the additive Convex backend **before** Vercel. Convex's resolved deployment URL must match the web configuration or the release stops before either push. If web rollout fails, retain the additive backend and restore the prior web deployment rather than deleting key/receipt tables.
 
 ## Safe release gate
 
-The production workflow currently installs dependencies, builds web, deploys **Vercel production**, deploys **Convex**, then runs homepage/health/unauthenticated-API smoke tests. It is independently triggered on main pushes; CI is not a prerequisite in that workflow. Those smoke tests do not verify API-key issuance, scopes, or idempotency. Do not merge this feature into main and assume the current ordering is safe.
-
-1. Review/approve a release-workflow change: retain the credential-backed build gate, add unit tests/typecheck, then deploy the additive Convex schema/functions **before** the matching Vercel release. Verify Convex target and `NEXT_PUBLIC_CONVEX_URL` describe the same production deployment. Do not publish the new UI first.
-2. Regenerate/review Convex types in the normal development environment and run isolated-account end-to-end issuance/read/write/replay/conflict/revoke checks before production approval. Check concurrent identical events create one entry, invalid/scope/cross-owner requests fail, and revoked keys cannot replay.
-3. Release the approved commit through the corrected workflow and verify production capability checks on an owner-controlled test challenge. Old web remains compatible with the additive backend; if web rollout fails, keep that backend and restore the prior web release rather than deleting key/receipt tables.
-4. Only after release, the signed-in owner generates the integration key in Settings with the two required scopes, stores it directly in a secret manager, and selects the intended challenge ID. Local generation alone is not a live owned key; never paste the secret into chat.
-
-Local verification on 2026-10-14: installed `tsc --noEmit --incremental false` passed; installed Vitest passed 109 tests across 12 files; installed `next build` passed with synthetic public Clerk/Convex configuration and no live credentials. Bun was unavailable in the local shell, so installed binaries were invoked directly. A build with all public config empty failed as expected at the existing Convex configuration guard. The installed OTel logger processor takes the exporter directly; its constructor call was minimally corrected. Existing dependency/deprecation/image lint warnings remain nonfatal. None of these checks prove a deployment or live credential issuance.
+Run isolated-account issuance/read/write/replay/conflict/revoke checks before production. Synthetic Convex tests cover concurrent identical events, scopes, cross-owner isolation, revocation, digest uniqueness, key rotation and receipt durability; they are not proof of live owner sign-in. Native-shaped session requests with null sets remain supported. Real key issuance requires the authenticated owner after release, and no real mobility writes occur until the owner selects a challenge. No historical backfill.
 
 ## Owner setup
 

@@ -1,6 +1,22 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* Tailwind 4 only reads a JS config when a stylesheet asks for it. Keep the
+   existing theme (design-token colours, the soft shadow, the Inter stack, the
+   stroke-draw keyframes) and the class-based dark variant exactly as they are. */
+@config "../../tailwind.config.js";
+
+/* Tailwind 4 changed the preflight default border colour from gray-200 to
+   currentColor. Restore the 3.x default so an element with a border width and
+   no explicit border colour keeps rendering as before. */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
 
 /* Design tokens as CSS custom properties */
 :root {

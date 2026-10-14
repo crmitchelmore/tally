@@ -64,7 +64,7 @@ export function ExportData() {
             text-sm font-medium text-ink
             hover:bg-border/50 transition-colors
             disabled:opacity-50 disabled:cursor-not-allowed
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+            focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
           "
         >
           {exporting === "json" ? (
@@ -84,7 +84,7 @@ export function ExportData() {
             text-sm font-medium text-ink
             hover:bg-border/50 transition-colors
             disabled:opacity-50 disabled:cursor-not-allowed
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+            focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
           "
         >
           {exporting === "csv" ? (

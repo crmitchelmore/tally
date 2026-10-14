@@ -32,7 +32,7 @@ export function AppNav() {
             href={item.href}
             className={`
               px-4 py-2 rounded-lg text-sm font-medium transition-colors
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
+              focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
               ${isActive 
                 ? "bg-accent/10 text-ink" 
                 : "text-muted hover:text-ink hover:bg-ink/5"

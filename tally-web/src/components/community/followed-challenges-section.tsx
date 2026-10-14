@@ -207,7 +207,7 @@ function FollowedChallengeCard({
             text-muted hover:text-ink hover:bg-border/50
             opacity-0 group-hover:opacity-100 focus:opacity-100
             transition-all
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+            focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
             disabled:opacity-50 disabled:cursor-not-allowed
           "
         >

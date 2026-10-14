@@ -25,7 +25,7 @@ export function UserMenu({ user, className = "" }: UserMenuProps) {
         className={`
           px-4 py-2 rounded-full bg-accent text-white text-sm font-semibold
           hover:bg-accent/90 transition-colors
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
+          focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
           ${className}
         `}
       >
@@ -52,7 +52,7 @@ export function UserMenu({ user, className = "" }: UserMenuProps) {
           w-9 h-9 rounded-full bg-ink/10 dark:bg-paper/10
           flex items-center justify-center text-sm font-medium
           hover:bg-ink/20 dark:hover:bg-paper/20 transition-colors
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
+          focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
         "
         aria-label={`Signed in as ${user.name}. Click to open settings.`}
       >

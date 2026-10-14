@@ -178,7 +178,7 @@ export function EditEntryDialog({
       className="
         fixed inset-0 z-[1400] m-auto
         w-full max-w-md p-0
-        bg-transparent backdrop:bg-ink/40 backdrop:backdrop-blur-sm
+        bg-transparent backdrop:bg-ink/40 backdrop:backdrop-blur-xs
         open:animate-dialog-in
       "
     >
@@ -192,7 +192,7 @@ export function EditEntryDialog({
             className="
               w-8 h-8 rounded-full flex items-center justify-center
               text-muted hover:text-ink hover:bg-border/50
-              transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+              transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
             "
             aria-label="Close"
           >
@@ -233,7 +233,7 @@ export function EditEntryDialog({
                         min={0} 
                         value={setVal}
                         onChange={(e) => updateSet(idx, e.target.value)}
-                        className="w-16 h-12 text-center text-2xl font-semibold tabular-nums bg-surface border-2 border-border rounded-lg focus:border-accent text-ink outline-none" />
+                        className="w-16 h-12 text-center text-2xl font-semibold tabular-nums bg-surface border-2 border-border rounded-lg focus:border-accent text-ink outline-hidden" />
                       {/* Increment buttons */}
                       <button type="button" onClick={() => incrementSet(idx, 1)}
                         className="w-10 h-10 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 text-sm font-medium transition-colors">+1</button>
@@ -267,7 +267,7 @@ export function EditEntryDialog({
                   className="
                     w-12 h-12 rounded-full border border-border
                     text-muted hover:text-ink hover:bg-border/50
-                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                    transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
                     text-lg font-medium
                   "
                 >
@@ -279,7 +279,7 @@ export function EditEntryDialog({
                   className="
                     w-10 h-10 rounded-full border border-border
                     text-muted hover:text-ink hover:bg-border/50
-                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                    transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
                     text-lg
                   "
                 >
@@ -295,7 +295,7 @@ export function EditEntryDialog({
                   className="
                     w-24 h-16 text-center text-4xl font-semibold tabular-nums
                     bg-transparent border-b-2 border-border focus:border-accent
-                    text-ink outline-none
+                    text-ink outline-hidden
                   "
                 />
                 <button
@@ -304,7 +304,7 @@ export function EditEntryDialog({
                   className="
                     w-10 h-10 rounded-full border border-border
                     text-muted hover:text-ink hover:bg-border/50
-                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                    transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
                     text-lg
                   "
                 >
@@ -316,7 +316,7 @@ export function EditEntryDialog({
                   className="
                     w-12 h-12 rounded-full border border-border
                     text-muted hover:text-ink hover:bg-border/50
-                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                    transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
                     text-lg font-medium
                   "
                 >
@@ -344,7 +344,7 @@ export function EditEntryDialog({
                 w-full px-4 py-3 rounded-xl border
                 ${isFutureDate ? "border-error" : "border-border"}
                 bg-paper text-ink
-                focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
+                focus:outline-hidden focus:ring-2 focus:ring-accent focus:border-transparent
               `}
             />
             {isFutureDate && (
@@ -365,7 +365,7 @@ export function EditEntryDialog({
                   onClick={() => setFeeling(feeling === f.value ? undefined : f.value)}
                   className={`
                     flex-1 py-3 rounded-xl border text-center
-                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                    transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
                     ${
                       feeling === f.value
                         ? "border-accent bg-accent/10 text-ink"
@@ -395,7 +395,7 @@ export function EditEntryDialog({
               className="
                 w-full px-4 py-3 rounded-xl border border-border
                 bg-paper text-ink placeholder:text-muted/50
-                focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
+                focus:outline-hidden focus:ring-2 focus:ring-accent focus:border-transparent
                 resize-none
               "
             />
@@ -437,7 +437,7 @@ export function EditEntryDialog({
                     className="
                       px-4 py-3 rounded-xl border border-error/30 text-error font-medium
                       hover:bg-error/10 transition-colors
-                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error
+                      focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-error
                     "
                   >
                     Delete
@@ -453,7 +453,7 @@ export function EditEntryDialog({
                   flex-1 py-3 rounded-xl font-semibold
                   bg-accent text-white hover:bg-accent/90
                   disabled:opacity-50 disabled:cursor-not-allowed
-                  transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
+                  transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
                 "
               >
                 {isSubmitting ? "Saving..." : "Save Changes"}

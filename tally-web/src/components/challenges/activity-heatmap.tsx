@@ -193,7 +193,7 @@ export function ActivityHeatmap({
                     disabled={!isClickable}
                     onClick={() => isClickable && onDayClick(day.date, day.count)}
                     className={`
-                      ${isCompact ? "w-[10px] h-[10px]" : "w-[12px] h-[12px]"} rounded-sm
+                      ${isCompact ? "w-[10px] h-[10px]" : "w-[12px] h-[12px]"} rounded-xs
                       transition-transform
                       ${isClickable ? "hover:scale-125 cursor-pointer" : "cursor-default"}
                       ${day.isToday ? "ring-1 ring-accent ring-offset-1" : ""}
@@ -226,7 +226,7 @@ export function ActivityHeatmap({
             {[0, 1, 2, 3, 4].map((level) => (
               <div
                 key={level}
-                className="w-[12px] h-[12px] rounded-sm"
+                className="w-[12px] h-[12px] rounded-xs"
                 style={{
                   backgroundColor:
                     level === 0

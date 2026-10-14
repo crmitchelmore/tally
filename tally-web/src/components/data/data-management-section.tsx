@@ -44,7 +44,7 @@ export function DataManagementSection({ onDataChange }: DataManagementSectionPro
           px-4 py-2 rounded-xl border border-border
           text-sm font-medium text-ink
           hover:bg-border/50 transition-colors
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+          focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
         "
       >
         Manage Data
@@ -58,7 +58,7 @@ export function DataManagementSection({ onDataChange }: DataManagementSectionPro
         className="
           fixed inset-0 z-[1300] m-auto p-0
           w-full max-w-lg max-h-[90vh]
-          bg-transparent backdrop:bg-ink/40 backdrop:backdrop-blur-sm
+          bg-transparent backdrop:bg-ink/40 backdrop:backdrop-blur-xs
           open:animate-dialog-in
         "
       >
@@ -72,7 +72,7 @@ export function DataManagementSection({ onDataChange }: DataManagementSectionPro
               className="
                 w-8 h-8 rounded-full flex items-center justify-center
                 text-muted hover:text-ink hover:bg-border/50
-                transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent
               "
               aria-label="Close"
             >

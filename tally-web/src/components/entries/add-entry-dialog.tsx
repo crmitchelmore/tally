@@ -169,7 +169,7 @@ export function AddEntryDialog({
       className="
         fixed inset-0 z-[1400] m-auto
         w-full max-w-md p-0
-        bg-transparent backdrop:bg-ink/40 backdrop:backdrop-blur-sm
+        bg-transparent backdrop:bg-ink/40 backdrop:backdrop-blur-xs
         open:animate-dialog-in
       "
     >
@@ -223,7 +223,7 @@ export function AddEntryDialog({
                         min={0} 
                         value={setVal}
                         onChange={(e) => updateSet(idx, e.target.value)}
-                        className="w-16 h-12 text-center text-2xl font-semibold tabular-nums bg-surface border-2 border-border rounded-lg focus:border-accent text-ink outline-none" />
+                        className="w-16 h-12 text-center text-2xl font-semibold tabular-nums bg-surface border-2 border-border rounded-lg focus:border-accent text-ink outline-hidden" />
                       {/* Increment buttons */}
                       <button type="button" onClick={() => incrementSet(idx, 1)}
                         className="w-10 h-10 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 text-sm font-medium transition-colors">+1</button>
@@ -273,7 +273,7 @@ export function AddEntryDialog({
                 max={99999}
                 value={countStr}
                 onChange={(e) => setCountStr(e.target.value)}
-                className="w-32 h-16 text-center text-5xl font-bold tabular-nums bg-surface border-2 border-border rounded-xl focus:border-accent text-ink outline-none"
+                className="w-32 h-16 text-center text-5xl font-bold tabular-nums bg-surface border-2 border-border rounded-xl focus:border-accent text-ink outline-hidden"
               />
               {/* Increment row */}
               <div className="flex items-center justify-center gap-2 mt-3">
@@ -308,7 +308,7 @@ export function AddEntryDialog({
               onChange={(e) => setDate(e.target.value)}
               className={`flex-1 px-3 py-2 rounded-lg border text-sm
                 ${isFutureDate ? "border-error" : "border-border"}
-                bg-paper text-ink focus:outline-none focus:ring-2 focus:ring-accent`}
+                bg-paper text-ink focus:outline-hidden focus:ring-2 focus:ring-accent`}
             />
           </div>
           {isFutureDate && <p className="text-xs text-error">Future dates are not allowed</p>}
@@ -360,7 +360,7 @@ export function AddEntryDialog({
                   maxLength={500}
                   rows={2}
                   placeholder="Any thoughts..."
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-paper text-ink placeholder:text-muted/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-paper text-ink placeholder:text-muted/50 text-sm focus:outline-hidden focus:ring-2 focus:ring-accent resize-none"
                 />
               </div>
             </div>

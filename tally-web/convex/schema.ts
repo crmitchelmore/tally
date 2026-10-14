@@ -11,6 +11,8 @@ import { v } from "convex/values";
  */
 
 export default defineSchema({
+  apiKeys: defineTable({userId:v.string(), name:v.string(), digest:v.string(), prefix:v.string(), scopes:v.array(v.union(v.literal("challenges:read"),v.literal("entries:write"))), createdAt:v.number(), revokedAt:v.optional(v.number())}).index("by_owner",["userId"]).index("by_digest",["digest"]),
+  entryReceipts: defineTable({userId:v.string(), externalEventId:v.string(), payload:v.string(), entryId:v.id("entries"), response:v.string()}).index("by_owner_event",["userId","externalEventId"]),
   moderationReports: defineTable({
     reporterId: v.string(),
     challengeId: v.id("challenges"),

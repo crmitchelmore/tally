@@ -164,7 +164,13 @@ export function validateCreateEntry(data: unknown): ValidationResult {
     errors.push({ field: "date", message: "Valid date is required (YYYY-MM-DD)" });
   } else {
     // Check if date is in the future
-    const today = new Date().toISOString().split("T")[0];
+    let today = new Date().toISOString().split("T")[0];
+    if (body.timeZone !== undefined) {
+      try {
+        if (typeof body.timeZone !== "string") throw new Error("Invalid timezone");
+        today = new Intl.DateTimeFormat("en-CA", {timeZone:body.timeZone,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+      } catch { errors.push({field:"timeZone",message:"Valid IANA timeZone required"}); }
+    }
     if ((body.date as string) > today) {
       errors.push({ field: "date", message: "Cannot log entries for future dates" });
     }
@@ -173,7 +179,7 @@ export function validateCreateEntry(data: unknown): ValidationResult {
   // count
   if (body.count === undefined || body.count === null) {
     errors.push({ field: "count", message: "Count is required" });
-  } else if (typeof body.count !== "number" || body.count < 1) {
+  } else if (typeof body.count !== "number" || !Number.isFinite(body.count) || body.count < 1) {
     errors.push({ field: "count", message: "Count must be a positive number" });
   } else if (body.count > 1000000) {
     errors.push({ field: "count", message: "Count is too large" });
@@ -195,6 +201,8 @@ export function validateCreateEntry(data: unknown): ValidationResult {
     });
   }
 
+  if (body.externalEventId !== undefined && (typeof body.externalEventId !== "string" || !body.externalEventId.trim() || body.externalEventId.length > 200)) errors.push({field:"externalEventId",message:"Use a stable event ID of 1–200 characters"});
+  if (body.sets !== undefined && (!Array.isArray(body.sets) || body.sets.length > 1000 || body.sets.some(s => typeof s !== "number" || !Number.isFinite(s) || s < 1 || s > 1000000))) errors.push({field:"sets",message:"Use up to 1000 positive finite sets"});
   return { valid: errors.length === 0, errors };
 }
 
@@ -306,5 +314,5 @@ function isValidDate(dateStr: string): boolean {
   const regex = /^\d{4}-\d{2}-\d{2}$/;
   if (!regex.test(dateStr)) return false;
   const date = new Date(dateStr);
-  return !isNaN(date.getTime());
+  return !isNaN(date.getTime()) && date.toISOString().slice(0, 10) === dateStr;
 }

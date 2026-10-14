@@ -9,7 +9,7 @@ function isNotDeleted<T extends { deletedAt?: number }>(doc: T): boolean {
 }
 
 // Helper to convert Convex doc to API format
-function toApiFormat(challenge: Doc<"challenges">) {
+export function toApiFormat(challenge: Doc<"challenges">) {
   return {
     id: challenge._id,
     userId: challenge.userId,

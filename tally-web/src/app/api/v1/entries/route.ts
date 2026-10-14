@@ -26,6 +26,9 @@ import {
   generateRequestId,
 } from "@/lib/telemetry";
 
+import { apiKeyDigest, capabilityClient, capabilityError } from "../_lib/api-key";
+import { api } from "../../../../../convex/_generated/api";
+
 export async function GET(request: NextRequest) {
   const requestId = generateRequestId();
 
@@ -82,6 +85,20 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const digest = apiKeyDigest(request);
+  if (digest !== null) {
+    try {
+      let body;
+      try { body = await request.json(); } catch { return jsonBadRequest("Invalid JSON body"); }
+      const validation = validateCreateEntry(body);
+      if (!validation.valid) return jsonBadRequest("Validation failed",validation.errors);
+      if (typeof body.externalEventId !== "string" || !body.externalEventId.trim() || body.externalEventId.length > 200) return jsonBadRequest("A stable externalEventId (1–200 characters) is required for API-key writes");
+      const result = await capabilityClient().mutation(api.apiKeys.createEntry,{digest,entry:{challengeId:body.challengeId,date:body.date,count:body.count,note:body.note,feeling:body.feeling,sets:body.sets?.length ? body.sets : undefined,externalEventId:body.externalEventId,timeZone:body.timeZone}});
+      const response = jsonOk(result,result.replayed ? 200 : 201);
+      response.headers.set("Cache-Control", "no-store");
+      return response;
+    } catch (error) { return capabilityError(error); }
+  }
   const requestId = generateRequestId();
 
   return withSpan("entries.create", { request_id: requestId }, async (span) => {
@@ -95,7 +112,8 @@ export async function POST(request: NextRequest) {
       const userId = user?.id || authResult.userId;
       span.setAttribute("user.id", userId);
 
-      const body = await request.json();
+      let body;
+      try { body = await request.json(); } catch { return jsonBadRequest("Invalid JSON body"); }
       const validation = validateCreateEntry(body);
 
       if (!validation.valid) {
@@ -118,6 +136,7 @@ export async function POST(request: NextRequest) {
         note: body.note,
         feeling: body.feeling,
         sets: body.sets?.length ? body.sets : undefined,
+        externalEventId: body.externalEventId,
       });
 
       span.setAttribute("entry.id", entry.id);
@@ -139,6 +158,7 @@ export async function POST(request: NextRequest) {
 
       return jsonCreated({ entry });
     } catch (error) {
+      if (error instanceof Error && error.message.includes("EVENT_CONFLICT")) return jsonOk({error:"EVENT_CONFLICT"},409);
       console.error("Error in POST /api/v1/entries:", error);
       return jsonInternalError("Internal server error", error);
     }

@@ -1,6 +1,6 @@
 import { requireOwner, requireChallengeOwner, requireEntryOwner } from "./access";
-import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { v, ConvexError } from "convex/values";
+import { mutation, query, type MutationCtx } from "./_generated/server";
 import { Doc } from "./_generated/dataModel";
 
 // Helper to check if a record is not soft-deleted
@@ -9,7 +9,7 @@ function isNotDeleted<T extends { deletedAt?: number }>(doc: T): boolean {
 }
 
 // Helper to convert Convex doc to API format
-function toApiFormat(entry: Doc<"entries">) {
+export function toApiFormat(entry: Doc<"entries">) {
   return {
     id: entry._id,
     userId: entry.userId,
@@ -98,6 +98,7 @@ export const getIncludingDeleted = query({
  */
 export const create = mutation({
   args: {
+    externalEventId: v.optional(v.string()),
     userId: v.string(),
     challengeId: v.string(),
     date: v.string(),
@@ -112,24 +113,11 @@ export const create = mutation({
     )),
   },
   handler: async (ctx, args) => {
-    await requireOwner(ctx, args.userId);
+    const subject = await requireOwner(ctx, args.userId);
     const parent = await requireChallengeOwner(ctx, args.challengeId);
     if (parent.deletedAt !== undefined) throw new Error("Challenge not found");
-    const now = Date.now();
-    const entryId = await ctx.db.insert("entries", {
-      userId: args.userId,
-      challengeId: args.challengeId,
-      date: args.date,
-      count: args.count,
-      sets: args.sets,
-      note: args.note,
-      feeling: args.feeling,
-      createdAt: now,
-      updatedAt: now,
-    });
-    const entry = await ctx.db.get(entryId);
-    if (!entry) throw new Error("Failed to create entry");
-    return toApiFormat(entry);
+    const { userId, ...entry } = args;
+    return (await insertEntry(ctx, userId, entry, subject)).entry;
   },
 });
 
@@ -211,3 +199,24 @@ export const restore = mutation({
     return toApiFormat(restored);
   },
 });
+
+// Read receipt, insert entry and write receipt in one serializable mutation.
+export async function insertEntry(ctx: MutationCtx, userId: string, data: {challengeId:string; date:string; count:number; sets?:number[]; note?:string; feeling?:"great"|"good"|"okay"|"tough"; externalEventId?:string; timeZone?:string}, receiptOwner: string) {
+  const { externalEventId, timeZone: _timeZone, ...fields } = data;
+  if (externalEventId !== undefined && (!externalEventId.trim() || externalEventId.length > 200)) throw new ConvexError({code:"INVALID_INPUT"});
+  const payload = JSON.stringify([fields.challengeId, fields.date, fields.count, fields.note ?? null, fields.feeling ?? null, fields.sets?.length ? fields.sets : null]);
+  if (externalEventId) {
+    const receipt = await ctx.db.query("entryReceipts").withIndex("by_owner_event", q => q.eq("userId", receiptOwner).eq("externalEventId", externalEventId)).unique();
+    if (receipt) {
+      if (receipt.payload !== payload) throw new ConvexError({code:"EVENT_CONFLICT"});
+      return {entry:JSON.parse(receipt.response) as ReturnType<typeof toApiFormat>, replayed:true};
+    }
+  }
+  const now = Date.now();
+  const entryId = await ctx.db.insert("entries", {...fields, userId, createdAt:now, updatedAt:now});
+  const doc = await ctx.db.get(entryId);
+  if (!doc) throw new Error("Failed to create entry");
+  const entry = toApiFormat(doc);
+  if (externalEventId) await ctx.db.insert("entryReceipts", {userId:receiptOwner, externalEventId, payload, entryId, response:JSON.stringify(entry)});
+  return {entry, replayed:false};
+}

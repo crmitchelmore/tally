@@ -95,7 +95,7 @@ export async function register() {
     // Set up LoggerProvider with processors passed via constructor (new API)
     const loggerProvider = new LoggerProvider({
       resource,
-      processors: [new SimpleLogRecordProcessor({ exporter: logExporter })],
+      processors: [new SimpleLogRecordProcessor(logExporter)],
     });
     logs.setGlobalLoggerProvider(loggerProvider);
 

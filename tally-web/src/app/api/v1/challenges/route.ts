@@ -24,9 +24,21 @@ import {
   withSpan,
   generateRequestId,
 } from "@/lib/telemetry";
+import { apiKeyDigest, capabilityClient, capabilityError } from "../_lib/api-key";
+import { api } from "../../../../../convex/_generated/api";
+import { calculateStatsFromEntries } from "../_lib/store";
 import * as Sentry from "@sentry/nextjs";
 
 export async function GET(request: NextRequest) {
+  const digest = apiKeyDigest(request);
+  if (digest !== null) {
+    try {
+      const result = await capabilityClient().query(api.apiKeys.challenges,{digest,includeArchived:new URL(request.url).searchParams.get("includeArchived") === "true"});
+      const response = jsonOk({challenges:result.map(({challenge,entries}) => ({challenge,stats:calculateStatsFromEntries(challenge,entries)}))});
+      response.headers.set("Cache-Control", "no-store");
+      return response;
+    } catch (error) { return capabilityError(error); }
+  }
   const requestId = generateRequestId();
 
   return withSpan("challenges.list", { request_id: requestId }, async (span) => {

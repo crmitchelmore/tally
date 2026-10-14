@@ -130,7 +130,7 @@ export async function getEntryById(id: string): Promise<Entry | undefined> {
 
 export async function createEntry(
   userId: string,
-  data: Omit<Entry, "id" | "userId" | "createdAt" | "updatedAt">
+  data: Omit<Entry, "id" | "userId" | "createdAt" | "updatedAt"> & {externalEventId?: string}
 ): Promise<Entry> {
   return await convexEntries.create({
     userId,
@@ -188,6 +188,10 @@ export async function getPublicChallenges(): Promise<Challenge[]> {
 // Stats calculation (updated to async for Convex)
 export async function calculateChallengeStats(challenge: Challenge): Promise<ChallengeStats> {
   const challengeEntries = await getEntriesByChallenge(challenge.id);
+  return calculateStatsFromEntries(challenge, challengeEntries);
+}
+
+export function calculateStatsFromEntries(challenge: Challenge, challengeEntries: Entry[]): ChallengeStats {
   const totalCount = challengeEntries.reduce((sum, e) => sum + e.count, 0);
 
   const startDate = new Date(challenge.startDate);

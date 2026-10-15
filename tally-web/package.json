@@ -48,7 +48,7 @@
     "autoprefixer": "^10.4.23",
     "convex-test": "0.0.56",
     "debug-bridge-browser": "^0.2.0",
-    "eslint": "9",
+    "eslint": "10",
     "eslint-config-next": "^15.5.9",
     "postcss": "^8.5.23",
     "tailwindcss": "4",

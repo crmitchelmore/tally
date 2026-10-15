@@ -1,0 +1,37 @@
+/* A real gain-map image, not an SDR glow/filter. Keep the ink underneath:
+   unsupported decoders and failed image requests still have readable text. */
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  @media screen and (dynamic-range: high) and (forced-colors: none) {
+    .dark .landing-header .hdr-title-accent {
+      background-color: var(--color-ink);
+      background-image: url("/hdr/white-1.5x.jpg");
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+}
+
+/* Selection, paper and accessibility modes never depend on an HDR decoder.
+   This accent is static, including reduced motion. */
+.landing-header .hdr-title-accent::selection {
+  background: Highlight;
+  color: HighlightText;
+  -webkit-text-fill-color: HighlightText;
+}
+
+@media print, (forced-colors: active) {
+  .dark .landing-header .hdr-title-accent {
+    background: none;
+    color: var(--color-ink);
+    -webkit-text-fill-color: currentColor;
+  }
+}
+
+@media (forced-colors: active) {
+  .dark .landing-header .hdr-title-accent {
+    color: CanvasText;
+  }
+}

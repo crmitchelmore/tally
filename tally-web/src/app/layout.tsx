@@ -6,6 +6,7 @@ import { ConvexClientProvider } from "@/lib/convex";
 import { DebugBridgeInit } from "@/components/DebugBridgeInit";
 import "./globals.css";
 import "./refresh.css";
+import "./hdr-title.css";
 
 const inter = Inter({
   variable: "--font-inter",

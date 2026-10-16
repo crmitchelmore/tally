@@ -8,7 +8,7 @@ export default function Home() {
       <a className="skip-link" href="#main-content">Skip to content</a>
       <header className="landing-header">
         <Link href="/" className="tally-wordmark" aria-label="Tally home">
-          <TallyMark count={5} size="sm" /><span>tally</span>
+          <TallyMark count={5} size="sm" /><span className="hdr-title-accent">tally</span>
         </Link>
         <nav aria-label="Website navigation">
           <a href="#how-it-works" className="landing-nav-link">How it works</a>

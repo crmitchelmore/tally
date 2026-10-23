@@ -64,6 +64,6 @@ dependencies {
 
 configurations.all {
     resolutionStrategy {
-        force("androidx.browser:browser:1.8.0")
+        force("androidx.browser:browser:1.10.0")
     }
 }

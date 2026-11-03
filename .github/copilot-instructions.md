@@ -118,6 +118,10 @@ After data mutations, ALL related UI must update:
 - `ChallengesManager.createEntry()` / `updateEntry()` / `deleteEntry()` auto-refresh stats
 - Dashboard stats refresh happens in `refreshChallengeStats()`
 
+## PostHog MCP and Maintenance
+
+The PostHog MCP server (`https://mcp.posthog.com/mcp`) is configured read-only in `.mcp.json` (Claude Code) and `.vscode/mcp.json` (VS Code). For maintenance or after a release, follow `.github/skills/posthog-maintenance.md`: review new and top errors since the last release, check feature-flag hygiene, and sanity-check key event trends. Auth, region and cost notes are in `docs/posthog-mcp.md`. Never commit PostHog keys.
+
 ## Available .env secrets
 
 CLERK_SECRET_KEY

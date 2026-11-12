@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { releaseToAppStore, loadScreenshots } from './app-store-release.mjs';
 
-function fakeApi({ versions = [{ id: 'v1', attributes: { versionString: '1.9.0', appVersionState: 'PREPARE_FOR_SUBMISSION' } }], builds = [{ id: 'b2', attributes: { version: '200' } }, { id: 'b1', attributes: { version: '100' } }], active = [], openSubmission } = {}) {
+function fakeApi({ versions = [{ id: 'v1', attributes: { versionString: '1.9.0', appVersionState: 'PREPARE_FOR_SUBMISSION' } }], builds = [{ id: 'b2', attributes: { version: '200' } }, { id: 'b1', attributes: { version: '100' } }], active = [], openSubmission, items = [] } = {}) {
   const calls = [];
   const record = (method, target, body) => { calls.push({ method, path: new URL(target, 'https://x').pathname, body }); };
   const api = {
@@ -14,7 +14,11 @@ function fakeApi({ versions = [{ id: 'v1', attributes: { versionString: '1.9.0',
     async get(target) {
       record('GET', target);
       const { pathname, searchParams } = new URL(target, 'https://x');
-      if (pathname === '/v1/builds') return { data: builds };
+      if (pathname === '/v1/builds') {
+        const exact = searchParams.get('filter[version]');
+        api.buildFilter = exact;
+        return { data: exact ? builds.filter(b => b.attributes.version === exact) : builds };
+      }
       if (pathname.endsWith('/appStoreVersions')) return { data: versions };
       if (pathname === '/v1/reviewSubmissions') {
         return { data: searchParams.get('filter[state]').includes('IN_REVIEW') ? active : (openSubmission ? [openSubmission] : []) };
@@ -23,7 +27,7 @@ function fakeApi({ versions = [{ id: 'v1', attributes: { versionString: '1.9.0',
       if (pathname.endsWith('/appScreenshotSets')) return { data: [{ id: 'set', attributes: { screenshotDisplayType: 'APP_IPHONE_67' } }] };
       if (pathname.endsWith('/appScreenshots')) return { data: [{ id: 'old-shot' }] };
       if (pathname.startsWith('/v1/appScreenshots/')) return { data: { attributes: { assetDeliveryState: { state: 'COMPLETE' } } } };
-      if (pathname.endsWith('/items')) return { data: [] };
+      if (pathname.endsWith('/items')) return { data: items };
       throw new Error(`unexpected GET ${pathname}`);
     },
     async post(target, body) {
@@ -119,4 +123,22 @@ test('screenshots replace the old set and are committed with a checksum', async 
   assert.deepEqual(order.map(m => mutations.indexOf(m)).every((i, n, all) => i >= 0 && (n === 0 || i > all[n - 1])), true);
   const commit = api.calls.find(c => c.path === '/v1/appScreenshots/new-shot' && c.method === 'PATCH');
   assert.equal(commit.body.data.attributes.sourceFileChecksum, '900150983cd24fb0d6963f7d28e17f72');
+});
+
+test('a rejected item is marked resolved before resubmitting', async () => {
+  const api = fakeApi({
+    openSubmission: { id: 'rejected' },
+    items: [{ id: 'item', attributes: { state: 'REJECTED' }, relationships: { appStoreVersion: { data: { id: 'v1' } } } }],
+  });
+  await run(api);
+  const mutations = api.mutations();
+  assert.ok(!mutations.includes('POST /v1/reviewSubmissionItems'));
+  assert.ok(mutations.indexOf('PATCH /v1/reviewSubmissionItems/item') < mutations.indexOf('PATCH /v1/reviewSubmissions/rejected'));
+  assert.equal(api.calls.find(c => c.path === '/v1/reviewSubmissionItems/item').body.data.attributes.resolved, true);
+});
+
+test('an exact build number is looked up server-side', async () => {
+  const api = fakeApi();
+  await run(api, { buildNumber: '100' });
+  assert.equal(api.buildFilter, '100');
 });

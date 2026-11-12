@@ -55,6 +55,8 @@ export async function findBuild(api, { appId, version, buildNumber }) {
     'filter[app]': appId, 'filter[preReleaseVersion.version]': version,
     'filter[processingState]': 'VALID', sort: '-uploadedDate', limit: '50',
   });
+  // filter[version] is the build number (CFBundleVersion), so an exact build is found server-side.
+  if (buildNumber) query.set('filter[version]', buildNumber);
   const builds = (await api.get(`/v1/builds?${query}`)).data;
   const build = buildNumber ? builds.find(b => (b.attributes.version ?? b.attributes.buildNumber) === buildNumber) : builds[0];
   if (!build) throw new Error(`No processed build ${buildNumber ?? '(latest)'} found for version ${version}`);
@@ -147,7 +149,11 @@ async function submitForReview(api, { appId, appStoreVersion, log }) {
     } })).data;
   }
   const items = (await api.get(`/v1/reviewSubmissions/${submission.id}/items?include=appStoreVersion&limit=50`)).data;
-  if (!items.some(item => item.relationships?.appStoreVersion?.data?.id === appStoreVersion.id)) {
+  const existing = items.find(item => item.relationships?.appStoreVersion?.data?.id === appStoreVersion.id);
+  if (existing?.attributes?.state === 'REJECTED') {
+    // A rejected item must be marked resolved before the submission can be resubmitted.
+    await api.patch(`/v1/reviewSubmissionItems/${existing.id}`, { data: { type: 'reviewSubmissionItems', id: existing.id, attributes: { resolved: true } } });
+  } else if (!existing) {
     await api.post('/v1/reviewSubmissionItems', { data: { type: 'reviewSubmissionItems', relationships: {
       reviewSubmission: { data: { type: 'reviewSubmissions', id: submission.id } },
       appStoreVersion: { data: { type: 'appStoreVersions', id: appStoreVersion.id } },

@@ -147,8 +147,8 @@ test('screenshots go through the asset library and replace every stale iPhone pl
   ] });
   await run(api, { screenshots });
   const mutations = api.mutations();
-  const order = ['POST /v1/appAssetLibraryImages', 'PUT /', 'PATCH /v1/appAssetLibraryImages/img', 'DELETE /v1/appAssetLibraryPlacements/old-large',
-    'POST /v1/appAssetLibraryPlacements', 'POST /v1/appAssetLibraryPlacementOrderingRequests', 'POST /v1/reviewSubmissions'];
+  const order = ['POST /v1/appAssetLibraryImages', 'PUT /', 'PATCH /v1/appAssetLibraryImages/img', 'POST /v1/appAssetLibraryPlacements',
+    'DELETE /v1/appAssetLibraryPlacements/old-large', 'POST /v1/appAssetLibraryPlacementOrderingRequests', 'POST /v1/reviewSubmissions'];
   assert.deepEqual(order.map(m => mutations.indexOf(m)).every((i, n, all) => i >= 0 && (n === 0 || i > all[n - 1])), true);
   assert.ok(mutations.includes('DELETE /v1/appAssetLibraryPlacements/old-small'));
   assert.ok(!mutations.includes('DELETE /v1/appAssetLibraryPlacements/ipad'));

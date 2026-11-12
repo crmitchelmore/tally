@@ -140,10 +140,6 @@ async function uploadScreenshots(api, { appId, screenshots, log, sleep }) {
 async function placeScreenshots(api, { localization, uploads, familyOfGroup, log }) {
   const families = new Set(uploads.map(u => u.family));
   const existing = await listAll(api, `/v1/appStoreVersionLocalizations/${localization.id}/placements?filter[placementType]=APP_SCREENSHOT&limit=200`);
-  // Clear every iPhone/iPad size, so smaller displays scale from the fresh captures instead of keeping stale ones.
-  for (const old of existing.filter(p => families.has(familyOfGroup.get(p.attributes.placementGroup)))) {
-    await api.delete(`/v1/appAssetLibraryPlacements/${old.id}`);
-  }
   const byGroup = new Map();
   for (const upload of uploads) {
     const placement = (await api.post('/v1/appAssetLibraryPlacements', { data: {
@@ -155,6 +151,11 @@ async function placeScreenshots(api, { localization, uploads, familyOfGroup, log
       },
     } })).data;
     byGroup.set(upload.group, [...(byGroup.get(upload.group) ?? []), placement.id]);
+  }
+  // Remove old placements only once the new ones exist, so a failure never empties the listing.
+  // Every iPhone/iPad size is cleared so smaller displays scale from the fresh captures.
+  for (const old of existing.filter(p => families.has(familyOfGroup.get(p.attributes.placementGroup)))) {
+    await api.delete(`/v1/appAssetLibraryPlacements/${old.id}`);
   }
   for (const [group, ids] of byGroup) {
     await api.post('/v1/appAssetLibraryPlacementOrderingRequests', { data: {

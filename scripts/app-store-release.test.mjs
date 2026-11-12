@@ -175,6 +175,15 @@ test('a rejected item is marked resolved before resubmitting', async () => {
   assert.equal(api.calls.find(c => c.path === '/v1/reviewSubmissionItems/item').body.data.attributes.resolved, true);
 });
 
+test('a submission with unresolved issues for other items stops before any change', async () => {
+  const api = fakeApi({
+    openSubmission: { id: 'stuck', attributes: { state: 'UNRESOLVED_ISSUES' } },
+    items: [{ id: 'cpp', attributes: { state: 'REJECTED' }, relationships: { appStoreVersion: { data: null } } }],
+  });
+  await assert.rejects(run(api), /unresolved issues/);
+  assert.deepEqual(api.mutations(), []);
+});
+
 test('an exact build number is looked up server-side', async () => {
   const api = fakeApi();
   await run(api, { buildNumber: '100' });

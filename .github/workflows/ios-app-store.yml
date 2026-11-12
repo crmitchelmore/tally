@@ -95,4 +95,7 @@ jobs:
           WHATS_NEW: ${{ inputs.release_notes }}
           DRY_RUN: ${{ inputs.dry_run }}
           SCREENSHOTS_DIR: ${{ needs.screenshots.result == 'success' && 'store-screenshots/store-assets/appstore' || '' }}
-        run: node scripts/app-store-release.mjs | tee -a "$GITHUB_STEP_SUMMARY"
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/app-store-release.mjs | tee -a "$GITHUB_STEP_SUMMARY"

@@ -179,17 +179,26 @@ export async function loadScreenshots(dir) {
   return result;
 }
 
+async function openSubmission(api, { appId, appStoreVersionId }) {
+  const submission = (await api.get(`/v1/reviewSubmissions?filter[app]=${appId}&filter[platform]=IOS&filter[state]=${OPEN_SUBMISSION.join(',')}&limit=10`)).data[0];
+  if (!submission) return { submission: null, items: [] };
+  const items = (await api.get(`/v1/reviewSubmissions/${submission.id}/items?include=appStoreVersion&limit=50`)).data;
+  const existing = items.find(item => appStoreVersionId && item.relationships?.appStoreVersion?.data?.id === appStoreVersionId);
+  // Apple does not accept new items on a submission with unresolved issues.
+  if (submission.attributes?.state === 'UNRESOLVED_ISSUES' && !existing) {
+    throw new Error(`Review submission ${submission.id} has unresolved issues for other items; resolve or cancel it in App Store Connect first`);
+  }
+  return { submission, existing };
+}
+
 async function submitForReview(api, { appId, appStoreVersion, log }) {
-  const query = state => `/v1/reviewSubmissions?filter[app]=${appId}&filter[platform]=IOS&filter[state]=${state.join(',')}&limit=10`;
-  let submission = (await api.get(query(OPEN_SUBMISSION))).data[0];
+  let { submission, existing } = await openSubmission(api, { appId, appStoreVersionId: appStoreVersion.id });
   if (!submission) {
     submission = (await api.post('/v1/reviewSubmissions', { data: {
       type: 'reviewSubmissions', attributes: { platform: 'IOS' },
       relationships: { app: { data: { type: 'apps', id: appId } } },
     } })).data;
   }
-  const items = (await api.get(`/v1/reviewSubmissions/${submission.id}/items?include=appStoreVersion&limit=50`)).data;
-  const existing = items.find(item => item.relationships?.appStoreVersion?.data?.id === appStoreVersion.id);
   if (existing?.attributes?.state === 'REJECTED') {
     // A rejected item must be marked resolved before the submission can be resubmitted.
     await api.patch(`/v1/reviewSubmissionItems/${existing.id}`, { data: { type: 'reviewSubmissionItems', id: existing.id, attributes: { resolved: true } } });
@@ -213,15 +222,18 @@ export async function releaseToAppStore(api, {
   log(`Using processed build ${version} (${number}), id ${build.id}`);
 
   const active = (await api.get(`/v1/reviewSubmissions?filter[app]=${appId}&filter[platform]=IOS&filter[state]=${ACTIVE_SUBMISSION.join(',')}&limit=10`)).data;
-  const { appStoreVersion, inFlight, hasRelease } = await prepareVersion(api, { appId, version, dryRun: dryRun || active.length > 0, log });
+  // Plan without mutating, check the open submission, then apply the version change.
+  const plan = await prepareVersion(api, { appId, version, dryRun: true, log });
+  const { inFlight, hasRelease } = plan;
   if (inFlight || active.length) {
     const what = inFlight ? `${inFlight.attributes.versionString} is ${versionState(inFlight)}` : 'a review submission is already waiting or in review';
     log(`Not submitting: ${what}. Release or withdraw it in App Store Connect first.`);
     return { status: 'already-in-review', buildId: build.id };
   }
+  await openSubmission(api, { appId, appStoreVersionId: plan.appStoreVersion?.id });
   if (dryRun) {
-    if (appStoreVersion) {
-      for (const localization of (await api.get(`/v1/appStoreVersions/${appStoreVersion.id}/appStoreVersionLocalizations?limit=50`)).data) {
+    if (plan.appStoreVersion) {
+      for (const localization of (await api.get(`/v1/appStoreVersions/${plan.appStoreVersion.id}/appStoreVersionLocalizations?limit=50`)).data) {
         const placements = await listAll(api, `/v1/appStoreVersionLocalizations/${localization.id}/placements?filter[placementType]=APP_SCREENSHOT&limit=200`);
         const groups = [...new Set(placements.map(p => p.attributes.placementGroup))].join(', ') || 'none';
         log(`${localization.attributes.locale}: ${placements.length} screenshot placement(s) in ${groups}`);
@@ -231,6 +243,7 @@ export async function releaseToAppStore(api, {
     return { status: 'dry-run', buildId: build.id };
   }
 
+  const { appStoreVersion } = await prepareVersion(api, { appId, version, dryRun: false, log: () => {} });
   await api.patch(`/v1/appStoreVersions/${appStoreVersion.id}/relationships/build`, { data: { type: 'builds', id: build.id } });
   log(`Attached build ${number} to App Store version ${version}`);
 

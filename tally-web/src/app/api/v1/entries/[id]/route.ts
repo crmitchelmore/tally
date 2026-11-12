@@ -5,6 +5,7 @@
  */
 import { captureEvent } from "@/lib/telemetry";
 import { requireAuth, isAuthError } from "../../_lib/auth";
+import { rejectCrossOrigin } from "../../_lib/origin";
 import { getEntryById, updateEntry, deleteEntry } from "../../_lib/store";
 import {
   jsonOk,
@@ -45,6 +46,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   try {
     const authResult = await requireAuth();
     if (isAuthError(authResult)) {
@@ -88,6 +91,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   try {
     const authResult = await requireAuth();
     if (isAuthError(authResult)) {

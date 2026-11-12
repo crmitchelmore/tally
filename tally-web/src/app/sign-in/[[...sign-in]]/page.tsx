@@ -3,11 +3,11 @@
 import { SignIn } from "@clerk/nextjs";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 
 export default function SignInPage() {
   const searchParams = useSearchParams();
-  // Support force_redirect_url for native app auth flow
-  const forceRedirectUrl = searchParams.get("force_redirect_url") || "/app";
+  const forceRedirectUrl = safeRedirectPath(searchParams.get("force_redirect_url"), "/app");
   
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-paper px-4">

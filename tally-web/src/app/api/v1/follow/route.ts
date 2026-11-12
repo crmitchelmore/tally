@@ -3,6 +3,7 @@
  * DELETE /api/v1/follow - Unfollow a challenge
  */
 import { requireAuth, isAuthError } from "../_lib/auth";
+import { rejectCrossOrigin } from "../_lib/origin";
 import {
   getChallengeById,
   isFollowing,
@@ -20,6 +21,8 @@ import {
 import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   try {
     const authResult = await requireAuth();
     if (isAuthError(authResult)) {
@@ -61,6 +64,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   try {
     const authResult = await requireAuth();
     if (isAuthError(authResult)) {

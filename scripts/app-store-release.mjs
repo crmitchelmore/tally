@@ -7,11 +7,11 @@ import path from 'node:path';
 
 const ORIGIN = 'https://api.appstoreconnect.apple.com';
 const EDITABLE = new Set(['PREPARE_FOR_SUBMISSION', 'READY_FOR_REVIEW', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED', 'INVALID_BINARY']);
-const IN_FLIGHT = new Set(['WAITING_FOR_REVIEW', 'IN_REVIEW', 'WAITING_FOR_EXPORT_COMPLIANCE', 'PENDING_DEVELOPER_RELEASE', 'PENDING_APPLE_RELEASE', 'ACCEPTED', 'PROCESSING_FOR_DISTRIBUTION', 'PENDING_CONTRACT']);
-const RELEASED = new Set(['READY_FOR_SALE', 'READY_FOR_DISTRIBUTION', 'REPLACED_WITH_NEW_VERSION', 'REMOVED_FROM_SALE', 'DEVELOPER_REMOVED_FROM_SALE']);
+const IN_FLIGHT = new Set(['WAITING_FOR_REVIEW', 'IN_REVIEW', 'WAITING_FOR_EXPORT_COMPLIANCE', 'PENDING_DEVELOPER_RELEASE', 'PENDING_APPLE_RELEASE', 'ACCEPTED', 'PROCESSING_FOR_DISTRIBUTION', 'PROCESSING_FOR_APP_STORE', 'PENDING_CONTRACT']);
+const RELEASED = new Set(['PREORDER_READY_FOR_SALE', 'READY_FOR_SALE', 'READY_FOR_DISTRIBUTION', 'REPLACED_WITH_NEW_VERSION', 'REMOVED_FROM_SALE', 'DEVELOPER_REMOVED_FROM_SALE']);
 const OPEN_SUBMISSION = ['READY_FOR_REVIEW', 'UNRESOLVED_ISSUES'];
 const ACTIVE_SUBMISSION = ['WAITING_FOR_REVIEW', 'IN_REVIEW'];
-export const DISPLAY_TYPES = { iphone: 'APP_IPHONE_67', ipad: 'APP_IPAD_PRO_3GEN_129' };
+export const DEVICE_FAMILIES = { iphone: 'IPHONE', ipad: 'IPAD' };
 
 const versionState = version => version.attributes.appVersionState ?? version.attributes.appStoreState;
 
@@ -97,44 +97,84 @@ async function prepareVersion(api, { appId, version, dryRun, log }) {
   return { appStoreVersion: created.data, hasRelease };
 }
 
-async function replaceScreenshots(api, { localization, displayType, files, log, sleep }) {
-  const sets = (await api.get(`/v1/appStoreVersionLocalizations/${localization.id}/appScreenshotSets?limit=50`)).data;
-  let set = sets.find(s => s.attributes.screenshotDisplayType === displayType);
-  if (!set) {
-    set = (await api.post('/v1/appScreenshotSets', { data: {
-      type: 'appScreenshotSets', attributes: { screenshotDisplayType: displayType },
-      relationships: { appStoreVersionLocalization: { data: { type: 'appStoreVersionLocalizations', id: localization.id } } },
-    } })).data;
-  }
-  for (const old of (await api.get(`/v1/appScreenshotSets/${set.id}/appScreenshots?limit=50`)).data) {
-    await api.delete(`/v1/appScreenshots/${old.id}`);
-  }
-  for (const file of files) {
-    const bytes = await readFile(file);
-    const reserved = (await api.post('/v1/appScreenshots', { data: {
-      type: 'appScreenshots', attributes: { fileName: path.basename(file), fileSize: bytes.length },
-      relationships: { appScreenshotSet: { data: { type: 'appScreenshotSets', id: set.id } } },
-    } })).data;
-    for (const operation of reserved.attributes.uploadOperations) await api.upload(operation, bytes);
-    const checksum = crypto.createHash('md5').update(bytes).digest('hex');
-    await api.patch(`/v1/appScreenshots/${reserved.id}`, { data: { type: 'appScreenshots', id: reserved.id, attributes: { uploaded: true, sourceFileChecksum: checksum } } });
-    for (let attempt = 0; ; attempt++) {
-      const state = (await api.get(`/v1/appScreenshots/${reserved.id}`)).data.attributes.assetDeliveryState;
-      if (state?.state === 'COMPLETE') break;
-      if (state?.state === 'FAILED') throw new Error(`Screenshot ${path.basename(file)} rejected: ${JSON.stringify(state.errors)}`);
-      if (attempt >= 60) throw new Error(`Screenshot ${path.basename(file)} still processing`);
-      await sleep(5000);
+const PENDING_ASSET = new Set(['AWAITING_UPLOAD', 'UPLOAD_COMPLETE']);
+
+// Screenshots use the App Asset Library (the set-based appScreenshots API is deprecated):
+// upload each file once, then place it on every localization.
+async function uploadScreenshots(api, { appId, screenshots, log, sleep }) {
+  const library = (await api.get(`/v1/apps/${appId}/assetLibrary`)).data;
+  const ref = (await api.get('/v1/appAssetLibraryRefData')).data[0].attributes;
+  const familyOfClass = new Map(ref.displayClasses.map(c => [c.displayClassId, c.deviceFamily]));
+  const familyOfGroup = new Map(ref.placementProfileGroups.map(g => [g.placementProfileGroupId, familyOfClass.get(g.displayClassId)]));
+  const mappings = ref.placementTypes.find(t => t.placementTypeId === 'APP_SCREENSHOT')?.specMappings ?? [];
+
+  const uploads = [];
+  for (const [family, files] of Object.entries(screenshots)) {
+    for (const file of files) {
+      const bytes = await readFile(file);
+      const name = path.basename(file);
+      const reserved = (await api.post('/v1/appAssetLibraryImages', { data: {
+        type: 'appAssetLibraryImages',
+        attributes: { fileName: name, fileSize: bytes.length, category: 'APP_SCREENSHOTS_AND_PREVIEWS', referenceName: `${family} ${name}` },
+        relationships: { assetLibrary: { data: { type: 'appAssetLibraries', id: library.id } } },
+      } })).data;
+      for (const operation of reserved.attributes.uploadOperations) await api.upload(operation, bytes);
+      await api.patch(`/v1/appAssetLibraryImages/${reserved.id}`, { data: { type: 'appAssetLibraryImages', id: reserved.id, attributes: { uploaded: true } } });
+      let image;
+      for (let attempt = 0; ; attempt++) {
+        image = (await api.get(`/v1/appAssetLibraryImages/${reserved.id}`)).data;
+        if (image.attributes.state === 'FAILED') throw new Error(`Screenshot ${name} rejected: ${JSON.stringify(image.attributes.stateDetails)}`);
+        if (!PENDING_ASSET.has(image.attributes.state)) break;
+        if (attempt >= 60) throw new Error(`Screenshot ${name} still processing`);
+        await sleep(5000);
+      }
+      const groups = mappings.filter(m => m.specs?.includes(image.attributes.specId) && familyOfGroup.get(m.placementGroupId) === family);
+      if (!groups.length) throw new Error(`Screenshot ${name} matched spec ${image.attributes.specId}, which no ${family} App Store screenshot group accepts`);
+      uploads.push({ id: image.id, family, group: groups[0].placementGroupId });
     }
   }
-  log(`${localization.attributes.locale} ${displayType}: ${files.length} screenshot(s) uploaded`);
+  log(`Uploaded ${uploads.length} screenshot(s) to the asset library: ${[...new Set(uploads.map(u => u.group))].join(', ')}`);
+  return { uploads, familyOfGroup };
+}
+
+async function placeScreenshots(api, { localization, uploads, familyOfGroup, log }) {
+  const families = new Set(uploads.map(u => u.family));
+  const existing = await listAll(api, `/v1/appStoreVersionLocalizations/${localization.id}/placements?filter[placementType]=APP_SCREENSHOT&limit=200`);
+  // Clear every iPhone/iPad size, so smaller displays scale from the fresh captures instead of keeping stale ones.
+  for (const old of existing.filter(p => families.has(familyOfGroup.get(p.attributes.placementGroup)))) {
+    await api.delete(`/v1/appAssetLibraryPlacements/${old.id}`);
+  }
+  const byGroup = new Map();
+  for (const upload of uploads) {
+    const placement = (await api.post('/v1/appAssetLibraryPlacements', { data: {
+      type: 'appAssetLibraryPlacements',
+      attributes: { placementType: 'APP_SCREENSHOT', placementGroup: upload.group },
+      relationships: {
+        image: { data: { type: 'appAssetLibraryImages', id: upload.id } },
+        appStoreVersionLocalization: { data: { type: 'appStoreVersionLocalizations', id: localization.id } },
+      },
+    } })).data;
+    byGroup.set(upload.group, [...(byGroup.get(upload.group) ?? []), placement.id]);
+  }
+  for (const [group, ids] of byGroup) {
+    await api.post('/v1/appAssetLibraryPlacementOrderingRequests', { data: {
+      type: 'appAssetLibraryPlacementOrderingRequests',
+      attributes: { placementGroup: group },
+      relationships: {
+        orderedPlacements: { data: ids.map(id => ({ type: 'appAssetLibraryPlacements', id })) },
+        appStoreVersionLocalization: { data: { type: 'appStoreVersionLocalizations', id: localization.id } },
+      },
+    } });
+  }
+  log(`${localization.attributes.locale}: replaced ${existing.length} screenshot placement(s) with ${uploads.length}`);
 }
 
 export async function loadScreenshots(dir) {
   const result = {};
-  for (const [device, displayType] of Object.entries(DISPLAY_TYPES)) {
+  for (const [device, family] of Object.entries(DEVICE_FAMILIES)) {
     const files = (await readdir(path.join(dir, device)).catch(() => []))
       .filter(name => /\.(png|jpe?g)$/i.test(name)).sort().map(name => path.join(dir, device, name));
-    if (files.length) result[displayType] = files;
+    if (files.length) result[family] = files;
   }
   return result;
 }
@@ -180,7 +220,14 @@ export async function releaseToAppStore(api, {
     return { status: 'already-in-review', buildId: build.id };
   }
   if (dryRun) {
-    log(`Dry run: would attach build ${number}, replace ${Object.keys(screenshots).length} screenshot set(s)${hasRelease && whatsNew ? ', set release notes' : ''} and submit for review.`);
+    if (appStoreVersion) {
+      for (const localization of (await api.get(`/v1/appStoreVersions/${appStoreVersion.id}/appStoreVersionLocalizations?limit=50`)).data) {
+        const placements = await listAll(api, `/v1/appStoreVersionLocalizations/${localization.id}/placements?filter[placementType]=APP_SCREENSHOT&limit=200`);
+        const groups = [...new Set(placements.map(p => p.attributes.placementGroup))].join(', ') || 'none';
+        log(`${localization.attributes.locale}: ${placements.length} screenshot placement(s) in ${groups}`);
+      }
+    }
+    log(`Dry run: would attach build ${number}, replace screenshots for ${Object.keys(screenshots).join(', ') || 'no devices'}${hasRelease && whatsNew ? ', set release notes' : ''} and submit for review.`);
     return { status: 'dry-run', buildId: build.id };
   }
 
@@ -189,14 +236,14 @@ export async function releaseToAppStore(api, {
 
   const localizations = (await api.get(`/v1/appStoreVersions/${appStoreVersion.id}/appStoreVersionLocalizations?limit=50`)).data;
   if (!localizations.length) throw new Error('App Store version has no localizations; complete the listing in App Store Connect');
+  // Upload before touching placements so a failed upload never leaves the listing without screenshots.
+  const library = Object.keys(screenshots).length ? await uploadScreenshots(api, { appId, screenshots, log, sleep }) : null;
   for (const localization of localizations) {
     // Apple rejects release notes on an app's first App Store version.
     if (hasRelease && whatsNew) {
       await api.patch(`/v1/appStoreVersionLocalizations/${localization.id}`, { data: { type: 'appStoreVersionLocalizations', id: localization.id, attributes: { whatsNew } } });
     }
-    for (const [displayType, files] of Object.entries(screenshots)) {
-      await replaceScreenshots(api, { localization, displayType, files, log, sleep });
-    }
+    if (library) await placeScreenshots(api, { localization, ...library, log });
   }
 
   const submissionId = await submitForReview(api, { appId, appStoreVersion, log });

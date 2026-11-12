@@ -5,7 +5,25 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { releaseToAppStore, loadScreenshots } from './app-store-release.mjs';
 
-function fakeApi({ versions = [{ id: 'v1', attributes: { versionString: '1.9.0', appVersionState: 'PREPARE_FOR_SUBMISSION' } }], builds = [{ id: 'b2', attributes: { version: '200' } }, { id: 'b1', attributes: { version: '100' } }], active = [], openSubmission, items = [] } = {}) {
+const refData = {
+  displayClasses: [
+    { displayClassId: 'IPHONE_DYNAMIC_ISLAND_LARGE_DISPLAY', deviceFamily: 'IPHONE' },
+    { displayClassId: 'IPHONE_FACE_ID_MEDIUM_DISPLAY', deviceFamily: 'IPHONE' },
+    { displayClassId: 'IPAD_13_DISPLAY', deviceFamily: 'IPAD' },
+  ],
+  placementProfileGroups: [
+    { placementProfileGroupId: 'IPHONE_LARGE', displayClassId: 'IPHONE_DYNAMIC_ISLAND_LARGE_DISPLAY' },
+    { placementProfileGroupId: 'IPHONE_OLD', displayClassId: 'IPHONE_FACE_ID_MEDIUM_DISPLAY' },
+    { placementProfileGroupId: 'IPAD_13', displayClassId: 'IPAD_13_DISPLAY' },
+  ],
+  placementTypes: [{ placementTypeId: 'APP_SCREENSHOT', specMappings: [
+    { placementGroupId: 'IPHONE_LARGE', specs: ['spec-6.9'] },
+    { placementGroupId: 'IPHONE_OLD', specs: ['spec-6.1'] },
+    { placementGroupId: 'IPAD_13', specs: ['spec-ipad'] },
+  ] }],
+};
+
+function fakeApi({ versions = [{ id: 'v1', attributes: { versionString: '1.9.0', appVersionState: 'PREPARE_FOR_SUBMISSION' } }], builds = [{ id: 'b2', attributes: { version: '200' } }, { id: 'b1', attributes: { version: '100' } }], active = [], openSubmission, items = [], imageSpec = 'spec-6.9', placements = [] } = {}) {
   const calls = [];
   const record = (method, target, body) => { calls.push({ method, path: new URL(target, 'https://x').pathname, body }); };
   const api = {
@@ -24,15 +42,17 @@ function fakeApi({ versions = [{ id: 'v1', attributes: { versionString: '1.9.0',
         return { data: searchParams.get('filter[state]').includes('IN_REVIEW') ? active : (openSubmission ? [openSubmission] : []) };
       }
       if (pathname.endsWith('/appStoreVersionLocalizations')) return { data: [{ id: 'loc', attributes: { locale: 'en-GB' } }] };
-      if (pathname.endsWith('/appScreenshotSets')) return { data: [{ id: 'set', attributes: { screenshotDisplayType: 'APP_IPHONE_67' } }] };
-      if (pathname.endsWith('/appScreenshots')) return { data: [{ id: 'old-shot' }] };
-      if (pathname.startsWith('/v1/appScreenshots/')) return { data: { attributes: { assetDeliveryState: { state: 'COMPLETE' } } } };
+      if (pathname.endsWith('/assetLibrary')) return { data: { id: 'lib' } };
+      if (pathname === '/v1/appAssetLibraryRefData') return { data: [{ attributes: refData }] };
+      if (pathname.endsWith('/placements')) return { data: placements };
+      if (pathname.startsWith('/v1/appAssetLibraryImages/')) return { data: { id: 'img', attributes: { state: 'PREPARE_FOR_SUBMISSION', specId: imageSpec } } };
       if (pathname.endsWith('/items')) return { data: items };
       throw new Error(`unexpected GET ${pathname}`);
     },
     async post(target, body) {
       record('POST', target, body);
-      if (target === '/v1/appScreenshots') return { data: { id: 'new-shot', attributes: { uploadOperations: [{ method: 'PUT', url: 'https://upload', offset: 0, length: 3 }] } } };
+      if (target === '/v1/appAssetLibraryImages') return { data: { id: 'img', attributes: { uploadOperations: [{ method: 'PUT', url: 'https://upload', offset: 0, length: 3 }] } } };
+      if (target === '/v1/appAssetLibraryPlacements') return { data: { id: 'new-placement' } };
       if (target === '/v1/appStoreVersions') return { data: { id: 'created', attributes: { versionString: '1.12.0' } } };
       return { data: { id: 'sub' } };
     },
@@ -109,20 +129,38 @@ test('rejected submissions are reused rather than duplicated', async () => {
   assert.ok(api.mutations().includes('PATCH /v1/reviewSubmissions/rejected'));
 });
 
-test('screenshots replace the old set and are committed with a checksum', async () => {
+async function iphoneScreenshots() {
   const dir = await mkdtemp(path.join(tmpdir(), 'shots-'));
   await mkdir(path.join(dir, 'iphone'));
   await writeFile(path.join(dir, 'iphone', '01-progress.jpg'), 'abc');
-  const screenshots = await loadScreenshots(dir);
-  assert.deepEqual(Object.keys(screenshots), ['APP_IPHONE_67']);
+  return loadScreenshots(dir);
+}
 
-  const api = fakeApi();
+test('screenshots go through the asset library and replace every stale iPhone placement', async () => {
+  const screenshots = await iphoneScreenshots();
+  assert.deepEqual(Object.keys(screenshots), ['IPHONE']);
+
+  const api = fakeApi({ placements: [
+    { id: 'old-large', attributes: { placementGroup: 'IPHONE_LARGE' } },
+    { id: 'old-small', attributes: { placementGroup: 'IPHONE_OLD' } },
+    { id: 'ipad', attributes: { placementGroup: 'IPAD_13' } },
+  ] });
   await run(api, { screenshots });
   const mutations = api.mutations();
-  const order = ['DELETE /v1/appScreenshots/old-shot', 'POST /v1/appScreenshots', 'PUT /', 'PATCH /v1/appScreenshots/new-shot', 'POST /v1/reviewSubmissions'];
+  const order = ['POST /v1/appAssetLibraryImages', 'PUT /', 'PATCH /v1/appAssetLibraryImages/img', 'DELETE /v1/appAssetLibraryPlacements/old-large',
+    'POST /v1/appAssetLibraryPlacements', 'POST /v1/appAssetLibraryPlacementOrderingRequests', 'POST /v1/reviewSubmissions'];
   assert.deepEqual(order.map(m => mutations.indexOf(m)).every((i, n, all) => i >= 0 && (n === 0 || i > all[n - 1])), true);
-  const commit = api.calls.find(c => c.path === '/v1/appScreenshots/new-shot' && c.method === 'PATCH');
-  assert.equal(commit.body.data.attributes.sourceFileChecksum, '900150983cd24fb0d6963f7d28e17f72');
+  assert.ok(mutations.includes('DELETE /v1/appAssetLibraryPlacements/old-small'));
+  assert.ok(!mutations.includes('DELETE /v1/appAssetLibraryPlacements/ipad'));
+  assert.ok(!mutations.some(m => m.includes('appScreenshot')));
+  assert.deepEqual(api.calls.find(c => c.path === '/v1/appAssetLibraryImages/img' && c.method === 'PATCH').body.data.attributes, { uploaded: true });
+  assert.equal(api.calls.find(c => c.path === '/v1/appAssetLibraryPlacements' && c.method === 'POST').body.data.attributes.placementGroup, 'IPHONE_LARGE');
+});
+
+test('a screenshot matching no screenshot group for its device stops before placements change', async () => {
+  const api = fakeApi({ imageSpec: 'spec-ipad', placements: [{ id: 'old-large', attributes: { placementGroup: 'IPHONE_LARGE' } }] });
+  await assert.rejects(run(api, { screenshots: await iphoneScreenshots() }), /no IPHONE App Store screenshot group/);
+  assert.ok(!api.mutations().some(m => m.includes('Placement')));
 });
 
 test('a rejected item is marked resolved before resubmitting', async () => {

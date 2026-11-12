@@ -4,7 +4,8 @@ import TallyFeatureAuth
 import TallyFeatureTipJar
 import TallyFeatureAPIClient
 import TallyFeatureChallenges
-import Clerk
+import ClerkKit
+import ClerkKitUI
 
 /// Settings view accessible from user profile
 struct SettingsView: View {

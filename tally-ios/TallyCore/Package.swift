@@ -17,7 +17,7 @@ let package = Package(
     ],
     dependencies: [
         // PostHog analytics
-        .package(url: "https://github.com/PostHog/posthog-ios", from: "3.0.0"),
+        .package(url: "https://github.com/PostHog/posthog-ios", from: "3.94.4"),
         
         // OpenTelemetry Swift (uncomment when ready to integrate)
         // .package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.9.0"),

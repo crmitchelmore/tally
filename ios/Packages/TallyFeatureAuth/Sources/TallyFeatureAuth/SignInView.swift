@@ -1,11 +1,12 @@
 import SwiftUI
 import TallyCore
 import TallyDesign
-import Clerk
+import ClerkKit
+import ClerkKitUI
 
 /// Sign-in screen for unauthenticated users
 public struct SignInView: View {
-    @Environment(\.clerk) private var clerk
+    @Environment(Clerk.self) private var clerk
     @Bindable private var authManager = AuthManager.shared
     @State private var showAuthView = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion

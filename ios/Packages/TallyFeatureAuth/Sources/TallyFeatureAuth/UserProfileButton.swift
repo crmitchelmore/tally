@@ -1,7 +1,7 @@
 import SwiftUI
 import TallyCore
 import TallyDesign
-import Clerk
+import ClerkKit
 
 /// User profile button that shows the user's avatar
 public struct UserProfileButton: View {

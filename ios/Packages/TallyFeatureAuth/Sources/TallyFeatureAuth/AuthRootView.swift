@@ -1,12 +1,12 @@
 import SwiftUI
 import TallyCore
 import TallyDesign
-import Clerk
+import ClerkKit
 
 /// Root view that switches between signed-in and signed-out states
 public struct AuthRootView<SignedInContent: View, SignedOutContent: View>: View {
     @Bindable private var authManager = AuthManager.shared
-    @Environment(\.clerk) private var clerk
+    @Environment(Clerk.self) private var clerk
     
     private let signedInContent: () -> SignedInContent
     private let signedOutContent: () -> SignedOutContent

@@ -1,6 +1,6 @@
 import SwiftUI
 import TallyCore
-import Clerk
+import ClerkKit
 import os.log
 import TallyFeatureAPIClient
 
@@ -168,10 +168,9 @@ public final class AuthManager: TokenRefresher {
         }
         
         do {
-            print("[AuthManager] Configuring Clerk with key: \(String(Configuration.clerkPublishableKey.prefix(20)))...")
-            try await clerk.configure(publishableKey: Configuration.clerkPublishableKey)
-            print("[AuthManager] Clerk configured, loading...")
-            try await clerk.load()
+            // Clerk.configure(publishableKey:) runs at app launch (TallyApp.init).
+            print("[AuthManager] Loading Clerk client...")
+            _ = try await clerk.refreshClient()
             print("[AuthManager] Clerk loaded, session: \(clerk.session?.id ?? "nil"), user: \(clerk.user?.id ?? "nil")")
             await updateAuthState()
         } catch {
@@ -305,8 +304,7 @@ public final class AuthManager: TokenRefresher {
         
         do {
             // Get the session token
-            let tokenResult = try await session.getToken()
-            if let token = tokenResult?.jwt {
+            if let token = try await session.getToken() {
                 print("[AuthManager] Got token from Clerk: \(String(token.prefix(20)))...")
                 logger.info("Got token from Clerk: \(String(token.prefix(20)))...")
                 try KeychainService.shared.storeToken(token)
@@ -370,8 +368,7 @@ public final class AuthManager: TokenRefresher {
             return nil
         }
         do {
-            let tokenResult = try await session.getToken()
-            if let token = tokenResult?.jwt {
+            if let token = try await session.getToken() {
                 logger.info("Token refreshed successfully")
                 try KeychainService.shared.storeToken(token)
                 return token
@@ -386,7 +383,7 @@ public final class AuthManager: TokenRefresher {
     /// Sign out the current user - not used in iOS but kept for compatibility
     public func signOut() async {
         do {
-            try await clerk.signOut()
+            try await clerk.auth.signOut()
             isAuthenticated = false
             currentUser = nil
             Analytics.identify(nil)

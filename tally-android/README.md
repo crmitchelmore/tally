@@ -46,7 +46,7 @@ export ANDROID_HOME=~/Library/Android/sdk
 - Defaults fall back to production values if env vars are unset.
 
 ## Auth + API
-- `core/auth` uses Clerk hosted sign-in via CustomTabs and deep link callback (`tally://auth/callback`).
+- `core/auth` uses the Clerk Android SDK for native in-app sign-in (no web callback or deep link).
 - Tokens stored in `EncryptedSharedPreferences`.
 - `core/network` provides typed REST client (`TallyApiClient`) using Bearer auth.
 

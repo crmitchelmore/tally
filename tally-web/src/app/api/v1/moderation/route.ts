@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth, isAuthError } from "../_lib/auth";
+import { rejectCrossOrigin } from "../_lib/origin";
 import { authenticatedClient } from "../_lib/convex-server";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
@@ -18,8 +19,8 @@ export async function GET() {
 export async function POST(request: Request) {
   const identity = await requireAuth();
   if (isAuthError(identity)) return identity.response;
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) return NextResponse.json({error: "Invalid origin"}, {status: 403});
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   try {
     const body = await request.json();
     const convex = await authenticatedClient();

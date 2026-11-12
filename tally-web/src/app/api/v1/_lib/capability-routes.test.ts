@@ -30,6 +30,12 @@ describe("capability REST dispatch", () => {
     expect((await POST(req("entries","POST",key,{...body,externalEventId:"provider:event"}))).status).toBe(409);
     expect(mocks.auth).not.toHaveBeenCalled();
   });
+  it("does not apply the browser origin check to API-key writes", async () => {
+    const {key}=generateKey(), request=req("entries","POST",key,{challengeId:"goal",date:"2026-01-01",count:1,externalEventId:"provider:event"});
+    request.headers.set("Origin","https://integration.example");
+    mocks.mutation.mockResolvedValue({entry:{id:"entry"},replayed:false});
+    expect((await POST(request)).status).toBe(201);
+  });
   it("maps invalid and insufficient-scope failures without exposing backend details",async () => {
     mocks.query.mockRejectedValue(new ConvexError({code:"UNAUTHORIZED"}));
     expect((await GET(req("challenges","GET","tally_invalid"))).status).toBe(401);

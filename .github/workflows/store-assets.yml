@@ -7,6 +7,12 @@ on:
         type: choice
         default: all
         options: [all, ios, android]
+  workflow_call:
+    inputs:
+      platform:
+        description: Platforms to capture
+        type: string
+        default: all
 permissions:
   contents: read
 jobs:
@@ -89,6 +95,27 @@ jobs:
               result=subprocess.run(['xcodebuild','test','-workspace','Tally.xcworkspace','-scheme','App','-destination',f'platform=iOS Simulator,id={selected["udid"]}','-parallel-testing-enabled','NO','-only-testing:AppUITests/StoreScreenshotTests','-only-testing:AppUITests/PrivacyChoiceTests', '-resultBundlePath',f'{label}.xcresult','CODE_SIGNING_ALLOWED=NO'])
               subprocess.run(['xcrun','xcresulttool','export','attachments','--path',f'{label}.xcresult','--output-path',f'store-assets/{label}'],check=True)
               result.check_returncode()
+          PY
+      - name: Prepare App Store uploads
+        working-directory: ios
+        run: |
+          # Keep only the store captures, ordered, as opaque JPEGs ready for App Store Connect.
+          python3 - <<'PY'
+          import json,pathlib,re,subprocess
+          for label in ['iphone','ipad']:
+              src=pathlib.Path('store-assets')/label
+              out=pathlib.Path('store-assets/appstore')/label
+              out.mkdir(parents=True,exist_ok=True)
+              names=set()
+              for test in json.loads((src/'manifest.json').read_text()):
+                  for a in test.get('attachments',[]):
+                      m=re.match(r'(0\d-[a-z-]+)',a.get('suggestedHumanReadableName',''))
+                      if not m: continue
+                      names.add(m.group(1))
+                      subprocess.run(['sips','-s','format','jpeg','-s','formatOptions','95',str(src/a['exportedFileName']),'--out',str(out/f'{m.group(1)}.jpg')],check=True,capture_output=True)
+                      if not (out/f'{m.group(1)}.jpg').stat().st_size: raise SystemExit(f'{label}: failed to convert {m.group(1)}')
+              if len(names)<3: raise SystemExit(f'{label}: expected 3 store screenshots, found {sorted(names)}')
+              print(label, sorted(names))
           PY
       - uses: actions/upload-artifact@v7
         if: always()

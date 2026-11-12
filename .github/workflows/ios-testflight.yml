@@ -603,7 +603,7 @@ jobs:
             const { configureTestFlight } = await import(`${process.env.GITHUB_WORKSPACE}/scripts/distribute-testflight.mjs`);
             const result = await configureTestFlight({ token: jwt, buildId, groupIds: betaGroupIds });
             core.info(`Verified access for ${result.groups} TestFlight group(s). Beta review: ${result.betaReview}.`);
-            await core.summary.addRaw(`Build ${buildId} processed. Group access verified; beta review ${result.betaReview}. This is not public App Store publication.`).write();
+            await core.summary.addRaw(`Build ${buildId} processed. Group access verified; beta review ${result.betaReview}. App Store submission runs in the next job.`).write();
 
       - name: Create GitHub Release
         if: success()
@@ -626,3 +626,15 @@ jobs:
             });
             
             core.info(`📦 Created release ios-v${version}-${buildNumber}`);
+
+  app-store:
+    name: Submit to App Store
+    needs: [build-and-upload, poll-and-distribute]
+    uses: ./.github/workflows/ios-app-store.yml
+    permissions:
+      contents: read
+    with:
+      version: ${{ needs.build-and-upload.outputs.version }}
+      build_number: ${{ needs.build-and-upload.outputs.build_number }}
+      release_notes: ${{ needs.build-and-upload.outputs.release_notes }}
+    secrets: inherit

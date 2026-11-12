@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.tally.app"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "app.tally.android"

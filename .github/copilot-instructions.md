@@ -1,6 +1,6 @@
 # Copilot Instructions (Tally)
 
-**NEVER STOP TO ASK QUESTIONS** — make the best decision without compromising security or our design philosophy.
+Work autonomously. Agents here often run unattended (`scripts/auto-copilot.sh`, `scripts/ralph.sh`), so when something is ambiguous, make the best decision that keeps security and the design philosophy intact, note the assumption, and keep going rather than stopping to ask.
 
 Use this philosophy in all product work:
 - Tactile: interactions feel like marking paper; clear visual feedback.
@@ -14,9 +14,11 @@ Principles to uphold:
 - Accessible, high-contrast, readable type and large tap targets.
 - Offline-first mindset with clear sync states.
 
-Reference ./design-philosophy.md whenever building anything new to remember the way we do it.
+Reference `DESIGN-PHILOSOPHY.md` (repo root) whenever building anything new to remember the way we do it.
 
-Reference ./tech-stack-requirements.md to pick the right tools and technologies.
+Reference `tech-stack-requirements.md` (repo root) to pick the right tools and technologies.
+
+Task checklists live in `.github/skills/` as plain Markdown (hosts do not auto-load them): `implement-requirement-and-verify.md` for `MASTER-TODO.md` items and `plans/**/feature-*.md`, `feature-map-parity.md` for scope and cross-platform parity, `brand-guidelines.md` for visuals, and `performance-accessibility.md` for motion, media and key flows.
 
 ## Commit Conventions
 
@@ -80,28 +82,23 @@ When modifying API endpoints:
 
 ## Convex Deployment
 
-Convex functions are deployed **separately** from Vercel. After changing:
-- `convex/schema.ts` (data model)
-- `convex/*.ts` (mutations/queries)
-
-Run: `npx convex deploy` to sync changes to production.
-
-**CI does NOT auto-deploy Convex** - this is a manual step after schema/mutation changes.
+Convex functions live in `tally-web/convex/` and deploy separately from the Vercel web app. The **Deploy Production** workflow (`.github/workflows/deploy-production.yml`) runs on every push to `main`: it builds the web app, deploys Convex with `bunx convex deploy` behind the target guard `scripts/verify-convex-target.cjs`, checks the deployed backend with `scripts/verify-backend-capability.cjs`, and only then deploys Vercel. Convex schema and mutation changes ship when they merge to `main`.
 
 ### Convex Workflow
 
 When modifying Convex schema or mutations:
-1. Update `convex/schema.ts` with new fields
-2. Update `convex/*.ts` mutations to accept/return new fields
-3. Update `src/app/api/v1/_lib/convex-server.ts` TypeScript types
+1. Update `tally-web/convex/schema.ts` with new fields
+2. Update `tally-web/convex/*.ts` mutations to accept/return new fields
+3. Update `tally-web/src/app/api/v1/_lib/convex-server.ts` TypeScript types
 4. Update API routes to pass new fields through
-5. **Deploy Convex:** `npx convex deploy`
-6. Deploy Vercel (automatic via CI or manual)
+5. Merge to `main`; Deploy Production deploys Convex before Vercel
 
-Common pitfall: Vercel deploys but Convex is stale → 500 errors on new fields.
+Convex deploys before the web release, so keep backend changes additive: the currently deployed web app must keep working against the new schema.
+
+Common pitfall: if the Convex deploy or capability check fails, the web release is blocked; if Convex is stale, new fields return 500 errors.
 
 ### Debugging Convex 500 errors
-1. Check if schema changes were deployed: `npx convex deploy`
+1. Check the latest Deploy Production run: did "Deploy matching Convex backend" and "Verify deployed backend capability" succeed?
 2. Verify mutation args match schema fields
 3. Check Convex dashboard logs at https://dashboard.convex.dev
 
@@ -110,13 +107,13 @@ Common pitfall: Vercel deploys but Convex is stale → 500 errors on new fields.
 After data mutations, ALL related UI must update:
 
 ### Web (SWR)
-- Use `refreshEntries()` / `refreshChallenges()` from `use-data-refresh.ts`
+- Use `refreshEntries()` / `refreshChallenges()` from `tally-web/src/hooks/use-data-refresh.ts`
 - These call `mutate()` on all related SWR cache keys
 
 ### iOS (Observable)
 - Route mutations through `ChallengesManager` (not direct `APIClient` calls)
-- `ChallengesManager.createEntry()` / `updateEntry()` / `deleteEntry()` auto-refresh stats
-- Dashboard stats refresh happens in `refreshChallengeStats()`
+- `ChallengesManager.addEntry()` / `updateEntry()` / `deleteEntry()` save locally first, update stats optimistically, then sync in the background
+- Dashboard summary refresh happens in `refreshDashboardSummary()`
 
 ## Available .env secrets
 
@@ -153,9 +150,9 @@ HONEYCOMB_API_KEY
 
 ## Platform Layout and Tooling
 
-- Web app lives in `tally-web/`, iOS in `ios/` and `tally-ios/`, Android in `tally-android/`, and infrastructure in `infra/`.
+- Web app (Next.js 15, Convex, Clerk) lives in `tally-web/`, the iOS app in `ios/` (Tuist workspace) with a standalone `tally-ios/TallyCore` Swift package, and Android in `tally-android/`. Infrastructure is planned as Pulumi in `infra/`, which does not exist yet.
 - **Web app package manager:** use `bun` (not npm/yarn).
-- **Infrastructure package manager:** use `npm` (Pulumi compatibility).
+- **Infrastructure package manager:** use `npm` in `infra/` (Pulumi compatibility).
 - Keep commits scoped by platform unless a change is intentionally cross-platform.
 
 ## Infrastructure Guardrails
@@ -168,29 +165,27 @@ HONEYCOMB_API_KEY
 
 - Clerk uses separate dev/prod environments; map dev keys to preview/development and prod keys to production.
 - Next.js inlines `NEXT_PUBLIC_*` variables at build time. In CI/build environments, set base keys (for example `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`) and do not rely only on suffixed variants like `_DEV`/`_PROD`.
-- Use `clerkMiddleware()` in `proxy.ts` with App Router patterns (not `authMiddleware`).
+- Use `clerkMiddleware()` in `tally-web/src/middleware.ts` with App Router patterns (not `authMiddleware`).
 
 ## Next.js/Vercel Pitfalls
 
-- On Next.js 16, force webpack builds to avoid Turbopack `middleware.js.nft.json` ENOENT failures:
+- The web app is on Next.js 15 and builds with `next build`. When upgrading to Next.js 16, force webpack builds to avoid Turbopack `middleware.js.nft.json` ENOENT failures:
   - `next build --webpack` in scripts, and
   - explicit Vercel `buildCommand` using webpack.
 - Middleware matcher exclusions can still behave differently in production routing; if `_next/static/*` gets auth-applied (for example `x-clerk-auth-reason`), include `_next/static(.*)` and `_next/image(.*)` as public route fallbacks.
 
-## Migration and Verification Rules
+## Verification Rules
 
-- For `docs/migration/README.md` feature parity:
-  - **Yes** = wired in primary UI and verified
-  - **Partial** = code exists but not wired and/or not verified
-  - **No** = missing
 - If Android SDK / `ANDROID_HOME` is unavailable, keep Android changes minimal and explicitly note not locally verified.
-- After changes:
-  1. Web: `cd tally-web && bun run build`
-  2. Infra: `cd infra && pulumi preview` (and `pulumi up` when applying)
-  3. Verify behaviour in the running app/surface
+- After changes, run the checks for the platforms you touched (these mirror `.github/workflows/ci.yml`):
+  1. Web: `cd tally-web && bun run test && bun run lint && bun run build` (CI also runs `bunx tsc --noEmit --incremental false`)
+  2. iOS: `cd ios && tuist install && tuist generate --no-open`, then build the `App` scheme of `Tally.xcworkspace` with `xcodebuild`
+  3. Android: `cd tally-android && ./gradlew assembleDebug testDebugUnitTest`
+  4. Infra (once `infra/` exists): `cd infra && pulumi preview` (and `pulumi up` when applying)
+  5. Verify behaviour in the running app/surface
 
 ## CI and E2E Guardrails
 
 - E2E workflows marked optional should use `continue-on-error: true`.
-- Playwright config uses `E2E_BASE_URL` (not `BASE_URL`) to decide whether tests run against local or deployed targets.
+- `tally-web/playwright.config.ts` reads `BASE_URL` (default `http://localhost:3000`) as the test target; its `webServer` still starts a local server (`bun run dev`, or `bun run start` under CI).
 - Clerk UI changes frequently; use resilient selectors (for example exact-name Continue button and `input[name="password"]`), and scope locators to regions when duplicate “Sign in” elements exist.

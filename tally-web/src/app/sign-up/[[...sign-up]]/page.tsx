@@ -5,7 +5,7 @@ export default function SignUpPage() {
     <div className="min-h-screen flex items-center justify-center bg-paper">
       <SignUp
         appearance={{
-          layout: {
+          options: {
             socialButtonsVariant: "blockButton",
             socialButtonsPlacement: "top",
           },
@@ -24,7 +24,7 @@ export default function SignUpPage() {
         routing="path"
         path="/sign-up"
         signInUrl="/sign-in"
-        afterSignUpUrl="/app"
+        fallbackRedirectUrl="/app"
       />
     </div>
   );

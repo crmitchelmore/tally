@@ -18,7 +18,7 @@
 ## Architecture Overview
 
 ### Tech Stack
-- **Framework:** Next.js 15 (App Router) with TypeScript
+- **Framework:** Next.js 16 (App Router) with TypeScript
 - **Package Manager:** Bun (enforced via preinstall hook)
 - **Database:** Convex (real-time database with functions)
 - **Authentication:** Clerk

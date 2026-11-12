@@ -14,8 +14,14 @@
  *
  * Schema: plans/observability/schema.md
  */
-import { trace, SpanStatusCode, type Span, type Attributes } from "@opentelemetry/api";
-import { logs, SeverityNumber } from "@opentelemetry/api-logs";
+import {
+  logs,
+  SeverityNumber,
+  SpanStatusCode,
+  trace,
+  type Attributes,
+  type Span,
+} from "@opentelemetry/api";
 
 // Environment detection
 const ENV =

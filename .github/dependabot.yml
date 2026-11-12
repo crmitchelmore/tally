@@ -1,6 +1,7 @@
 # Weekly patch and minor updates arrive as one grouped pull request per
 # ecosystem and directory; security fixes are grouped the same way. Major
-# updates open individually for review.
+# updates open individually for review, except GitHub Actions majors, which
+# are grouped.
 version: 2
 updates:
   - package-ecosystem: "npm"
@@ -60,3 +61,9 @@ updates:
         applies-to: version-updates
         patterns: ["*"]
         update-types: ["minor", "patch"]
+      # Action majors share one pull request, so one required build covers
+      # them; they still need manual review because auto-merge skips majors.
+      major:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["major"]

@@ -52,7 +52,7 @@ export function ascClient({ token, fetchImpl = fetch }) {
 
 export async function findBuild(api, { appId, version, buildNumber }) {
   const query = new URLSearchParams({
-    'filter[app]': appId, 'filter[preReleaseVersion.version]': version,
+    'filter[app]': appId, 'filter[preReleaseVersion.platform]': 'IOS', 'filter[preReleaseVersion.version]': version,
     'filter[processingState]': 'VALID', sort: '-uploadedDate', limit: '50',
   });
   // filter[version] is the build number (CFBundleVersion), so an exact build is found server-side.

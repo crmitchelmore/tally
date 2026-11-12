@@ -35,6 +35,7 @@ function fakeApi({ versions = [{ id: 'v1', attributes: { versionString: '1.9.0',
       if (pathname === '/v1/builds') {
         const exact = searchParams.get('filter[version]');
         api.buildFilter = exact;
+        api.platformFilter = searchParams.get('filter[preReleaseVersion.platform]');
         return { data: exact ? builds.filter(b => b.attributes.version === exact) : builds };
       }
       if (pathname.endsWith('/appStoreVersions')) return { data: versions };
@@ -188,4 +189,5 @@ test('an exact build number is looked up server-side', async () => {
   const api = fakeApi();
   await run(api, { buildNumber: '100' });
   assert.equal(api.buildFilter, '100');
+  assert.equal(api.platformFilter, 'IOS');
 });

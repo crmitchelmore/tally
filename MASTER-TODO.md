@@ -1,6 +1,6 @@
 # Master To-Do List
 
-NEVER STOP TO ASK QUESTIONS - MAKE THE BEST DECISION WITHOUT COMPROMISING SECURITY OR OUR DESIGN PHILOSPHY (./design-philosophy.md)
+Work through this list without stopping to ask questions: make the best decision that keeps security and our design philosophy (`DESIGN-PHILOSOPHY.md`) intact, and note the assumption.
 
 ## Bootstrapping guidelines (do this first)
 

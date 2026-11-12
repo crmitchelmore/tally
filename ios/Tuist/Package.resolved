@@ -1,57 +1,40 @@
 {
+  "originHash" : "155b6b820329081f5fc020ef46466492a639803628cc174de8949f0f55a20652",
   "pins" : [
     {
       "identity" : "clerk-ios",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/clerk/clerk-ios",
       "state" : {
-        "revision" : "8d16727fbe58609e18759e3020488b840201c83d",
-        "version" : "0.71.4"
+        "revision" : "f1b7b749d988bfcfd9bf0b9b106a704ead972d9f",
+        "version" : "1.7.1"
       }
     },
     {
-      "identity" : "factory",
+      "identity" : "nuke",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/hmlongco/Factory",
+      "location" : "https://github.com/kean/Nuke",
       "state" : {
-        "revision" : "ccc898f21992ebc130bc04cc197460a5ae230bcf",
-        "version" : "2.5.3"
-      }
-    },
-    {
-      "identity" : "get",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kean/Get",
-      "state" : {
-        "revision" : "31249885da1052872e0ac91a2943f62567c0d96d",
-        "version" : "2.2.1"
-      }
-    },
-    {
-      "identity" : "kingfisher",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/onevcat/Kingfisher.git",
-      "state" : {
-        "revision" : "d30a5fad881137e2267f96a8e3fc35c58999bb94",
-        "version" : "8.6.2"
+        "revision" : "9e37a277bdb527bf3ae71156ded1423f495f5168",
+        "version" : "13.2.3"
       }
     },
     {
       "identity" : "phonenumberkit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/marmelroy/PhoneNumberKit",
+      "location" : "https://github.com/PhoneNumberKit/PhoneNumberKit",
       "state" : {
-        "revision" : "8c369005948985d1c6fb396716a3f883d30639ab",
-        "version" : "4.2.3"
+        "revision" : "ff40a615c71bf3e1785562c86f7e38bdea29660a",
+        "version" : "5.0.14"
       }
     },
     {
       "identity" : "posthog-ios",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/PostHog/posthog-ios.git",
+      "location" : "https://github.com/PostHog/posthog-ios",
       "state" : {
-        "revision" : "113b33e7a634919cd45e630ffa29660f57e0775a",
-        "version" : "3.71.6"
+        "revision" : "1cedba27405fa43afa6ddd02eb952c14f5357e23",
+        "version" : "3.94.4"
       }
     },
     {
@@ -59,17 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/getsentry/sentry-cocoa",
       "state" : {
-        "revision" : "f196cbb98e0388381d57908f2f5a9bdc385cde68",
-        "version" : "8.58.4"
-      }
-    },
-    {
-      "identity" : "simplekeychain",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/auth0/SimpleKeychain",
-      "state" : {
-        "revision" : "776c4a6db74d5c6c143974be91c383680d468630",
-        "version" : "1.3.0"
+        "revision" : "aa91bcf6bd6f383dbc49f38bf785d1d775c4f751",
+        "version" : "9.34.0"
       }
     }
   ],

@@ -3,7 +3,7 @@ import TallyDesign
 import TallyFeatureAuth
 import TallyFeatureChallenges
 import TallyCore
-import Clerk
+import ClerkKit
 import Sentry
 
 /// Appearance mode preference
@@ -45,6 +45,8 @@ struct TallyApp: App {
         }
         Analytics.configure()
         Diagnostics.applyPrivacyChoice()
+        // Clerk 1.x requires configure() before Clerk.shared is read (environment injection below).
+        Clerk.configure(publishableKey: Configuration.clerkPublishableKey)
 
         // Register background refresh tasks on app launch
         BackgroundRefreshManager.shared.registerBackgroundTasks()
@@ -59,7 +61,7 @@ struct TallyApp: App {
                 // Signed-out content
                 SignInView()
             }
-            .environment(\.clerk, Clerk.shared)
+            .environment(Clerk.shared)
             .environmentObject(appSettings)
             .preferredColorScheme(appSettings.appearanceMode.colorScheme)
             .task {

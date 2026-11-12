@@ -1,7 +1,8 @@
 import SwiftUI
 import TallyCore
 import TallyDesign
-import Clerk
+import ClerkKit
+import ClerkKitUI
 
 /// User profile sheet showing account info and settings
 public struct UserProfileView: View {

@@ -1,14 +1,13 @@
 plugins {
-    id("io.sentry.android.gradle") version "5.12.1"
+    id("io.sentry.android.gradle") version "6.26.0"
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
 }
 
 android {
     namespace = "com.tally.app"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "app.tally.android"
@@ -59,10 +58,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
     }
 
     buildFeatures {

@@ -120,12 +120,10 @@ class AuthManager(
     suspend fun signInWithPassword(email: String, password: String): Result<Unit> {
         return try {
             // Don't set Loading here — SignInScreen manages its own loading state.
-            val result = SignIn.create(
-                SignIn.CreateParams.Strategy.Password(
-                    identifier = email,
-                    password = password
-                )
-            )
+            val result = Clerk.auth.signInWithPassword {
+                identifier = email
+                this.password = password
+            }
             when (result) {
                 is ClerkResult.Success -> {
                     val signIn = result.value
@@ -155,7 +153,7 @@ class AuthManager(
      * Sign out and clear stored credentials.
      */
     suspend fun signOut() {
-        try { Clerk.signOut() } catch (_: Exception) { }
+        try { Clerk.auth.signOut() } catch (_: Exception) { }
         tokenStorage.clearToken()
         prefs.edit().putBoolean(KEY_LOCAL_ONLY_MODE, false).apply()
         _authState.value = AuthState.SignedOut

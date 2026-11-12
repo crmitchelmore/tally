@@ -1,4 +1,5 @@
 import { requireAuth, isAuthError } from "../../../_lib/auth";
+import { rejectCrossOrigin } from "../../../_lib/origin";
 import { getUserByClerkId, updateUserPreferences } from "../../../_lib/store";
 import {
   jsonOk,
@@ -38,6 +39,8 @@ export async function GET() {
  * Update user preferences
  */
 export async function PATCH(request: Request) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   try {
     const authResult = await requireAuth();
     if (isAuthError(authResult)) {

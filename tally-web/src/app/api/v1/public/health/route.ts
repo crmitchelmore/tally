@@ -9,7 +9,7 @@ import { ConvexHttpClient } from "convex/browser";
  * - 503: Service is unhealthy (missing config, etc.)
  */
 export async function GET() {
-  const checks: Record<string, boolean | string> = {
+  const checks: Record<string, boolean> = {
     // Check that required env vars are present
     clerk_secret_key: !!process.env.CLERK_SECRET_KEY,
     convex_url: !!process.env.NEXT_PUBLIC_CONVEX_URL,
@@ -17,7 +17,6 @@ export async function GET() {
 
   // Try to actually connect to Convex
   let convexConnected = false;
-  let convexError: string | undefined;
   if (process.env.NEXT_PUBLIC_CONVEX_URL) {
     try {
       const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL);
@@ -26,13 +25,11 @@ export async function GET() {
       await client.query(api.challenges.listPublic, {});
       convexConnected = true;
     } catch (err) {
-      convexError = err instanceof Error ? err.message : String(err);
+      // Keep backend error details out of this unauthenticated response.
+      console.error("[Health] Convex connectivity check failed:", err);
     }
   }
   checks.convex_connected = convexConnected;
-  if (convexError) {
-    checks.convex_error = convexError;
-  }
 
   const allHealthy = checks.clerk_secret_key && checks.convex_url && convexConnected;
   const status = allHealthy ? 200 : 503;

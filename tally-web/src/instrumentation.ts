@@ -41,7 +41,7 @@ export async function register() {
     } = await import("@opentelemetry/sdk-logs");
     const { resourceFromAttributes } = await import("@opentelemetry/resources");
     const semconv = await import("@opentelemetry/semantic-conventions");
-    const { logs } = await import("@opentelemetry/api-logs");
+    const { logs } = await import("@opentelemetry/api");
 
     const HONEYCOMB_API_KEY = process.env.HONEYCOMB_API_KEY;
     const ENV = process.env.VERCEL_ENV || process.env.NODE_ENV || "development";
@@ -102,7 +102,7 @@ export async function register() {
     const sdk = new NodeSDK({
       resource,
       traceExporter,
-      metricReader,
+      metricReaders: [metricReader],
     });
 
     sdk.start();

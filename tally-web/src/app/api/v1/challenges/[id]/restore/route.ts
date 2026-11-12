@@ -2,6 +2,7 @@
  * POST /api/v1/challenges/[id]/restore - Restore a soft-deleted challenge
  */
 import { requireAuth, isAuthError } from "../../../_lib/auth";
+import { rejectCrossOrigin } from "../../../_lib/origin";
 import { restoreChallenge } from "../../../_lib/store";
 import {
   jsonOk,
@@ -14,6 +15,8 @@ import type { NextRequest } from "next/server";
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   try {
     const authResult = await requireAuth();
     if (isAuthError(authResult)) {

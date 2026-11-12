@@ -150,7 +150,7 @@ HONEYCOMB_API_KEY
 
 ## Platform Layout and Tooling
 
-- Web app (Next.js 15, Convex, Clerk) lives in `tally-web/`, the iOS app in `ios/` (Tuist workspace) with a standalone `tally-ios/TallyCore` Swift package, and Android in `tally-android/`. Infrastructure is planned as Pulumi in `infra/`, which does not exist yet.
+- Web app (Next.js 16, Convex, Clerk) lives in `tally-web/`, the iOS app in `ios/` (Tuist workspace) with a standalone `tally-ios/TallyCore` Swift package, and Android in `tally-android/`. Infrastructure is planned as Pulumi in `infra/`, which does not exist yet.
 - **Web app package manager:** use `bun` (not npm/yarn).
 - **Infrastructure package manager:** use `npm` in `infra/` (Pulumi compatibility).
 - Keep commits scoped by platform unless a change is intentionally cross-platform.
@@ -169,9 +169,9 @@ HONEYCOMB_API_KEY
 
 ## Next.js/Vercel Pitfalls
 
-- The web app is on Next.js 15 and builds with `next build`. When upgrading to Next.js 16, force webpack builds to avoid Turbopack `middleware.js.nft.json` ENOENT failures:
+- The web app is on Next.js 16 and builds with webpack to avoid Turbopack `middleware.js.nft.json` ENOENT failures. Keep both:
   - `next build --webpack` in scripts, and
-  - explicit Vercel `buildCommand` using webpack.
+  - the explicit Vercel `buildCommand` using webpack in `tally-web/vercel.json`.
 - Middleware matcher exclusions can still behave differently in production routing; if `_next/static/*` gets auth-applied (for example `x-clerk-auth-reason`), include `_next/static(.*)` and `_next/image(.*)` as public route fallbacks.
 
 ## Verification Rules

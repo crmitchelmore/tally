@@ -3,6 +3,7 @@
  * POST /api/v1/challenges - Create a new challenge
  */
 import { requireAuth, isAuthError } from "../_lib/auth";
+import { rejectCrossOrigin } from "../_lib/origin";
 import {
   getActiveChallenges,
   getChallengesByUserId,
@@ -78,6 +79,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   const requestId = generateRequestId();
 
   return withSpan("challenges.create", { request_id: requestId }, async (span) => {

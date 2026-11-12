@@ -4,6 +4,7 @@
  * DELETE /api/v1/data - Clear all user data
  */
 import { requireAuth, isAuthError } from "../_lib/auth";
+import { rejectCrossOrigin } from "../_lib/origin";
 import {
   exportUserData,
   importUserData,
@@ -59,6 +60,8 @@ export async function GET() {
 
 // POST /api/v1/data - Import data (replace-all semantics)
 export async function POST(request: NextRequest) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   const requestId = generateRequestId();
 
   return withSpan("data.import", { request_id: requestId }, async (span) => {
@@ -104,7 +107,9 @@ export async function POST(request: NextRequest) {
 }
 
 // DELETE /api/v1/data - Clear all user data
-export async function DELETE() {
+export async function DELETE(request: Request) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   const requestId = generateRequestId();
 
   return withSpan("data.clear", { request_id: requestId }, async (span) => {

@@ -23,7 +23,7 @@ export function UndoToast({
   const [isRestoring, setIsRestoring] = useState(false);
   const [progress, setProgress] = useState(100);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const startTimeRef = useRef<number>(Date.now());
+  const startTimeRef = useRef<number>(0);
 
   // Auto-dismiss timer with progress
   useEffect(() => {

@@ -34,13 +34,13 @@ jobs:
           echo "Runner: $RUNNER_NAME"
           xcodebuild -version
           git --version
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         if: inputs.mode != 'verify'
         with:
           ref: ${{ inputs.ref }}
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         if: inputs.mode != 'verify'
         with:
           node-version: '22'

@@ -24,12 +24,12 @@ jobs:
       run:
         working-directory: tally-android
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
         with:
           packages: platform-tools
       - uses: gradle/actions/setup-gradle@v6
@@ -59,7 +59,7 @@ jobs:
           test -n "$ANDROID_SENTRY_DSN"
           ./gradlew :app:bundleRelease testReleaseUnitTest --no-daemon
           jarsigner -verify app/build/outputs/bundle/release/app-release.aab
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: tally-android-store-${{ env.ANDROID_VERSION_CODE }}
           path: |

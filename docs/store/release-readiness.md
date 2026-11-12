@@ -22,6 +22,7 @@ The icon refresh and subsequent offline-records correction supersede that candid
 ## Delivery configuration
 
 - `.github/workflows/ios-testflight.yml`: existing signing, upload, processing and verified internal-group distribution. `scripts/distribute-testflight.mjs` fails on API errors and does not mistake arbitrary 409s for success; seven focused tests pass.
+- `.github/workflows/ios-app-store.yml`: runs after every TestFlight release (or on dispatch) and uses `scripts/app-store-release.mjs` to attach the processed build to the App Store version, replace screenshots with fresh `store-assets.yml` captures and submit for App Review. Before November 2026 nothing did this, so builds only ever reached TestFlight.
 - `.github/workflows/android-store.yml`: signed AAB, release tests, signature verification, Sentry mappings and retained artifacts; optional upload creates a draft on internal or Alpha testing only.
 - `.github/workflows/store-assets.yml`: real iPhone/iPad/Android screenshots with fictional local data.
 - `.github/workflows/deploy-production.yml`: authenticated web client first, then Convex enforcement, then smoke tests.

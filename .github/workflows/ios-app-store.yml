@@ -1,0 +1,98 @@
+name: iOS App Store Submission
+
+# TestFlight uploads never reach the public App Store on their own. This attaches a
+# processed build to the App Store version, refreshes screenshots and submits it for
+# App Review. It runs after every TestFlight release and can be dispatched manually.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Marketing version (defaults to ios/VERSION)"
+        required: false
+        type: string
+      build_number:
+        description: "Build number (defaults to the latest processed build for the version)"
+        required: false
+        type: string
+      release_notes:
+        description: "What's New (ignored for the first public release)"
+        required: false
+        default: "Bug fixes and improvements"
+        type: string
+      screenshots:
+        description: "Capture and replace App Store screenshots"
+        type: boolean
+        default: true
+      dry_run:
+        description: "Report App Store Connect state without changing anything"
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      build_number:
+        type: string
+        required: true
+      release_notes:
+        type: string
+        default: "Bug fixes and improvements"
+      screenshots:
+        type: boolean
+        default: true
+      dry_run:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-app-store-submission
+  cancel-in-progress: false
+
+jobs:
+  screenshots:
+    if: inputs.screenshots && !inputs.dry_run
+    uses: ./.github/workflows/store-assets.yml
+    with:
+      platform: ios
+
+  submit:
+    name: Submit for App Review
+    needs: screenshots
+    if: ${{ !cancelled() && (needs.screenshots.result == 'success' || needs.screenshots.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+      - name: Validate App Store submission handling
+        run: node --test scripts/app-store-release.test.mjs
+      - name: Download screenshots
+        if: needs.screenshots.result == 'success'
+        uses: actions/download-artifact@v7
+        with:
+          name: ios-store-screenshots
+          path: store-screenshots
+      - name: Resolve version
+        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: echo "VERSION=${INPUT_VERSION:-$(tr -d '[:space:]' < ios/VERSION)}" >> "$GITHUB_OUTPUT"
+      - name: Submit to App Review
+        id: submit
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APP_ID: ${{ secrets.IOS_APP_ID }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
+          WHATS_NEW: ${{ inputs.release_notes }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          SCREENSHOTS_DIR: ${{ needs.screenshots.result == 'success' && 'store-screenshots/store-assets/appstore' || '' }}
+        run: node scripts/app-store-release.mjs | tee -a "$GITHUB_STEP_SUMMARY"

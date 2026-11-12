@@ -123,6 +123,12 @@ base64 -w 0 /path/to/profile.mobileprovision | xclip -selection clipboard
    - Notifies testers
    - Creates GitHub release
 
+3. **Submit to App Store** (`.github/workflows/ios-app-store.yml`, ~30 min)
+   - Captures fresh iPhone/iPad screenshots (`store-assets.yml`)
+   - Moves the editable App Store version to the release version, attaches the build and replaces screenshots
+   - Submits for App Review (skipped, with a summary note, while another version is already in review or awaiting release)
+   - Dispatch it manually to resubmit an existing build; `dry_run` reports App Store Connect state without changes
+
 ### Build Numbers
 
 - If left empty, auto-generates as `YYMMDD` + run number (e.g., `25012523`)

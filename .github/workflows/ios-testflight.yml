@@ -587,7 +587,8 @@ jobs:
               return `${signatureInput}.${signature}`;
             }
             
-            const jwt = makeJWT(
+            // Fresh token per request: the internal-group wait can outlast one 15-minute JWT.
+            const jwt = () => makeJWT(
               process.env.ASC_KEY_ID,
               process.env.ASC_ISSUER_ID,
               process.env.ASC_PRIVATE_KEY

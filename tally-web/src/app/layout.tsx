@@ -38,30 +38,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const body = (
-    <body className={`${inter.variable} font-sans antialiased`}>
+  const content = (
+    <ConvexClientProvider>
       <TelemetryProvider>
         <DebugBridgeInit />
         {children}
       </TelemetryProvider>
-    </body>
-  );
-
-  const withConvex = (
-    <ConvexClientProvider>
-      {body}
     </ConvexClientProvider>
   );
 
   return (
     <html lang="en">
-      {hasClerkKeys ? (
-        <ClerkProvider>
-          {withConvex}
-        </ClerkProvider>
-      ) : (
-        withConvex
-      )}
+      <body className={`${inter.variable} font-sans antialiased`}>
+        {hasClerkKeys ? <ClerkProvider>{content}</ClerkProvider> : content}
+      </body>
     </html>
   );
 }

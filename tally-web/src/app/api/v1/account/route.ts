@@ -3,14 +3,13 @@ import { NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../../../convex/_generated/api";
 import { requireAuth, isAuthError } from "../_lib/auth";
+import { rejectCrossOrigin } from "../_lib/origin";
 
 export async function DELETE(request: Request) {
   const identity = await requireAuth();
   if (isAuthError(identity)) return identity.response;
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) {
-    return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
-  }
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   try {
     const session = await auth();
     // Match requireAuth's cookie-first precedence so mixed credentials cannot

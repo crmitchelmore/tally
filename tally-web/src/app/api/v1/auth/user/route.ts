@@ -1,5 +1,6 @@
 import { auth, currentUser, clerkClient, verifyToken } from "@clerk/nextjs/server";
 import { requireAuth, isAuthError } from "../../_lib/auth";
+import { rejectCrossOrigin } from "../../_lib/origin";
 import {
   getUserByClerkId,
   createUser,
@@ -46,7 +47,9 @@ async function getAuthenticatedUserId(): Promise<string | null> {
   return null;
 }
 
-export async function POST() {
+export async function POST(request: Request) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   const requestId = generateRequestId();
   
   return withSpan("auth.provision_user", { request_id: requestId }, async (span) => {

@@ -11,3 +11,9 @@ it("preserves Android simple-count submissions with explicit null sets",async ()
   expect(response.status).toBe(201);
   expect(mocks.createEntry.mock.calls[0][1].sets).toBeUndefined();
 });
+it("rejects cookie-authenticated writes from another origin",async () => {
+  mocks.createEntry.mockClear();
+  const response=await POST(new Request("https://tally.example/api/v1/entries",{method:"POST",headers:{"Content-Type":"application/json",Origin:"https://attacker.example"},body:JSON.stringify({challengeId:"goal",date:"2026-01-01",count:1})}) as NextRequest);
+  expect(response.status).toBe(403);
+  expect(mocks.createEntry).not.toHaveBeenCalled();
+});

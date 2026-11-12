@@ -16,6 +16,8 @@ Authorization: Bearer <clerk_jwt_token>
 
 Public endpoints under `/api/v1/public/` do not require authentication (currently only `/api/v1/public/health`).
 
+State-changing requests (`POST`, `PATCH`, `DELETE`) authenticated by the web session are rejected with `403` when their `Origin` header names another site. Native apps and API clients don't send `Origin`, so they're unaffected.
+
 ## Error Responses
 
 All errors return JSON with the following structure:

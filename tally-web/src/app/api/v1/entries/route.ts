@@ -3,6 +3,7 @@
  * POST /api/v1/entries - Create a new entry
  */
 import { requireAuth, isAuthError } from "../_lib/auth";
+import { rejectCrossOrigin } from "../_lib/origin";
 import {
   getEntriesByChallenge,
   getEntriesByUser,
@@ -99,6 +100,8 @@ export async function POST(request: NextRequest) {
       return response;
     } catch (error) { return capabilityError(error); }
   }
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   const requestId = generateRequestId();
 
   return withSpan("entries.create", { request_id: requestId }, async (span) => {

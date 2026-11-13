@@ -22,6 +22,10 @@ jobs:
     name: Web E2E (Playwright)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # Dependabot runs get no Actions secrets, so they can't sign in to Clerk.
+      # They build with placeholder keys and skip Playwright; main runs full E2E after merge.
+      DEPENDABOT_RUN: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.user.login == 'dependabot[bot]' }}
 
     steps:
       - uses: actions/checkout@v7.0.1
@@ -35,6 +39,7 @@ jobs:
         run: bun install
 
       - name: Install Playwright browsers
+        if: env.DEPENDABOT_RUN != 'true'
         working-directory: tally-web
         run: bunx playwright install chromium --with-deps
 
@@ -42,16 +47,21 @@ jobs:
         working-directory: tally-web
         run: bun run build
         env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_Zm9yay1jaS5jbGVyay5hY2NvdW50cy5kZXYk' }}
+          NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL || 'https://fork-ci.convex.cloud' }}
 
       - name: Run Playwright tests
+        if: env.DEPENDABOT_RUN != 'true'
         working-directory: tally-web
         run: bun run test:e2e
         env:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL }}
+
+      - name: Note skipped Playwright tests
+        if: env.DEPENDABOT_RUN == 'true'
+        run: echo "::notice::Dependabot run has no Actions secrets; Playwright tests skipped. Full Web E2E runs on main after merge."
 
       - uses: actions/upload-artifact@v7
         if: failure()

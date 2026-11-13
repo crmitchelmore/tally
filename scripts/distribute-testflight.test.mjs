@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { configureTestFlight } from './distribute-testflight.mjs';
 
-function scenario({ internal = true, attached = true, failure, paginated = false } = {}) {
+function scenario({ internal = true, attached = true, failure, paginated = false, attachAfter = 0, token = 'test' } = {}) {
   const calls = [];
+  let lookups = 0;
   const fetchImpl = async (url, options) => {
-    calls.push({ url, method: options.method });
+    calls.push({ url, method: options.method, auth: options.headers.Authorization });
     const path = new URL(url).pathname;
     if (failure && path.endsWith(failure.path)) {
       return { ok: false, status: failure.status, text: async () => 'Apple rejected the request' };
@@ -15,12 +16,13 @@ function scenario({ internal = true, attached = true, failure, paginated = false
     if (path.endsWith('/betaGroups/group')) data = { attributes: { isInternalGroup: internal } };
     else if (path.endsWith('/relationships/builds')) {
       const secondPage = url.includes('cursor=next');
-      data = attached && (!paginated || secondPage) ? [{ id: 'build' }] : [];
+      const ready = ++lookups > attachAfter;
+      data = attached && ready && (!paginated || secondPage) ? [{ id: 'build' }] : [];
       if (paginated && !secondPage) links = { next: `${url}&cursor=next` };
     } else data = { id: 'review' };
     return { ok: true, status: 200, json: async () => ({ data, links }) };
   };
-  return { calls, run: () => configureTestFlight({ token: 'test', buildId: 'build', groupIds: ['group'], fetchImpl }) };
+  return { calls, run: () => configureTestFlight({ token, buildId: 'build', groupIds: ['group'], fetchImpl, sleep: async () => {}, internalWaitMs: 90, pollMs: 30 }) };
 }
 
 test('existing internal access succeeds without external group mutation or beta review', async () => {
@@ -34,7 +36,12 @@ test('internal build lookup follows pagination', async () => {
   assert.ok(calls.some(call => call.url.includes('cursor=next')));
 });
 test('missing internal access fails instead of claiming distribution', async () => {
-  await assert.rejects(scenario({ attached: false }).run, /does not contain this build/);
+  await assert.rejects(scenario({ attached: false }).run, /still lacks this build/);
+});
+test('internal access is re-checked while automatic distribution catches up', async () => {
+  const { calls, run } = scenario({ attachAfter: 2 });
+  assert.equal((await run()).betaReview, 'not-required');
+  assert.equal(calls.filter(call => call.url.includes('/relationships/builds')).length, 3);
 });
 test('external access is attached before requesting beta review', async () => {
   const { calls, run } = scenario({ internal: false, attached: false });
@@ -51,4 +58,11 @@ test('409 beta review errors are not reported as success', async () => {
 });
 test('missing group configuration fails explicitly', async () => {
   await assert.rejects(configureTestFlight({ token: 'test', buildId: 'build', groupIds: [] }), /No TestFlight groups/);
+});
+test('a token factory is called for every request', async () => {
+  let minted = 0;
+  const { calls, run } = scenario({ attachAfter: 2, paginated: true, token: () => `t${++minted}` });
+  await run();
+  assert.equal(calls.filter(call => call.url.includes('/relationships/builds') && !call.url.includes('cursor=next')).length, 2);
+  assert.deepEqual(calls.map(call => call.auth), calls.map((_, i) => `Bearer t${i + 1}`));
 });

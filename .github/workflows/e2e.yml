@@ -1,14 +1,19 @@
 name: E2E Tests
 
+# Detailed UI/E2E suites run after merge, alongside the alpha (TestFlight) build
+# that the same main push triggers. PRs are gated by the fast CI `build` job.
+# Run on a branch before merging with workflow_dispatch.
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+# Per-commit so a later main push can't cancel an earlier commit's only E2E run.
 concurrency:
-  group: e2e-${{ github.ref }}
+  group: e2e-${{ github.sha }}
   cancel-in-progress: true
 
 env:
@@ -17,8 +22,6 @@ env:
 
 jobs:
   web-e2e:
-    # Forks have no secrets; never expose owner credentials to untrusted code.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     name: Web E2E (Playwright)
     runs-on: ubuntu-latest
     timeout-minutes: 30

@@ -186,6 +186,7 @@ HONEYCOMB_API_KEY
 
 ## CI and E2E Guardrails
 
+- `e2e.yml` (Playwright, XCUITest, Espresso) runs only on pushes to `main`, alongside the alpha TestFlight build, and by `workflow_dispatch`. PRs are gated by the fast `ci.yml` `build` check.
 - E2E workflows marked optional should use `continue-on-error: true`.
 - `tally-web/playwright.config.ts` reads `BASE_URL` (default `http://localhost:3000`) as the test target; its `webServer` still starts a local server (`bun run dev`, or `bun run start` under CI).
 - Clerk UI changes frequently; use resilient selectors (for example exact-name Continue button and `input[name="password"]`), and scope locators to regions when duplicate “Sign in” elements exist.

@@ -61,7 +61,8 @@ test('missing group configuration fails explicitly', async () => {
 });
 test('a token factory is called for every request', async () => {
   let minted = 0;
-  const { calls, run } = scenario({ attachAfter: 1, paginated: true, token: () => `t${++minted}` });
+  const { calls, run } = scenario({ attachAfter: 2, paginated: true, token: () => `t${++minted}` });
   await run();
+  assert.equal(calls.filter(call => call.url.includes('/relationships/builds') && !call.url.includes('cursor=next')).length, 2);
   assert.deepEqual(calls.map(call => call.auth), calls.map((_, i) => `Bearer t${i + 1}`));
 });

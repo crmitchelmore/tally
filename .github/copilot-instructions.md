@@ -150,7 +150,7 @@ HONEYCOMB_API_KEY
 
 ## Platform Layout and Tooling
 
-- Web app (Next.js 16, Convex, Clerk) lives in `tally-web/`, the iOS app in `ios/` (Tuist workspace) with a standalone `tally-ios/TallyCore` Swift package, and Android in `tally-android/`. Infrastructure is planned as Pulumi in `infra/`, which does not exist yet.
+- Web app (Next.js 16, Convex, Clerk) lives in `tally-web/`, the iOS app in `ios/` (Tuist workspace) and Android in `tally-android/`. Infrastructure is planned as Pulumi in `infra/`, which does not exist yet.
 - **Web app package manager:** use `bun` (not npm/yarn).
 - **Infrastructure package manager:** use `npm` in `infra/` (Pulumi compatibility).
 - Keep commits scoped by platform unless a change is intentionally cross-platform.

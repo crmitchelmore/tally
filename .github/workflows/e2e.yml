@@ -8,8 +8,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+# Per-commit so a later main push can't cancel an earlier commit's only E2E run.
 concurrency:
-  group: e2e-${{ github.ref }}
+  group: e2e-${{ github.sha }}
   cancel-in-progress: true
 
 env:

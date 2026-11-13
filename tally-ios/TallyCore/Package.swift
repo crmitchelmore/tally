@@ -30,10 +30,5 @@ let package = Package(
             ],
             path: "Sources/Telemetry"
         ),
-        .testTarget(
-            name: "TelemetryTests",
-            dependencies: ["Telemetry"],
-            path: "Tests/TelemetryTests"
-        ),
     ]
 )

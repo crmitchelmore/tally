@@ -16,7 +16,7 @@ Next.js request-error and router-transition hooks connect server rendering failu
 
 ## iOS
 
-The shipped app lives in `ios/`, not the historical `tally-ios/` tree. Its TallyCore analytics facade uses the official PostHog SDK, with explicit app-open, auth, challenge and entry events. Goal names, notes, email addresses, screen contents and session replays are not captured. Tests disable analytics and Sentry. The SDK handles its local event queue and flushes when the app backgrounds.
+The shipped app lives in `ios/`. Its TallyCore analytics facade uses the official PostHog SDK, with explicit app-open, auth, challenge and entry events. Goal names, notes, email addresses, screen contents and session replays are not captured. Tests disable analytics and Sentry. The SDK handles its local event queue and flushes when the app backgrounds.
 
 The TestFlight workflow passes `TUIST_POSTHOG_KEY` and `TUIST_POSTHOG_HOST` from the same repository secrets into Tuist. Local builds have analytics disabled unless a key is explicitly supplied before `tuist generate`. PostHog and Sentry remain off until separately enabled in the privacy prompt or Settings. Withdrawal closes the corresponding SDK. Native analytics disables GeoIP enrichment, and API events honour the consent header and exclude goal/entry content. Sentry excludes screenshots, view hierarchy, account details and breadcrumbs. The TestFlight archive uploads dSYMs to the existing `apple-ios` project using the same scoped CI token.
 

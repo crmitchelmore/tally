@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { releaseToAppStore, loadScreenshots } from './app-store-release.mjs';
+import { ascClient, releaseToAppStore, loadScreenshots } from './app-store-release.mjs';
 
 const refData = {
   displayClasses: [
@@ -190,4 +190,19 @@ test('an exact build number is looked up server-side', async () => {
   await run(api, { buildNumber: '100' });
   assert.equal(api.buildFilter, '100');
   assert.equal(api.platformFilter, 'IOS');
+});
+
+test('ascClient retries GETs on 5xx but never repeats writes', async () => {
+  const calls = [];
+  const statuses = [500, 503, 200];
+  const fetchImpl = async (url, init) => {
+    calls.push(init.method);
+    const status = init.method === 'GET' ? statuses.shift() : 500;
+    return { ok: status < 400, status, json: async () => ({ data: [] }), text: async () => 'boom' };
+  };
+  const api = ascClient({ token: 't', fetchImpl, sleep: async () => {} });
+  assert.deepEqual(await api.get('/v1/reviewSubmissions'), { data: [] });
+  assert.deepEqual(calls, ['GET', 'GET', 'GET']);
+  await assert.rejects(api.post('/v1/reviewSubmissions', {}), /500/);
+  assert.deepEqual(calls.slice(3), ['POST']);
 });

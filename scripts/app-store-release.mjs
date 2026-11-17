@@ -23,16 +23,22 @@ export function makeJWT({ keyId, issuerId, privateKey }) {
   return `${input}.${signature.toString('base64url')}`;
 }
 
-export function ascClient({ token, fetchImpl = fetch }) {
+export function ascClient({ token, fetchImpl = fetch, sleep = ms => new Promise(r => setTimeout(r, ms)), retries = 3 }) {
   const getToken = typeof token === 'function' ? token : () => token;
   async function request(method, target, body) {
     const url = new URL(target, ORIGIN);
     if (url.origin !== ORIGIN) throw new Error('Unexpected App Store Connect origin');
-    const response = await fetchImpl(url.href, {
-      method,
-      headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
-      ...(body ? { body: JSON.stringify(body) } : {}),
-    });
+    let response;
+    // App Store Connect returns intermittent 5xx; only reads are safe to repeat.
+    for (let attempt = 0; ; attempt++) {
+      response = await fetchImpl(url.href, {
+        method,
+        headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+        ...(body ? { body: JSON.stringify(body) } : {}),
+      });
+      if (method !== 'GET' || response.status < 500 || attempt >= retries) break;
+      await sleep(2000 * 2 ** attempt);
+    }
     if (!response.ok) throw new Error(`App Store Connect ${method} ${url.pathname} ${response.status}: ${await response.text()}`);
     return response.status === 204 ? null : response.json();
   }

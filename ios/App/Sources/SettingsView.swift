@@ -420,7 +420,7 @@ struct SettingsView: View {
             .frame(width: 40, height: 40)
             .overlay {
                 Image(systemName: "person.fill")
-                    .font(.system(size: 20))
+                    .font(.title3)
                     .foregroundColor(.tallyInkSecondary)
             }
     }
@@ -599,12 +599,13 @@ struct SettingsView: View {
 struct ExportShareSheet: View {
     let data: ExportDataResponse
     @Environment(\.dismiss) private var dismiss
+    @ScaledMetric(relativeTo: .largeTitle) private var iconSize: CGFloat = 64
     
     var body: some View {
         NavigationStack {
             VStack(spacing: TallySpacing.lg) {
                 Image(systemName: "doc.text.fill")
-                    .font(.system(size: 64))
+                    .font(.system(size: iconSize))
                     .foregroundColor(Color.tallyAccent)
                 
                 Text("Export Ready")

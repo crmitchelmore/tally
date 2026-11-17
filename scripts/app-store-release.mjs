@@ -23,16 +23,22 @@ export function makeJWT({ keyId, issuerId, privateKey }) {
   return `${input}.${signature.toString('base64url')}`;
 }
 
-export function ascClient({ token, fetchImpl = fetch }) {
+export function ascClient({ token, fetchImpl = fetch, sleep = ms => new Promise(r => setTimeout(r, ms)), retries = 3 }) {
   const getToken = typeof token === 'function' ? token : () => token;
   async function request(method, target, body) {
     const url = new URL(target, ORIGIN);
     if (url.origin !== ORIGIN) throw new Error('Unexpected App Store Connect origin');
-    const response = await fetchImpl(url.href, {
-      method,
-      headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
-      ...(body ? { body: JSON.stringify(body) } : {}),
-    });
+    let response;
+    // App Store Connect returns intermittent 5xx; only reads are safe to repeat.
+    for (let attempt = 0; ; attempt++) {
+      response = await fetchImpl(url.href, {
+        method,
+        headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+        ...(body ? { body: JSON.stringify(body) } : {}),
+      });
+      if (method !== 'GET' || response.status < 500 || attempt >= retries) break;
+      await sleep(2000 * 2 ** attempt);
+    }
     if (!response.ok) throw new Error(`App Store Connect ${method} ${url.pathname} ${response.status}: ${await response.text()}`);
     return response.status === 204 ? null : response.json();
   }
@@ -222,10 +228,19 @@ export async function releaseToAppStore(api, {
   const number = build.attributes.version ?? build.attributes.buildNumber;
   log(`Using processed build ${version} (${number}), id ${build.id}`);
 
-  const active = (await api.get(`/v1/reviewSubmissions?filter[app]=${appId}&filter[platform]=IOS&filter[state]=${ACTIVE_SUBMISSION.join(',')}&limit=10`)).data;
+  let active = null;
+  let lookupError;
+  try {
+    active = (await api.get(`/v1/reviewSubmissions?filter[app]=${appId}&filter[platform]=IOS&filter[state]=${ACTIVE_SUBMISSION.join(',')}&limit=10`)).data;
+  } catch (error) {
+    lookupError = error;
+    log(`Could not list review submissions: ${error.message.split('\n')[0]}`);
+  }
   // Plan without mutating, check the open submission, then apply the version change.
   const plan = await prepareVersion(api, { appId, version, dryRun: true, log });
   const { inFlight, hasRelease } = plan;
+  // An in-flight version is enough to stop; otherwise never submit blind.
+  if (!inFlight && lookupError) throw lookupError;
   if (inFlight || active.length) {
     const what = inFlight ? `${inFlight.attributes.versionString} is ${versionState(inFlight)}` : 'a review submission is already waiting or in review';
     log(`Not submitting: ${what}. Release or withdraw it in App Store Connect first.`);

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { releaseToAppStore, loadScreenshots } from './app-store-release.mjs';
+import { ascClient, releaseToAppStore, loadScreenshots } from './app-store-release.mjs';
 
 const refData = {
   displayClasses: [
@@ -190,4 +190,32 @@ test('an exact build number is looked up server-side', async () => {
   await run(api, { buildNumber: '100' });
   assert.equal(api.buildFilter, '100');
   assert.equal(api.platformFilter, 'IOS');
+});
+
+test('ascClient retries GETs on 5xx but never repeats writes', async () => {
+  const calls = [];
+  const statuses = [500, 503, 200];
+  const fetchImpl = async (url, init) => {
+    calls.push(init.method);
+    const status = init.method === 'GET' ? statuses.shift() : 500;
+    return { ok: status < 400, status, json: async () => ({ data: [] }), text: async () => 'boom' };
+  };
+  const api = ascClient({ token: 't', fetchImpl, sleep: async () => {} });
+  assert.deepEqual(await api.get('/v1/reviewSubmissions'), { data: [] });
+  assert.deepEqual(calls, ['GET', 'GET', 'GET']);
+  await assert.rejects(api.post('/v1/reviewSubmissions', {}), /500/);
+  assert.deepEqual(calls.slice(3), ['POST']);
+});
+
+test('a failed review submission lookup only stops when no version is in flight', async () => {
+  const failing = api => {
+    const get = api.get;
+    api.get = target => target.startsWith('/v1/reviewSubmissions') ? Promise.reject(new Error('App Store Connect GET /v1/reviewSubmissions 500')) : get(target);
+    return api;
+  };
+  const inReview = failing(fakeApi({ versions: [{ id: 'v1', attributes: { versionString: '1.11.0', appVersionState: 'WAITING_FOR_REVIEW' } }] }));
+  assert.equal((await run(inReview)).status, 'already-in-review');
+  const draft = failing(fakeApi());
+  await assert.rejects(run(draft), /500/);
+  assert.deepEqual(draft.mutations(), []);
 });

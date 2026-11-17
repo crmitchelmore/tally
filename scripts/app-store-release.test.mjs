@@ -206,3 +206,16 @@ test('ascClient retries GETs on 5xx but never repeats writes', async () => {
   await assert.rejects(api.post('/v1/reviewSubmissions', {}), /500/);
   assert.deepEqual(calls.slice(3), ['POST']);
 });
+
+test('a failed review submission lookup only stops when no version is in flight', async () => {
+  const failing = api => {
+    const get = api.get;
+    api.get = target => target.startsWith('/v1/reviewSubmissions') ? Promise.reject(new Error('App Store Connect GET /v1/reviewSubmissions 500')) : get(target);
+    return api;
+  };
+  const inReview = failing(fakeApi({ versions: [{ id: 'v1', attributes: { versionString: '1.11.0', appVersionState: 'WAITING_FOR_REVIEW' } }] }));
+  assert.equal((await run(inReview)).status, 'already-in-review');
+  const draft = failing(fakeApi());
+  await assert.rejects(run(draft), /500/);
+  assert.deepEqual(draft.mutations(), []);
+});

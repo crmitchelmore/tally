@@ -228,10 +228,19 @@ export async function releaseToAppStore(api, {
   const number = build.attributes.version ?? build.attributes.buildNumber;
   log(`Using processed build ${version} (${number}), id ${build.id}`);
 
-  const active = (await api.get(`/v1/reviewSubmissions?filter[app]=${appId}&filter[platform]=IOS&filter[state]=${ACTIVE_SUBMISSION.join(',')}&limit=10`)).data;
+  let active = null;
+  let lookupError;
+  try {
+    active = (await api.get(`/v1/reviewSubmissions?filter[app]=${appId}&filter[platform]=IOS&filter[state]=${ACTIVE_SUBMISSION.join(',')}&limit=10`)).data;
+  } catch (error) {
+    lookupError = error;
+    log(`Could not list review submissions: ${error.message.split('\n')[0]}`);
+  }
   // Plan without mutating, check the open submission, then apply the version change.
   const plan = await prepareVersion(api, { appId, version, dryRun: true, log });
   const { inFlight, hasRelease } = plan;
+  // An in-flight version is enough to stop; otherwise never submit blind.
+  if (!inFlight && lookupError) throw lookupError;
   if (inFlight || active.length) {
     const what = inFlight ? `${inFlight.attributes.versionString} is ${versionState(inFlight)}` : 'a review submission is already waiting or in review';
     log(`Not submitting: ${what}. Release or withdraw it in App Store Connect first.`);

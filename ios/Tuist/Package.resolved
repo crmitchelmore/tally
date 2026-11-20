@@ -1,13 +1,12 @@
 {
-  "originHash" : "155b6b820329081f5fc020ef46466492a639803628cc174de8949f0f55a20652",
   "pins" : [
     {
       "identity" : "clerk-ios",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/clerk/clerk-ios",
       "state" : {
-        "revision" : "f1b7b749d988bfcfd9bf0b9b106a704ead972d9f",
-        "version" : "1.7.1"
+        "revision" : "c82ae3a6dfb8130cdf753ce496aec83856a47b7d",
+        "version" : "1.7.2"
       }
     },
     {
@@ -42,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/getsentry/sentry-cocoa",
       "state" : {
-        "revision" : "aa91bcf6bd6f383dbc49f38bf785d1d775c4f751",
-        "version" : "9.34.0"
+        "revision" : "485e0622e00d60d71eb6b519822188e2eb7c29e3",
+        "version" : "9.35.0"
       }
     }
   ],

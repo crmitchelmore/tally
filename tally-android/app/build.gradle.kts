@@ -1,5 +1,5 @@
 plugins {
-    id("io.sentry.android.gradle") version "6.26.0"
+    id("io.sentry.android.gradle") version "6.27.0"
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)

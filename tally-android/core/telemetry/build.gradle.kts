@@ -38,7 +38,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     // PostHog analytics
-    implementation("com.posthog:posthog-android:3.76.2")
+    implementation("com.posthog:posthog-android:3.77.1")
 
     implementation("io.sentry:sentry-android:8.64.0")
 

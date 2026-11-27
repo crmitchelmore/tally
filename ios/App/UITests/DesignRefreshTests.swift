@@ -60,10 +60,11 @@ extension DesignRefreshTests {
         XCUIDevice.shared.orientation = .portrait
         XCTAssertTrue(count.waitForExistence(timeout: 5))
         XCTAssertEqual(count.value as? String, "25")
-        XCTAssertTrue(app.keyboards.firstMatch.exists, "The count field should keep focus during resize.")
+        count.typeText(XCUIKeyboardKey.delete.rawValue + "6")
+        XCTAssertEqual(count.value as? String, "26", "The count field should keep focus during resize.")
         captureLayout("draft-after-rotation")
         waitAndTap(app.buttons["addEntryNavButton"])
-        assertLabel(total, equals: "28")
+        assertLabel(total, equals: "29")
 
         let history = app.staticTexts["Entry History"]
         for _ in 0..<7 where !history.isHittable {
@@ -90,7 +91,7 @@ extension DesignRefreshTests {
         app.terminate()
         app.launchArguments = ["--uitesting", "--offline-mode"]
         app.launch()
-        assertLabel(row, contains: "28 of 500")
+        assertLabel(row, contains: "29 of 500")
     }
 
     func testSettingsSurvivesRotationWithoutTipping() {

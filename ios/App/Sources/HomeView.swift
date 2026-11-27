@@ -36,7 +36,7 @@ struct HomeView: View {
                     onAddEntry: { openEntry(for: challenge) },
                     onEdit: { editingChallenge = challenge },
                     onDismiss: {
-                        selectedChallengeID = nil
+                        self.selectedChallengeID = nil
                         preferredColumn = .sidebar
                     },
                     onDeleteChallenge: { deletedChallenge = $0 }

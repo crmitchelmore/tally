@@ -231,6 +231,7 @@ public struct ChallengeDetailView: View {
                     onUndo: {
                         Task {
                             _ = try? await APIClient.shared.restoreEntry(id: deletedEntry.id)
+                            await manager.refresh()
                             await manager.fetchEntries(for: challenge.id)
                         }
                         self.deletedEntry = nil

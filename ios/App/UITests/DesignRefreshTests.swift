@@ -9,7 +9,7 @@ final class DesignRefreshTests: TallyUITestCase {
         XCTAssertEqual(app.textFields["challenge-target-input"].value as? String, "500")
         waitAndTap(app.buttons["save-challenge-button"])
 
-        let log = app.buttons["quick-add"].firstMatch
+        let log = dashboard.quickAddButton(forChallenge: "Read a little every day")
         waitAndTap(log)
         let count = app.textFields["countInput"].firstMatch
         XCTAssertTrue(count.waitForExistence(timeout: 5))
@@ -31,12 +31,11 @@ final class DesignRefreshTests: TallyUITestCase {
 extension DesignRefreshTests {
     func testTallyAndDraftSurviveRotationAndRelaunch() {
         defer { XCUIDevice.shared.orientation = .portrait }
-        let name = "Daily reading"
+        let name = "Read a little every day"
         let dashboard = DashboardPage(app: app)
-        let form = ChallengeDialogPage(app: app)
         waitAndTap(dashboard.createChallengeButton)
-        form.fillChallenge(name: name, target: "500")
-        form.tapSaveAndWaitForDismiss()
+        waitAndTap(app.buttons["reading-idea"])
+        waitAndTap(app.buttons["save-challenge-button"])
 
         let increment = app.buttons["increment-\(name)"]
         XCTAssertTrue(increment.waitForExistence(timeout: 5))

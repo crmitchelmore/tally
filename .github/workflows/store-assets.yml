@@ -65,13 +65,13 @@ jobs:
           retention-days: 30
   ios:
     if: inputs.platform != 'android'
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '26.2.0'
+          xcode-version: '27.2.0'
       - uses: jdx/mise-action@v5
         with:
           version: 2025.12.1
@@ -88,9 +88,9 @@ jobs:
           python3 - <<'PY'
           import json,subprocess
           devices=json.loads(subprocess.check_output(['xcrun','simctl','list','devices','available','--json']))['devices']
-          candidates=[d for runtime,group in devices.items() if '.iOS-' in runtime for d in group]
-          for label,match in [('iphone','Pro Max'),('ipad','iPad Pro 13-inch')]:
-              selected=next((d for d in candidates if match in d['name']),None)
+          candidates=devices.get('com.apple.CoreSimulator.SimRuntime.iOS-27-2', [])
+          for label,match in [('iphone','iPhone 18 Pro Max'),('ipad','iPad Pro 13-inch (M5)')]:
+              selected=next((d for d in candidates if match == d['name']),None)
               if not selected: raise SystemExit(f'No suitable {label} simulator')
               result=subprocess.run(['xcodebuild','test','-workspace','Tally.xcworkspace','-scheme','App','-destination',f'platform=iOS Simulator,id={selected["udid"]}','-parallel-testing-enabled','NO','-only-testing:AppUITests/StoreScreenshotTests','-only-testing:AppUITests/PrivacyChoiceTests', '-resultBundlePath',f'{label}.xcresult','CODE_SIGNING_ALLOWED=NO'])
               subprocess.run(['xcrun','xcresulttool','export','attachments','--path',f'{label}.xcresult','--output-path',f'store-assets/{label}'],check=True)

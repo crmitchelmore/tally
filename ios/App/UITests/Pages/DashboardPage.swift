@@ -40,11 +40,13 @@ struct DashboardPage {
     // MARK: - Actions
     
     func challengeCard(named name: String) -> XCUIElement {
-        app.descendants(matching: .any)["challenge-card-\(name)"]
+        app.descendants(matching: .any)["challenge-card-\(name)"].firstMatch
     }
     
     func quickAddButton(forChallenge name: String) -> XCUIElement {
-        challengeCard(named: name).buttons["quick-add"].firstMatch
+        let label = "Log progress for \(name)"
+        return app.buttons.matching(identifier: "quick-add")
+            .matching(NSPredicate(format: "label == %@", label)).firstMatch
     }
     
     func tapCreateChallenge() {

@@ -199,6 +199,7 @@ public final class ChallengesManager {
     private var isSyncingEntries = false
     private var needsEntrySync = false
     private var entryMutationVersion = 0
+    private var deferredEntryFetches: Set<String> = []
     
     private static let fullDateFormatter = CalendarDay.formatter()
     
@@ -580,15 +581,22 @@ public final class ChallengesManager {
     
     /// Fetch and cache entries for a challenge from server
     public func fetchEntries(for challengeId: String) async {
-        guard !isSyncingEntries else { return }
-        let fetchVersion = entryMutationVersion
-        do {
-            let serverEntries = try await apiClient.listEntries(challengeId: challengeId)
-            guard !isSyncingEntries, entryMutationVersion == fetchVersion else { return }
-            localEntryStore.mergeWithServer(serverEntries, forChallenge: challengeId)
-            markEntriesUpdated()
-        } catch {
-            // Failed to fetch, local cache remains
+        while !Task.isCancelled {
+            if isSyncingEntries {
+                deferredEntryFetches.insert(challengeId)
+                return
+            }
+
+            let fetchVersion = entryMutationVersion
+            do {
+                let serverEntries = try await apiClient.listEntries(challengeId: challengeId)
+                guard !isSyncingEntries, entryMutationVersion == fetchVersion else { continue }
+                localEntryStore.mergeWithServer(serverEntries, forChallenge: challengeId)
+                markEntriesUpdated()
+            } catch {
+                // Local cache remains available after a failed fetch.
+            }
+            return
         }
     }
 
@@ -750,6 +758,12 @@ public final class ChallengesManager {
         } while isOnline && needsEntrySync
         isSyncingEntries = false
         updateSyncState()
+
+        let deferredFetches = deferredEntryFetches
+        deferredEntryFetches.removeAll()
+        for challengeId in deferredFetches {
+            await fetchEntries(for: challengeId)
+        }
     }
 
     private func sendPendingEntries() async {

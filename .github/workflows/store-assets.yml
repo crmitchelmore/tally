@@ -92,7 +92,7 @@ jobs:
           for label,match in [('iphone','iPhone 18 Pro Max'),('ipad','iPad Pro 13-inch (M5)')]:
               selected=next((d for d in candidates if match == d['name']),None)
               if not selected: raise SystemExit(f'No suitable {label} simulator')
-              result=subprocess.run(['xcodebuild','test','-workspace','Tally.xcworkspace','-scheme','App','-destination',f'platform=iOS Simulator,id={selected["udid"]}','-parallel-testing-enabled','NO','-only-testing:AppUITests/StoreScreenshotTests','-only-testing:AppUITests/PrivacyChoiceTests', '-resultBundlePath',f'{label}.xcresult','CODE_SIGNING_ALLOWED=NO'])
+              result=subprocess.run(['xcodebuild','test','-workspace','Tally.xcworkspace','-scheme','App','-destination',f'platform=iOS Simulator,id={selected["udid"]}','-parallel-testing-enabled','NO','-only-testing:AppUITests/StoreScreenshotTests','-only-testing:AppUITests/PrivacyChoiceTests', '-resultBundlePath',f'{label}.xcresult','IPHONEOS_DEPLOYMENT_TARGET=17.0','CODE_SIGNING_ALLOWED=NO'])
               subprocess.run(['xcrun','xcresulttool','export','attachments','--path',f'{label}.xcresult','--output-path',f'store-assets/{label}'],check=True)
               result.check_returncode()
           PY

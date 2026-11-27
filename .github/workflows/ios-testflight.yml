@@ -331,6 +331,7 @@ jobs:
             -authenticationKeyPath "$ASC_KEY_PATH" \
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
             CODE_SIGN_IDENTITY="Apple Distribution"
 
       - name: Upload debug symbols to Sentry

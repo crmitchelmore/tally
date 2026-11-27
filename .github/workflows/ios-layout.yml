@@ -51,7 +51,7 @@ jobs:
             -only-testing:AppUITests/DesignRefreshTests \
             -only-testing:AppUITests/StoreScreenshotTests \
             -only-testing:AppUITests/PrivacyChoiceTests \
-            -resultBundlePath layout.xcresult CODE_SIGNING_ALLOWED=NO
+            -resultBundlePath layout.xcresult IPHONEOS_DEPLOYMENT_TARGET=17.0 CODE_SIGNING_ALLOWED=NO
       - name: Export screenshots
         if: always()
         run: |

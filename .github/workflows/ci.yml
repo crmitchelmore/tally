@@ -72,6 +72,7 @@ jobs:
       - name: Build iOS app
         run: |
           set -o pipefail
+          # Xcode 27 rejects older targets in generated Swift package resource bundles.
           if command -v xcpretty >/dev/null 2>&1; then
             xcodebuild \
               -workspace Tally.xcworkspace \
@@ -79,6 +80,7 @@ jobs:
               -configuration Debug \
               -destination 'generic/platform=iOS Simulator' \
               build \
+              IPHONEOS_DEPLOYMENT_TARGET=17.0 \
               CODE_SIGN_IDENTITY="" \
               CODE_SIGNING_REQUIRED=NO \
               CODE_SIGNING_ALLOWED=NO \
@@ -90,6 +92,7 @@ jobs:
               -configuration Debug \
               -destination 'generic/platform=iOS Simulator' \
               build \
+              IPHONEOS_DEPLOYMENT_TARGET=17.0 \
               CODE_SIGN_IDENTITY="" \
               CODE_SIGNING_REQUIRED=NO \
               CODE_SIGNING_ALLOWED=NO

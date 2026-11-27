@@ -1,7 +1,6 @@
 import SwiftUI
 import TallyDesign
 import TallyFeatureAuth
-import TallyFeatureTipJar
 import TallyFeatureAPIClient
 import TallyFeatureChallenges
 import ClerkKit
@@ -13,7 +12,6 @@ struct SettingsView: View {
     @Bindable private var authManager = AuthManager.shared
     @EnvironmentObject private var appSettings: AppSettings
     @State private var showPrivacyChoices = false
-    @State private var showTipJar = false
     @State private var showExportSheet = false
     @State private var showImportPicker = false
     @State private var showDeleteConfirm = false
@@ -141,27 +139,6 @@ struct SettingsView: View {
                     } else {
                         Text("Export creates a JSON file you can use to back up or transfer your data.")
                     }
-                }
-                
-                // Support section
-                Section {
-                    Button {
-                        showTipJar = true
-                    } label: {
-                        Label {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Support Development")
-                                Text("Leave a tip")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        } icon: {
-                            Image(systemName: "heart.fill")
-                                .foregroundStyle(.pink)
-                        }
-                    }
-                } header: {
-                    Text("Support")
                 }
                 
                 // Account section - conditional based on auth state
@@ -299,21 +276,6 @@ struct SettingsView: View {
                         dismiss()
                     }
                 }
-            }
-            .sheet(isPresented: $showTipJar) {
-                NavigationStack {
-                    TipJarView()
-                        .navigationTitle("Tip Jar")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("Done") {
-                                    showTipJar = false
-                                }
-                            }
-                        }
-                }
-                .presentationDetents([.medium])
             }
             .sheet(isPresented: $showExportSheet) {
                 if let data = exportedData {

@@ -20,15 +20,15 @@ on:
         type: string
 
 env:
-  # NOTE: Apple requires Xcode 26+ (iOS 26 SDK) for App Store Connect uploads starting April 2026.
-  XCODE_VERSION: "26.2.0"
+  # The iOS 27.1 SDK or later enables edge-to-edge support on iPhone Duo.
+  XCODE_VERSION: "27.2.0"
   IOS_APP_ID: ${{ secrets.IOS_APP_ID }}
   IOS_BUNDLE_ID: "app.tally.ios"
 
 jobs:
   build-and-upload:
     name: Build & Upload to TestFlight
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 60
 
     steps:
@@ -331,6 +331,7 @@ jobs:
             -authenticationKeyPath "$ASC_KEY_PATH" \
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
             CODE_SIGN_IDENTITY="Apple Distribution"
 
       - name: Upload debug symbols to Sentry

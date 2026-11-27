@@ -38,9 +38,6 @@ public struct ChallengeListView: View {
                 challengesList
             }
         }
-        .task {
-            await manager.refresh()
-        }
     }
     
     private var challengesList: some View {
@@ -51,8 +48,6 @@ public struct ChallengeListView: View {
                     .tallyPadding(.horizontal)
             }
             
-            // Active challenges are now shown via DashboardView's configurable panels
-            // This list only shows archived challenges
             
             // Archived challenges (collapsible)
             if !manager.archivedChallenges.isEmpty {

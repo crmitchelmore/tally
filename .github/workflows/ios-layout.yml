@@ -1,0 +1,76 @@
+name: iOS Layout Preview
+
+on:
+  pull_request:
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios-layout.yml"
+      - ".github/workflows/ios-testflight.yml"
+      - ".github/workflows/store-assets.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-layout-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios-layout:
+    name: iOS layout (${{ matrix.device }})
+    runs-on: xcode-27
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - device: "iPhone Duo"
+            runtime: com.apple.CoreSimulator.SimRuntime.iOS-27-2-iPhone19-4
+          - device: "iPhone 17"
+            runtime: com.apple.CoreSimulator.SimRuntime.iOS-27-2
+          - device: "iPad Pro 13-inch (M5)"
+            runtime: com.apple.CoreSimulator.SimRuntime.iOS-27-2
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "27.2.0"
+      - uses: jdx/mise-action@v5
+        with:
+          install_args: tuist@4.32.0
+      - name: Generate app
+        run: |
+          mise exec tuist@4.32.0 -- tuist install
+          mise exec tuist@4.32.0 -- tuist generate --no-open
+      - name: Test layout and offline logging
+        env:
+          SIMULATOR_NAME: ${{ matrix.device }}
+          SIMULATOR_RUNTIME: ${{ matrix.runtime }}
+        run: |
+          set -o pipefail
+          xcrun simctl list runtimes available
+          DEVICE_TYPE=$(xcrun simctl list devicetypes --json | jq -er --arg name "$SIMULATOR_NAME" \
+            'first(.devicetypes[] | select(.name == $name) | .identifier)')
+          UDID=$(xcrun simctl create "$SIMULATOR_NAME QA" "$DEVICE_TYPE" "$SIMULATOR_RUNTIME")
+          xcrun simctl bootstatus "$UDID" -b
+          xcodebuild test -workspace Tally.xcworkspace -scheme App \
+            -destination "platform=iOS Simulator,id=$UDID" -parallel-testing-enabled NO \
+            -only-testing:AppUITests/DesignRefreshTests \
+            -only-testing:AppUITests/StoreScreenshotTests \
+            -only-testing:AppUITests/PrivacyChoiceTests \
+            -resultBundlePath layout.xcresult IPHONEOS_DEPLOYMENT_TARGET=17.0 CODE_SIGNING_ALLOWED=NO
+      - name: Export screenshots
+        if: always()
+        run: |
+          if [ -d layout.xcresult ]; then
+            xcrun xcresulttool export attachments --path layout.xcresult --output-path layout-attachments
+          fi
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: ios-layout-${{ strategy.job-index }}
+          path: ios/layout-attachments
+          retention-days: 14

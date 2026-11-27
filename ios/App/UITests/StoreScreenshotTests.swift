@@ -4,14 +4,10 @@ import XCTest
 final class StoreScreenshotTests: TallyUITestCase {
     func testCaptureStoreScreens() {
         let dashboard = DashboardPage(app: app)
-        let form = ChallengeDialogPage(app: app)
         waitAndTap(dashboard.createChallengeButton)
-        form.fillChallenge(name: "Read a little every day", target: "500")
-        let unit = app.textFields["Unit (e.g., reps, pages)"]
-        waitAndTap(unit)
-        unit.typeText("pages")
-        form.tapSaveAndWaitForDismiss()
-        waitAndTap(app.buttons["quick-add"].firstMatch)
+        waitAndTap(app.buttons["reading-idea"])
+        waitAndTap(app.buttons["save-challenge-button"])
+        waitAndTap(dashboard.quickAddButton(forChallenge: "Read a little every day"))
         let entry = EntryDialogPage(app: app)
         entry.enterCount("25")
         entry.save()

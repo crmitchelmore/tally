@@ -11,8 +11,8 @@ public struct AddEntrySheet: View {
     let onSubmit: (CreateEntryRequest) -> Void
     let onDismiss: () -> Void
     
-    @State private var sets: [String] = ["1"]
-    @State private var simpleCount: String = "1"
+    @State private var sets: [String]
+    @State private var simpleCount: String
     @State private var date: Date = Date()
     @State private var note: String = ""
     @State private var feeling: Feeling?
@@ -38,6 +38,8 @@ public struct AddEntrySheet: View {
         self.recentEntries = recentEntries
         self.onSubmit = onSubmit
         self.onDismiss = onDismiss
+        _sets = State(initialValue: [String(EntryDefaults.calculateInitialValue(entries: recentEntries, countType: .sets))])
+        _simpleCount = State(initialValue: String(EntryDefaults.calculateInitialValue(entries: recentEntries, countType: .simple)))
     }
     
     private var countType: CountType {
@@ -100,34 +102,13 @@ public struct AddEntrySheet: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Add") { submit() }
-                        .disabled(isFutureDate || displayCount <= 0)
+                        .disabled(showSuccess || isFutureDate || displayCount <= 0)
                         .accessibilityIdentifier("addEntryNavButton")
                 }
             }
-            .onAppear {
-                initializeDefaults()
-            }
-            .onChange(of: countType) { _, _ in
-                initializeDefaults()
-            }
         }
     }
-    
-    // MARK: - Initialize Defaults
-    
-    private func initializeDefaults() {
-        showSuccess = false
-        if countType == .sets {
-            sets = [String(averageFirstSet)]
-        } else {
-            simpleCount = String(EntryDefaults.calculateInitialValue(entries: recentEntries, countType: .simple))
-        }
-        date = Date()
-        note = ""
-        feeling = nil
-        showOptions = false
-    }
-    
+
     // MARK: - Sets Input Section
     
     private var setsInputSection: some View {
@@ -470,7 +451,7 @@ public struct AddEntrySheet: View {
             .background(showSuccess ? Color.tallySuccess : Color.tallyAccent)
             .cornerRadius(12)
         }
-        .disabled(isFutureDate || displayCount <= 0)
+        .disabled(showSuccess || isFutureDate || displayCount <= 0)
         .opacity((isFutureDate || displayCount <= 0) ? 0.5 : 1)
         .accessibilityIdentifier("saveEntryButton")
     }
@@ -478,11 +459,10 @@ public struct AddEntrySheet: View {
     // MARK: - Submit
     
     private func submit() {
-        guard !isFutureDate, displayCount > 0 else { return }
+        guard !showSuccess, !isFutureDate, displayCount > 0 else { return }
+        showSuccess = true
         
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let dateString = dateFormatter.string(from: date)
+        let dateString = CalendarDay.formatter().string(from: date)
         
         let numericSets: [Int]? = countType == .sets
             ? sets.compactMap { Int($0) }.filter { $0 > 0 }
@@ -502,7 +482,6 @@ public struct AddEntrySheet: View {
         
         // Optimistic save - call synchronously and dismiss after a brief confirmation
         onSubmit(request)
-        showSuccess = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             onDismiss()
         }

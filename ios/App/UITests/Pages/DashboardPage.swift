@@ -40,11 +40,13 @@ struct DashboardPage {
     // MARK: - Actions
     
     func challengeCard(named name: String) -> XCUIElement {
-        app.descendants(matching: .any)["challenge-card-\(name)"]
+        app.descendants(matching: .any)["challenge-card-\(name)"].firstMatch
     }
     
     func quickAddButton(forChallenge name: String) -> XCUIElement {
-        challengeCard(named: name).buttons["quick-add"].firstMatch
+        let label = "Log progress for \(name)"
+        return app.buttons.matching(identifier: "quick-add")
+            .matching(NSPredicate(format: "label == %@", label)).firstMatch
     }
     
     func tapCreateChallenge() {
@@ -66,7 +68,12 @@ struct DashboardPage {
     }
     
     func tapChallenge(named name: String) {
-        challengeCard(named: name).tap()
+        let row = app.buttons["open-challenge-\(name)"].firstMatch
+        if row.exists {
+            row.tap()
+        } else {
+            challengeCard(named: name).tap()
+        }
     }
     
     // MARK: - Assertions

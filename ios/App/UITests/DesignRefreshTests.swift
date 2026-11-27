@@ -39,7 +39,9 @@ extension DesignRefreshTests {
 
         let increment = app.buttons["increment-\(name)"]
         XCTAssertTrue(increment.waitForExistence(timeout: 5))
-        increment.tap(withNumberOfTaps: 3, numberOfTouches: 1)
+        for _ in 0..<3 {
+            increment.tap()
+        }
         let row = app.buttons["open-challenge-\(name)"]
         assertLabel(row, contains: "3 of 500")
         let actions = dashboard.challengeCard(named: name).buttons.allElementsBoundByIndex.map(\.identifier)
@@ -116,7 +118,8 @@ extension DesignRefreshTests {
     private func waitForLabel(_ element: XCUIElement, matching predicate: NSPredicate) {
         XCTAssertTrue(element.waitForExistence(timeout: 8))
         let label = XCTNSPredicateExpectation(predicate: predicate, object: element)
-        XCTAssertEqual(XCTWaiter.wait(for: [label], timeout: 5), .completed)
+        XCTAssertEqual(XCTWaiter.wait(for: [label], timeout: 5), .completed,
+                       "Expected \(predicate.predicateFormat). Actual label: \(element.label)")
     }
 
     private func captureLayout(_ name: String) {

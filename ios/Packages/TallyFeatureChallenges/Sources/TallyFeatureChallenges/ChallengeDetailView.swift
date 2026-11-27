@@ -99,6 +99,7 @@ public struct ChallengeDetailView: View {
             .frame(maxWidth: 740)
             .frame(maxWidth: .infinity)
         }
+        .accessibilityIdentifier("challenge-title")
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if challenge.hasStarted {
                 entryActions
@@ -107,7 +108,6 @@ public struct ChallengeDetailView: View {
         .background(Color.tallyPaper)
         .navigationTitle(challenge.name)
         .navigationBarTitleDisplayMode(.inline)
-        .accessibilityIdentifier("challenge-title")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Menu {

@@ -44,8 +44,11 @@ jobs:
           SIMULATOR_NAME: ${{ matrix.device }}
         run: |
           set -o pipefail
-          UDID=$(xcrun simctl list devices available --json | jq -er --arg name "$SIMULATOR_NAME" \
-            '.devices["com.apple.CoreSimulator.SimRuntime.iOS-27-2"][] | select(.name == $name) | .udid' | head -n 1)
+          xcrun simctl list runtimes available
+          DEVICE_TYPE=$(xcrun simctl list devicetypes --json | jq -er --arg name "$SIMULATOR_NAME" \
+            'first(.devicetypes[] | select(.name == $name) | .identifier)')
+          UDID=$(xcrun simctl create "$SIMULATOR_NAME QA" "$DEVICE_TYPE" com.apple.CoreSimulator.SimRuntime.iOS-27-2)
+          xcrun simctl bootstatus "$UDID" -b
           xcodebuild test -workspace Tally.xcworkspace -scheme App \
             -destination "platform=iOS Simulator,id=$UDID" -parallel-testing-enabled NO \
             -only-testing:AppUITests/DesignRefreshTests \

@@ -87,12 +87,13 @@ jobs:
         run: |
           python3 - <<'PY'
           import json,subprocess
-          devices=json.loads(subprocess.check_output(['xcrun','simctl','list','devices','available','--json']))['devices']
-          candidates=devices.get('com.apple.CoreSimulator.SimRuntime.iOS-27-2', [])
-          for label,match in [('iphone','iPhone 18 Pro Max'),('ipad','iPad Pro 13-inch (M5)')]:
-              selected=next((d for d in candidates if match == d['name']),None)
-              if not selected: raise SystemExit(f'No suitable {label} simulator')
-              result=subprocess.run(['xcodebuild','test','-workspace','Tally.xcworkspace','-scheme','App','-destination',f'platform=iOS Simulator,id={selected["udid"]}','-parallel-testing-enabled','NO','-only-testing:AppUITests/StoreScreenshotTests','-only-testing:AppUITests/PrivacyChoiceTests', '-resultBundlePath',f'{label}.xcresult','IPHONEOS_DEPLOYMENT_TARGET=17.0','CODE_SIGNING_ALLOWED=NO'])
+          types=json.loads(subprocess.check_output(['xcrun','simctl','list','devicetypes','--json']))['devicetypes']
+          for label,name in [('iphone','iPhone 18 Pro Max'),('ipad','iPad Pro 13-inch (M5)')]:
+              device_type=next((d['identifier'] for d in types if name == d['name']), None)
+              if not device_type: raise SystemExit(f'No simulator device type named {name}')
+              udid=subprocess.check_output(['xcrun','simctl','create',f'{name} Store Capture',device_type,'com.apple.CoreSimulator.SimRuntime.iOS-27-2'],text=True).strip()
+              subprocess.run(['xcrun','simctl','bootstatus',udid,'-b'],check=True)
+              result=subprocess.run(['xcodebuild','test','-workspace','Tally.xcworkspace','-scheme','App','-destination',f'platform=iOS Simulator,id={udid}','-parallel-testing-enabled','NO','-only-testing:AppUITests/StoreScreenshotTests','-only-testing:AppUITests/PrivacyChoiceTests', '-resultBundlePath',f'{label}.xcresult','IPHONEOS_DEPLOYMENT_TARGET=17.0','CODE_SIGNING_ALLOWED=NO'])
               subprocess.run(['xcrun','xcresulttool','export','attachments','--path',f'{label}.xcresult','--output-path',f'store-assets/{label}'],check=True)
               result.check_returncode()
           PY

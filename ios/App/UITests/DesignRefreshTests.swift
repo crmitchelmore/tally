@@ -27,3 +27,102 @@ final class DesignRefreshTests: TallyUITestCase {
         XCTAssertTrue(progress.waitForExistence(timeout: 10), "Progress must survive relaunch.")
     }
 }
+
+extension DesignRefreshTests {
+    func testTallyAndDraftSurviveRotationAndRelaunch() {
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let name = "Daily reading"
+        let dashboard = DashboardPage(app: app)
+        let form = ChallengeDialogPage(app: app)
+        waitAndTap(dashboard.createChallengeButton)
+        form.fillChallenge(name: name, target: "500")
+        form.tapSaveAndWaitForDismiss()
+
+        let increment = app.buttons["increment-\(name)"]
+        XCTAssertTrue(increment.waitForExistence(timeout: 5))
+        increment.tap(withNumberOfTaps: 3, numberOfTouches: 1)
+        let row = app.buttons["open-challenge-\(name)"]
+        assertLabel(row, contains: "3 of 500")
+        let actions = dashboard.challengeCard(named: name).buttons.allElementsBoundByIndex.map(\.identifier)
+        XCTAssertEqual(actions, ["open-challenge-\(name)", "increment-\(name)", "quick-add"])
+        XCTAssertGreaterThanOrEqual(increment.frame.height, 44)
+        captureLayout("challenge-list-portrait")
+
+        waitAndTap(row)
+        let total = app.staticTexts["challenge-total-count"]
+        assertLabel(total, equals: "3")
+        XCUIDevice.shared.orientation = .landscapeLeft
+        assertLabel(total, equals: "3")
+        captureLayout("challenge-detail-landscape")
+
+        waitAndTap(app.buttons["detail-add-entry"])
+        let count = app.textFields["countInput"].firstMatch
+        clearAndType(count, text: "25")
+        XCUIDevice.shared.orientation = .portrait
+        XCTAssertTrue(count.waitForExistence(timeout: 5))
+        XCTAssertEqual(count.value as? String, "25")
+        XCTAssertTrue(app.keyboards.firstMatch.exists, "The count field should keep focus during resize.")
+        captureLayout("draft-after-rotation")
+        waitAndTap(app.buttons["addEntryNavButton"])
+        assertLabel(total, equals: "28")
+
+        let history = app.staticTexts["Entry History"]
+        for _ in 0..<7 where !history.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(history.isHittable)
+        XCUIDevice.shared.orientation = .landscapeRight
+        XCTAssertTrue(app.buttons["detail-add-entry"].isHittable)
+        XCTAssertTrue(history.exists)
+        XCUIDevice.shared.orientation = .portrait
+
+        let edit = app.buttons.matching(identifier: "Edit entry").firstMatch
+        for _ in 0..<4 where !edit.isHittable {
+            app.swipeUp()
+        }
+        waitAndTap(edit)
+        let editCount = app.textFields["countInput"].firstMatch
+        clearAndType(editCount, text: "42")
+        XCUIDevice.shared.orientation = .landscapeLeft
+        XCTAssertEqual(editCount.value as? String, "42")
+        waitAndTap(app.navigationBars["Edit Entry"].buttons["Cancel"])
+        XCUIDevice.shared.orientation = .portrait
+
+        app.terminate()
+        app.launchArguments = ["--uitesting", "--offline-mode"]
+        app.launch()
+        assertLabel(row, contains: "28 of 500")
+    }
+
+    func testSettingsSurvivesRotationWithoutTipping() {
+        defer { XCUIDevice.shared.orientation = .portrait }
+        waitAndTap(app.buttons["Profile"].firstMatch)
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+        XCUIDevice.shared.orientation = .landscapeLeft
+        XCTAssertTrue(app.navigationBars["Settings"].exists)
+        XCTAssertFalse(app.staticTexts["Support Development"].exists)
+        waitAndTap(app.navigationBars["Settings"].buttons["Done"])
+        XCTAssertTrue(app.buttons["Profile"].firstMatch.isHittable)
+    }
+
+    private func assertLabel(_ element: XCUIElement, contains value: String) {
+        waitForLabel(element, matching: NSPredicate(format: "label CONTAINS %@", value))
+    }
+
+    private func assertLabel(_ element: XCUIElement, equals value: String) {
+        waitForLabel(element, matching: NSPredicate(format: "label == %@", value))
+    }
+
+    private func waitForLabel(_ element: XCUIElement, matching predicate: NSPredicate) {
+        XCTAssertTrue(element.waitForExistence(timeout: 8))
+        let label = XCTNSPredicateExpectation(predicate: predicate, object: element)
+        XCTAssertEqual(XCTWaiter.wait(for: [label], timeout: 5), .completed)
+    }
+
+    private func captureLayout(_ name: String) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+}

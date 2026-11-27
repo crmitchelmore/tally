@@ -23,7 +23,7 @@ struct ChallengeDetailPage {
     }
     
     var addEntryButton: XCUIElement {
-        app.buttons["Add Entry"].firstMatch
+        app.buttons["detail-add-entry"].firstMatch
     }
 
     var actionsMenu: XCUIElement {

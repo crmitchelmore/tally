@@ -66,7 +66,12 @@ struct DashboardPage {
     }
     
     func tapChallenge(named name: String) {
-        challengeCard(named: name).tap()
+        let row = app.buttons["open-challenge-\(name)"].firstMatch
+        if row.exists {
+            row.tap()
+        } else {
+            challengeCard(named: name).tap()
+        }
     }
     
     // MARK: - Assertions

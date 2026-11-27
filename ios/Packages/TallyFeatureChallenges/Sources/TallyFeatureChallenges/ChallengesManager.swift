@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import TallyCore
+import TallyDesign
 import TallyFeatureAPIClient
 
 /// Observable state manager for challenges with offline-first behavior
@@ -195,6 +196,9 @@ public final class ChallengesManager {
     private let localEntryStore: LocalEntryStore
     private let dashboardConfigDefaults: UserDefaults
     private let dashboardConfigKey = "tally.dashboard.config"
+    private var isSyncingEntries = false
+    private var needsEntrySync = false
+    private var entryMutationVersion = 0
     
     private static let fullDateFormatter = CalendarDay.formatter()
     
@@ -251,10 +255,11 @@ public final class ChallengesManager {
         errorMessage = nil
         
         do {
+            let refreshVersion = entryMutationVersion
             async let serverChallenges = apiClient.listChallenges(includeArchived: true)
             async let serverSummary = apiClient.getDashboardSummary()
             let serverData = try await serverChallenges
-            localStore.mergeWithServer(serverData)
+            mergeChallenges(serverData, preserveEntryStats: entryMutationVersion != refreshVersion)
             challenges = localStore.loadChallenges()
             stats = localStore.loadStats()
             let summary = try await serverSummary
@@ -308,6 +313,23 @@ public final class ChallengesManager {
         isLoading = false
         isRefreshing = false
         updateSyncState()
+    }
+
+    private func mergeChallenges(_ serverData: [ChallengeWithStats], preserveEntryStats: Bool) {
+        let pendingIDs = Set(localEntryStore.loadPendingChanges().compactMap { change -> Challenge.ID? in
+            switch change {
+            case .create(_, let request): request.challengeId
+            case .update(let id, _): localEntryStore.getEntry(id: id)?.challengeId
+            case .delete: nil
+            }
+        })
+        let optimisticStats = stats
+        localStore.mergeWithServer(serverData)
+        for (id, progress) in optimisticStats where preserveEntryStats || pendingIDs.contains(id) {
+            if localStore.getChallenge(id: id) != nil {
+                localStore.upsertStats(progress, for: id)
+            }
+        }
     }
 
     /// Refresh dashboard stats + personal records summary
@@ -462,6 +484,18 @@ public final class ChallengesManager {
     
     // MARK: - Entry Management (Optimistic)
     
+    /// Record one count using the same offline queue as a full entry.
+    public func incrementChallenge(id: String) {
+        guard let challenge = challenge(id: id), challenge.hasStarted,
+              !challenge.isArchived, challenge.resolvedCountType == .simple else { return }
+        addEntry(CreateEntryRequest(
+            challengeId: id,
+            date: Self.fullDateFormatter.string(from: .now),
+            count: 1
+        ))
+        TallyHaptics.shared.hapticForCount(1)
+    }
+
     /// Add an entry optimistically - saves locally first, syncs in background
     /// Returns immediately after local save for instant UI feedback
     public func addEntry(_ request: CreateEntryRequest) {
@@ -483,6 +517,7 @@ public final class ChallengesManager {
         )
         
         // Save locally and queue for sync
+        entryMutationVersion += 1
         localEntryStore.upsertEntry(entry)
         localEntryStore.addPendingChange(.create(id: tempId, request: request))
         Analytics.capture(.entryCreated)
@@ -545,8 +580,11 @@ public final class ChallengesManager {
     
     /// Fetch and cache entries for a challenge from server
     public func fetchEntries(for challengeId: String) async {
+        guard !isSyncingEntries else { return }
+        let fetchVersion = entryMutationVersion
         do {
             let serverEntries = try await apiClient.listEntries(challengeId: challengeId)
+            guard !isSyncingEntries, entryMutationVersion == fetchVersion else { return }
             localEntryStore.mergeWithServer(serverEntries, forChallenge: challengeId)
             markEntriesUpdated()
         } catch {
@@ -583,6 +621,7 @@ public final class ChallengesManager {
             note: request.note,
             feeling: request.feeling
         )
+        entryMutationVersion += 1
         localEntryStore.upsertEntry(updated)
         localEntryStore.addPendingChange(.update(id: entry.id, request: syncRequest))
         Analytics.capture(.entryUpdated)
@@ -599,6 +638,7 @@ public final class ChallengesManager {
     
     /// Delete a cached entry and queue for sync
     public func deleteEntry(_ entry: Entry) {
+        entryMutationVersion += 1
         localEntryStore.removeEntry(id: entry.id)
         localEntryStore.addPendingChange(.delete(id: entry.id))
         Analytics.capture(.entryDeleted)
@@ -697,6 +737,22 @@ public final class ChallengesManager {
     
     /// Sync all pending entry changes to server
     private func syncPendingEntries() async {
+        guard isOnline else { return }
+        if isSyncingEntries {
+            needsEntrySync = true
+            return
+        }
+
+        isSyncingEntries = true
+        repeat {
+            needsEntrySync = false
+            await sendPendingEntries()
+        } while isOnline && needsEntrySync
+        isSyncingEntries = false
+        updateSyncState()
+    }
+
+    private func sendPendingEntries() async {
         let pendingChanges = localEntryStore.loadPendingChanges()
         guard !pendingChanges.isEmpty else {
             updateSyncState()
@@ -728,7 +784,7 @@ public final class ChallengesManager {
                 }
                 
             } catch let error as APIError {
-                if !error.isRecoverable {
+                if !error.isRecoverable && !error.requiresReauth {
                     // Remove failed non-recoverable changes
                     localEntryStore.removePendingChange(for: change.entryId)
                 }
@@ -740,18 +796,20 @@ public final class ChallengesManager {
         
         // After syncing entries, refresh to get updated stats from server
         // This ensures stats are accurate after server-side recalculation
-        if isOnline {
-            do {
-                let serverData = try await apiClient.listChallenges(includeArchived: true)
-                localStore.mergeWithServer(serverData)
-                stats = localStore.loadStats()
-            } catch {
-                // Failed to refresh stats, keep optimistic values
-            }
-        }
-        
+        entryMutationVersion += 1
         markEntriesUpdated()
-        updateSyncState()
+
+        // New local entries may arrive while either request is suspended.
+        guard isOnline, localEntryStore.loadPendingChanges().isEmpty else { return }
+        let syncedVersion = entryMutationVersion
+        do {
+            let serverData = try await apiClient.listChallenges(includeArchived: true)
+            guard entryMutationVersion == syncedVersion else { return }
+            localStore.mergeWithServer(serverData)
+            stats = localStore.loadStats()
+        } catch {
+            // Failed to refresh stats, keep optimistic values.
+        }
     }
 
     /// Load cached dashboard config (local-first)

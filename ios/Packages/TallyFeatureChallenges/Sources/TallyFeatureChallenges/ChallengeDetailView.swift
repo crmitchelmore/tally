@@ -4,20 +4,19 @@ import TallyFeatureAPIClient
 
 /// Detail view for a challenge showing stats, burn-up chart, and actions
 public struct ChallengeDetailView: View {
-    @State private var challenge: Challenge
+    let challenge: Challenge
     @Bindable var manager: ChallengesManager
     let onAddEntry: () -> Void
     let onEdit: () -> Void
     let onDismiss: () -> Void
     let onDeleteChallenge: ((Challenge) -> Void)?
     
-    @State private var stats: ChallengeStats?
     @State private var entries: [Entry] = []
-    @State private var isLoadingStats = false
     @State private var showDeleteConfirmation = false
     @State private var showArchiveConfirmation = false
     @State private var selectedEntry: Entry?
-    @State private var showAddEntrySheet = false
+    @State private var addEntryAfterDrilldown = false
+    @State private var editEntryAfterDrilldown: Entry?
     @State private var drilldownDate: String?
     @State private var deletedEntry: Entry?
     @State private var showMoreEntries = false
@@ -25,6 +24,7 @@ public struct ChallengeDetailView: View {
     @State private var sortDirection: SortDirection = .desc
     
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     
     public init(
         challenge: Challenge,
@@ -34,8 +34,7 @@ public struct ChallengeDetailView: View {
         onDismiss: @escaping () -> Void,
         onDeleteChallenge: ((Challenge) -> Void)? = nil
     ) {
-        _challenge = State(initialValue: challenge)
-        _stats = State(initialValue: manager.stats(for: challenge.id))
+        self.challenge = challenge
         self.manager = manager
         self.onAddEntry = onAddEntry
         self.onEdit = onEdit
@@ -43,6 +42,8 @@ public struct ChallengeDetailView: View {
         self.onDeleteChallenge = onDeleteChallenge
     }
     
+    private var stats: ChallengeStats? { manager.stats(for: challenge.id) }
+
     public var body: some View {
         ScrollView {
             VStack(spacing: TallySpacing.lg) {
@@ -65,7 +66,11 @@ public struct ChallengeDetailView: View {
                 // Stats grid
                 if let stats = stats, challenge.hasStarted {
                     statsGrid(stats)
-                    
+                }
+
+                entriesHistorySection
+
+                if let stats = stats, challenge.hasStarted {
                     // Burn-up chart showing full duration with projection
                     BurnUpChartView(
                         challenge: challenge,
@@ -87,28 +92,24 @@ public struct ChallengeDetailView: View {
                     .accessibilityIdentifier("activity-heatmap")
                 }
                 
-                entriesHistorySection
-                
                 // Actions section
                 actionsSection
             }
             .tallyPadding()
+            .frame(maxWidth: 740)
+            .frame(maxWidth: .infinity)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if challenge.hasStarted {
+                entryActions
+            }
         }
         .background(Color.tallyPaper)
         .navigationTitle(challenge.name)
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .accessibilityIdentifier("challenge-title")
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showAddEntrySheet = true
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel("Add entry")
-            }
-            
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .primaryAction) {
                 Menu {
                     Button("Edit", systemImage: "pencil") {
                         onEdit()
@@ -130,38 +131,16 @@ public struct ChallengeDetailView: View {
                         showDeleteConfirmation = true
                     }
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    Label("Challenge actions", systemImage: "ellipsis.circle")
                 }
                 .accessibilityIdentifier("challenge-actions-menu")
             }
         }
-        .task {
-            await loadStats()
+        .onChange(of: manager.entriesVersion, initial: true) { _, _ in
+            entries = manager.entries(for: challenge.id)
         }
-        .onChange(of: manager.challenges) { _, _ in
-            guard let updated = manager.challenge(id: challenge.id), updated != challenge else { return }
-            challenge = updated
-        }
-        .onChange(of: manager.stats) { _, _ in
-            if let updatedStats = manager.stats(for: challenge.id), updatedStats != stats {
-                stats = updatedStats
-            }
-        }
-        .sheet(isPresented: $showAddEntrySheet) {
-            AddEntrySheet(
-                challenge: challenge,
-                recentEntries: entries,
-                onSubmit: { request in
-                    manager.addEntry(request)
-                    entries = manager.entries(for: challenge.id)
-                    stats = manager.stats(for: challenge.id)
-                },
-                onDismiss: {
-                    showAddEntrySheet = false
-                    entries = manager.entries(for: challenge.id)
-                    stats = manager.stats(for: challenge.id)
-                }
-            )
+        .task(id: challenge.id) {
+            await manager.fetchEntries(for: challenge.id)
         }
         .sheet(item: $selectedEntry) { entry in
             EditEntrySheet(
@@ -170,12 +149,10 @@ public struct ChallengeDetailView: View {
                 manager: manager,
                 onSave: {
                     selectedEntry = nil
-                    entries = manager.entries(for: challenge.id)
                 },
                 onDelete: {
                     deletedEntry = entry
                     manager.deleteEntry(entry)
-                    entries = manager.entries(for: challenge.id)
                     selectedEntry = nil
                 },
                 onCancel: {
@@ -186,7 +163,15 @@ public struct ChallengeDetailView: View {
         .sheet(isPresented: Binding(
             get: { drilldownDate != nil },
             set: { if !$0 { drilldownDate = nil } }
-        )) {
+        ), onDismiss: {
+            if addEntryAfterDrilldown {
+                addEntryAfterDrilldown = false
+                onAddEntry()
+            } else if let entry = editEntryAfterDrilldown {
+                editEntryAfterDrilldown = nil
+                selectedEntry = entry
+            }
+        }) {
             if let date = drilldownDate {
                 DayDrilldownSheet(
                     date: date,
@@ -194,16 +179,16 @@ public struct ChallengeDetailView: View {
                     unitLabel: challenge.resolvedUnitLabel,
                     challengeColor: challenge.color,
                     onEdit: { entry in
-                        selectedEntry = entry
+                        editEntryAfterDrilldown = entry
+                        drilldownDate = nil
                     },
                     onDelete: { entry in
                         deletedEntry = entry
                         manager.deleteEntry(entry)
-                        entries = manager.entries(for: challenge.id)
                     },
                     onAddEntry: {
+                        addEntryAfterDrilldown = true
                         drilldownDate = nil
-                        showAddEntrySheet = true
                     }
                 )
             }
@@ -246,9 +231,7 @@ public struct ChallengeDetailView: View {
                     onUndo: {
                         Task {
                             _ = try? await APIClient.shared.restoreEntry(id: deletedEntry.id)
-                            await loadStats()
                             await manager.fetchEntries(for: challenge.id)
-                            entries = manager.entries(for: challenge.id)
                         }
                         self.deletedEntry = nil
                     },
@@ -303,21 +286,21 @@ public struct ChallengeDetailView: View {
             .frame(maxWidth: .infinity, alignment: .center)
             .accessibilityIdentifier("progress-ring")
             
-            // Total / Target
-            HStack(alignment: .firstTextBaseline, spacing: TallySpacing.xs) {
-                Text("\(stats?.totalCount ?? 0)")
-                    .font(.tallyMonoDisplay)
-                    .foregroundColor(Color.tallyInk)
+            let countLayout = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(spacing: TallySpacing.xs))
+                : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: TallySpacing.xs))
+            countLayout {
+                Text(totalCount, format: .number)
+                    .font(.largeTitle.weight(.semibold).monospacedDigit())
+                    .foregroundStyle(Color.tallyInk)
                     .accessibilityIdentifier("challenge-total-count")
-                    .accessibilityLabel("\(stats?.totalCount ?? 0)")
-                
-                Text("/ \(challenge.target) \(challenge.resolvedUnitLabel)")
-                    .font(.tallyMonoBody)
-                    .foregroundColor(Color.tallyInkSecondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
+
+                Text("of \(challenge.target.formatted()) \(challenge.resolvedUnitLabel)")
+                    .font(.body)
+                    .foregroundStyle(Color.tallyInkSecondary)
+                    .multilineTextAlignment(.center)
             }
-            
+
             // Pace status or future badge
             if challenge.isFuture, let startsText = challenge.startsInText {
                 FutureChallengeBadge(text: startsText)
@@ -327,25 +310,48 @@ public struct ChallengeDetailView: View {
                     .accessibilityIdentifier("pace-status")
             }
             
-                // Add entry button (disabled for future challenges)
-                Button {
-                    showAddEntrySheet = true
-                } label: {
-                    Label("Add Entry", systemImage: "plus")
-                        .font(.tallyTitleSmall)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(Color.tallyAccent)
-                .controlSize(.large)
-                .frame(maxWidth: .infinity)
-                .disabled(challenge.isFuture)
         }
         .tallyPadding()
         .background(Color.tallyPaperTint)
         .cornerRadius(16)
     }
     
+    private var entryActions: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: TallySpacing.sm) { entryButtons }
+            VStack(spacing: TallySpacing.xs) { entryButtons }
+        }
+        .frame(maxWidth: 740)
+        .frame(maxWidth: .infinity)
+        .tallyPadding(.horizontal)
+        .padding(.vertical, TallySpacing.xs)
+        .background(Color.tallyPaper)
+        .overlay(alignment: .top) { Divider() }
+    }
+
+    @ViewBuilder private var entryButtons: some View {
+        if !challenge.isArchived, challenge.resolvedCountType == .simple {
+            Button {
+                manager.incrementChallenge(id: challenge.id)
+            } label: {
+                Text("+1")
+                    .font(.body.weight(.semibold).monospacedDigit())
+                    .frame(minWidth: 64, minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent)
+            .accessibilityLabel("Add one to \(challenge.name)")
+            .accessibilityIdentifier("detail-increment")
+        }
+
+        Button(action: onAddEntry) {
+            Label("Add Entry", systemImage: "square.and.pencil")
+                .font(.body.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .buttonStyle(.bordered)
+        .accessibilityIdentifier("detail-add-entry")
+    }
+
     /// Callout for future challenges that haven't started yet
     private func futureChallengeCallout(startsText: String) -> some View {
         VStack(alignment: .leading, spacing: TallySpacing.xs) {
@@ -385,10 +391,10 @@ public struct ChallengeDetailView: View {
     // MARK: - Stats Grid
     
     private func statsGrid(_ stats: ChallengeStats) -> some View {
-        LazyVGrid(columns: [
-            GridItem(.flexible()),
-            GridItem(.flexible())
-        ], spacing: TallySpacing.md) {
+        LazyVGrid(
+            columns: Array(repeating: GridItem(.flexible()), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2),
+            spacing: TallySpacing.md
+        ) {
             StatCard(label: "Remaining", value: "\(stats.remaining)")
             StatCard(label: "Days Left", value: "\(stats.daysRemaining)")
             StatCard(label: "Per Day Needed", value: String(format: "%.1f", stats.perDayRequired))
@@ -475,7 +481,6 @@ public struct ChallengeDetailView: View {
                                         onDelete: {
                                             deletedEntry = entry
                                             manager.deleteEntry(entry)
-                                            entries = manager.entries(for: challenge.id)
                                         }
                                     )
                                 }
@@ -666,24 +671,7 @@ public struct ChallengeDetailView: View {
         .foregroundColor(sortField == field ? Color.tallyAccent : Color.tallyInkSecondary)
     }
     
-    private func loadStats() async {
-        isLoadingStats = true
-        // Keep local progress visible while network requests refresh the detail.
-        // Offline goals must not appear empty until a request times out.
-        stats = manager.stats(for: challenge.id) ?? stats
-        
-        // Load entries for the burn-up chart
-        entries = manager.entries(for: challenge.id)
-        await manager.fetchEntries(for: challenge.id)
-        entries = manager.entries(for: challenge.id)
-        
-        do {
-            stats = try await APIClient.shared.getChallengeStats(challengeId: challenge.id)
-        } catch {
-            stats = manager.stats(for: challenge.id)
-        }
-        isLoadingStats = false
-    }
+
 }
 
 private struct DayDrilldownSheet: View {
@@ -789,6 +777,8 @@ private struct DayEntryRow: View {
             
             Button(action: onDelete) {
                 Image(systemName: "trash")
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(TallyPressStyle())
             .foregroundColor(Color.tallyError)
@@ -899,6 +889,8 @@ private struct RecentEntryRow: View {
             
             Button(action: onEdit) {
                 Image(systemName: "pencil")
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(TallyPressStyle())
             .foregroundColor(Color.tallyInkSecondary)
@@ -906,6 +898,8 @@ private struct RecentEntryRow: View {
             
             Button(action: onDelete) {
                 Image(systemName: "trash")
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(TallyPressStyle())
             .foregroundColor(Color.tallyError)

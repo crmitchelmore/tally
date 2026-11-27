@@ -73,7 +73,7 @@ final class ChallengeTests: TallyUITestCase {
         challengeDetail.tapBack()
         let card = dashboardPage.challengeCard(named: "Edit Test")
         XCTAssertTrue(card.waitForExistence(timeout: 10))
-        let details = card.buttons.matching(NSPredicate(format: "label CONTAINS %@", "of 1500")).firstMatch
+        let details = card.buttons.matching(NSPredicate(format: "label CONTAINS %@", "of \(1500.formatted())")).firstMatch
         XCTAssertTrue(details.waitForExistence(timeout: 10), "The details action should announce the updated target.")
     }
     

@@ -37,8 +37,8 @@ jobs:
           install_args: tuist@4.32.0
       - name: Generate app
         run: |
-          tuist install
-          tuist generate --no-open
+          mise exec tuist@4.32.0 -- tuist install
+          mise exec tuist@4.32.0 -- tuist generate --no-open
       - name: Test layout and offline logging
         env:
           SIMULATOR_NAME: ${{ matrix.device }}

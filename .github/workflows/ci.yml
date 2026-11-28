@@ -37,6 +37,8 @@ jobs:
             while IFS= read -r -d '' path; do
               case "$path" in
                 tally-web/*) web=true ;;
+                ios/App/Resources/Assets.xcassets/AppIcon.appiconset/*) ios=true web=true ;;
+                tally-android/app/src/main/res/mipmap-*/*|tally-android/app/src/main/res/drawable*/ic_launcher*) android=true web=true ;;
                 ios/*) ios=true ;;
                 tally-android/*) android=true ;;
                 docs/*|*.md) ;;

@@ -8,14 +8,15 @@ Use when:
 
 Before starting:
 - Confirm the `posthog` MCP server is connected and pointed at project Tally (114447) on EU Cloud.
-- Find the last release: the latest `ios-v*` tag, and the latest production deploy on `main`. Use its date as "since last release".
+- Record the release time for each platform under review from its production web deploy, shipped iOS tag or Android store rollout. Use that platform’s timestamp for all error and trend comparisons.
 - Search open GitHub issues before opening one, so you never file a duplicate.
 
 Checklist:
 - Errors and exceptions:
+  - Review the iOS Sentry project listed in docs/observability.md for native crashes. Record any access gap alongside the PostHog results.
   - List the top error tracking issues by occurrences and affected users since the last release.
   - Flag any exception first seen since the last release as new.
-  - For each new or growing error, open one GitHub issue with the exception, platform, first seen, occurrence and user counts, the top stack frame mapped to a file in this repo, and a link to the issue on `https://eu.posthog.com`.
+  - For each new or growing error, open one GitHub issue with the exception, platform, first seen, occurrence and user counts, the top stack frame mapped to a file in this repo, and a link to the source issue in Sentry or PostHog.
   - Fix directly only when the cause is clear and the change is small; otherwise open the issue.
 - Feature flag hygiene:
   - List flags with their rollout and last evaluation.

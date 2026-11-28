@@ -40,7 +40,7 @@ dependencies {
     // PostHog analytics
     implementation("com.posthog:posthog-android:3.76.2")
 
-    implementation("io.sentry:sentry-android:8.64.0")
+    implementation("io.sentry:sentry-android:8.65.1")
 
     // OpenTelemetry Android (uncomment when ready to integrate)
     // implementation("io.opentelemetry.android:android-agent:0.5.+")

@@ -7,17 +7,50 @@ on:
 
 permissions:
   contents: read
-  statuses: write
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.scope.outputs.web }}
+      ios: ${{ steps.scope.outputs.ios }}
+      android: ${{ steps.scope.outputs.android }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: scope
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          web=false ios=false android=false
+          if [[ -z "$BASE" ]]; then
+            web=true ios=true android=true
+          else
+            git diff --no-renames --name-only -z "$BASE...$HEAD" > "$RUNNER_TEMP/changed"
+            while IFS= read -r -d '' path; do
+              case "$path" in
+                tally-web/*) web=true ;;
+                ios/*) ios=true ;;
+                tally-android/*) android=true ;;
+                docs/*|*.md) ;;
+                *) web=true ios=true android=true ;;
+              esac
+            done < "$RUNNER_TEMP/changed"
+          fi
+          printf 'web=%s\nios=%s\nandroid=%s\n' "$web" "$ios" "$android" >> "$GITHUB_OUTPUT"
   # ─────────────────────────────────────────────────────────────
   # Web: lint + build
   # ─────────────────────────────────────────────────────────────
   web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -47,6 +80,8 @@ jobs:
   # iOS: generate + build (macOS runner)
   # ─────────────────────────────────────────────────────────────
   ios:
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
     runs-on: xcode-27
     defaults:
       run:
@@ -102,6 +137,8 @@ jobs:
   # Android: lint + build (ubuntu runner)
   # ─────────────────────────────────────────────────────────────
   android:
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -140,30 +177,19 @@ jobs:
   build:
     name: build
     runs-on: ubuntu-latest
-    needs: [web, ios, android]
+    needs: [changes, web, ios, android]
     if: always()
     steps:
-      - name: Set commit status "build"
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const sha = context.payload.pull_request?.head?.sha ?? context.sha;
-            const results = [
-              '${{ needs.web.result }}',
-              '${{ needs.ios.result }}',
-              '${{ needs.android.result }}',
-            ];
-            const ok = results.every(r => r === 'success');
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha,
-              state: ok ? 'success' : 'failure',
-              context: 'build',
-              description: ok ? 'All CI jobs passed' : `CI failed: ${results.join(', ')}`,
-              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-            });
-            core.info(`Set build status on ${sha}: ${ok ? 'success' : 'failure'}`);
+      - name: Verify selected builds
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          jq -e '
+            . as $jobs | .changes.result == "success" and
+            all(["web", "ios", "android"][];
+              . as $platform | $jobs[$platform].result ==
+                (if $jobs.changes.outputs[$platform] == "true" then "success" else "skipped" end))
+          ' <<< "$RESULTS"
 
   # ─────────────────────────────────────────────────────────────
   # Auto Version & Release (iOS)

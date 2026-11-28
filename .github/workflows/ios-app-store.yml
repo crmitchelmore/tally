@@ -2,7 +2,7 @@ name: iOS App Store Submission
 
 # TestFlight uploads never reach the public App Store on their own. This attaches a
 # processed build to the App Store version, refreshes screenshots and submits it for
-# App Review. It runs after every TestFlight release and can be dispatched manually.
+# App Review. The owner dispatches this workflow when the build is ready.
 on:
   workflow_dispatch:
     inputs:
